@@ -10,17 +10,18 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
+    - uses: actions/checkout@v2
+
     - name: Install Dependencies
       run: |
         sudo apt update
         npm install -g @quasar/cli
-
-    - uses: actions/checkout@v2
+        cd app
+        npm install --include=dev
     
     - name: Build SPA
       run: |
         cd app
-        npm install
         quasar build
 
     - name: Copy output
