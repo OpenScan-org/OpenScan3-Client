@@ -50,19 +50,3 @@ jobs:
         with:
           tag_name: ${{ steps.copy.outputs.image }}
           files: ${{ steps.copy.outputs.image }}.zip
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: app/dist/spa/
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-22.04
-    needs: build
-    steps:
-      - name: Deploy to Github Pages
-        id: deployment
-        uses: actions/deploy-pages@v1

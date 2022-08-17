@@ -67,7 +67,7 @@ module.exports = configure(function (/* ctx */) {
 
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
-      publicPath: 'OpenScan3-Client',
+      // publicPath: '/',
       // analyze: true,
       // env: {},
       // rawDefine: {}
