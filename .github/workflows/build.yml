@@ -1,0 +1,41 @@
+name: Build SPA
+
+on: 
+  workflow_dispatch:
+  push:
+    branches:    
+      - 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Install Dependencies
+      run: |
+        sudo apt update
+        npm install -g @quasar/cli
+
+    - uses: actions/checkout@v2
+    
+    - name: Build SPA
+      run: |
+        cd app
+        npm install
+        quasar build
+
+    - name: Copy output
+      id: copy
+      run: |
+        NOW=$(date +"%Y-%m-%d-%H%M")
+        IMAGE=$NOW-openscan-client
+        cd app/dist/spa/
+        zip -qr $IMAGE.zip *
+        cd ../../..
+        mv app/dist/spa/$IMAGE.zip $IMAGE.zip
+        echo "::set-output name=image::$IMAGE"
+    
+    - name: Publish relese
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name:  ${{ steps.copy.outputs.image }}
+        files: ${{ steps.copy.outputs.image }}.zip
