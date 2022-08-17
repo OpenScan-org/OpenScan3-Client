@@ -20,11 +20,11 @@
       </div>
     </div>
   </q-page>
-  <q-page v-else>
+  <q-page v-else-if="scanner_pinged">
     <div class="q-pa-md">
       <div class="row justify-center">
         <div class="col-4">
-          <q-banner inline-actions class="text-white bg-red">
+          <q-banner v-if="!scanner_available" inline-actions class="text-white bg-red">
             Couldn't connect to OpenScan device.
             <template v-slot:action>
               <q-btn flat color="white" label="Retry" @click="reload_page" />
@@ -85,6 +85,7 @@ const scan_settings = ref<ScanSettingsModel>({
 })
 
 const scanner_available = ref(false)
+const scanner_pinged = ref(false)
 const scanning = ref(false)
 
 const update_camera = (camera: QSelectProps['options']) => {
@@ -123,21 +124,17 @@ onMounted(() => {
 
   api.get('/').then(
     (response) => {
-      if (response.data.status == "ok") {
+      if (response.data.status == 'ok') {
         scanner_available.value = true
+        update_projects()
       }
     }
-  ).finally(() => { $q.loading.hide() })
-
-  if (scanner_available.value) {
-    update_projects()
-  }
-
-  // hiding in 3s
-  // let timer = setTimeout(() => {
-  //   $q.loading.hide()
-  //   timer = 0
-  // }, 1000)
+  ).finally(
+    () => {
+      $q.loading.hide()
+      scanner_pinged.value = true
+    }
+  )
 })
 
 setTimeout(() => {
