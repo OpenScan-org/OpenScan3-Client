@@ -8,8 +8,8 @@
           OpenScan3
         </q-toolbar-title>
 
-        <q-btn flat round icon="restart_alt"/>
-        <q-btn flat round icon="power_settings_new"/>
+        <q-btn flat round icon="restart_alt" @click="reboot"/>
+        <q-btn flat round icon="power_settings_new" @click="shutdown"/>
 
       </q-toolbar>
     </q-header>
@@ -32,6 +32,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { api } from 'boot/axios'
 import EssentialLink, { EssentialLinkProps } from 'components/EssentialLink.vue';
 
 const essentialLinks: EssentialLinkProps[] = [
@@ -84,4 +85,14 @@ const leftDrawerOpen = ref(false)
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
+
+const shutdown = () => {
+  api.post('/shutdown')
+}
+
+const reboot = () => {
+  api.post('/reboot')
+}
+
+
 </script>
