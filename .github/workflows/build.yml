@@ -14,7 +14,6 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        sudo apt update
         npm install -g @quasar/cli
         cd app
         npm install --include=dev

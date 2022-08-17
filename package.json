@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "project-name-generator": "^2.1.9"
-  },
-  "devDependencies": {
-    "@types/project-name-generator": "^2.1.1"
-  }
-}
