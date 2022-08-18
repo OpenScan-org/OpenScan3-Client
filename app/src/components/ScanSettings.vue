@@ -121,7 +121,7 @@ function home_motor(motor: string) {
 
 function run_scan() {
     emit('update:scanning', true)
-    api.post('/scanner/scan', {
+    api.post('/scan', {
         'project_name': project_name.value,
         'camera_id': camera.value.value,
         'method': method.value.value,
