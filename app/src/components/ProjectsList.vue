@@ -12,7 +12,7 @@
         </q-card-section>
         <q-card-section>
             <div class="row q-col-gutter-md">
-                <ProjectCard v-for="project in projects" :key="project.name" v-bind="{ project: project }"
+                <project-card v-for="project in projects" :key="project.name" v-bind="{ project: project }"
                     @delete:project="$emit('delete:project', project.name)"
                     @upload:project="$emit('upload:project', project.name)" />
             </div>
