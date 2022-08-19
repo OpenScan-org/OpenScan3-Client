@@ -14,7 +14,7 @@ permissions:
 
 # Allow one concurrent deployment
 concurrency:
-  group: "pages"
+  group: "build"
   cancel-in-progress: true
 
 jobs:
@@ -50,3 +50,14 @@ jobs:
         with:
           tag_name: ${{ steps.copy.outputs.image }}
           files: ${{ steps.copy.outputs.image }}.zip
+
+  dispatch:
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: OpenScan-org/OpenScan3-Image
+          event-type: client-release
