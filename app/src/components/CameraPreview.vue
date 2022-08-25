@@ -11,7 +11,7 @@
             </div>
         </q-card-section>
         <q-card-section class="q-pt-none">
-            <q-img v-if="show_preview" :src="`http://openscan:8000/cameras/${props.camera.value}/preview`" alt="Camera preview" />
+            <q-img v-if="show_preview" :src="`http://openscan.local/api/cameras/${props.camera.value}/preview`" alt="Camera preview" />
         </q-card-section>
         <!-- <q-separator inset />
         <q-card-section class="q-pt-none">
