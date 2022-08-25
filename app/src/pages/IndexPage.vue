@@ -98,7 +98,7 @@ const update_scanning = (status: boolean) => {
 }
 
 const update_projects = () => {
-  api.get('/projects').then((response) => projects.value.projects = response.data)
+  api.get('/projects/').then((response) => projects.value.projects = response.data)
 }
 
 const delete_project = (project: string) => {
