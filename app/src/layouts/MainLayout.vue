@@ -16,10 +16,6 @@
 
     <q-drawer v-model="leftDrawerOpen" elevated>
       <q-list>
-        <q-item-label header>
-          Essential Links
-        </q-item-label>
-
         <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
       </q-list>
     </q-drawer>
@@ -37,7 +33,7 @@ import EssentialLink, { EssentialLinkProps } from 'components/EssentialLink.vue'
 
 const essentialLinks: EssentialLinkProps[] = [
   {
-    title: 'Index',
+    title: 'Dashboard',
     icon: 'dashboard',
     link: '/'
   },
@@ -53,7 +49,7 @@ const essentialLinks: EssentialLinkProps[] = [
     target: '_blank'
   },
   {
-    title: 'Github',
+    title: 'Contribute',
     icon: 'code',
     link: 'https://github.com/OpenScan-org',
     target: '_blank'

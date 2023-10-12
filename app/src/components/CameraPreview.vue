@@ -11,7 +11,7 @@
             </div>
         </q-card-section>
         <q-card-section class="q-pt-none">
-            <q-img v-if="show_preview" :src="`http://openscan.local/api/cameras/${props.camera.value}/preview`" alt="Camera preview" />
+            <q-img v-if="show_preview" :src="`http://openscan.local/api/cameras/${props.camera?.value}/preview`" alt="Camera preview" />
         </q-card-section>
         <!-- <q-separator inset />
         <q-card-section class="q-pt-none">
@@ -45,7 +45,7 @@ import { ref, computed } from 'vue';
 
 interface CameraPreviewProps {
     scanning: boolean,
-    camera: any
+    camera?: any
 }
 
 const props = defineProps<CameraPreviewProps>()
@@ -54,7 +54,7 @@ let _show_preview = ref(true)
 
 const show_preview = computed({
     get() {
-        return _show_preview.value && !props.scanning
+        return _show_preview.value && !props.scanning && props.camera !== null
     },
     set(value) {
         _show_preview.value = value

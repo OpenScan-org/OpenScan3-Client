@@ -21,9 +21,16 @@ export interface ImageSettings {
 
 }
 
+export interface Camera {
+  type: string;
+  name: string;
+  path: string;
+  settings: any;
+}
+
 export interface ScanSettingsModel {
   project_name: string;
-  camera: any;
-  method: any;
+  camera?: any;
+  method?: any;
   points: number;
 }

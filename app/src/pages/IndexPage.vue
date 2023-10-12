@@ -51,22 +51,9 @@ const $q = useQuasar()
 
 let projects = ref({ projects: [] })
 
-const camera_options = [
-  {
-    label: 'GENERAL WEBCAM: GENERAL WEBCAM',
-    value: 0
-  },
-  {
-    label: 'unicam',
-    value: 1
-  }
-]
+const camera_options = ref<any[]>([])
 
 const path_options = [
-  {
-    label: 'Grid',
-    value: 'grid'
-  },
   {
     label: 'Fibonacci',
     value: 'fibonacci'
@@ -79,9 +66,9 @@ const path_options = [
 
 const scan_settings = ref<ScanSettingsModel>({
   project_name: generate().dashed,
-  camera: camera_options[0],
-  method: path_options[0],
-  points: 100
+  camera: null,
+  points: 100,
+  method: path_options[0]
 })
 
 const scanner_available = ref(false)
@@ -126,7 +113,10 @@ onMounted(() => {
     (response) => {
       if (response.data.status == 'ok') {
         scanner_available.value = true
-        update_projects()
+        let cameras = response.data.cameras.map( (c:any, i:number) => { return {"label": c.name, "value": i}})
+        camera_options.value = cameras
+        scan_settings.value.camera = cameras[0]
+        projects.value.projects = response.data.projects
       }
     }
   ).finally(
@@ -135,6 +125,7 @@ onMounted(() => {
       scanner_pinged.value = true
     }
   )
+
 })
 
 setTimeout(() => {
