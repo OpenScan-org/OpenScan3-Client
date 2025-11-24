@@ -86,7 +86,7 @@ import { QSelectProps, useQuasar } from 'quasar'
 import { ref, computed } from 'vue'
 import { api } from 'boot/axios'
 import { ScanSettingsModel } from './models';
-import generate from 'project-name-generator'
+import generateDashedName from 'src/utils/randomName'
 
 const $q = useQuasar()
 
@@ -170,7 +170,7 @@ function run_scan() {
 }
 
 function random_name() {
-    project_name.value = generate().dashed
+    project_name.value = generateDashedName()
 }
 
 </script>

@@ -40,7 +40,7 @@
 import { QSelectProps, useQuasar } from 'quasar'
 import { ref, onMounted } from 'vue'
 import { api } from 'boot/axios'
-import generate from 'project-name-generator'
+import generateDashedName from 'src/utils/randomName'
 
 import ScanSettings from 'components/ScanSettings.vue'
 import CameraPreview from 'components/CameraPreview.vue'
@@ -65,7 +65,7 @@ const path_options = [
 ]
 
 const scan_settings = ref<ScanSettingsModel>({
-  project_name: generate().dashed,
+  project_name: generateDashedName(),
   camera: null,
   points: 100,
   method: path_options[0]
