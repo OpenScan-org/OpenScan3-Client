@@ -40,6 +40,8 @@
 import { QSelectProps, useQuasar } from 'quasar'
 import { ref, onMounted } from 'vue'
 import { api } from 'boot/axios'
+import { apiClient } from 'src/services/apiClient'
+import { getProjectsProjectsGet } from 'src/generated/api'
 import generateDashedName from 'src/utils/randomName'
 
 import ScanSettings from 'components/ScanSettings.vue'
@@ -85,7 +87,9 @@ const update_scanning = (status: boolean) => {
 }
 
 const update_projects = () => {
-  api.get('/projects/').then((response) => projects.value.projects = response.data)
+  getProjectsProjectsGet({ client: apiClient }).then((data) => {
+    projects.value.projects = data ? Object.values(data) : []
+  })
 }
 
 const delete_project = (project: string) => {
