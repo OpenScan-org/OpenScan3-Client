@@ -1,10 +1,12 @@
-import { createClient } from 'src/generated/api/client';
+import { createClient } from 'src/generated/api/client'
 
-const apiClient = createClient();
+const API_BASE_URL = 'http://openscan3-dev:8000/v0.5/'
+
+const apiClient = createClient()
 
 apiClient.setConfig({
-  baseUrl: 'http://openscan3-dev:8000/v0.5/',
+  baseUrl: API_BASE_URL,
   responseStyle: 'data'
-});
+})
 
-export { apiClient };
+export { apiClient, API_BASE_URL }

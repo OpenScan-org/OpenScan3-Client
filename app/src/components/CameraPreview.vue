@@ -11,7 +11,13 @@
             </div>
         </q-card-section>
         <q-card-section class="q-pt-none">
-            <q-img v-if="show_preview" :src="`http://openscan.local/api/cameras/${props.camera?.value}/preview`" alt="Camera preview" />
+            <div v-if="show_preview" class="preview-wrapper">
+                <img
+                    class="preview-image"
+                    :src="previewUrl"
+                    alt="Camera preview"
+                />
+            </div>
         </q-card-section>
         <!-- <q-separator inset />
         <q-card-section class="q-pt-none">
@@ -41,16 +47,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue'
+import { API_BASE_URL } from 'src/services/apiClient'
 
 interface CameraPreviewProps {
     scanning: boolean,
-    camera?: any
+    camera?: {
+        label: string
+        value: string
+        orientationFlag?: number | null
+    } | null
 }
 
 const props = defineProps<CameraPreviewProps>()
 
 let _show_preview = ref(true)
+
+const previewUrl = ref<string | null>(null)
 
 const show_preview = computed({
     get() {
@@ -60,6 +73,23 @@ const show_preview = computed({
         _show_preview.value = value
     }
 })
+
+watch(show_preview, (active) => {
+    if (active && props.camera?.value) {
+        previewUrl.value = `${API_BASE_URL}cameras/${props.camera.value}/preview`
+    } else {
+        previewUrl.value = null
+    }
+}, { immediate: true })
+
+watch(
+    () => props.camera?.value,
+    (cameraName) => {
+        if (cameraName && show_preview.value) {
+            previewUrl.value = `${API_BASE_URL}cameras/${cameraName}/preview`
+        }
+    }
+, { immediate: true })
 
 // let crop_x = ref({
 //     min: 0,
@@ -72,3 +102,18 @@ const show_preview = computed({
 // })
 
 </script>
+
+<style scoped>
+.preview-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #000;
+}
+
+.preview-image {
+    width: 100%;
+    max-height: 360px;
+    object-fit: contain;
+}
+</style>

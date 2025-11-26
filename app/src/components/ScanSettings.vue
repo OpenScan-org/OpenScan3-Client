@@ -83,8 +83,17 @@
 <script setup lang="ts">
 
 import { QSelectProps, useQuasar } from 'quasar'
-import { ref, computed } from 'vue'
-import { api } from 'boot/axios'
+import { ref, computed, onMounted } from 'vue'
+import { apiClient } from 'src/services/apiClient'
+import {
+    addScanWithDescription,
+    getLights,
+    moveMotorByDegree,
+    moveMotorToHomePosition,
+    turnOffLight,
+    turnOnLight,
+    type ScanSetting
+} from 'src/generated/api'
 import { ScanSettingsModel } from './models';
 import generateDashedName from 'src/utils/randomName'
 
@@ -115,6 +124,7 @@ const method = ref(props.settings.method)
 const points = ref(props.settings.points)
 const upload = ref(true)
 const ring_light = ref(false)
+const ring_light_name = ref<string | null>(null)
 
 const rotor_increment = ref(10)
 const turntable_increment = ref(10)
@@ -122,51 +132,102 @@ const turntable_increment = ref(10)
 const rotor_range = ref({ min: 0, max: 360 })
 const turntable_range = ref({ min: 0, max: 360 })
 
-function onSubmit() {
-    $q.notify({
-        color: 'green-4',
-        textColor: 'white',
-        icon: 'cloud_done',
-        message: 'Started scanning'
-    })
-    run_scan();
-    if (upload.value) {
+const onSubmit = async () => {
+    const success = await run_scan()
+
+    if (success && upload.value) {
         emit('upload:project', project_name.value)
     }
 }
 
-function toggle_lights() {
-    api.post(`/ring_light/`, { status: ring_light.value })
+async function toggle_lights(value: boolean) {
+    try {
+        if (value) {
+            await turnOnLight({ client: apiClient, path: { light_name: ring_light_name.value! } })
+        } else {
+            await turnOffLight({ client: apiClient, path: { light_name: ring_light_name.value! } })
+        }
+    } catch (error) {
+        ring_light.value = !value
+        $q.notify({ type: 'negative', message: 'Licht konnte nicht geschaltet werden.' })
+    }
 }
 
-function move_motor(motor: string, degrees: number) {
-    api.post(`/motors/${motor}/move`, { degrees: degrees })
+const load_ring_light = async () => {
+    try {
+        const lights = await getLights({ client: apiClient })
+        const firstLight = Object.values(lights ?? {})[0]
+        if (firstLight) {
+            ring_light_name.value = firstLight.name
+            ring_light.value = firstLight.is_on
+        }
+    } catch (error) {
+        $q.notify({ type: 'negative', message: 'Lichtstatus konnte nicht geladen werden.' })
+    }
 }
 
-function home_motor(motor: string) {
-    api.post(`/motors/${motor}/home`)
-}
+onMounted(() => {
+    load_ring_light()
+})
 
-function run_scan() {
-    emit('update:scanning', true)
-    const response = api.post('/scan', {
-        'project_name': project_name.value,
-        'camera_id': camera.value.value,
-        'method': method.value.value,
-        'points': points.value
-    }, { responseType: 'stream' })
-        .then((response) => {
-            const stream = response.data;
-
-            stream.on('data', (data: any) => {
-                console.log(data);
-            });
-
-            stream.on('end', () => {
-                console.log("stream done")
-                emit('update:scanning', false)
-            });
+async function move_motor(motor: string, degrees: number) {
+    try {
+        await moveMotorByDegree({
+            client: apiClient,
+            path: { motor_name: motor },
+            body: { degrees }
         })
+    } catch (error) {
+        $q.notify({ type: 'negative', message: `Motor "${motor}" konnte nicht bewegt werden.` })
+    }
+}
+
+async function home_motor(motor: string) {
+    try {
+        await moveMotorToHomePosition({
+            client: apiClient,
+            path: { motor_name: motor }
+        })
+    } catch (error) {
+        $q.notify({ type: 'negative', message: `Motor "${motor}" konnte nicht referenziert werden.` })
+    }
+}
+
+async function run_scan(): Promise<boolean> {
+    if (!camera.value?.value) {
+        $q.notify({ type: 'negative', message: 'Bitte zuerst eine Kamera auswählen.' })
+        return false
+    }
+
+    const selectedMethod = method.value?.value ?? 'fibonacci'
+    const scanSettingsPayload: ScanSetting = {
+        path_method: selectedMethod as ScanSetting['path_method'],
+        points: points.value,
+        image_format: 'jpeg'
+    }
+
+    emit('update:scanning', true)
+
+    try {
+        await addScanWithDescription({
+            client: apiClient,
+            path: { project_name: project_name.value },
+            query: { camera_name: camera.value.value },
+            body: scanSettingsPayload
+        })
+
+        $q.notify({
+            type: 'positive',
+            message: 'Scan wurde gestartet.'
+        })
+
+        return true
+    } catch (error) {
+        $q.notify({ type: 'negative', message: 'Scan konnte nicht gestartet werden.' })
+        return false
+    } finally {
+        emit('update:scanning', false)
+    }
 }
 
 function random_name() {

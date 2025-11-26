@@ -16,7 +16,9 @@
 
     <q-drawer v-model="leftDrawerOpen" elevated>
       <q-list>
-        <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
+        <EssentialLink v-for="link in upperLinks" :key="link.title" v-bind="link" />
+        <q-separator />
+        <EssentialLink v-for="link in lowerLinks" :key="link.title" v-bind="link" />
       </q-list>
     </q-drawer>
 
@@ -28,17 +30,28 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { api } from 'boot/axios'
-import EssentialLink, { EssentialLinkProps } from 'components/EssentialLink.vue';
+import { api } from 'src/api'
+import EssentialLink from 'components/EssentialLink.vue';
+import type { EssentialLinkProps } from 'components/models';
 
-const essentialLinks: EssentialLinkProps[] = [
+const upperLinks: EssentialLinkProps[] = [
   {
     title: 'Dashboard',
     icon: 'dashboard',
     link: '/'
   },
   {
-    title: 'Settings',
+    title: 'Projects',
+    icon: 'folder',
+    link: '/projects'
+  },
+  {
+    title: 'Scan',
+    icon: 'camera',
+    link: '/scan'
+  },
+  {
+    title: '(dev) settings',
     icon: 'settings',
     link: '/settings'
   },
@@ -48,10 +61,19 @@ const essentialLinks: EssentialLinkProps[] = [
     link: 'https://openscan-org.github.io/OpenScan-Doc/',
     target: '_blank'
   },
+];
+
+const lowerLinks: EssentialLinkProps[] = [
   {
-    title: 'Contribute',
+    title: 'Contribute (Github)',
     icon: 'code',
     link: 'https://github.com/OpenScan-org',
+    target: '_blank'
+  },
+  {
+    title: 'Donate (Patreon)',
+    icon: 'volunteer_activism',
+    link: 'https://www.patreon.com/OpenScan',
     target: '_blank'
   },
 ];

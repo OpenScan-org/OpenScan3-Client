@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddConfigJsonDeviceConfigurationsPostData, AddConfigJsonDeviceConfigurationsPostErrors, AddConfigJsonDeviceConfigurationsPostResponses, AddScanWithDescriptionProjectsProjectNameScanPostData, AddScanWithDescriptionProjectsProjectNameScanPostErrors, AddScanWithDescriptionProjectsProjectNameScanPostResponses, CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchData, CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchErrors, CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchResponses, CancelScanProjectsProjectNameScansScanIndexCancelPatchData, CancelScanProjectsProjectNameScansScanIndexCancelPatchErrors, CancelScanProjectsProjectNameScansScanIndexCancelPatchResponses, CancelTaskTasksTaskIdDeleteData, CancelTaskTasksTaskIdDeleteErrors, CancelTaskTasksTaskIdDeleteResponses, CreateTaskTasksTaskNamePostData, CreateTaskTasksTaskNamePostErrors, CreateTaskTasksTaskNamePostResponses, CropImageDevelopCropImageGetData, CropImageDevelopCropImageGetErrors, CropImageDevelopCropImageGetResponses, DeletePhotosProjectsProjectNameScanIndexDeleteData, DeletePhotosProjectsProjectNameScanIndexDeleteErrors, DeletePhotosProjectsProjectNameScanIndexDeleteResponses, DeleteProjectProjectsProjectNameDeleteData, DeleteProjectProjectsProjectNameDeleteErrors, DeleteProjectProjectsProjectNameDeleteResponses, DeleteScanProjectsProjectNameScansDeleteData, DeleteScanProjectsProjectNameScansDeleteErrors, DeleteScanProjectsProjectNameScansDeleteResponses, DownloadLogsArchiveLogsArchiveGetData, DownloadLogsArchiveLogsArchiveGetErrors, DownloadLogsArchiveLogsArchiveGetResponses, DownloadProjectFromCloudProjectsProjectNameDownloadPostData, DownloadProjectFromCloudProjectsProjectNameDownloadPostErrors, DownloadProjectFromCloudProjectsProjectNameDownloadPostResponses, DownloadProjectProjectsProjectNameZipGetData, DownloadProjectProjectsProjectNameZipGetErrors, DownloadProjectProjectsProjectNameZipGetResponses, DownloadScansProjectsProjectNameScansZipGetData, DownloadScansProjectsProjectNameScansZipGetErrors, DownloadScansProjectsProjectNameScansZipGetResponses, GetAllTasksTasksGetData, GetAllTasksTasksGetErrors, GetAllTasksTasksGetResponses, GetCameraCamerasCameraNameGetData, GetCameraCamerasCameraNameGetErrors, GetCameraCamerasCameraNameGetResponses, GetCamerasCamerasGetData, GetCamerasCamerasGetErrors, GetCamerasCamerasGetResponses, GetCloudProjectCloudProjectsProjectNameGetData, GetCloudProjectCloudProjectsProjectNameGetErrors, GetCloudProjectCloudProjectsProjectNameGetResponses, GetCloudSettingsCloudSettingsGetData, GetCloudSettingsCloudSettingsGetErrors, GetCloudSettingsCloudSettingsGetResponses, GetCloudStatusCloudStatusGetData, GetCloudStatusCloudStatusGetErrors, GetCloudStatusCloudStatusGetResponses, GetDeviceInfoDeviceInfoGetData, GetDeviceInfoDeviceInfoGetErrors, GetDeviceInfoDeviceInfoGetResponses, GetLightLightsLightNameGetData, GetLightLightsLightNameGetErrors, GetLightLightsLightNameGetResponses, GetLightsLightsGetData, GetLightsLightsGetErrors, GetLightsLightsGetResponses, GetMotorMotorsMotorNameGetData, GetMotorMotorsMotorNameGetErrors, GetMotorMotorsMotorNameGetResponses, GetMotorsMotorsGetData, GetMotorsMotorsGetErrors, GetMotorsMotorsGetResponses, GetPathDevelopMethodGetData, GetPathDevelopMethodGetErrors, GetPathDevelopMethodGetResponses, GetPhotoCamerasCameraNamePhotoGetData, GetPhotoCamerasCameraNamePhotoGetErrors, GetPhotoCamerasCameraNamePhotoGetResponses, GetPinGpioPinIdGetData, GetPinGpioPinIdGetErrors, GetPinGpioPinIdGetResponses, GetPinsGpioGetData, GetPinsGpioGetErrors, GetPinsGpioGetResponses, GetPreviewCamerasCameraNamePreviewGetData, GetPreviewCamerasCameraNamePreviewGetErrors, GetPreviewCamerasCameraNamePreviewGetResponses, GetProjectProjectsProjectNameGetData, GetProjectProjectsProjectNameGetErrors, GetProjectProjectsProjectNameGetResponses, GetProjectsProjectsGetData, GetProjectsProjectsGetErrors, GetProjectsProjectsGetResponses, GetScanProjectsProjectNameScansScanIndexGetData, GetScanProjectsProjectNameScansScanIndexGetErrors, GetScanProjectsProjectNameScansScanIndexGetResponses, GetScanStatusProjectsProjectNameScansScanIndexStatusGetData, GetScanStatusProjectsProjectNameScansScanIndexStatusGetErrors, GetScanStatusProjectsProjectNameScansScanIndexStatusGetResponses, GetSettingsCamerasCameraNameSettingsGetData, GetSettingsCamerasCameraNameSettingsGetErrors, GetSettingsCamerasCameraNameSettingsGetResponses, GetSettingsLightsLightNameSettingsGetData, GetSettingsLightsLightNameSettingsGetErrors, GetSettingsLightsLightNameSettingsGetResponses, GetSettingsMotorsMotorNameSettingsGetData, GetSettingsMotorsMotorNameSettingsGetErrors, GetSettingsMotorsMotorNameSettingsGetResponses, GetSoftwareInfoGetData, GetSoftwareInfoGetErrors, GetSoftwareInfoGetResponses, GetTaskStatusTasksTaskIdGetData, GetTaskStatusTasksTaskIdGetErrors, GetTaskStatusTasksTaskIdGetResponses, HelloWorldAsyncDevelopHelloWorldAsyncPostData, HelloWorldAsyncDevelopHelloWorldAsyncPostErrors, HelloWorldAsyncDevelopHelloWorldAsyncPostResponses, ListCloudProjectsCloudProjectsGetData, ListCloudProjectsCloudProjectsGetErrors, ListCloudProjectsCloudProjectsGetResponses, ListConfigFilesDeviceConfigurationsGetData, ListConfigFilesDeviceConfigurationsGetErrors, ListConfigFilesDeviceConfigurationsGetResponses, MoveMotorByDegreeMotorsMotorNameAnglePatchData, MoveMotorByDegreeMotorsMotorNameAnglePatchErrors, MoveMotorByDegreeMotorsMotorNameAnglePatchResponses, MoveMotorToAngleMotorsMotorNameAnglePutData, MoveMotorToAngleMotorsMotorNameAnglePutErrors, MoveMotorToAngleMotorsMotorNameAnglePutResponses, MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutData, MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutErrors, MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutResponses, MoveToPositionDevelopScannerPositionPutData, MoveToPositionDevelopScannerPositionPutErrors, MoveToPositionDevelopScannerPositionPutResponses, NewProjectProjectsProjectNamePostData, NewProjectProjectsProjectNamePostErrors, NewProjectProjectsProjectNamePostResponses, PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchData, PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchErrors, PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchResponses, PauseScanProjectsProjectNameScansScanIndexPausePatchData, PauseScanProjectsProjectNameScansScanIndexPausePatchErrors, PauseScanProjectsProjectNameScansScanIndexPausePatchResponses, PauseTaskTasksTaskIdPausePostData, PauseTaskTasksTaskIdPausePostErrors, PauseTaskTasksTaskIdPausePostResponses, RebootDeviceRebootPostData, RebootDeviceRebootPostErrors, RebootDeviceRebootPostResponses, ReinitializeHardwareDeviceConfigurationsCurrentInitializePostData, ReinitializeHardwareDeviceConfigurationsCurrentInitializePostErrors, ReinitializeHardwareDeviceConfigurationsCurrentInitializePostResponses, ReplaceSettingsCamerasCameraNameSettingsPutData, ReplaceSettingsCamerasCameraNameSettingsPutErrors, ReplaceSettingsCamerasCameraNameSettingsPutResponses, ReplaceSettingsLightsLightNameSettingsPutData, ReplaceSettingsLightsLightNameSettingsPutErrors, ReplaceSettingsLightsLightNameSettingsPutResponses, ReplaceSettingsMotorsMotorNameSettingsPutData, ReplaceSettingsMotorsMotorNameSettingsPutErrors, ReplaceSettingsMotorsMotorNameSettingsPutResponses, ResetCloudProjectCloudProjectsProjectNameDeleteData, ResetCloudProjectCloudProjectsProjectNameDeleteErrors, ResetCloudProjectCloudProjectsProjectNameDeleteResponses, RestartApplicationDevelopRestartPostData, RestartApplicationDevelopRestartPostErrors, RestartApplicationDevelopRestartPostResponses, RestartCameraCamerasCameraNameRestartPostData, RestartCameraCamerasCameraNameRestartPostErrors, RestartCameraCamerasCameraNameRestartPostResponses, ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchData, ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchErrors, ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchResponses, ResumeScanProjectsProjectNameScansScanIndexResumePatchData, ResumeScanProjectsProjectNameScansScanIndexResumePatchErrors, ResumeScanProjectsProjectNameScansScanIndexResumePatchResponses, ResumeTaskTasksTaskIdResumePostData, ResumeTaskTasksTaskIdResumePostErrors, ResumeTaskTasksTaskIdResumePostResponses, SaveDeviceConfigDeviceConfigurationsCurrentPatchData, SaveDeviceConfigDeviceConfigurationsCurrentPatchErrors, SaveDeviceConfigDeviceConfigurationsCurrentPatchResponses, SetConfigFileDeviceConfigurationsCurrentPutData, SetConfigFileDeviceConfigurationsCurrentPutErrors, SetConfigFileDeviceConfigurationsCurrentPutResponses, SetPinGpioPinIdPatchData, SetPinGpioPinIdPatchErrors, SetPinGpioPinIdPatchResponses, ShutdownDeviceShutdownPostData, ShutdownDeviceShutdownPostErrors, ShutdownDeviceShutdownPostResponses, StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostData, StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostErrors, StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostResponses, TailLogsLogsTailGetData, TailLogsLogsTailGetErrors, TailLogsLogsTailGetResponses, ToggleLightLightsLightNameTogglePatchData, ToggleLightLightsLightNameTogglePatchErrors, ToggleLightLightsLightNameTogglePatchResponses, TogglePinGpioPinIdTogglePatchData, TogglePinGpioPinIdTogglePatchErrors, TogglePinGpioPinIdTogglePatchResponses, TurnOffLightLightsLightNameTurnOffPatchData, TurnOffLightLightsLightNameTurnOffPatchErrors, TurnOffLightLightsLightNameTurnOffPatchResponses, TurnOnLightLightsLightNameTurnOnPatchData, TurnOnLightLightsLightNameTurnOnPatchErrors, TurnOnLightLightsLightNameTurnOnPatchResponses, UpdateCloudSettingsCloudSettingsPostData, UpdateCloudSettingsCloudSettingsPostErrors, UpdateCloudSettingsCloudSettingsPostResponses, UpdateSettingsCamerasCameraNameSettingsPatchData, UpdateSettingsCamerasCameraNameSettingsPatchErrors, UpdateSettingsCamerasCameraNameSettingsPatchResponses, UpdateSettingsLightsLightNameSettingsPatchData, UpdateSettingsLightsLightNameSettingsPatchErrors, UpdateSettingsLightsLightNameSettingsPatchResponses, UpdateSettingsMotorsMotorNameSettingsPatchData, UpdateSettingsMotorsMotorNameSettingsPatchErrors, UpdateSettingsMotorsMotorNameSettingsPatchResponses, UploadProjectToCloudProjectsProjectNameUploadPostData, UploadProjectToCloudProjectsProjectNameUploadPostErrors, UploadProjectToCloudProjectsProjectNameUploadPostResponses } from './types.gen';
+import type { AddConfigJsonData, AddConfigJsonErrors, AddConfigJsonResponses, AddScanWithDescriptionData, AddScanWithDescriptionErrors, AddScanWithDescriptionResponses, CancelFocusStackingData, CancelFocusStackingErrors, CancelFocusStackingResponses, CancelScanData, CancelScanErrors, CancelScanResponses, CancelTaskData, CancelTaskErrors, CancelTaskResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CropImageData, CropImageErrors, CropImageResponses, DeletePhotosData, DeletePhotosErrors, DeletePhotosResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteScanData, DeleteScanErrors, DeleteScanResponses, DownloadLogsArchiveData, DownloadLogsArchiveErrors, DownloadLogsArchiveResponses, DownloadProjectData, DownloadProjectErrors, DownloadProjectFromCloudData, DownloadProjectFromCloudErrors, DownloadProjectFromCloudResponses, DownloadProjectResponses, DownloadScansData, DownloadScansErrors, DownloadScansResponses, GetAllTasksData, GetAllTasksErrors, GetAllTasksResponses, GetCameraData, GetCameraErrors, GetCameraNameSettingsData, GetCameraNameSettingsErrors, GetCameraNameSettingsResponses, GetCameraResponses, GetCamerasData, GetCamerasErrors, GetCamerasResponses, GetCloudProjectData, GetCloudProjectErrors, GetCloudProjectResponses, GetCloudSettingsData, GetCloudSettingsErrors, GetCloudSettingsResponses, GetCloudStatusData, GetCloudStatusErrors, GetCloudStatusResponses, GetDeviceInfoData, GetDeviceInfoErrors, GetDeviceInfoResponses, GetLightData, GetLightErrors, GetLightNameSettingsData, GetLightNameSettingsErrors, GetLightNameSettingsResponses, GetLightResponses, GetLightsData, GetLightsErrors, GetLightsResponses, GetMotorData, GetMotorErrors, GetMotorNameSettingsData, GetMotorNameSettingsErrors, GetMotorNameSettingsResponses, GetMotorResponses, GetMotorsData, GetMotorsErrors, GetMotorsResponses, GetPathData, GetPathErrors, GetPathResponses, GetPhotoData, GetPhotoErrors, GetPhotoResponses, GetPinData, GetPinErrors, GetPinResponses, GetPinsData, GetPinsErrors, GetPinsResponses, GetPreviewData, GetPreviewErrors, GetPreviewResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GetProjectsData, GetProjectsErrors, GetProjectsResponses, GetScanData, GetScanErrors, GetScanResponses, GetScanStatusData, GetScanStatusErrors, GetScanStatusResponses, GetSoftwareInfoData, GetSoftwareInfoErrors, GetSoftwareInfoResponses, GetTaskStatusData, GetTaskStatusErrors, GetTaskStatusResponses, HelloWorldAsyncData, HelloWorldAsyncErrors, HelloWorldAsyncResponses, ListCloudProjectsData, ListCloudProjectsErrors, ListCloudProjectsResponses, ListConfigFilesData, ListConfigFilesErrors, ListConfigFilesResponses, MoveMotorByDegreeData, MoveMotorByDegreeErrors, MoveMotorByDegreeResponses, MoveMotorToAngleData, MoveMotorToAngleErrors, MoveMotorToAngleResponses, MoveMotorToHomePositionData, MoveMotorToHomePositionErrors, MoveMotorToHomePositionResponses, MoveToPositionData, MoveToPositionErrors, MoveToPositionResponses, NewProjectData, NewProjectErrors, NewProjectResponses, PauseFocusStackingData, PauseFocusStackingErrors, PauseFocusStackingResponses, PauseScanData, PauseScanErrors, PauseScanResponses, PauseTaskData, PauseTaskErrors, PauseTaskResponses, RebootData, RebootErrors, RebootResponses, ReinitializeHardwareData, ReinitializeHardwareErrors, ReinitializeHardwareResponses, ReplaceCameraNameSettingsData, ReplaceCameraNameSettingsErrors, ReplaceCameraNameSettingsResponses, ReplaceLightNameSettingsData, ReplaceLightNameSettingsErrors, ReplaceLightNameSettingsResponses, ReplaceMotorNameSettingsData, ReplaceMotorNameSettingsErrors, ReplaceMotorNameSettingsResponses, ResetCloudProjectData, ResetCloudProjectErrors, ResetCloudProjectResponses, RestartApplicationData, RestartApplicationErrors, RestartApplicationResponses, RestartCameraData, RestartCameraErrors, RestartCameraResponses, ResumeFocusStackingData, ResumeFocusStackingErrors, ResumeFocusStackingResponses, ResumeScanData, ResumeScanErrors, ResumeScanResponses, ResumeTaskData, ResumeTaskErrors, ResumeTaskResponses, SaveDeviceConfigData, SaveDeviceConfigErrors, SaveDeviceConfigResponses, SetConfigFileData, SetConfigFileErrors, SetConfigFileResponses, SetPinData, SetPinErrors, SetPinResponses, ShutdownData, ShutdownErrors, ShutdownResponses, StartFocusStackingData, StartFocusStackingErrors, StartFocusStackingResponses, TailLogsData, TailLogsErrors, TailLogsResponses, ToggleLightData, ToggleLightErrors, ToggleLightResponses, TogglePinData, TogglePinErrors, TogglePinResponses, TurnOffLightData, TurnOffLightErrors, TurnOffLightResponses, TurnOnLightData, TurnOnLightErrors, TurnOnLightResponses, UpdateCameraNameSettingsData, UpdateCameraNameSettingsErrors, UpdateCameraNameSettingsResponses, UpdateCloudSettingsData, UpdateCloudSettingsErrors, UpdateCloudSettingsResponses, UpdateLightNameSettingsData, UpdateLightNameSettingsErrors, UpdateLightNameSettingsResponses, UpdateMotorNameSettingsData, UpdateMotorNameSettingsErrors, UpdateMotorNameSettingsResponses, UploadProjectToCloudData, UploadProjectToCloudErrors, UploadProjectToCloudResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -26,7 +26,7 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
  * Returns:
  * dict[str, CameraStatusResponse]: A dictionary of camera name to a camera status object
  */
-export const getCamerasCamerasGet = <ThrowOnError extends boolean = false>(options?: Options<GetCamerasCamerasGetData, ThrowOnError>) => (options?.client ?? client).get<GetCamerasCamerasGetResponses, GetCamerasCamerasGetErrors, ThrowOnError>({ url: '/cameras/', ...options });
+export const getCameras = <ThrowOnError extends boolean = false>(options?: Options<GetCamerasData, ThrowOnError>) => (options?.client ?? client).get<GetCamerasResponses, GetCamerasErrors, ThrowOnError>({ url: '/cameras/', ...options });
 
 /**
  * Get Camera
@@ -39,7 +39,7 @@ export const getCamerasCamerasGet = <ThrowOnError extends boolean = false>(optio
  * Returns:
  * CameraStatusResponse: A response object containing the status of the camera
  */
-export const getCameraCamerasCameraNameGet = <ThrowOnError extends boolean = false>(options: Options<GetCameraCamerasCameraNameGetData, ThrowOnError>) => (options.client ?? client).get<GetCameraCamerasCameraNameGetResponses, GetCameraCamerasCameraNameGetErrors, ThrowOnError>({ url: '/cameras/{camera_name}', ...options });
+export const getCamera = <ThrowOnError extends boolean = false>(options: Options<GetCameraData, ThrowOnError>) => (options.client ?? client).get<GetCameraResponses, GetCameraErrors, ThrowOnError>({ url: '/cameras/{camera_name}', ...options });
 
 /**
  * Get Preview
@@ -52,7 +52,7 @@ export const getCameraCamerasCameraNameGet = <ThrowOnError extends boolean = fal
  * Returns:
  * StreamingResponse: A streaming response containing the preview stream
  */
-export const getPreviewCamerasCameraNamePreviewGet = <ThrowOnError extends boolean = false>(options: Options<GetPreviewCamerasCameraNamePreviewGetData, ThrowOnError>) => (options.client ?? client).get<GetPreviewCamerasCameraNamePreviewGetResponses, GetPreviewCamerasCameraNamePreviewGetErrors, ThrowOnError>({ url: '/cameras/{camera_name}/preview', ...options });
+export const getPreview = <ThrowOnError extends boolean = false>(options: Options<GetPreviewData, ThrowOnError>) => (options.client ?? client).get<GetPreviewResponses, GetPreviewErrors, ThrowOnError>({ url: '/cameras/{camera_name}/preview', ...options });
 
 /**
  * Get Photo
@@ -65,7 +65,7 @@ export const getPreviewCamerasCameraNamePreviewGet = <ThrowOnError extends boole
  * Returns:
  * Response: A response containing the photo
  */
-export const getPhotoCamerasCameraNamePhotoGet = <ThrowOnError extends boolean = false>(options: Options<GetPhotoCamerasCameraNamePhotoGetData, ThrowOnError>) => (options.client ?? client).get<GetPhotoCamerasCameraNamePhotoGetResponses, GetPhotoCamerasCameraNamePhotoGetErrors, ThrowOnError>({ url: '/cameras/{camera_name}/photo', ...options });
+export const getPhoto = <ThrowOnError extends boolean = false>(options: Options<GetPhotoData, ThrowOnError>) => (options.client ?? client).get<GetPhotoResponses, GetPhotoErrors, ThrowOnError>({ url: '/cameras/{camera_name}/photo', ...options });
 
 /**
  * Restart Camera
@@ -78,17 +78,17 @@ export const getPhotoCamerasCameraNamePhotoGet = <ThrowOnError extends boolean =
  * Returns:
  * Response: A response containing the status code
  */
-export const restartCameraCamerasCameraNameRestartPost = <ThrowOnError extends boolean = false>(options: Options<RestartCameraCamerasCameraNameRestartPostData, ThrowOnError>) => (options.client ?? client).post<RestartCameraCamerasCameraNameRestartPostResponses, RestartCameraCamerasCameraNameRestartPostErrors, ThrowOnError>({ url: '/cameras/{camera_name}/restart', ...options });
+export const restartCamera = <ThrowOnError extends boolean = false>(options: Options<RestartCameraData, ThrowOnError>) => (options.client ?? client).post<RestartCameraResponses, RestartCameraErrors, ThrowOnError>({ url: '/cameras/{camera_name}/restart', ...options });
 
 /**
- * Get Settings
+ * Get Camera Name Settings
  *
  * Get settings for a specific resource
  */
-export const getSettingsCamerasCameraNameSettingsGet = <ThrowOnError extends boolean = false>(options: Options<GetSettingsCamerasCameraNameSettingsGetData, ThrowOnError>) => (options.client ?? client).get<GetSettingsCamerasCameraNameSettingsGetResponses, GetSettingsCamerasCameraNameSettingsGetErrors, ThrowOnError>({ url: '/cameras/{camera_name}/settings', ...options });
+export const getCameraNameSettings = <ThrowOnError extends boolean = false>(options: Options<GetCameraNameSettingsData, ThrowOnError>) => (options.client ?? client).get<GetCameraNameSettingsResponses, GetCameraNameSettingsErrors, ThrowOnError>({ url: '/cameras/{camera_name}/settings', ...options });
 
 /**
- * Update Settings
+ * Update Camera Name Settings
  *
  * Update one or more specific settings for a resource
  *
@@ -99,7 +99,7 @@ export const getSettingsCamerasCameraNameSettingsGet = <ThrowOnError extends boo
  * Returns:
  * The updated settings for the resource
  */
-export const updateSettingsCamerasCameraNameSettingsPatch = <ThrowOnError extends boolean = false>(options: Options<UpdateSettingsCamerasCameraNameSettingsPatchData, ThrowOnError>) => (options.client ?? client).patch<UpdateSettingsCamerasCameraNameSettingsPatchResponses, UpdateSettingsCamerasCameraNameSettingsPatchErrors, ThrowOnError>({
+export const updateCameraNameSettings = <ThrowOnError extends boolean = false>(options: Options<UpdateCameraNameSettingsData, ThrowOnError>) => (options.client ?? client).patch<UpdateCameraNameSettingsResponses, UpdateCameraNameSettingsErrors, ThrowOnError>({
     url: '/cameras/{camera_name}/settings',
     ...options,
     headers: {
@@ -109,7 +109,7 @@ export const updateSettingsCamerasCameraNameSettingsPatch = <ThrowOnError extend
 });
 
 /**
- * Replace Settings
+ * Replace Camera Name Settings
  *
  * Replace all settings for a specific resource
  *
@@ -120,7 +120,7 @@ export const updateSettingsCamerasCameraNameSettingsPatch = <ThrowOnError extend
  * Returns:
  * The updated settings for the resource
  */
-export const replaceSettingsCamerasCameraNameSettingsPut = <ThrowOnError extends boolean = false>(options: Options<ReplaceSettingsCamerasCameraNameSettingsPutData, ThrowOnError>) => (options.client ?? client).put<ReplaceSettingsCamerasCameraNameSettingsPutResponses, ReplaceSettingsCamerasCameraNameSettingsPutErrors, ThrowOnError>({ url: '/cameras/{camera_name}/settings', ...options });
+export const replaceCameraNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceCameraNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceCameraNameSettingsResponses, ReplaceCameraNameSettingsErrors, ThrowOnError>({ url: '/cameras/{camera_name}/settings', ...options });
 
 /**
  * Get Motors
@@ -130,7 +130,7 @@ export const replaceSettingsCamerasCameraNameSettingsPut = <ThrowOnError extends
  * Returns:
  * dict[str, MotorStatusResponse]: A dictionary of motor name to a motor status object
  */
-export const getMotorsMotorsGet = <ThrowOnError extends boolean = false>(options?: Options<GetMotorsMotorsGetData, ThrowOnError>) => (options?.client ?? client).get<GetMotorsMotorsGetResponses, GetMotorsMotorsGetErrors, ThrowOnError>({ url: '/motors/', ...options });
+export const getMotors = <ThrowOnError extends boolean = false>(options?: Options<GetMotorsData, ThrowOnError>) => (options?.client ?? client).get<GetMotorsResponses, GetMotorsErrors, ThrowOnError>({ url: '/motors/', ...options });
 
 /**
  * Get Motor
@@ -143,7 +143,7 @@ export const getMotorsMotorsGet = <ThrowOnError extends boolean = false>(options
  * Returns:
  * MotorStatusResponse: A response object containing the status of the motor
  */
-export const getMotorMotorsMotorNameGet = <ThrowOnError extends boolean = false>(options: Options<GetMotorMotorsMotorNameGetData, ThrowOnError>) => (options.client ?? client).get<GetMotorMotorsMotorNameGetResponses, GetMotorMotorsMotorNameGetErrors, ThrowOnError>({ url: '/motors/{motor_name}', ...options });
+export const getMotor = <ThrowOnError extends boolean = false>(options: Options<GetMotorData, ThrowOnError>) => (options.client ?? client).get<GetMotorResponses, GetMotorErrors, ThrowOnError>({ url: '/motors/{motor_name}', ...options });
 
 /**
  * Move Motor By Degree
@@ -157,7 +157,7 @@ export const getMotorMotorsMotorNameGet = <ThrowOnError extends boolean = false>
  * Returns:
  * MotorStatusResponse: A response object containing the status of the motor after the move
  */
-export const moveMotorByDegreeMotorsMotorNameAnglePatch = <ThrowOnError extends boolean = false>(options: Options<MoveMotorByDegreeMotorsMotorNameAnglePatchData, ThrowOnError>) => (options.client ?? client).patch<MoveMotorByDegreeMotorsMotorNameAnglePatchResponses, MoveMotorByDegreeMotorsMotorNameAnglePatchErrors, ThrowOnError>({
+export const moveMotorByDegree = <ThrowOnError extends boolean = false>(options: Options<MoveMotorByDegreeData, ThrowOnError>) => (options.client ?? client).patch<MoveMotorByDegreeResponses, MoveMotorByDegreeErrors, ThrowOnError>({
     url: '/motors/{motor_name}/angle',
     ...options,
     headers: {
@@ -178,7 +178,7 @@ export const moveMotorByDegreeMotorsMotorNameAnglePatch = <ThrowOnError extends 
  * Returns:
  * MotorStatusResponse: A response object containing the status of the motor after the move
  */
-export const moveMotorToAngleMotorsMotorNameAnglePut = <ThrowOnError extends boolean = false>(options: Options<MoveMotorToAngleMotorsMotorNameAnglePutData, ThrowOnError>) => (options.client ?? client).put<MoveMotorToAngleMotorsMotorNameAnglePutResponses, MoveMotorToAngleMotorsMotorNameAnglePutErrors, ThrowOnError>({ url: '/motors/{motor_name}/angle', ...options });
+export const moveMotorToAngle = <ThrowOnError extends boolean = false>(options: Options<MoveMotorToAngleData, ThrowOnError>) => (options.client ?? client).put<MoveMotorToAngleResponses, MoveMotorToAngleErrors, ThrowOnError>({ url: '/motors/{motor_name}/angle', ...options });
 
 /**
  * Move Motor To Home Position
@@ -193,17 +193,17 @@ export const moveMotorToAngleMotorsMotorNameAnglePut = <ThrowOnError extends boo
  * Returns:
  * MotorStatusResponse: A response object containing the status of the motor after the move
  */
-export const moveMotorToHomePositionMotorsMotorNameEndstopCalibrationPut = <ThrowOnError extends boolean = false>(options: Options<MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutData, ThrowOnError>) => (options.client ?? client).put<MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutResponses, MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutErrors, ThrowOnError>({ url: '/motors/{motor_name}/endstop-calibration', ...options });
+export const moveMotorToHomePosition = <ThrowOnError extends boolean = false>(options: Options<MoveMotorToHomePositionData, ThrowOnError>) => (options.client ?? client).put<MoveMotorToHomePositionResponses, MoveMotorToHomePositionErrors, ThrowOnError>({ url: '/motors/{motor_name}/endstop-calibration', ...options });
 
 /**
- * Get Settings
+ * Get Motor Name Settings
  *
  * Get settings for a specific resource
  */
-export const getSettingsMotorsMotorNameSettingsGet = <ThrowOnError extends boolean = false>(options: Options<GetSettingsMotorsMotorNameSettingsGetData, ThrowOnError>) => (options.client ?? client).get<GetSettingsMotorsMotorNameSettingsGetResponses, GetSettingsMotorsMotorNameSettingsGetErrors, ThrowOnError>({ url: '/motors/{motor_name}/settings', ...options });
+export const getMotorNameSettings = <ThrowOnError extends boolean = false>(options: Options<GetMotorNameSettingsData, ThrowOnError>) => (options.client ?? client).get<GetMotorNameSettingsResponses, GetMotorNameSettingsErrors, ThrowOnError>({ url: '/motors/{motor_name}/settings', ...options });
 
 /**
- * Update Settings
+ * Update Motor Name Settings
  *
  * Update one or more specific settings for a resource
  *
@@ -214,7 +214,7 @@ export const getSettingsMotorsMotorNameSettingsGet = <ThrowOnError extends boole
  * Returns:
  * The updated settings for the resource
  */
-export const updateSettingsMotorsMotorNameSettingsPatch = <ThrowOnError extends boolean = false>(options: Options<UpdateSettingsMotorsMotorNameSettingsPatchData, ThrowOnError>) => (options.client ?? client).patch<UpdateSettingsMotorsMotorNameSettingsPatchResponses, UpdateSettingsMotorsMotorNameSettingsPatchErrors, ThrowOnError>({
+export const updateMotorNameSettings = <ThrowOnError extends boolean = false>(options: Options<UpdateMotorNameSettingsData, ThrowOnError>) => (options.client ?? client).patch<UpdateMotorNameSettingsResponses, UpdateMotorNameSettingsErrors, ThrowOnError>({
     url: '/motors/{motor_name}/settings',
     ...options,
     headers: {
@@ -224,7 +224,7 @@ export const updateSettingsMotorsMotorNameSettingsPatch = <ThrowOnError extends 
 });
 
 /**
- * Replace Settings
+ * Replace Motor Name Settings
  *
  * Replace all settings for a specific resource
  *
@@ -235,7 +235,7 @@ export const updateSettingsMotorsMotorNameSettingsPatch = <ThrowOnError extends 
  * Returns:
  * The updated settings for the resource
  */
-export const replaceSettingsMotorsMotorNameSettingsPut = <ThrowOnError extends boolean = false>(options: Options<ReplaceSettingsMotorsMotorNameSettingsPutData, ThrowOnError>) => (options.client ?? client).put<ReplaceSettingsMotorsMotorNameSettingsPutResponses, ReplaceSettingsMotorsMotorNameSettingsPutErrors, ThrowOnError>({ url: '/motors/{motor_name}/settings', ...options });
+export const replaceMotorNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceMotorNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceMotorNameSettingsResponses, ReplaceMotorNameSettingsErrors, ThrowOnError>({ url: '/motors/{motor_name}/settings', ...options });
 
 /**
  * Get Lights
@@ -245,7 +245,7 @@ export const replaceSettingsMotorsMotorNameSettingsPut = <ThrowOnError extends b
  * Returns:
  * dict[str, LightStatusResponse]: A dictionary of light name to a light status object
  */
-export const getLightsLightsGet = <ThrowOnError extends boolean = false>(options?: Options<GetLightsLightsGetData, ThrowOnError>) => (options?.client ?? client).get<GetLightsLightsGetResponses, GetLightsLightsGetErrors, ThrowOnError>({ url: '/lights/', ...options });
+export const getLights = <ThrowOnError extends boolean = false>(options?: Options<GetLightsData, ThrowOnError>) => (options?.client ?? client).get<GetLightsResponses, GetLightsErrors, ThrowOnError>({ url: '/lights/', ...options });
 
 /**
  * Get Light
@@ -258,7 +258,7 @@ export const getLightsLightsGet = <ThrowOnError extends boolean = false>(options
  * Returns:
  * LightStatusResponse: A response object containing the status of the light
  */
-export const getLightLightsLightNameGet = <ThrowOnError extends boolean = false>(options: Options<GetLightLightsLightNameGetData, ThrowOnError>) => (options.client ?? client).get<GetLightLightsLightNameGetResponses, GetLightLightsLightNameGetErrors, ThrowOnError>({ url: '/lights/{light_name}', ...options });
+export const getLight = <ThrowOnError extends boolean = false>(options: Options<GetLightData, ThrowOnError>) => (options.client ?? client).get<GetLightResponses, GetLightErrors, ThrowOnError>({ url: '/lights/{light_name}', ...options });
 
 /**
  * Turn On Light
@@ -271,7 +271,7 @@ export const getLightLightsLightNameGet = <ThrowOnError extends boolean = false>
  * Returns:
  * LightStatusResponse: A response object containing the status of the light after the turn on operation
  */
-export const turnOnLightLightsLightNameTurnOnPatch = <ThrowOnError extends boolean = false>(options: Options<TurnOnLightLightsLightNameTurnOnPatchData, ThrowOnError>) => (options.client ?? client).patch<TurnOnLightLightsLightNameTurnOnPatchResponses, TurnOnLightLightsLightNameTurnOnPatchErrors, ThrowOnError>({ url: '/lights/{light_name}/turn_on', ...options });
+export const turnOnLight = <ThrowOnError extends boolean = false>(options: Options<TurnOnLightData, ThrowOnError>) => (options.client ?? client).patch<TurnOnLightResponses, TurnOnLightErrors, ThrowOnError>({ url: '/lights/{light_name}/turn_on', ...options });
 
 /**
  * Turn Off Light
@@ -284,7 +284,7 @@ export const turnOnLightLightsLightNameTurnOnPatch = <ThrowOnError extends boole
  * Returns:
  * LightStatusResponse: A response object containing the status of the light after the turn off operation
  */
-export const turnOffLightLightsLightNameTurnOffPatch = <ThrowOnError extends boolean = false>(options: Options<TurnOffLightLightsLightNameTurnOffPatchData, ThrowOnError>) => (options.client ?? client).patch<TurnOffLightLightsLightNameTurnOffPatchResponses, TurnOffLightLightsLightNameTurnOffPatchErrors, ThrowOnError>({ url: '/lights/{light_name}/turn_off', ...options });
+export const turnOffLight = <ThrowOnError extends boolean = false>(options: Options<TurnOffLightData, ThrowOnError>) => (options.client ?? client).patch<TurnOffLightResponses, TurnOffLightErrors, ThrowOnError>({ url: '/lights/{light_name}/turn_off', ...options });
 
 /**
  * Toggle Light
@@ -297,17 +297,17 @@ export const turnOffLightLightsLightNameTurnOffPatch = <ThrowOnError extends boo
  * Returns:
  * LightStatusResponse: A response object containing the status of the light after the toggle operation
  */
-export const toggleLightLightsLightNameTogglePatch = <ThrowOnError extends boolean = false>(options: Options<ToggleLightLightsLightNameTogglePatchData, ThrowOnError>) => (options.client ?? client).patch<ToggleLightLightsLightNameTogglePatchResponses, ToggleLightLightsLightNameTogglePatchErrors, ThrowOnError>({ url: '/lights/{light_name}/toggle', ...options });
+export const toggleLight = <ThrowOnError extends boolean = false>(options: Options<ToggleLightData, ThrowOnError>) => (options.client ?? client).patch<ToggleLightResponses, ToggleLightErrors, ThrowOnError>({ url: '/lights/{light_name}/toggle', ...options });
 
 /**
- * Get Settings
+ * Get Light Name Settings
  *
  * Get settings for a specific resource
  */
-export const getSettingsLightsLightNameSettingsGet = <ThrowOnError extends boolean = false>(options: Options<GetSettingsLightsLightNameSettingsGetData, ThrowOnError>) => (options.client ?? client).get<GetSettingsLightsLightNameSettingsGetResponses, GetSettingsLightsLightNameSettingsGetErrors, ThrowOnError>({ url: '/lights/{light_name}/settings', ...options });
+export const getLightNameSettings = <ThrowOnError extends boolean = false>(options: Options<GetLightNameSettingsData, ThrowOnError>) => (options.client ?? client).get<GetLightNameSettingsResponses, GetLightNameSettingsErrors, ThrowOnError>({ url: '/lights/{light_name}/settings', ...options });
 
 /**
- * Update Settings
+ * Update Light Name Settings
  *
  * Update one or more specific settings for a resource
  *
@@ -318,7 +318,7 @@ export const getSettingsLightsLightNameSettingsGet = <ThrowOnError extends boole
  * Returns:
  * The updated settings for the resource
  */
-export const updateSettingsLightsLightNameSettingsPatch = <ThrowOnError extends boolean = false>(options: Options<UpdateSettingsLightsLightNameSettingsPatchData, ThrowOnError>) => (options.client ?? client).patch<UpdateSettingsLightsLightNameSettingsPatchResponses, UpdateSettingsLightsLightNameSettingsPatchErrors, ThrowOnError>({
+export const updateLightNameSettings = <ThrowOnError extends boolean = false>(options: Options<UpdateLightNameSettingsData, ThrowOnError>) => (options.client ?? client).patch<UpdateLightNameSettingsResponses, UpdateLightNameSettingsErrors, ThrowOnError>({
     url: '/lights/{light_name}/settings',
     ...options,
     headers: {
@@ -328,7 +328,7 @@ export const updateSettingsLightsLightNameSettingsPatch = <ThrowOnError extends 
 });
 
 /**
- * Replace Settings
+ * Replace Light Name Settings
  *
  * Replace all settings for a specific resource
  *
@@ -339,7 +339,7 @@ export const updateSettingsLightsLightNameSettingsPatch = <ThrowOnError extends 
  * Returns:
  * The updated settings for the resource
  */
-export const replaceSettingsLightsLightNameSettingsPut = <ThrowOnError extends boolean = false>(options: Options<ReplaceSettingsLightsLightNameSettingsPutData, ThrowOnError>) => (options.client ?? client).put<ReplaceSettingsLightsLightNameSettingsPutResponses, ReplaceSettingsLightsLightNameSettingsPutErrors, ThrowOnError>({ url: '/lights/{light_name}/settings', ...options });
+export const replaceLightNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceLightNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceLightNameSettingsResponses, ReplaceLightNameSettingsErrors, ThrowOnError>({ url: '/lights/{light_name}/settings', ...options });
 
 /**
  * Get Projects
@@ -349,7 +349,7 @@ export const replaceSettingsLightsLightNameSettingsPut = <ThrowOnError extends b
  * Returns:
  * dict[str, Project]: A dictionary of project name to a project object
  */
-export const getProjectsProjectsGet = <ThrowOnError extends boolean = false>(options?: Options<GetProjectsProjectsGetData, ThrowOnError>) => (options?.client ?? client).get<GetProjectsProjectsGetResponses, GetProjectsProjectsGetErrors, ThrowOnError>({ url: '/projects/', ...options });
+export const getProjects = <ThrowOnError extends boolean = false>(options?: Options<GetProjectsData, ThrowOnError>) => (options?.client ?? client).get<GetProjectsResponses, GetProjectsErrors, ThrowOnError>({ url: '/projects/', ...options });
 
 /**
  * Delete Project
@@ -362,7 +362,7 @@ export const getProjectsProjectsGet = <ThrowOnError extends boolean = false>(opt
  * Returns:
  * DeleteResponse: A response object containing the result of the deletion
  */
-export const deleteProjectProjectsProjectNameDelete = <ThrowOnError extends boolean = false>(options: Options<DeleteProjectProjectsProjectNameDeleteData, ThrowOnError>) => (options.client ?? client).delete<DeleteProjectProjectsProjectNameDeleteResponses, DeleteProjectProjectsProjectNameDeleteErrors, ThrowOnError>({ url: '/projects/{project_name}', ...options });
+export const deleteProject = <ThrowOnError extends boolean = false>(options: Options<DeleteProjectData, ThrowOnError>) => (options.client ?? client).delete<DeleteProjectResponses, DeleteProjectErrors, ThrowOnError>({ url: '/projects/{project_name}', ...options });
 
 /**
  * Get Project
@@ -375,7 +375,7 @@ export const deleteProjectProjectsProjectNameDelete = <ThrowOnError extends bool
  * Returns:
  * Project: The project object if found, None if not
  */
-export const getProjectProjectsProjectNameGet = <ThrowOnError extends boolean = false>(options: Options<GetProjectProjectsProjectNameGetData, ThrowOnError>) => (options.client ?? client).get<GetProjectProjectsProjectNameGetResponses, GetProjectProjectsProjectNameGetErrors, ThrowOnError>({ url: '/projects/{project_name}', ...options });
+export const getProject = <ThrowOnError extends boolean = false>(options: Options<GetProjectData, ThrowOnError>) => (options.client ?? client).get<GetProjectResponses, GetProjectErrors, ThrowOnError>({ url: '/projects/{project_name}', ...options });
 
 /**
  * New Project
@@ -389,7 +389,7 @@ export const getProjectProjectsProjectNameGet = <ThrowOnError extends boolean = 
  * Returns:
  * Project: The newly created project if successful, None if not
  */
-export const newProjectProjectsProjectNamePost = <ThrowOnError extends boolean = false>(options: Options<NewProjectProjectsProjectNamePostData, ThrowOnError>) => (options.client ?? client).post<NewProjectProjectsProjectNamePostResponses, NewProjectProjectsProjectNamePostErrors, ThrowOnError>({ url: '/projects/{project_name}', ...options });
+export const newProject = <ThrowOnError extends boolean = false>(options: Options<NewProjectData, ThrowOnError>) => (options.client ?? client).post<NewProjectResponses, NewProjectErrors, ThrowOnError>({ url: '/projects/{project_name}', ...options });
 
 /**
  * Add Scan With Description
@@ -405,7 +405,7 @@ export const newProjectProjectsProjectNamePost = <ThrowOnError extends boolean =
  * Returns:
  * Task: The Task representing the started scan
  */
-export const addScanWithDescriptionProjectsProjectNameScanPost = <ThrowOnError extends boolean = false>(options: Options<AddScanWithDescriptionProjectsProjectNameScanPostData, ThrowOnError>) => (options.client ?? client).post<AddScanWithDescriptionProjectsProjectNameScanPostResponses, AddScanWithDescriptionProjectsProjectNameScanPostErrors, ThrowOnError>({
+export const addScanWithDescription = <ThrowOnError extends boolean = false>(options: Options<AddScanWithDescriptionData, ThrowOnError>) => (options.client ?? client).post<AddScanWithDescriptionResponses, AddScanWithDescriptionErrors, ThrowOnError>({
     url: '/projects/{project_name}/scan',
     ...options,
     headers: {
@@ -426,7 +426,7 @@ export const addScanWithDescriptionProjectsProjectNameScanPost = <ThrowOnError e
  * Returns:
  * Task: The TaskManager model describing the scheduled upload
  */
-export const uploadProjectToCloudProjectsProjectNameUploadPost = <ThrowOnError extends boolean = false>(options: Options<UploadProjectToCloudProjectsProjectNameUploadPostData, ThrowOnError>) => (options.client ?? client).post<UploadProjectToCloudProjectsProjectNameUploadPostResponses, UploadProjectToCloudProjectsProjectNameUploadPostErrors, ThrowOnError>({ url: '/projects/{project_name}/upload', ...options });
+export const uploadProjectToCloud = <ThrowOnError extends boolean = false>(options: Options<UploadProjectToCloudData, ThrowOnError>) => (options.client ?? client).post<UploadProjectToCloudResponses, UploadProjectToCloudErrors, ThrowOnError>({ url: '/projects/{project_name}/upload', ...options });
 
 /**
  * Download Project From Cloud
@@ -441,7 +441,7 @@ export const uploadProjectToCloudProjectsProjectNameUploadPost = <ThrowOnError e
  * Returns:
  * Task: The TaskManager model describing the scheduled download
  */
-export const downloadProjectFromCloudProjectsProjectNameDownloadPost = <ThrowOnError extends boolean = false>(options: Options<DownloadProjectFromCloudProjectsProjectNameDownloadPostData, ThrowOnError>) => (options.client ?? client).post<DownloadProjectFromCloudProjectsProjectNameDownloadPostResponses, DownloadProjectFromCloudProjectsProjectNameDownloadPostErrors, ThrowOnError>({ url: '/projects/{project_name}/download', ...options });
+export const downloadProjectFromCloud = <ThrowOnError extends boolean = false>(options: Options<DownloadProjectFromCloudData, ThrowOnError>) => (options.client ?? client).post<DownloadProjectFromCloudResponses, DownloadProjectFromCloudErrors, ThrowOnError>({ url: '/projects/{project_name}/download', ...options });
 
 /**
  * Delete Photos
@@ -456,7 +456,7 @@ export const downloadProjectFromCloudProjectsProjectNameDownloadPost = <ThrowOnE
  * Returns:
  * True if the photos were deleted successfully, False otherwise
  */
-export const deletePhotosProjectsProjectNameScanIndexDelete = <ThrowOnError extends boolean = false>(options: Options<DeletePhotosProjectsProjectNameScanIndexDeleteData, ThrowOnError>) => (options.client ?? client).delete<DeletePhotosProjectsProjectNameScanIndexDeleteResponses, DeletePhotosProjectsProjectNameScanIndexDeleteErrors, ThrowOnError>({
+export const deletePhotos = <ThrowOnError extends boolean = false>(options: Options<DeletePhotosData, ThrowOnError>) => (options.client ?? client).delete<DeletePhotosResponses, DeletePhotosErrors, ThrowOnError>({
     url: '/projects/{project_name}/{scan_index}/',
     ...options,
     headers: {
@@ -477,7 +477,7 @@ export const deletePhotosProjectsProjectNameScanIndexDelete = <ThrowOnError exte
  * Returns:
  * DeleteResponse: Result of the deletion operation
  */
-export const deleteScanProjectsProjectNameScansDelete = <ThrowOnError extends boolean = false>(options: Options<DeleteScanProjectsProjectNameScansDeleteData, ThrowOnError>) => (options.client ?? client).delete<DeleteScanProjectsProjectNameScansDeleteResponses, DeleteScanProjectsProjectNameScansDeleteErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/', ...options });
+export const deleteScan = <ThrowOnError extends boolean = false>(options: Options<DeleteScanData, ThrowOnError>) => (options.client ?? client).delete<DeleteScanResponses, DeleteScanErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/', ...options });
 
 /**
  * Get Scan Status
@@ -491,7 +491,7 @@ export const deleteScanProjectsProjectNameScansDelete = <ThrowOnError extends bo
  * Returns:
  * Task: The task representing the scan execution
  */
-export const getScanStatusProjectsProjectNameScansScanIndexStatusGet = <ThrowOnError extends boolean = false>(options: Options<GetScanStatusProjectsProjectNameScansScanIndexStatusGetData, ThrowOnError>) => (options.client ?? client).get<GetScanStatusProjectsProjectNameScansScanIndexStatusGetResponses, GetScanStatusProjectsProjectNameScansScanIndexStatusGetErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/status', ...options });
+export const getScanStatus = <ThrowOnError extends boolean = false>(options: Options<GetScanStatusData, ThrowOnError>) => (options.client ?? client).get<GetScanStatusResponses, GetScanStatusErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/status', ...options });
 
 /**
  * Pause Scan
@@ -505,7 +505,7 @@ export const getScanStatusProjectsProjectNameScansScanIndexStatusGet = <ThrowOnE
  * Returns:
  * Task: The updated task state
  */
-export const pauseScanProjectsProjectNameScansScanIndexPausePatch = <ThrowOnError extends boolean = false>(options: Options<PauseScanProjectsProjectNameScansScanIndexPausePatchData, ThrowOnError>) => (options.client ?? client).patch<PauseScanProjectsProjectNameScansScanIndexPausePatchResponses, PauseScanProjectsProjectNameScansScanIndexPausePatchErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/pause', ...options });
+export const pauseScan = <ThrowOnError extends boolean = false>(options: Options<PauseScanData, ThrowOnError>) => (options.client ?? client).patch<PauseScanResponses, PauseScanErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/pause', ...options });
 
 /**
  * Resume Scan
@@ -520,7 +520,7 @@ export const pauseScanProjectsProjectNameScansScanIndexPausePatch = <ThrowOnErro
  * Returns:
  * Task: The resumed or restarted task
  */
-export const resumeScanProjectsProjectNameScansScanIndexResumePatch = <ThrowOnError extends boolean = false>(options: Options<ResumeScanProjectsProjectNameScansScanIndexResumePatchData, ThrowOnError>) => (options.client ?? client).patch<ResumeScanProjectsProjectNameScansScanIndexResumePatchResponses, ResumeScanProjectsProjectNameScansScanIndexResumePatchErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/resume', ...options });
+export const resumeScan = <ThrowOnError extends boolean = false>(options: Options<ResumeScanData, ThrowOnError>) => (options.client ?? client).patch<ResumeScanResponses, ResumeScanErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/resume', ...options });
 
 /**
  * Cancel Scan
@@ -534,7 +534,7 @@ export const resumeScanProjectsProjectNameScansScanIndexResumePatch = <ThrowOnEr
  * Returns:
  * Task: The updated task state
  */
-export const cancelScanProjectsProjectNameScansScanIndexCancelPatch = <ThrowOnError extends boolean = false>(options: Options<CancelScanProjectsProjectNameScansScanIndexCancelPatchData, ThrowOnError>) => (options.client ?? client).patch<CancelScanProjectsProjectNameScansScanIndexCancelPatchResponses, CancelScanProjectsProjectNameScansScanIndexCancelPatchErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/cancel', ...options });
+export const cancelScan = <ThrowOnError extends boolean = false>(options: Options<CancelScanData, ThrowOnError>) => (options.client ?? client).patch<CancelScanResponses, CancelScanErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/cancel', ...options });
 
 /**
  * Download Project
@@ -550,7 +550,7 @@ export const cancelScanProjectsProjectNameScansScanIndexCancelPatch = <ThrowOnEr
  * Returns:
  * StreamingResponse: ZIP file stream
  */
-export const downloadProjectProjectsProjectNameZipGet = <ThrowOnError extends boolean = false>(options: Options<DownloadProjectProjectsProjectNameZipGetData, ThrowOnError>) => (options.client ?? client).get<DownloadProjectProjectsProjectNameZipGetResponses, DownloadProjectProjectsProjectNameZipGetErrors, ThrowOnError>({ url: '/projects/{project_name}/zip', ...options });
+export const downloadProject = <ThrowOnError extends boolean = false>(options: Options<DownloadProjectData, ThrowOnError>) => (options.client ?? client).get<DownloadProjectResponses, DownloadProjectErrors, ThrowOnError>({ url: '/projects/{project_name}/zip', ...options });
 
 /**
  * Download Scans
@@ -567,7 +567,7 @@ export const downloadProjectProjectsProjectNameZipGet = <ThrowOnError extends bo
  * Returns:
  * StreamingResponse: ZIP file stream
  */
-export const downloadScansProjectsProjectNameScansZipGet = <ThrowOnError extends boolean = false>(options: Options<DownloadScansProjectsProjectNameScansZipGetData, ThrowOnError>) => (options.client ?? client).get<DownloadScansProjectsProjectNameScansZipGetResponses, DownloadScansProjectsProjectNameScansZipGetErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/zip', ...options });
+export const downloadScans = <ThrowOnError extends boolean = false>(options: Options<DownloadScansData, ThrowOnError>) => (options.client ?? client).get<DownloadScansResponses, DownloadScansErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/zip', ...options });
 
 /**
  * Get Scan
@@ -581,7 +581,7 @@ export const downloadScansProjectsProjectNameScansZipGet = <ThrowOnError extends
  * Returns:
  * Scan: The scan object
  */
-export const getScanProjectsProjectNameScansScanIndexGet = <ThrowOnError extends boolean = false>(options: Options<GetScanProjectsProjectNameScansScanIndexGetData, ThrowOnError>) => (options.client ?? client).get<GetScanProjectsProjectNameScansScanIndexGetResponses, GetScanProjectsProjectNameScansScanIndexGetErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}', ...options });
+export const getScan = <ThrowOnError extends boolean = false>(options: Options<GetScanData, ThrowOnError>) => (options.client ?? client).get<GetScanResponses, GetScanErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}', ...options });
 
 /**
  * Get Pins
@@ -591,7 +591,7 @@ export const getScanProjectsProjectNameScansScanIndexGet = <ThrowOnError extends
  * Returns:
  * dict[str, list[int]]: A dictionary of initialized output pins and buttons
  */
-export const getPinsGpioGet = <ThrowOnError extends boolean = false>(options?: Options<GetPinsGpioGetData, ThrowOnError>) => (options?.client ?? client).get<GetPinsGpioGetResponses, GetPinsGpioGetErrors, ThrowOnError>({ url: '/gpio/', ...options });
+export const getPins = <ThrowOnError extends boolean = false>(options?: Options<GetPinsData, ThrowOnError>) => (options?.client ?? client).get<GetPinsResponses, GetPinsErrors, ThrowOnError>({ url: '/gpio/', ...options });
 
 /**
  * Get Pin
@@ -604,7 +604,7 @@ export const getPinsGpioGet = <ThrowOnError extends boolean = false>(options?: O
  * Returns:
  * bool: The output value of the GPIO pin
  */
-export const getPinGpioPinIdGet = <ThrowOnError extends boolean = false>(options: Options<GetPinGpioPinIdGetData, ThrowOnError>) => (options.client ?? client).get<GetPinGpioPinIdGetResponses, GetPinGpioPinIdGetErrors, ThrowOnError>({ url: '/gpio/{pin_id}', ...options });
+export const getPin = <ThrowOnError extends boolean = false>(options: Options<GetPinData, ThrowOnError>) => (options.client ?? client).get<GetPinResponses, GetPinErrors, ThrowOnError>({ url: '/gpio/{pin_id}', ...options });
 
 /**
  * Set Pin
@@ -615,7 +615,7 @@ export const getPinGpioPinIdGet = <ThrowOnError extends boolean = false>(options
  * pin_id: The ID (int) of the GPIO pin to set the value of
  * status: The output value to set for the GPIO pin
  */
-export const setPinGpioPinIdPatch = <ThrowOnError extends boolean = false>(options: Options<SetPinGpioPinIdPatchData, ThrowOnError>) => (options.client ?? client).patch<SetPinGpioPinIdPatchResponses, SetPinGpioPinIdPatchErrors, ThrowOnError>({ url: '/gpio/{pin_id}', ...options });
+export const setPin = <ThrowOnError extends boolean = false>(options: Options<SetPinData, ThrowOnError>) => (options.client ?? client).patch<SetPinResponses, SetPinErrors, ThrowOnError>({ url: '/gpio/{pin_id}', ...options });
 
 /**
  * Toggle Pin
@@ -625,14 +625,14 @@ export const setPinGpioPinIdPatch = <ThrowOnError extends boolean = false>(optio
  * Args:
  * pin_id: The ID (int) of the GPIO pin to toggle
  */
-export const togglePinGpioPinIdTogglePatch = <ThrowOnError extends boolean = false>(options: Options<TogglePinGpioPinIdTogglePatchData, ThrowOnError>) => (options.client ?? client).patch<TogglePinGpioPinIdTogglePatchResponses, TogglePinGpioPinIdTogglePatchErrors, ThrowOnError>({ url: '/gpio/{pin_id}/toggle', ...options });
+export const togglePin = <ThrowOnError extends boolean = false>(options: Options<TogglePinData, ThrowOnError>) => (options.client ?? client).patch<TogglePinResponses, TogglePinErrors, ThrowOnError>({ url: '/gpio/{pin_id}/toggle', ...options });
 
 /**
  * Get Software Info
  *
  * Get information about the scanner software
  */
-export const getSoftwareInfoGet = <ThrowOnError extends boolean = false>(options?: Options<GetSoftwareInfoGetData, ThrowOnError>) => (options?.client ?? client).get<GetSoftwareInfoGetResponses, GetSoftwareInfoGetErrors, ThrowOnError>({ url: '/', ...options });
+export const getSoftwareInfo = <ThrowOnError extends boolean = false>(options?: Options<GetSoftwareInfoData, ThrowOnError>) => (options?.client ?? client).get<GetSoftwareInfoResponses, GetSoftwareInfoErrors, ThrowOnError>({ url: '/', ...options });
 
 /**
  * Tail Logs
@@ -651,7 +651,7 @@ export const getSoftwareInfoGet = <ThrowOnError extends boolean = false>(options
  * Returns:
  * A response with the requested log content.
  */
-export const tailLogsLogsTailGet = <ThrowOnError extends boolean = false>(options?: Options<TailLogsLogsTailGetData, ThrowOnError>) => (options?.client ?? client).get<TailLogsLogsTailGetResponses, TailLogsLogsTailGetErrors, ThrowOnError>({ url: '/logs/tail', ...options });
+export const tailLogs = <ThrowOnError extends boolean = false>(options?: Options<TailLogsData, ThrowOnError>) => (options?.client ?? client).get<TailLogsResponses, TailLogsErrors, ThrowOnError>({ url: '/logs/tail', ...options });
 
 /**
  * Download Logs Archive
@@ -664,7 +664,7 @@ export const tailLogsLogsTailGet = <ThrowOnError extends boolean = false>(option
  * Returns:
  * FileResponse serving the generated ZIP. The temp file is deleted after send.
  */
-export const downloadLogsArchiveLogsArchiveGet = <ThrowOnError extends boolean = false>(options?: Options<DownloadLogsArchiveLogsArchiveGetData, ThrowOnError>) => (options?.client ?? client).get<DownloadLogsArchiveLogsArchiveGetResponses, DownloadLogsArchiveLogsArchiveGetErrors, ThrowOnError>({ url: '/logs/archive', ...options });
+export const downloadLogsArchive = <ThrowOnError extends boolean = false>(options?: Options<DownloadLogsArchiveData, ThrowOnError>) => (options?.client ?? client).get<DownloadLogsArchiveResponses, DownloadLogsArchiveErrors, ThrowOnError>({ url: '/logs/archive', ...options });
 
 /**
  * Get Device Info
@@ -674,14 +674,14 @@ export const downloadLogsArchiveLogsArchiveGet = <ThrowOnError extends boolean =
  * Returns:
  * dict: A dictionary containing information about the device
  */
-export const getDeviceInfoDeviceInfoGet = <ThrowOnError extends boolean = false>(options?: Options<GetDeviceInfoDeviceInfoGetData, ThrowOnError>) => (options?.client ?? client).get<GetDeviceInfoDeviceInfoGetResponses, GetDeviceInfoDeviceInfoGetErrors, ThrowOnError>({ url: '/device/info', ...options });
+export const getDeviceInfo = <ThrowOnError extends boolean = false>(options?: Options<GetDeviceInfoData, ThrowOnError>) => (options?.client ?? client).get<GetDeviceInfoResponses, GetDeviceInfoErrors, ThrowOnError>({ url: '/device/info', ...options });
 
 /**
  * List Config Files
  *
  * List all available device configuration files
  */
-export const listConfigFilesDeviceConfigurationsGet = <ThrowOnError extends boolean = false>(options?: Options<ListConfigFilesDeviceConfigurationsGetData, ThrowOnError>) => (options?.client ?? client).get<ListConfigFilesDeviceConfigurationsGetResponses, ListConfigFilesDeviceConfigurationsGetErrors, ThrowOnError>({ url: '/device/configurations', ...options });
+export const listConfigFiles = <ThrowOnError extends boolean = false>(options?: Options<ListConfigFilesData, ThrowOnError>) => (options?.client ?? client).get<ListConfigFilesResponses, ListConfigFilesErrors, ThrowOnError>({ url: '/device/configurations', ...options });
 
 /**
  * Add Config Json
@@ -698,7 +698,7 @@ export const listConfigFilesDeviceConfigurationsGet = <ThrowOnError extends bool
  * Returns:
  * dict: A dictionary containing the status of the operation
  */
-export const addConfigJsonDeviceConfigurationsPost = <ThrowOnError extends boolean = false>(options: Options<AddConfigJsonDeviceConfigurationsPostData, ThrowOnError>) => (options.client ?? client).post<AddConfigJsonDeviceConfigurationsPostResponses, AddConfigJsonDeviceConfigurationsPostErrors, ThrowOnError>({
+export const addConfigJson = <ThrowOnError extends boolean = false>(options: Options<AddConfigJsonData, ThrowOnError>) => (options.client ?? client).post<AddConfigJsonResponses, AddConfigJsonErrors, ThrowOnError>({
     url: '/device/configurations/',
     ...options,
     headers: {
@@ -717,7 +717,7 @@ export const addConfigJsonDeviceConfigurationsPost = <ThrowOnError extends boole
  * Returns:
  * dict: A dictionary containing the status of the operation
  */
-export const saveDeviceConfigDeviceConfigurationsCurrentPatch = <ThrowOnError extends boolean = false>(options?: Options<SaveDeviceConfigDeviceConfigurationsCurrentPatchData, ThrowOnError>) => (options?.client ?? client).patch<SaveDeviceConfigDeviceConfigurationsCurrentPatchResponses, SaveDeviceConfigDeviceConfigurationsCurrentPatchErrors, ThrowOnError>({ url: '/device/configurations/current', ...options });
+export const saveDeviceConfig = <ThrowOnError extends boolean = false>(options?: Options<SaveDeviceConfigData, ThrowOnError>) => (options?.client ?? client).patch<SaveDeviceConfigResponses, SaveDeviceConfigErrors, ThrowOnError>({ url: '/device/configurations/current', ...options });
 
 /**
  * Set Config File
@@ -730,7 +730,7 @@ export const saveDeviceConfigDeviceConfigurationsCurrentPatch = <ThrowOnError ex
  * Returns:
  * dict: A dictionary containing the status of the operation
  */
-export const setConfigFileDeviceConfigurationsCurrentPut = <ThrowOnError extends boolean = false>(options: Options<SetConfigFileDeviceConfigurationsCurrentPutData, ThrowOnError>) => (options.client ?? client).put<SetConfigFileDeviceConfigurationsCurrentPutResponses, SetConfigFileDeviceConfigurationsCurrentPutErrors, ThrowOnError>({
+export const setConfigFile = <ThrowOnError extends boolean = false>(options: Options<SetConfigFileData, ThrowOnError>) => (options.client ?? client).put<SetConfigFileResponses, SetConfigFileErrors, ThrowOnError>({
     url: '/device/configurations/current',
     ...options,
     headers: {
@@ -752,7 +752,7 @@ export const setConfigFileDeviceConfigurationsCurrentPut = <ThrowOnError extends
  * Returns:
  * dict: A dictionary containing the status of the operation
  */
-export const reinitializeHardwareDeviceConfigurationsCurrentInitializePost = <ThrowOnError extends boolean = false>(options?: Options<ReinitializeHardwareDeviceConfigurationsCurrentInitializePostData, ThrowOnError>) => (options?.client ?? client).post<ReinitializeHardwareDeviceConfigurationsCurrentInitializePostResponses, ReinitializeHardwareDeviceConfigurationsCurrentInitializePostErrors, ThrowOnError>({ url: '/device/configurations/current/initialize', ...options });
+export const reinitializeHardware = <ThrowOnError extends boolean = false>(options?: Options<ReinitializeHardwareData, ThrowOnError>) => (options?.client ?? client).post<ReinitializeHardwareResponses, ReinitializeHardwareErrors, ThrowOnError>({ url: '/device/configurations/current/initialize', ...options });
 
 /**
  * Reboot
@@ -762,7 +762,7 @@ export const reinitializeHardwareDeviceConfigurationsCurrentInitializePost = <Th
  * Args:
  * save_config: Whether to save the current configuration before rebooting
  */
-export const rebootDeviceRebootPost = <ThrowOnError extends boolean = false>(options?: Options<RebootDeviceRebootPostData, ThrowOnError>) => (options?.client ?? client).post<RebootDeviceRebootPostResponses, RebootDeviceRebootPostErrors, ThrowOnError>({ url: '/device/reboot', ...options });
+export const reboot = <ThrowOnError extends boolean = false>(options?: Options<RebootData, ThrowOnError>) => (options?.client ?? client).post<RebootResponses, RebootErrors, ThrowOnError>({ url: '/device/reboot', ...options });
 
 /**
  * Shutdown
@@ -772,7 +772,7 @@ export const rebootDeviceRebootPost = <ThrowOnError extends boolean = false>(opt
  * Args:
  * save_config: Whether to save the current configuration before shutting down
  */
-export const shutdownDeviceShutdownPost = <ThrowOnError extends boolean = false>(options?: Options<ShutdownDeviceShutdownPostData, ThrowOnError>) => (options?.client ?? client).post<ShutdownDeviceShutdownPostResponses, ShutdownDeviceShutdownPostErrors, ThrowOnError>({ url: '/device/shutdown', ...options });
+export const shutdown = <ThrowOnError extends boolean = false>(options?: Options<ShutdownData, ThrowOnError>) => (options?.client ?? client).post<ShutdownResponses, ShutdownErrors, ThrowOnError>({ url: '/device/shutdown', ...options });
 
 /**
  * Get All Tasks
@@ -782,7 +782,7 @@ export const shutdownDeviceShutdownPost = <ThrowOnError extends boolean = false>
  * Returns:
  * List[Task]: A list of all tasks known to the task manager.
  */
-export const getAllTasksTasksGet = <ThrowOnError extends boolean = false>(options?: Options<GetAllTasksTasksGetData, ThrowOnError>) => (options?.client ?? client).get<GetAllTasksTasksGetResponses, GetAllTasksTasksGetErrors, ThrowOnError>({ url: '/tasks/', ...options });
+export const getAllTasks = <ThrowOnError extends boolean = false>(options?: Options<GetAllTasksData, ThrowOnError>) => (options?.client ?? client).get<GetAllTasksResponses, GetAllTasksErrors, ThrowOnError>({ url: '/tasks/', ...options });
 
 /**
  * Cancel Task
@@ -795,7 +795,7 @@ export const getAllTasksTasksGet = <ThrowOnError extends boolean = false>(option
  * Returns:
  * Task: The task object with its status and details.
  */
-export const cancelTaskTasksTaskIdDelete = <ThrowOnError extends boolean = false>(options: Options<CancelTaskTasksTaskIdDeleteData, ThrowOnError>) => (options.client ?? client).delete<CancelTaskTasksTaskIdDeleteResponses, CancelTaskTasksTaskIdDeleteErrors, ThrowOnError>({ url: '/tasks/{task_id}', ...options });
+export const cancelTask = <ThrowOnError extends boolean = false>(options: Options<CancelTaskData, ThrowOnError>) => (options.client ?? client).delete<CancelTaskResponses, CancelTaskErrors, ThrowOnError>({ url: '/tasks/{task_id}', ...options });
 
 /**
  * Get Task Status
@@ -808,7 +808,7 @@ export const cancelTaskTasksTaskIdDelete = <ThrowOnError extends boolean = false
  * Returns:
  * Task: The task object with its status and details.
  */
-export const getTaskStatusTasksTaskIdGet = <ThrowOnError extends boolean = false>(options: Options<GetTaskStatusTasksTaskIdGetData, ThrowOnError>) => (options.client ?? client).get<GetTaskStatusTasksTaskIdGetResponses, GetTaskStatusTasksTaskIdGetErrors, ThrowOnError>({ url: '/tasks/{task_id}', ...options });
+export const getTaskStatus = <ThrowOnError extends boolean = false>(options: Options<GetTaskStatusData, ThrowOnError>) => (options.client ?? client).get<GetTaskStatusResponses, GetTaskStatusErrors, ThrowOnError>({ url: '/tasks/{task_id}', ...options });
 
 /**
  * Pause a Task
@@ -821,7 +821,7 @@ export const getTaskStatusTasksTaskIdGet = <ThrowOnError extends boolean = false
  * Returns:
  * Task: The task object with its status and details.
  */
-export const pauseTaskTasksTaskIdPausePost = <ThrowOnError extends boolean = false>(options: Options<PauseTaskTasksTaskIdPausePostData, ThrowOnError>) => (options.client ?? client).post<PauseTaskTasksTaskIdPausePostResponses, PauseTaskTasksTaskIdPausePostErrors, ThrowOnError>({ url: '/tasks/{task_id}/pause', ...options });
+export const pauseTask = <ThrowOnError extends boolean = false>(options: Options<PauseTaskData, ThrowOnError>) => (options.client ?? client).post<PauseTaskResponses, PauseTaskErrors, ThrowOnError>({ url: '/tasks/{task_id}/pause', ...options });
 
 /**
  * Resume a Task
@@ -834,7 +834,7 @@ export const pauseTaskTasksTaskIdPausePost = <ThrowOnError extends boolean = fal
  * Returns:
  * Task: The task object with its status and details.
  */
-export const resumeTaskTasksTaskIdResumePost = <ThrowOnError extends boolean = false>(options: Options<ResumeTaskTasksTaskIdResumePostData, ThrowOnError>) => (options.client ?? client).post<ResumeTaskTasksTaskIdResumePostResponses, ResumeTaskTasksTaskIdResumePostErrors, ThrowOnError>({ url: '/tasks/{task_id}/resume', ...options });
+export const resumeTask = <ThrowOnError extends boolean = false>(options: Options<ResumeTaskData, ThrowOnError>) => (options.client ?? client).post<ResumeTaskResponses, ResumeTaskErrors, ThrowOnError>({ url: '/tasks/{task_id}/resume', ...options });
 
 /**
  * Create Task
@@ -875,7 +875,7 @@ export const resumeTaskTasksTaskIdResumePost = <ThrowOnError extends boolean = f
  * }
  * ```
  */
-export const createTaskTasksTaskNamePost = <ThrowOnError extends boolean = false>(options: Options<CreateTaskTasksTaskNamePostData, ThrowOnError>) => (options.client ?? client).post<CreateTaskTasksTaskNamePostResponses, CreateTaskTasksTaskNamePostErrors, ThrowOnError>({
+export const createTask = <ThrowOnError extends boolean = false>(options: Options<CreateTaskData, ThrowOnError>) => (options.client ?? client).post<CreateTaskResponses, CreateTaskErrors, ThrowOnError>({
     url: '/tasks/{task_name}',
     ...options,
     headers: {
@@ -889,7 +889,7 @@ export const createTaskTasksTaskNamePost = <ThrowOnError extends boolean = false
  *
  * Move Rotor and Turntable to a polar point
  */
-export const moveToPositionDevelopScannerPositionPut = <ThrowOnError extends boolean = false>(options: Options<MoveToPositionDevelopScannerPositionPutData, ThrowOnError>) => (options.client ?? client).put<MoveToPositionDevelopScannerPositionPutResponses, MoveToPositionDevelopScannerPositionPutErrors, ThrowOnError>({
+export const moveToPosition = <ThrowOnError extends boolean = false>(options: Options<MoveToPositionData, ThrowOnError>) => (options.client ?? client).put<MoveToPositionResponses, MoveToPositionErrors, ThrowOnError>({
     url: '/develop/scanner-position',
     ...options,
     headers: {
@@ -905,7 +905,7 @@ export const moveToPositionDevelopScannerPositionPut = <ThrowOnError extends boo
  *
  * Note: The application has to be started with the --reload-trigger option to enable this endpoint.
  */
-export const restartApplicationDevelopRestartPost = <ThrowOnError extends boolean = false>(options?: Options<RestartApplicationDevelopRestartPostData, ThrowOnError>) => (options?.client ?? client).post<RestartApplicationDevelopRestartPostResponses, RestartApplicationDevelopRestartPostErrors, ThrowOnError>({ url: '/develop/restart', ...options });
+export const restartApplication = <ThrowOnError extends boolean = false>(options?: Options<RestartApplicationData, ThrowOnError>) => (options?.client ?? client).post<RestartApplicationResponses, RestartApplicationErrors, ThrowOnError>({ url: '/develop/restart', ...options });
 
 /**
  * Run crop task and return visualization image
@@ -919,21 +919,21 @@ export const restartApplicationDevelopRestartPost = <ThrowOnError extends boolea
  * Returns:
  * Response: JPEG image showing contours, rectangles and circles as detected by the task.
  */
-export const cropImageDevelopCropImageGet = <ThrowOnError extends boolean = false>(options: Options<CropImageDevelopCropImageGetData, ThrowOnError>) => (options.client ?? client).get<CropImageDevelopCropImageGetResponses, CropImageDevelopCropImageGetErrors, ThrowOnError>({ url: '/develop/crop_image', ...options });
+export const cropImage = <ThrowOnError extends boolean = false>(options: Options<CropImageData, ThrowOnError>) => (options.client ?? client).get<CropImageResponses, CropImageErrors, ThrowOnError>({ url: '/develop/crop_image', ...options });
 
 /**
  * Hello World Async
  *
  * Start the async hello world demo task.
  */
-export const helloWorldAsyncDevelopHelloWorldAsyncPost = <ThrowOnError extends boolean = false>(options: Options<HelloWorldAsyncDevelopHelloWorldAsyncPostData, ThrowOnError>) => (options.client ?? client).post<HelloWorldAsyncDevelopHelloWorldAsyncPostResponses, HelloWorldAsyncDevelopHelloWorldAsyncPostErrors, ThrowOnError>({ url: '/develop/hello-world-async', ...options });
+export const helloWorldAsync = <ThrowOnError extends boolean = false>(options: Options<HelloWorldAsyncData, ThrowOnError>) => (options.client ?? client).post<HelloWorldAsyncResponses, HelloWorldAsyncErrors, ThrowOnError>({ url: '/develop/hello-world-async', ...options });
 
 /**
  * Get Path
  *
  * Get a list of coordinates by path method and number of points
  */
-export const getPathDevelopMethodGet = <ThrowOnError extends boolean = false>(options: Options<GetPathDevelopMethodGetData, ThrowOnError>) => (options.client ?? client).get<GetPathDevelopMethodGetResponses, GetPathDevelopMethodGetErrors, ThrowOnError>({ url: '/develop/{method}', ...options });
+export const getPath = <ThrowOnError extends boolean = false>(options: Options<GetPathData, ThrowOnError>) => (options.client ?? client).get<GetPathResponses, GetPathErrors, ThrowOnError>({ url: '/develop/{method}', ...options });
 
 /**
  * Get Cloud Status
@@ -943,7 +943,7 @@ export const getPathDevelopMethodGet = <ThrowOnError extends boolean = false>(op
  * Returns:
  * CloudStatusResponse: A response object containing the status of the cloud backend
  */
-export const getCloudStatusCloudStatusGet = <ThrowOnError extends boolean = false>(options?: Options<GetCloudStatusCloudStatusGetData, ThrowOnError>) => (options?.client ?? client).get<GetCloudStatusCloudStatusGetResponses, GetCloudStatusCloudStatusGetErrors, ThrowOnError>({ url: '/cloud/status', ...options });
+export const getCloudStatus = <ThrowOnError extends boolean = false>(options?: Options<GetCloudStatusData, ThrowOnError>) => (options?.client ?? client).get<GetCloudStatusResponses, GetCloudStatusErrors, ThrowOnError>({ url: '/cloud/status', ...options });
 
 /**
  * Get Cloud Settings
@@ -953,7 +953,7 @@ export const getCloudStatusCloudStatusGet = <ThrowOnError extends boolean = fals
  * Returns:
  * CloudSettingsResponse: A response object containing the masked active cloud configuration
  */
-export const getCloudSettingsCloudSettingsGet = <ThrowOnError extends boolean = false>(options?: Options<GetCloudSettingsCloudSettingsGetData, ThrowOnError>) => (options?.client ?? client).get<GetCloudSettingsCloudSettingsGetResponses, GetCloudSettingsCloudSettingsGetErrors, ThrowOnError>({ url: '/cloud/settings', ...options });
+export const getCloudSettings = <ThrowOnError extends boolean = false>(options?: Options<GetCloudSettingsData, ThrowOnError>) => (options?.client ?? client).get<GetCloudSettingsResponses, GetCloudSettingsErrors, ThrowOnError>({ url: '/cloud/settings', ...options });
 
 /**
  * Update Cloud Settings
@@ -966,7 +966,7 @@ export const getCloudSettingsCloudSettingsGet = <ThrowOnError extends boolean = 
  * Returns:
  * CloudSettingsResponse: A response object containing the masked active cloud configuration
  */
-export const updateCloudSettingsCloudSettingsPost = <ThrowOnError extends boolean = false>(options: Options<UpdateCloudSettingsCloudSettingsPostData, ThrowOnError>) => (options.client ?? client).post<UpdateCloudSettingsCloudSettingsPostResponses, UpdateCloudSettingsCloudSettingsPostErrors, ThrowOnError>({
+export const updateCloudSettings = <ThrowOnError extends boolean = false>(options: Options<UpdateCloudSettingsData, ThrowOnError>) => (options.client ?? client).post<UpdateCloudSettingsResponses, UpdateCloudSettingsErrors, ThrowOnError>({
     url: '/cloud/settings',
     ...options,
     headers: {
@@ -983,7 +983,7 @@ export const updateCloudSettingsCloudSettingsPost = <ThrowOnError extends boolea
  * Returns:
  * list[CloudProjectStatus]: A list of cloud project status objects
  */
-export const listCloudProjectsCloudProjectsGet = <ThrowOnError extends boolean = false>(options?: Options<ListCloudProjectsCloudProjectsGetData, ThrowOnError>) => (options?.client ?? client).get<ListCloudProjectsCloudProjectsGetResponses, ListCloudProjectsCloudProjectsGetErrors, ThrowOnError>({ url: '/cloud/projects', ...options });
+export const listCloudProjects = <ThrowOnError extends boolean = false>(options?: Options<ListCloudProjectsData, ThrowOnError>) => (options?.client ?? client).get<ListCloudProjectsResponses, ListCloudProjectsErrors, ThrowOnError>({ url: '/cloud/projects', ...options });
 
 /**
  * Reset Cloud Project
@@ -996,7 +996,7 @@ export const listCloudProjectsCloudProjectsGet = <ThrowOnError extends boolean =
  * Returns:
  * dict[str, Any]: A response object containing the result of the reset operation
  */
-export const resetCloudProjectCloudProjectsProjectNameDelete = <ThrowOnError extends boolean = false>(options: Options<ResetCloudProjectCloudProjectsProjectNameDeleteData, ThrowOnError>) => (options.client ?? client).delete<ResetCloudProjectCloudProjectsProjectNameDeleteResponses, ResetCloudProjectCloudProjectsProjectNameDeleteErrors, ThrowOnError>({ url: '/cloud/projects/{project_name}', ...options });
+export const resetCloudProject = <ThrowOnError extends boolean = false>(options: Options<ResetCloudProjectData, ThrowOnError>) => (options.client ?? client).delete<ResetCloudProjectResponses, ResetCloudProjectErrors, ThrowOnError>({ url: '/cloud/projects/{project_name}', ...options });
 
 /**
  * Get Cloud Project
@@ -1009,32 +1009,32 @@ export const resetCloudProjectCloudProjectsProjectNameDelete = <ThrowOnError ext
  * Returns:
  * CloudProjectStatus: A response object containing the cloud project status
  */
-export const getCloudProjectCloudProjectsProjectNameGet = <ThrowOnError extends boolean = false>(options: Options<GetCloudProjectCloudProjectsProjectNameGetData, ThrowOnError>) => (options.client ?? client).get<GetCloudProjectCloudProjectsProjectNameGetResponses, GetCloudProjectCloudProjectsProjectNameGetErrors, ThrowOnError>({ url: '/cloud/projects/{project_name}', ...options });
+export const getCloudProject = <ThrowOnError extends boolean = false>(options: Options<GetCloudProjectData, ThrowOnError>) => (options.client ?? client).get<GetCloudProjectResponses, GetCloudProjectErrors, ThrowOnError>({ url: '/cloud/projects/{project_name}', ...options });
 
 /**
  * Start Focus Stacking
  *
  * Start focus stacking for a scan.
  */
-export const startFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPost = <ThrowOnError extends boolean = false>(options: Options<StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostData, ThrowOnError>) => (options.client ?? client).post<StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostResponses, StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/start', ...options });
+export const startFocusStacking = <ThrowOnError extends boolean = false>(options: Options<StartFocusStackingData, ThrowOnError>) => (options.client ?? client).post<StartFocusStackingResponses, StartFocusStackingErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/start', ...options });
 
 /**
  * Pause Focus Stacking
  *
  * Pause an active focus stacking task.
  */
-export const pauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatch = <ThrowOnError extends boolean = false>(options: Options<PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchData, ThrowOnError>) => (options.client ?? client).patch<PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchResponses, PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/pause', ...options });
+export const pauseFocusStacking = <ThrowOnError extends boolean = false>(options: Options<PauseFocusStackingData, ThrowOnError>) => (options.client ?? client).patch<PauseFocusStackingResponses, PauseFocusStackingErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/pause', ...options });
 
 /**
  * Resume Focus Stacking
  *
  * Resume a paused focus stacking task.
  */
-export const resumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatch = <ThrowOnError extends boolean = false>(options: Options<ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchData, ThrowOnError>) => (options.client ?? client).patch<ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchResponses, ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/resume', ...options });
+export const resumeFocusStacking = <ThrowOnError extends boolean = false>(options: Options<ResumeFocusStackingData, ThrowOnError>) => (options.client ?? client).patch<ResumeFocusStackingResponses, ResumeFocusStackingErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/resume', ...options });
 
 /**
  * Cancel Focus Stacking
  *
  * Cancel an active focus stacking task.
  */
-export const cancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatch = <ThrowOnError extends boolean = false>(options: Options<CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchData, ThrowOnError>) => (options.client ?? client).patch<CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchResponses, CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/cancel', ...options });
+export const cancelFocusStacking = <ThrowOnError extends boolean = false>(options: Options<CancelFocusStackingData, ThrowOnError>) => (options.client ?? client).patch<CancelFocusStackingResponses, CancelFocusStackingErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/cancel', ...options });

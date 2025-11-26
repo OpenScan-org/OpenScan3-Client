@@ -11,12 +11,8 @@
 </template>
 
 <script setup lang="ts">
-export interface EssentialLinkProps {
-  title: string;
-  target?: string;
-  link?: string;
-  icon?: string;
-}
+import type { EssentialLinkProps } from './models';
+
 withDefaults(defineProps<EssentialLinkProps>(), {
   caption: '',
   link: '#',

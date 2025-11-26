@@ -72,6 +72,11 @@ export default configure(function (/* ctx */) {
       // distDir
 
       // extendViteConf (viteConf) {},
+      extendViteConf (viteConf) {
+        viteConf.resolve = viteConf.resolve || {}
+        viteConf.resolve.alias = viteConf.resolve.alias || {}
+        viteConf.resolve.alias['components'] = path.resolve(__dirname, 'src/components')
+      },
       // viteVuePluginOptions: {},
 
       vitePlugins: [

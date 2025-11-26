@@ -1000,21 +1000,21 @@ export type ValidationError = {
     type: string;
 };
 
-export type GetCamerasCamerasGetData = {
+export type GetCamerasData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/cameras/';
 };
 
-export type GetCamerasCamerasGetErrors = {
+export type GetCamerasErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type GetCamerasCamerasGetResponses = {
+export type GetCamerasResponses = {
     /**
      * Response Get Cameras Cameras  Get
      *
@@ -1025,9 +1025,9 @@ export type GetCamerasCamerasGetResponses = {
     };
 };
 
-export type GetCamerasCamerasGetResponse = GetCamerasCamerasGetResponses[keyof GetCamerasCamerasGetResponses];
+export type GetCamerasResponse = GetCamerasResponses[keyof GetCamerasResponses];
 
-export type GetCameraCamerasCameraNameGetData = {
+export type GetCameraData = {
     body?: never;
     path: {
         /**
@@ -1039,7 +1039,7 @@ export type GetCameraCamerasCameraNameGetData = {
     url: '/cameras/{camera_name}';
 };
 
-export type GetCameraCamerasCameraNameGetErrors = {
+export type GetCameraErrors = {
     /**
      * Not found
      */
@@ -1050,18 +1050,18 @@ export type GetCameraCamerasCameraNameGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetCameraCamerasCameraNameGetError = GetCameraCamerasCameraNameGetErrors[keyof GetCameraCamerasCameraNameGetErrors];
+export type GetCameraError = GetCameraErrors[keyof GetCameraErrors];
 
-export type GetCameraCamerasCameraNameGetResponses = {
+export type GetCameraResponses = {
     /**
      * Successful Response
      */
     200: CameraStatusResponse;
 };
 
-export type GetCameraCamerasCameraNameGetResponse = GetCameraCamerasCameraNameGetResponses[keyof GetCameraCamerasCameraNameGetResponses];
+export type GetCameraResponse = GetCameraResponses[keyof GetCameraResponses];
 
-export type GetPreviewCamerasCameraNamePreviewGetData = {
+export type GetPreviewData = {
     body?: never;
     path: {
         /**
@@ -1073,7 +1073,7 @@ export type GetPreviewCamerasCameraNamePreviewGetData = {
     url: '/cameras/{camera_name}/preview';
 };
 
-export type GetPreviewCamerasCameraNamePreviewGetErrors = {
+export type GetPreviewErrors = {
     /**
      * Not found
      */
@@ -1084,16 +1084,16 @@ export type GetPreviewCamerasCameraNamePreviewGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetPreviewCamerasCameraNamePreviewGetError = GetPreviewCamerasCameraNamePreviewGetErrors[keyof GetPreviewCamerasCameraNamePreviewGetErrors];
+export type GetPreviewError = GetPreviewErrors[keyof GetPreviewErrors];
 
-export type GetPreviewCamerasCameraNamePreviewGetResponses = {
+export type GetPreviewResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type GetPhotoCamerasCameraNamePhotoGetData = {
+export type GetPhotoData = {
     body?: never;
     path: {
         /**
@@ -1105,7 +1105,7 @@ export type GetPhotoCamerasCameraNamePhotoGetData = {
     url: '/cameras/{camera_name}/photo';
 };
 
-export type GetPhotoCamerasCameraNamePhotoGetErrors = {
+export type GetPhotoErrors = {
     /**
      * Not found
      */
@@ -1116,16 +1116,16 @@ export type GetPhotoCamerasCameraNamePhotoGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetPhotoCamerasCameraNamePhotoGetError = GetPhotoCamerasCameraNamePhotoGetErrors[keyof GetPhotoCamerasCameraNamePhotoGetErrors];
+export type GetPhotoError = GetPhotoErrors[keyof GetPhotoErrors];
 
-export type GetPhotoCamerasCameraNamePhotoGetResponses = {
+export type GetPhotoResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type RestartCameraCamerasCameraNameRestartPostData = {
+export type RestartCameraData = {
     body?: never;
     path: {
         /**
@@ -1137,7 +1137,7 @@ export type RestartCameraCamerasCameraNameRestartPostData = {
     url: '/cameras/{camera_name}/restart';
 };
 
-export type RestartCameraCamerasCameraNameRestartPostErrors = {
+export type RestartCameraErrors = {
     /**
      * Not found
      */
@@ -1148,16 +1148,16 @@ export type RestartCameraCamerasCameraNameRestartPostErrors = {
     422: HttpValidationError;
 };
 
-export type RestartCameraCamerasCameraNameRestartPostError = RestartCameraCamerasCameraNameRestartPostErrors[keyof RestartCameraCamerasCameraNameRestartPostErrors];
+export type RestartCameraError = RestartCameraErrors[keyof RestartCameraErrors];
 
-export type RestartCameraCamerasCameraNameRestartPostResponses = {
+export type RestartCameraResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type GetSettingsCamerasCameraNameSettingsGetData = {
+export type GetCameraNameSettingsData = {
     body?: never;
     path?: never;
     query: {
@@ -1169,7 +1169,7 @@ export type GetSettingsCamerasCameraNameSettingsGetData = {
     url: '/cameras/{camera_name}/settings';
 };
 
-export type GetSettingsCamerasCameraNameSettingsGetErrors = {
+export type GetCameraNameSettingsErrors = {
     /**
      * Not found
      */
@@ -1180,18 +1180,18 @@ export type GetSettingsCamerasCameraNameSettingsGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetSettingsCamerasCameraNameSettingsGetError = GetSettingsCamerasCameraNameSettingsGetErrors[keyof GetSettingsCamerasCameraNameSettingsGetErrors];
+export type GetCameraNameSettingsError = GetCameraNameSettingsErrors[keyof GetCameraNameSettingsErrors];
 
-export type GetSettingsCamerasCameraNameSettingsGetResponses = {
+export type GetCameraNameSettingsResponses = {
     /**
      * Successful Response
      */
     200: CameraSettings;
 };
 
-export type GetSettingsCamerasCameraNameSettingsGetResponse = GetSettingsCamerasCameraNameSettingsGetResponses[keyof GetSettingsCamerasCameraNameSettingsGetResponses];
+export type GetCameraNameSettingsResponse = GetCameraNameSettingsResponses[keyof GetCameraNameSettingsResponses];
 
-export type UpdateSettingsCamerasCameraNameSettingsPatchData = {
+export type UpdateCameraNameSettingsData = {
     /**
      * Settings
      */
@@ -1208,7 +1208,7 @@ export type UpdateSettingsCamerasCameraNameSettingsPatchData = {
     url: '/cameras/{camera_name}/settings';
 };
 
-export type UpdateSettingsCamerasCameraNameSettingsPatchErrors = {
+export type UpdateCameraNameSettingsErrors = {
     /**
      * Not found
      */
@@ -1219,18 +1219,18 @@ export type UpdateSettingsCamerasCameraNameSettingsPatchErrors = {
     422: HttpValidationError;
 };
 
-export type UpdateSettingsCamerasCameraNameSettingsPatchError = UpdateSettingsCamerasCameraNameSettingsPatchErrors[keyof UpdateSettingsCamerasCameraNameSettingsPatchErrors];
+export type UpdateCameraNameSettingsError = UpdateCameraNameSettingsErrors[keyof UpdateCameraNameSettingsErrors];
 
-export type UpdateSettingsCamerasCameraNameSettingsPatchResponses = {
+export type UpdateCameraNameSettingsResponses = {
     /**
      * Successful Response
      */
     200: CameraSettings;
 };
 
-export type UpdateSettingsCamerasCameraNameSettingsPatchResponse = UpdateSettingsCamerasCameraNameSettingsPatchResponses[keyof UpdateSettingsCamerasCameraNameSettingsPatchResponses];
+export type UpdateCameraNameSettingsResponse = UpdateCameraNameSettingsResponses[keyof UpdateCameraNameSettingsResponses];
 
-export type ReplaceSettingsCamerasCameraNameSettingsPutData = {
+export type ReplaceCameraNameSettingsData = {
     body?: never;
     path?: never;
     query: {
@@ -1243,7 +1243,7 @@ export type ReplaceSettingsCamerasCameraNameSettingsPutData = {
     url: '/cameras/{camera_name}/settings';
 };
 
-export type ReplaceSettingsCamerasCameraNameSettingsPutErrors = {
+export type ReplaceCameraNameSettingsErrors = {
     /**
      * Not found
      */
@@ -1254,32 +1254,32 @@ export type ReplaceSettingsCamerasCameraNameSettingsPutErrors = {
     422: HttpValidationError;
 };
 
-export type ReplaceSettingsCamerasCameraNameSettingsPutError = ReplaceSettingsCamerasCameraNameSettingsPutErrors[keyof ReplaceSettingsCamerasCameraNameSettingsPutErrors];
+export type ReplaceCameraNameSettingsError = ReplaceCameraNameSettingsErrors[keyof ReplaceCameraNameSettingsErrors];
 
-export type ReplaceSettingsCamerasCameraNameSettingsPutResponses = {
+export type ReplaceCameraNameSettingsResponses = {
     /**
      * Successful Response
      */
     200: CameraSettings;
 };
 
-export type ReplaceSettingsCamerasCameraNameSettingsPutResponse = ReplaceSettingsCamerasCameraNameSettingsPutResponses[keyof ReplaceSettingsCamerasCameraNameSettingsPutResponses];
+export type ReplaceCameraNameSettingsResponse = ReplaceCameraNameSettingsResponses[keyof ReplaceCameraNameSettingsResponses];
 
-export type GetMotorsMotorsGetData = {
+export type GetMotorsData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/motors/';
 };
 
-export type GetMotorsMotorsGetErrors = {
+export type GetMotorsErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type GetMotorsMotorsGetResponses = {
+export type GetMotorsResponses = {
     /**
      * Response Get Motors Motors  Get
      *
@@ -1290,9 +1290,9 @@ export type GetMotorsMotorsGetResponses = {
     };
 };
 
-export type GetMotorsMotorsGetResponse = GetMotorsMotorsGetResponses[keyof GetMotorsMotorsGetResponses];
+export type GetMotorsResponse = GetMotorsResponses[keyof GetMotorsResponses];
 
-export type GetMotorMotorsMotorNameGetData = {
+export type GetMotorData = {
     body?: never;
     path: {
         /**
@@ -1304,7 +1304,7 @@ export type GetMotorMotorsMotorNameGetData = {
     url: '/motors/{motor_name}';
 };
 
-export type GetMotorMotorsMotorNameGetErrors = {
+export type GetMotorErrors = {
     /**
      * Not found
      */
@@ -1315,18 +1315,18 @@ export type GetMotorMotorsMotorNameGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetMotorMotorsMotorNameGetError = GetMotorMotorsMotorNameGetErrors[keyof GetMotorMotorsMotorNameGetErrors];
+export type GetMotorError = GetMotorErrors[keyof GetMotorErrors];
 
-export type GetMotorMotorsMotorNameGetResponses = {
+export type GetMotorResponses = {
     /**
      * Successful Response
      */
     200: MotorStatusResponse;
 };
 
-export type GetMotorMotorsMotorNameGetResponse = GetMotorMotorsMotorNameGetResponses[keyof GetMotorMotorsMotorNameGetResponses];
+export type GetMotorResponse = GetMotorResponses[keyof GetMotorResponses];
 
-export type MoveMotorByDegreeMotorsMotorNameAnglePatchData = {
+export type MoveMotorByDegreeData = {
     body: BodyMoveMotorByDegreeMotorsMotorNameAnglePatch;
     path: {
         /**
@@ -1338,7 +1338,7 @@ export type MoveMotorByDegreeMotorsMotorNameAnglePatchData = {
     url: '/motors/{motor_name}/angle';
 };
 
-export type MoveMotorByDegreeMotorsMotorNameAnglePatchErrors = {
+export type MoveMotorByDegreeErrors = {
     /**
      * Not found
      */
@@ -1349,18 +1349,18 @@ export type MoveMotorByDegreeMotorsMotorNameAnglePatchErrors = {
     422: HttpValidationError;
 };
 
-export type MoveMotorByDegreeMotorsMotorNameAnglePatchError = MoveMotorByDegreeMotorsMotorNameAnglePatchErrors[keyof MoveMotorByDegreeMotorsMotorNameAnglePatchErrors];
+export type MoveMotorByDegreeError = MoveMotorByDegreeErrors[keyof MoveMotorByDegreeErrors];
 
-export type MoveMotorByDegreeMotorsMotorNameAnglePatchResponses = {
+export type MoveMotorByDegreeResponses = {
     /**
      * Successful Response
      */
     200: MotorStatusResponse;
 };
 
-export type MoveMotorByDegreeMotorsMotorNameAnglePatchResponse = MoveMotorByDegreeMotorsMotorNameAnglePatchResponses[keyof MoveMotorByDegreeMotorsMotorNameAnglePatchResponses];
+export type MoveMotorByDegreeResponse = MoveMotorByDegreeResponses[keyof MoveMotorByDegreeResponses];
 
-export type MoveMotorToAngleMotorsMotorNameAnglePutData = {
+export type MoveMotorToAngleData = {
     body?: never;
     path: {
         /**
@@ -1377,7 +1377,7 @@ export type MoveMotorToAngleMotorsMotorNameAnglePutData = {
     url: '/motors/{motor_name}/angle';
 };
 
-export type MoveMotorToAngleMotorsMotorNameAnglePutErrors = {
+export type MoveMotorToAngleErrors = {
     /**
      * Not found
      */
@@ -1388,18 +1388,18 @@ export type MoveMotorToAngleMotorsMotorNameAnglePutErrors = {
     422: HttpValidationError;
 };
 
-export type MoveMotorToAngleMotorsMotorNameAnglePutError = MoveMotorToAngleMotorsMotorNameAnglePutErrors[keyof MoveMotorToAngleMotorsMotorNameAnglePutErrors];
+export type MoveMotorToAngleError = MoveMotorToAngleErrors[keyof MoveMotorToAngleErrors];
 
-export type MoveMotorToAngleMotorsMotorNameAnglePutResponses = {
+export type MoveMotorToAngleResponses = {
     /**
      * Successful Response
      */
     200: MotorStatusResponse;
 };
 
-export type MoveMotorToAngleMotorsMotorNameAnglePutResponse = MoveMotorToAngleMotorsMotorNameAnglePutResponses[keyof MoveMotorToAngleMotorsMotorNameAnglePutResponses];
+export type MoveMotorToAngleResponse = MoveMotorToAngleResponses[keyof MoveMotorToAngleResponses];
 
-export type MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutData = {
+export type MoveMotorToHomePositionData = {
     body?: never;
     path: {
         /**
@@ -1411,7 +1411,7 @@ export type MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutData = {
     url: '/motors/{motor_name}/endstop-calibration';
 };
 
-export type MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutErrors = {
+export type MoveMotorToHomePositionErrors = {
     /**
      * Not found
      */
@@ -1422,18 +1422,18 @@ export type MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutErrors = 
     422: HttpValidationError;
 };
 
-export type MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutError = MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutErrors[keyof MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutErrors];
+export type MoveMotorToHomePositionError = MoveMotorToHomePositionErrors[keyof MoveMotorToHomePositionErrors];
 
-export type MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutResponses = {
+export type MoveMotorToHomePositionResponses = {
     /**
      * Successful Response
      */
     200: MotorStatusResponse;
 };
 
-export type MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutResponse = MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutResponses[keyof MoveMotorToHomePositionMotorsMotorNameEndstopCalibrationPutResponses];
+export type MoveMotorToHomePositionResponse = MoveMotorToHomePositionResponses[keyof MoveMotorToHomePositionResponses];
 
-export type GetSettingsMotorsMotorNameSettingsGetData = {
+export type GetMotorNameSettingsData = {
     body?: never;
     path?: never;
     query: {
@@ -1445,7 +1445,7 @@ export type GetSettingsMotorsMotorNameSettingsGetData = {
     url: '/motors/{motor_name}/settings';
 };
 
-export type GetSettingsMotorsMotorNameSettingsGetErrors = {
+export type GetMotorNameSettingsErrors = {
     /**
      * Not found
      */
@@ -1456,18 +1456,18 @@ export type GetSettingsMotorsMotorNameSettingsGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetSettingsMotorsMotorNameSettingsGetError = GetSettingsMotorsMotorNameSettingsGetErrors[keyof GetSettingsMotorsMotorNameSettingsGetErrors];
+export type GetMotorNameSettingsError = GetMotorNameSettingsErrors[keyof GetMotorNameSettingsErrors];
 
-export type GetSettingsMotorsMotorNameSettingsGetResponses = {
+export type GetMotorNameSettingsResponses = {
     /**
      * Successful Response
      */
     200: MotorConfig;
 };
 
-export type GetSettingsMotorsMotorNameSettingsGetResponse = GetSettingsMotorsMotorNameSettingsGetResponses[keyof GetSettingsMotorsMotorNameSettingsGetResponses];
+export type GetMotorNameSettingsResponse = GetMotorNameSettingsResponses[keyof GetMotorNameSettingsResponses];
 
-export type UpdateSettingsMotorsMotorNameSettingsPatchData = {
+export type UpdateMotorNameSettingsData = {
     /**
      * Settings
      */
@@ -1484,7 +1484,7 @@ export type UpdateSettingsMotorsMotorNameSettingsPatchData = {
     url: '/motors/{motor_name}/settings';
 };
 
-export type UpdateSettingsMotorsMotorNameSettingsPatchErrors = {
+export type UpdateMotorNameSettingsErrors = {
     /**
      * Not found
      */
@@ -1495,18 +1495,18 @@ export type UpdateSettingsMotorsMotorNameSettingsPatchErrors = {
     422: HttpValidationError;
 };
 
-export type UpdateSettingsMotorsMotorNameSettingsPatchError = UpdateSettingsMotorsMotorNameSettingsPatchErrors[keyof UpdateSettingsMotorsMotorNameSettingsPatchErrors];
+export type UpdateMotorNameSettingsError = UpdateMotorNameSettingsErrors[keyof UpdateMotorNameSettingsErrors];
 
-export type UpdateSettingsMotorsMotorNameSettingsPatchResponses = {
+export type UpdateMotorNameSettingsResponses = {
     /**
      * Successful Response
      */
     200: MotorConfig;
 };
 
-export type UpdateSettingsMotorsMotorNameSettingsPatchResponse = UpdateSettingsMotorsMotorNameSettingsPatchResponses[keyof UpdateSettingsMotorsMotorNameSettingsPatchResponses];
+export type UpdateMotorNameSettingsResponse = UpdateMotorNameSettingsResponses[keyof UpdateMotorNameSettingsResponses];
 
-export type ReplaceSettingsMotorsMotorNameSettingsPutData = {
+export type ReplaceMotorNameSettingsData = {
     body?: never;
     path?: never;
     query: {
@@ -1519,7 +1519,7 @@ export type ReplaceSettingsMotorsMotorNameSettingsPutData = {
     url: '/motors/{motor_name}/settings';
 };
 
-export type ReplaceSettingsMotorsMotorNameSettingsPutErrors = {
+export type ReplaceMotorNameSettingsErrors = {
     /**
      * Not found
      */
@@ -1530,32 +1530,32 @@ export type ReplaceSettingsMotorsMotorNameSettingsPutErrors = {
     422: HttpValidationError;
 };
 
-export type ReplaceSettingsMotorsMotorNameSettingsPutError = ReplaceSettingsMotorsMotorNameSettingsPutErrors[keyof ReplaceSettingsMotorsMotorNameSettingsPutErrors];
+export type ReplaceMotorNameSettingsError = ReplaceMotorNameSettingsErrors[keyof ReplaceMotorNameSettingsErrors];
 
-export type ReplaceSettingsMotorsMotorNameSettingsPutResponses = {
+export type ReplaceMotorNameSettingsResponses = {
     /**
      * Successful Response
      */
     200: MotorConfig;
 };
 
-export type ReplaceSettingsMotorsMotorNameSettingsPutResponse = ReplaceSettingsMotorsMotorNameSettingsPutResponses[keyof ReplaceSettingsMotorsMotorNameSettingsPutResponses];
+export type ReplaceMotorNameSettingsResponse = ReplaceMotorNameSettingsResponses[keyof ReplaceMotorNameSettingsResponses];
 
-export type GetLightsLightsGetData = {
+export type GetLightsData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/lights/';
 };
 
-export type GetLightsLightsGetErrors = {
+export type GetLightsErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type GetLightsLightsGetResponses = {
+export type GetLightsResponses = {
     /**
      * Response Get Lights Lights  Get
      *
@@ -1566,9 +1566,9 @@ export type GetLightsLightsGetResponses = {
     };
 };
 
-export type GetLightsLightsGetResponse = GetLightsLightsGetResponses[keyof GetLightsLightsGetResponses];
+export type GetLightsResponse = GetLightsResponses[keyof GetLightsResponses];
 
-export type GetLightLightsLightNameGetData = {
+export type GetLightData = {
     body?: never;
     path: {
         /**
@@ -1580,7 +1580,7 @@ export type GetLightLightsLightNameGetData = {
     url: '/lights/{light_name}';
 };
 
-export type GetLightLightsLightNameGetErrors = {
+export type GetLightErrors = {
     /**
      * Not found
      */
@@ -1591,18 +1591,18 @@ export type GetLightLightsLightNameGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetLightLightsLightNameGetError = GetLightLightsLightNameGetErrors[keyof GetLightLightsLightNameGetErrors];
+export type GetLightError = GetLightErrors[keyof GetLightErrors];
 
-export type GetLightLightsLightNameGetResponses = {
+export type GetLightResponses = {
     /**
      * Successful Response
      */
     200: LightStatusResponse;
 };
 
-export type GetLightLightsLightNameGetResponse = GetLightLightsLightNameGetResponses[keyof GetLightLightsLightNameGetResponses];
+export type GetLightResponse = GetLightResponses[keyof GetLightResponses];
 
-export type TurnOnLightLightsLightNameTurnOnPatchData = {
+export type TurnOnLightData = {
     body?: never;
     path: {
         /**
@@ -1614,7 +1614,7 @@ export type TurnOnLightLightsLightNameTurnOnPatchData = {
     url: '/lights/{light_name}/turn_on';
 };
 
-export type TurnOnLightLightsLightNameTurnOnPatchErrors = {
+export type TurnOnLightErrors = {
     /**
      * Not found
      */
@@ -1625,18 +1625,18 @@ export type TurnOnLightLightsLightNameTurnOnPatchErrors = {
     422: HttpValidationError;
 };
 
-export type TurnOnLightLightsLightNameTurnOnPatchError = TurnOnLightLightsLightNameTurnOnPatchErrors[keyof TurnOnLightLightsLightNameTurnOnPatchErrors];
+export type TurnOnLightError = TurnOnLightErrors[keyof TurnOnLightErrors];
 
-export type TurnOnLightLightsLightNameTurnOnPatchResponses = {
+export type TurnOnLightResponses = {
     /**
      * Successful Response
      */
     200: LightStatusResponse;
 };
 
-export type TurnOnLightLightsLightNameTurnOnPatchResponse = TurnOnLightLightsLightNameTurnOnPatchResponses[keyof TurnOnLightLightsLightNameTurnOnPatchResponses];
+export type TurnOnLightResponse = TurnOnLightResponses[keyof TurnOnLightResponses];
 
-export type TurnOffLightLightsLightNameTurnOffPatchData = {
+export type TurnOffLightData = {
     body?: never;
     path: {
         /**
@@ -1648,7 +1648,7 @@ export type TurnOffLightLightsLightNameTurnOffPatchData = {
     url: '/lights/{light_name}/turn_off';
 };
 
-export type TurnOffLightLightsLightNameTurnOffPatchErrors = {
+export type TurnOffLightErrors = {
     /**
      * Not found
      */
@@ -1659,18 +1659,18 @@ export type TurnOffLightLightsLightNameTurnOffPatchErrors = {
     422: HttpValidationError;
 };
 
-export type TurnOffLightLightsLightNameTurnOffPatchError = TurnOffLightLightsLightNameTurnOffPatchErrors[keyof TurnOffLightLightsLightNameTurnOffPatchErrors];
+export type TurnOffLightError = TurnOffLightErrors[keyof TurnOffLightErrors];
 
-export type TurnOffLightLightsLightNameTurnOffPatchResponses = {
+export type TurnOffLightResponses = {
     /**
      * Successful Response
      */
     200: LightStatusResponse;
 };
 
-export type TurnOffLightLightsLightNameTurnOffPatchResponse = TurnOffLightLightsLightNameTurnOffPatchResponses[keyof TurnOffLightLightsLightNameTurnOffPatchResponses];
+export type TurnOffLightResponse = TurnOffLightResponses[keyof TurnOffLightResponses];
 
-export type ToggleLightLightsLightNameTogglePatchData = {
+export type ToggleLightData = {
     body?: never;
     path: {
         /**
@@ -1682,7 +1682,7 @@ export type ToggleLightLightsLightNameTogglePatchData = {
     url: '/lights/{light_name}/toggle';
 };
 
-export type ToggleLightLightsLightNameTogglePatchErrors = {
+export type ToggleLightErrors = {
     /**
      * Not found
      */
@@ -1693,18 +1693,18 @@ export type ToggleLightLightsLightNameTogglePatchErrors = {
     422: HttpValidationError;
 };
 
-export type ToggleLightLightsLightNameTogglePatchError = ToggleLightLightsLightNameTogglePatchErrors[keyof ToggleLightLightsLightNameTogglePatchErrors];
+export type ToggleLightError = ToggleLightErrors[keyof ToggleLightErrors];
 
-export type ToggleLightLightsLightNameTogglePatchResponses = {
+export type ToggleLightResponses = {
     /**
      * Successful Response
      */
     200: LightStatusResponse;
 };
 
-export type ToggleLightLightsLightNameTogglePatchResponse = ToggleLightLightsLightNameTogglePatchResponses[keyof ToggleLightLightsLightNameTogglePatchResponses];
+export type ToggleLightResponse = ToggleLightResponses[keyof ToggleLightResponses];
 
-export type GetSettingsLightsLightNameSettingsGetData = {
+export type GetLightNameSettingsData = {
     body?: never;
     path?: never;
     query: {
@@ -1716,7 +1716,7 @@ export type GetSettingsLightsLightNameSettingsGetData = {
     url: '/lights/{light_name}/settings';
 };
 
-export type GetSettingsLightsLightNameSettingsGetErrors = {
+export type GetLightNameSettingsErrors = {
     /**
      * Not found
      */
@@ -1727,18 +1727,18 @@ export type GetSettingsLightsLightNameSettingsGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetSettingsLightsLightNameSettingsGetError = GetSettingsLightsLightNameSettingsGetErrors[keyof GetSettingsLightsLightNameSettingsGetErrors];
+export type GetLightNameSettingsError = GetLightNameSettingsErrors[keyof GetLightNameSettingsErrors];
 
-export type GetSettingsLightsLightNameSettingsGetResponses = {
+export type GetLightNameSettingsResponses = {
     /**
      * Successful Response
      */
     200: LightConfig;
 };
 
-export type GetSettingsLightsLightNameSettingsGetResponse = GetSettingsLightsLightNameSettingsGetResponses[keyof GetSettingsLightsLightNameSettingsGetResponses];
+export type GetLightNameSettingsResponse = GetLightNameSettingsResponses[keyof GetLightNameSettingsResponses];
 
-export type UpdateSettingsLightsLightNameSettingsPatchData = {
+export type UpdateLightNameSettingsData = {
     /**
      * Settings
      */
@@ -1755,7 +1755,7 @@ export type UpdateSettingsLightsLightNameSettingsPatchData = {
     url: '/lights/{light_name}/settings';
 };
 
-export type UpdateSettingsLightsLightNameSettingsPatchErrors = {
+export type UpdateLightNameSettingsErrors = {
     /**
      * Not found
      */
@@ -1766,18 +1766,18 @@ export type UpdateSettingsLightsLightNameSettingsPatchErrors = {
     422: HttpValidationError;
 };
 
-export type UpdateSettingsLightsLightNameSettingsPatchError = UpdateSettingsLightsLightNameSettingsPatchErrors[keyof UpdateSettingsLightsLightNameSettingsPatchErrors];
+export type UpdateLightNameSettingsError = UpdateLightNameSettingsErrors[keyof UpdateLightNameSettingsErrors];
 
-export type UpdateSettingsLightsLightNameSettingsPatchResponses = {
+export type UpdateLightNameSettingsResponses = {
     /**
      * Successful Response
      */
     200: LightConfig;
 };
 
-export type UpdateSettingsLightsLightNameSettingsPatchResponse = UpdateSettingsLightsLightNameSettingsPatchResponses[keyof UpdateSettingsLightsLightNameSettingsPatchResponses];
+export type UpdateLightNameSettingsResponse = UpdateLightNameSettingsResponses[keyof UpdateLightNameSettingsResponses];
 
-export type ReplaceSettingsLightsLightNameSettingsPutData = {
+export type ReplaceLightNameSettingsData = {
     body?: never;
     path?: never;
     query: {
@@ -1790,7 +1790,7 @@ export type ReplaceSettingsLightsLightNameSettingsPutData = {
     url: '/lights/{light_name}/settings';
 };
 
-export type ReplaceSettingsLightsLightNameSettingsPutErrors = {
+export type ReplaceLightNameSettingsErrors = {
     /**
      * Not found
      */
@@ -1801,32 +1801,32 @@ export type ReplaceSettingsLightsLightNameSettingsPutErrors = {
     422: HttpValidationError;
 };
 
-export type ReplaceSettingsLightsLightNameSettingsPutError = ReplaceSettingsLightsLightNameSettingsPutErrors[keyof ReplaceSettingsLightsLightNameSettingsPutErrors];
+export type ReplaceLightNameSettingsError = ReplaceLightNameSettingsErrors[keyof ReplaceLightNameSettingsErrors];
 
-export type ReplaceSettingsLightsLightNameSettingsPutResponses = {
+export type ReplaceLightNameSettingsResponses = {
     /**
      * Successful Response
      */
     200: LightConfig;
 };
 
-export type ReplaceSettingsLightsLightNameSettingsPutResponse = ReplaceSettingsLightsLightNameSettingsPutResponses[keyof ReplaceSettingsLightsLightNameSettingsPutResponses];
+export type ReplaceLightNameSettingsResponse = ReplaceLightNameSettingsResponses[keyof ReplaceLightNameSettingsResponses];
 
-export type GetProjectsProjectsGetData = {
+export type GetProjectsData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/projects/';
 };
 
-export type GetProjectsProjectsGetErrors = {
+export type GetProjectsErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type GetProjectsProjectsGetResponses = {
+export type GetProjectsResponses = {
     /**
      * Response Get Projects Projects  Get
      *
@@ -1837,9 +1837,9 @@ export type GetProjectsProjectsGetResponses = {
     };
 };
 
-export type GetProjectsProjectsGetResponse = GetProjectsProjectsGetResponses[keyof GetProjectsProjectsGetResponses];
+export type GetProjectsResponse = GetProjectsResponses[keyof GetProjectsResponses];
 
-export type DeleteProjectProjectsProjectNameDeleteData = {
+export type DeleteProjectData = {
     body?: never;
     path: {
         /**
@@ -1851,7 +1851,7 @@ export type DeleteProjectProjectsProjectNameDeleteData = {
     url: '/projects/{project_name}';
 };
 
-export type DeleteProjectProjectsProjectNameDeleteErrors = {
+export type DeleteProjectErrors = {
     /**
      * Not found
      */
@@ -1862,18 +1862,18 @@ export type DeleteProjectProjectsProjectNameDeleteErrors = {
     422: HttpValidationError;
 };
 
-export type DeleteProjectProjectsProjectNameDeleteError = DeleteProjectProjectsProjectNameDeleteErrors[keyof DeleteProjectProjectsProjectNameDeleteErrors];
+export type DeleteProjectError = DeleteProjectErrors[keyof DeleteProjectErrors];
 
-export type DeleteProjectProjectsProjectNameDeleteResponses = {
+export type DeleteProjectResponses = {
     /**
      * Successful Response
      */
     200: DeleteResponse;
 };
 
-export type DeleteProjectProjectsProjectNameDeleteResponse = DeleteProjectProjectsProjectNameDeleteResponses[keyof DeleteProjectProjectsProjectNameDeleteResponses];
+export type DeleteProjectResponse = DeleteProjectResponses[keyof DeleteProjectResponses];
 
-export type GetProjectProjectsProjectNameGetData = {
+export type GetProjectData = {
     body?: never;
     path: {
         /**
@@ -1885,7 +1885,7 @@ export type GetProjectProjectsProjectNameGetData = {
     url: '/projects/{project_name}';
 };
 
-export type GetProjectProjectsProjectNameGetErrors = {
+export type GetProjectErrors = {
     /**
      * Not found
      */
@@ -1896,18 +1896,18 @@ export type GetProjectProjectsProjectNameGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetProjectProjectsProjectNameGetError = GetProjectProjectsProjectNameGetErrors[keyof GetProjectProjectsProjectNameGetErrors];
+export type GetProjectError = GetProjectErrors[keyof GetProjectErrors];
 
-export type GetProjectProjectsProjectNameGetResponses = {
+export type GetProjectResponses = {
     /**
      * Successful Response
      */
     200: Project;
 };
 
-export type GetProjectProjectsProjectNameGetResponse = GetProjectProjectsProjectNameGetResponses[keyof GetProjectProjectsProjectNameGetResponses];
+export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
 
-export type NewProjectProjectsProjectNamePostData = {
+export type NewProjectData = {
     body?: never;
     path: {
         /**
@@ -1924,7 +1924,7 @@ export type NewProjectProjectsProjectNamePostData = {
     url: '/projects/{project_name}';
 };
 
-export type NewProjectProjectsProjectNamePostErrors = {
+export type NewProjectErrors = {
     /**
      * Not found
      */
@@ -1935,18 +1935,18 @@ export type NewProjectProjectsProjectNamePostErrors = {
     422: HttpValidationError;
 };
 
-export type NewProjectProjectsProjectNamePostError = NewProjectProjectsProjectNamePostErrors[keyof NewProjectProjectsProjectNamePostErrors];
+export type NewProjectError = NewProjectErrors[keyof NewProjectErrors];
 
-export type NewProjectProjectsProjectNamePostResponses = {
+export type NewProjectResponses = {
     /**
      * Successful Response
      */
     200: Project;
 };
 
-export type NewProjectProjectsProjectNamePostResponse = NewProjectProjectsProjectNamePostResponses[keyof NewProjectProjectsProjectNamePostResponses];
+export type NewProjectResponse = NewProjectResponses[keyof NewProjectResponses];
 
-export type AddScanWithDescriptionProjectsProjectNameScanPostData = {
+export type AddScanWithDescriptionData = {
     body: ScanSetting;
     path: {
         /**
@@ -1967,7 +1967,7 @@ export type AddScanWithDescriptionProjectsProjectNameScanPostData = {
     url: '/projects/{project_name}/scan';
 };
 
-export type AddScanWithDescriptionProjectsProjectNameScanPostErrors = {
+export type AddScanWithDescriptionErrors = {
     /**
      * Not found
      */
@@ -1978,18 +1978,18 @@ export type AddScanWithDescriptionProjectsProjectNameScanPostErrors = {
     422: HttpValidationError;
 };
 
-export type AddScanWithDescriptionProjectsProjectNameScanPostError = AddScanWithDescriptionProjectsProjectNameScanPostErrors[keyof AddScanWithDescriptionProjectsProjectNameScanPostErrors];
+export type AddScanWithDescriptionError = AddScanWithDescriptionErrors[keyof AddScanWithDescriptionErrors];
 
-export type AddScanWithDescriptionProjectsProjectNameScanPostResponses = {
+export type AddScanWithDescriptionResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type AddScanWithDescriptionProjectsProjectNameScanPostResponse = AddScanWithDescriptionProjectsProjectNameScanPostResponses[keyof AddScanWithDescriptionProjectsProjectNameScanPostResponses];
+export type AddScanWithDescriptionResponse = AddScanWithDescriptionResponses[keyof AddScanWithDescriptionResponses];
 
-export type UploadProjectToCloudProjectsProjectNameUploadPostData = {
+export type UploadProjectToCloudData = {
     body?: never;
     path: {
         /**
@@ -2006,7 +2006,7 @@ export type UploadProjectToCloudProjectsProjectNameUploadPostData = {
     url: '/projects/{project_name}/upload';
 };
 
-export type UploadProjectToCloudProjectsProjectNameUploadPostErrors = {
+export type UploadProjectToCloudErrors = {
     /**
      * Not found
      */
@@ -2017,18 +2017,18 @@ export type UploadProjectToCloudProjectsProjectNameUploadPostErrors = {
     422: HttpValidationError;
 };
 
-export type UploadProjectToCloudProjectsProjectNameUploadPostError = UploadProjectToCloudProjectsProjectNameUploadPostErrors[keyof UploadProjectToCloudProjectsProjectNameUploadPostErrors];
+export type UploadProjectToCloudError = UploadProjectToCloudErrors[keyof UploadProjectToCloudErrors];
 
-export type UploadProjectToCloudProjectsProjectNameUploadPostResponses = {
+export type UploadProjectToCloudResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type UploadProjectToCloudProjectsProjectNameUploadPostResponse = UploadProjectToCloudProjectsProjectNameUploadPostResponses[keyof UploadProjectToCloudProjectsProjectNameUploadPostResponses];
+export type UploadProjectToCloudResponse = UploadProjectToCloudResponses[keyof UploadProjectToCloudResponses];
 
-export type DownloadProjectFromCloudProjectsProjectNameDownloadPostData = {
+export type DownloadProjectFromCloudData = {
     body?: never;
     path: {
         /**
@@ -2049,7 +2049,7 @@ export type DownloadProjectFromCloudProjectsProjectNameDownloadPostData = {
     url: '/projects/{project_name}/download';
 };
 
-export type DownloadProjectFromCloudProjectsProjectNameDownloadPostErrors = {
+export type DownloadProjectFromCloudErrors = {
     /**
      * Not found
      */
@@ -2060,18 +2060,18 @@ export type DownloadProjectFromCloudProjectsProjectNameDownloadPostErrors = {
     422: HttpValidationError;
 };
 
-export type DownloadProjectFromCloudProjectsProjectNameDownloadPostError = DownloadProjectFromCloudProjectsProjectNameDownloadPostErrors[keyof DownloadProjectFromCloudProjectsProjectNameDownloadPostErrors];
+export type DownloadProjectFromCloudError = DownloadProjectFromCloudErrors[keyof DownloadProjectFromCloudErrors];
 
-export type DownloadProjectFromCloudProjectsProjectNameDownloadPostResponses = {
+export type DownloadProjectFromCloudResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type DownloadProjectFromCloudProjectsProjectNameDownloadPostResponse = DownloadProjectFromCloudProjectsProjectNameDownloadPostResponses[keyof DownloadProjectFromCloudProjectsProjectNameDownloadPostResponses];
+export type DownloadProjectFromCloudResponse = DownloadProjectFromCloudResponses[keyof DownloadProjectFromCloudResponses];
 
-export type DeletePhotosProjectsProjectNameScanIndexDeleteData = {
+export type DeletePhotosData = {
     /**
      * Photo Filenames
      */
@@ -2090,7 +2090,7 @@ export type DeletePhotosProjectsProjectNameScanIndexDeleteData = {
     url: '/projects/{project_name}/{scan_index}/';
 };
 
-export type DeletePhotosProjectsProjectNameScanIndexDeleteErrors = {
+export type DeletePhotosErrors = {
     /**
      * Not found
      */
@@ -2101,18 +2101,18 @@ export type DeletePhotosProjectsProjectNameScanIndexDeleteErrors = {
     422: HttpValidationError;
 };
 
-export type DeletePhotosProjectsProjectNameScanIndexDeleteError = DeletePhotosProjectsProjectNameScanIndexDeleteErrors[keyof DeletePhotosProjectsProjectNameScanIndexDeleteErrors];
+export type DeletePhotosError = DeletePhotosErrors[keyof DeletePhotosErrors];
 
-export type DeletePhotosProjectsProjectNameScanIndexDeleteResponses = {
+export type DeletePhotosResponses = {
     /**
      * Successful Response
      */
     200: DeleteResponse;
 };
 
-export type DeletePhotosProjectsProjectNameScanIndexDeleteResponse = DeletePhotosProjectsProjectNameScanIndexDeleteResponses[keyof DeletePhotosProjectsProjectNameScanIndexDeleteResponses];
+export type DeletePhotosResponse = DeletePhotosResponses[keyof DeletePhotosResponses];
 
-export type DeleteScanProjectsProjectNameScansDeleteData = {
+export type DeleteScanData = {
     body?: never;
     path: {
         /**
@@ -2129,7 +2129,7 @@ export type DeleteScanProjectsProjectNameScansDeleteData = {
     url: '/projects/{project_name}/scans/';
 };
 
-export type DeleteScanProjectsProjectNameScansDeleteErrors = {
+export type DeleteScanErrors = {
     /**
      * Not found
      */
@@ -2140,18 +2140,18 @@ export type DeleteScanProjectsProjectNameScansDeleteErrors = {
     422: HttpValidationError;
 };
 
-export type DeleteScanProjectsProjectNameScansDeleteError = DeleteScanProjectsProjectNameScansDeleteErrors[keyof DeleteScanProjectsProjectNameScansDeleteErrors];
+export type DeleteScanError = DeleteScanErrors[keyof DeleteScanErrors];
 
-export type DeleteScanProjectsProjectNameScansDeleteResponses = {
+export type DeleteScanResponses = {
     /**
      * Successful Response
      */
     200: DeleteResponse;
 };
 
-export type DeleteScanProjectsProjectNameScansDeleteResponse = DeleteScanProjectsProjectNameScansDeleteResponses[keyof DeleteScanProjectsProjectNameScansDeleteResponses];
+export type DeleteScanResponse = DeleteScanResponses[keyof DeleteScanResponses];
 
-export type GetScanStatusProjectsProjectNameScansScanIndexStatusGetData = {
+export type GetScanStatusData = {
     body?: never;
     path: {
         /**
@@ -2167,7 +2167,7 @@ export type GetScanStatusProjectsProjectNameScansScanIndexStatusGetData = {
     url: '/projects/{project_name}/scans/{scan_index}/status';
 };
 
-export type GetScanStatusProjectsProjectNameScansScanIndexStatusGetErrors = {
+export type GetScanStatusErrors = {
     /**
      * Not found
      */
@@ -2178,18 +2178,18 @@ export type GetScanStatusProjectsProjectNameScansScanIndexStatusGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetScanStatusProjectsProjectNameScansScanIndexStatusGetError = GetScanStatusProjectsProjectNameScansScanIndexStatusGetErrors[keyof GetScanStatusProjectsProjectNameScansScanIndexStatusGetErrors];
+export type GetScanStatusError = GetScanStatusErrors[keyof GetScanStatusErrors];
 
-export type GetScanStatusProjectsProjectNameScansScanIndexStatusGetResponses = {
+export type GetScanStatusResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type GetScanStatusProjectsProjectNameScansScanIndexStatusGetResponse = GetScanStatusProjectsProjectNameScansScanIndexStatusGetResponses[keyof GetScanStatusProjectsProjectNameScansScanIndexStatusGetResponses];
+export type GetScanStatusResponse = GetScanStatusResponses[keyof GetScanStatusResponses];
 
-export type PauseScanProjectsProjectNameScansScanIndexPausePatchData = {
+export type PauseScanData = {
     body?: never;
     path: {
         /**
@@ -2205,7 +2205,7 @@ export type PauseScanProjectsProjectNameScansScanIndexPausePatchData = {
     url: '/projects/{project_name}/scans/{scan_index}/pause';
 };
 
-export type PauseScanProjectsProjectNameScansScanIndexPausePatchErrors = {
+export type PauseScanErrors = {
     /**
      * Not found
      */
@@ -2216,18 +2216,18 @@ export type PauseScanProjectsProjectNameScansScanIndexPausePatchErrors = {
     422: HttpValidationError;
 };
 
-export type PauseScanProjectsProjectNameScansScanIndexPausePatchError = PauseScanProjectsProjectNameScansScanIndexPausePatchErrors[keyof PauseScanProjectsProjectNameScansScanIndexPausePatchErrors];
+export type PauseScanError = PauseScanErrors[keyof PauseScanErrors];
 
-export type PauseScanProjectsProjectNameScansScanIndexPausePatchResponses = {
+export type PauseScanResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type PauseScanProjectsProjectNameScansScanIndexPausePatchResponse = PauseScanProjectsProjectNameScansScanIndexPausePatchResponses[keyof PauseScanProjectsProjectNameScansScanIndexPausePatchResponses];
+export type PauseScanResponse = PauseScanResponses[keyof PauseScanResponses];
 
-export type ResumeScanProjectsProjectNameScansScanIndexResumePatchData = {
+export type ResumeScanData = {
     body?: never;
     path: {
         /**
@@ -2248,7 +2248,7 @@ export type ResumeScanProjectsProjectNameScansScanIndexResumePatchData = {
     url: '/projects/{project_name}/scans/{scan_index}/resume';
 };
 
-export type ResumeScanProjectsProjectNameScansScanIndexResumePatchErrors = {
+export type ResumeScanErrors = {
     /**
      * Not found
      */
@@ -2259,18 +2259,18 @@ export type ResumeScanProjectsProjectNameScansScanIndexResumePatchErrors = {
     422: HttpValidationError;
 };
 
-export type ResumeScanProjectsProjectNameScansScanIndexResumePatchError = ResumeScanProjectsProjectNameScansScanIndexResumePatchErrors[keyof ResumeScanProjectsProjectNameScansScanIndexResumePatchErrors];
+export type ResumeScanError = ResumeScanErrors[keyof ResumeScanErrors];
 
-export type ResumeScanProjectsProjectNameScansScanIndexResumePatchResponses = {
+export type ResumeScanResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type ResumeScanProjectsProjectNameScansScanIndexResumePatchResponse = ResumeScanProjectsProjectNameScansScanIndexResumePatchResponses[keyof ResumeScanProjectsProjectNameScansScanIndexResumePatchResponses];
+export type ResumeScanResponse = ResumeScanResponses[keyof ResumeScanResponses];
 
-export type CancelScanProjectsProjectNameScansScanIndexCancelPatchData = {
+export type CancelScanData = {
     body?: never;
     path: {
         /**
@@ -2286,7 +2286,7 @@ export type CancelScanProjectsProjectNameScansScanIndexCancelPatchData = {
     url: '/projects/{project_name}/scans/{scan_index}/cancel';
 };
 
-export type CancelScanProjectsProjectNameScansScanIndexCancelPatchErrors = {
+export type CancelScanErrors = {
     /**
      * Not found
      */
@@ -2297,18 +2297,18 @@ export type CancelScanProjectsProjectNameScansScanIndexCancelPatchErrors = {
     422: HttpValidationError;
 };
 
-export type CancelScanProjectsProjectNameScansScanIndexCancelPatchError = CancelScanProjectsProjectNameScansScanIndexCancelPatchErrors[keyof CancelScanProjectsProjectNameScansScanIndexCancelPatchErrors];
+export type CancelScanError = CancelScanErrors[keyof CancelScanErrors];
 
-export type CancelScanProjectsProjectNameScansScanIndexCancelPatchResponses = {
+export type CancelScanResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type CancelScanProjectsProjectNameScansScanIndexCancelPatchResponse = CancelScanProjectsProjectNameScansScanIndexCancelPatchResponses[keyof CancelScanProjectsProjectNameScansScanIndexCancelPatchResponses];
+export type CancelScanResponse = CancelScanResponses[keyof CancelScanResponses];
 
-export type DownloadProjectProjectsProjectNameZipGetData = {
+export type DownloadProjectData = {
     body?: never;
     path: {
         /**
@@ -2320,7 +2320,7 @@ export type DownloadProjectProjectsProjectNameZipGetData = {
     url: '/projects/{project_name}/zip';
 };
 
-export type DownloadProjectProjectsProjectNameZipGetErrors = {
+export type DownloadProjectErrors = {
     /**
      * Not found
      */
@@ -2331,16 +2331,16 @@ export type DownloadProjectProjectsProjectNameZipGetErrors = {
     422: HttpValidationError;
 };
 
-export type DownloadProjectProjectsProjectNameZipGetError = DownloadProjectProjectsProjectNameZipGetErrors[keyof DownloadProjectProjectsProjectNameZipGetErrors];
+export type DownloadProjectError = DownloadProjectErrors[keyof DownloadProjectErrors];
 
-export type DownloadProjectProjectsProjectNameZipGetResponses = {
+export type DownloadProjectResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type DownloadScansProjectsProjectNameScansZipGetData = {
+export type DownloadScansData = {
     body?: never;
     path: {
         /**
@@ -2357,7 +2357,7 @@ export type DownloadScansProjectsProjectNameScansZipGetData = {
     url: '/projects/{project_name}/scans/zip';
 };
 
-export type DownloadScansProjectsProjectNameScansZipGetErrors = {
+export type DownloadScansErrors = {
     /**
      * Not found
      */
@@ -2368,16 +2368,16 @@ export type DownloadScansProjectsProjectNameScansZipGetErrors = {
     422: HttpValidationError;
 };
 
-export type DownloadScansProjectsProjectNameScansZipGetError = DownloadScansProjectsProjectNameScansZipGetErrors[keyof DownloadScansProjectsProjectNameScansZipGetErrors];
+export type DownloadScansError = DownloadScansErrors[keyof DownloadScansErrors];
 
-export type DownloadScansProjectsProjectNameScansZipGetResponses = {
+export type DownloadScansResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type GetScanProjectsProjectNameScansScanIndexGetData = {
+export type GetScanData = {
     body?: never;
     path: {
         /**
@@ -2393,7 +2393,7 @@ export type GetScanProjectsProjectNameScansScanIndexGetData = {
     url: '/projects/{project_name}/scans/{scan_index}';
 };
 
-export type GetScanProjectsProjectNameScansScanIndexGetErrors = {
+export type GetScanErrors = {
     /**
      * Not found
      */
@@ -2404,32 +2404,32 @@ export type GetScanProjectsProjectNameScansScanIndexGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetScanProjectsProjectNameScansScanIndexGetError = GetScanProjectsProjectNameScansScanIndexGetErrors[keyof GetScanProjectsProjectNameScansScanIndexGetErrors];
+export type GetScanError = GetScanErrors[keyof GetScanErrors];
 
-export type GetScanProjectsProjectNameScansScanIndexGetResponses = {
+export type GetScanResponses = {
     /**
      * Successful Response
      */
     200: Scan;
 };
 
-export type GetScanProjectsProjectNameScansScanIndexGetResponse = GetScanProjectsProjectNameScansScanIndexGetResponses[keyof GetScanProjectsProjectNameScansScanIndexGetResponses];
+export type GetScanResponse = GetScanResponses[keyof GetScanResponses];
 
-export type GetPinsGpioGetData = {
+export type GetPinsData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/gpio/';
 };
 
-export type GetPinsGpioGetErrors = {
+export type GetPinsErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type GetPinsGpioGetResponses = {
+export type GetPinsResponses = {
     /**
      * Response Get Pins Gpio  Get
      *
@@ -2440,9 +2440,9 @@ export type GetPinsGpioGetResponses = {
     };
 };
 
-export type GetPinsGpioGetResponse = GetPinsGpioGetResponses[keyof GetPinsGpioGetResponses];
+export type GetPinsResponse = GetPinsResponses[keyof GetPinsResponses];
 
-export type GetPinGpioPinIdGetData = {
+export type GetPinData = {
     body?: never;
     path: {
         /**
@@ -2454,7 +2454,7 @@ export type GetPinGpioPinIdGetData = {
     url: '/gpio/{pin_id}';
 };
 
-export type GetPinGpioPinIdGetErrors = {
+export type GetPinErrors = {
     /**
      * Not found
      */
@@ -2465,9 +2465,9 @@ export type GetPinGpioPinIdGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetPinGpioPinIdGetError = GetPinGpioPinIdGetErrors[keyof GetPinGpioPinIdGetErrors];
+export type GetPinError = GetPinErrors[keyof GetPinErrors];
 
-export type GetPinGpioPinIdGetResponses = {
+export type GetPinResponses = {
     /**
      * Response Get Pin Gpio  Pin Id  Get
      *
@@ -2476,9 +2476,9 @@ export type GetPinGpioPinIdGetResponses = {
     200: boolean;
 };
 
-export type GetPinGpioPinIdGetResponse = GetPinGpioPinIdGetResponses[keyof GetPinGpioPinIdGetResponses];
+export type GetPinResponse = GetPinResponses[keyof GetPinResponses];
 
-export type SetPinGpioPinIdPatchData = {
+export type SetPinData = {
     body?: never;
     path: {
         /**
@@ -2495,7 +2495,7 @@ export type SetPinGpioPinIdPatchData = {
     url: '/gpio/{pin_id}';
 };
 
-export type SetPinGpioPinIdPatchErrors = {
+export type SetPinErrors = {
     /**
      * Not found
      */
@@ -2506,16 +2506,16 @@ export type SetPinGpioPinIdPatchErrors = {
     422: HttpValidationError;
 };
 
-export type SetPinGpioPinIdPatchError = SetPinGpioPinIdPatchErrors[keyof SetPinGpioPinIdPatchErrors];
+export type SetPinError = SetPinErrors[keyof SetPinErrors];
 
-export type SetPinGpioPinIdPatchResponses = {
+export type SetPinResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type TogglePinGpioPinIdTogglePatchData = {
+export type TogglePinData = {
     body?: never;
     path: {
         /**
@@ -2527,7 +2527,7 @@ export type TogglePinGpioPinIdTogglePatchData = {
     url: '/gpio/{pin_id}/toggle';
 };
 
-export type TogglePinGpioPinIdTogglePatchErrors = {
+export type TogglePinErrors = {
     /**
      * Not found
      */
@@ -2538,37 +2538,37 @@ export type TogglePinGpioPinIdTogglePatchErrors = {
     422: HttpValidationError;
 };
 
-export type TogglePinGpioPinIdTogglePatchError = TogglePinGpioPinIdTogglePatchErrors[keyof TogglePinGpioPinIdTogglePatchErrors];
+export type TogglePinError = TogglePinErrors[keyof TogglePinErrors];
 
-export type TogglePinGpioPinIdTogglePatchResponses = {
+export type TogglePinResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type GetSoftwareInfoGetData = {
+export type GetSoftwareInfoData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/';
 };
 
-export type GetSoftwareInfoGetErrors = {
+export type GetSoftwareInfoErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type GetSoftwareInfoGetResponses = {
+export type GetSoftwareInfoResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type TailLogsLogsTailGetData = {
+export type TailLogsData = {
     body?: never;
     path?: never;
     query?: {
@@ -2592,7 +2592,7 @@ export type TailLogsLogsTailGetData = {
     url: '/logs/tail';
 };
 
-export type TailLogsLogsTailGetErrors = {
+export type TailLogsErrors = {
     /**
      * Not found
      */
@@ -2603,88 +2603,88 @@ export type TailLogsLogsTailGetErrors = {
     422: HttpValidationError;
 };
 
-export type TailLogsLogsTailGetError = TailLogsLogsTailGetErrors[keyof TailLogsLogsTailGetErrors];
+export type TailLogsError = TailLogsErrors[keyof TailLogsErrors];
 
-export type TailLogsLogsTailGetResponses = {
+export type TailLogsResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type DownloadLogsArchiveLogsArchiveGetData = {
+export type DownloadLogsArchiveData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/logs/archive';
 };
 
-export type DownloadLogsArchiveLogsArchiveGetErrors = {
+export type DownloadLogsArchiveErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type DownloadLogsArchiveLogsArchiveGetResponses = {
+export type DownloadLogsArchiveResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type GetDeviceInfoDeviceInfoGetData = {
+export type GetDeviceInfoData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/device/info';
 };
 
-export type GetDeviceInfoDeviceInfoGetErrors = {
+export type GetDeviceInfoErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type GetDeviceInfoDeviceInfoGetResponses = {
+export type GetDeviceInfoResponses = {
     /**
      * Successful Response
      */
     200: DeviceStatusResponse;
 };
 
-export type GetDeviceInfoDeviceInfoGetResponse = GetDeviceInfoDeviceInfoGetResponses[keyof GetDeviceInfoDeviceInfoGetResponses];
+export type GetDeviceInfoResponse = GetDeviceInfoResponses[keyof GetDeviceInfoResponses];
 
-export type ListConfigFilesDeviceConfigurationsGetData = {
+export type ListConfigFilesData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/device/configurations';
 };
 
-export type ListConfigFilesDeviceConfigurationsGetErrors = {
+export type ListConfigFilesErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type ListConfigFilesDeviceConfigurationsGetResponses = {
+export type ListConfigFilesResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type AddConfigJsonDeviceConfigurationsPostData = {
+export type AddConfigJsonData = {
     body: BodyAddConfigJsonDeviceConfigurationsPost;
     path?: never;
     query?: never;
     url: '/device/configurations/';
 };
 
-export type AddConfigJsonDeviceConfigurationsPostErrors = {
+export type AddConfigJsonErrors = {
     /**
      * Not found
      */
@@ -2695,48 +2695,48 @@ export type AddConfigJsonDeviceConfigurationsPostErrors = {
     422: HttpValidationError;
 };
 
-export type AddConfigJsonDeviceConfigurationsPostError = AddConfigJsonDeviceConfigurationsPostErrors[keyof AddConfigJsonDeviceConfigurationsPostErrors];
+export type AddConfigJsonError = AddConfigJsonErrors[keyof AddConfigJsonErrors];
 
-export type AddConfigJsonDeviceConfigurationsPostResponses = {
+export type AddConfigJsonResponses = {
     /**
      * Successful Response
      */
     200: DeviceControlResponse;
 };
 
-export type AddConfigJsonDeviceConfigurationsPostResponse = AddConfigJsonDeviceConfigurationsPostResponses[keyof AddConfigJsonDeviceConfigurationsPostResponses];
+export type AddConfigJsonResponse = AddConfigJsonResponses[keyof AddConfigJsonResponses];
 
-export type SaveDeviceConfigDeviceConfigurationsCurrentPatchData = {
+export type SaveDeviceConfigData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/device/configurations/current';
 };
 
-export type SaveDeviceConfigDeviceConfigurationsCurrentPatchErrors = {
+export type SaveDeviceConfigErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type SaveDeviceConfigDeviceConfigurationsCurrentPatchResponses = {
+export type SaveDeviceConfigResponses = {
     /**
      * Successful Response
      */
     200: DeviceControlResponse;
 };
 
-export type SaveDeviceConfigDeviceConfigurationsCurrentPatchResponse = SaveDeviceConfigDeviceConfigurationsCurrentPatchResponses[keyof SaveDeviceConfigDeviceConfigurationsCurrentPatchResponses];
+export type SaveDeviceConfigResponse = SaveDeviceConfigResponses[keyof SaveDeviceConfigResponses];
 
-export type SetConfigFileDeviceConfigurationsCurrentPutData = {
+export type SetConfigFileData = {
     body: DeviceConfigRequest;
     path?: never;
     query?: never;
     url: '/device/configurations/current';
 };
 
-export type SetConfigFileDeviceConfigurationsCurrentPutErrors = {
+export type SetConfigFileErrors = {
     /**
      * Not found
      */
@@ -2747,18 +2747,18 @@ export type SetConfigFileDeviceConfigurationsCurrentPutErrors = {
     422: HttpValidationError;
 };
 
-export type SetConfigFileDeviceConfigurationsCurrentPutError = SetConfigFileDeviceConfigurationsCurrentPutErrors[keyof SetConfigFileDeviceConfigurationsCurrentPutErrors];
+export type SetConfigFileError = SetConfigFileErrors[keyof SetConfigFileErrors];
 
-export type SetConfigFileDeviceConfigurationsCurrentPutResponses = {
+export type SetConfigFileResponses = {
     /**
      * Successful Response
      */
     200: DeviceControlResponse;
 };
 
-export type SetConfigFileDeviceConfigurationsCurrentPutResponse = SetConfigFileDeviceConfigurationsCurrentPutResponses[keyof SetConfigFileDeviceConfigurationsCurrentPutResponses];
+export type SetConfigFileResponse = SetConfigFileResponses[keyof SetConfigFileResponses];
 
-export type ReinitializeHardwareDeviceConfigurationsCurrentInitializePostData = {
+export type ReinitializeHardwareData = {
     body?: never;
     path?: never;
     query?: {
@@ -2770,7 +2770,7 @@ export type ReinitializeHardwareDeviceConfigurationsCurrentInitializePostData = 
     url: '/device/configurations/current/initialize';
 };
 
-export type ReinitializeHardwareDeviceConfigurationsCurrentInitializePostErrors = {
+export type ReinitializeHardwareErrors = {
     /**
      * Not found
      */
@@ -2781,18 +2781,18 @@ export type ReinitializeHardwareDeviceConfigurationsCurrentInitializePostErrors 
     422: HttpValidationError;
 };
 
-export type ReinitializeHardwareDeviceConfigurationsCurrentInitializePostError = ReinitializeHardwareDeviceConfigurationsCurrentInitializePostErrors[keyof ReinitializeHardwareDeviceConfigurationsCurrentInitializePostErrors];
+export type ReinitializeHardwareError = ReinitializeHardwareErrors[keyof ReinitializeHardwareErrors];
 
-export type ReinitializeHardwareDeviceConfigurationsCurrentInitializePostResponses = {
+export type ReinitializeHardwareResponses = {
     /**
      * Successful Response
      */
     200: DeviceControlResponse;
 };
 
-export type ReinitializeHardwareDeviceConfigurationsCurrentInitializePostResponse = ReinitializeHardwareDeviceConfigurationsCurrentInitializePostResponses[keyof ReinitializeHardwareDeviceConfigurationsCurrentInitializePostResponses];
+export type ReinitializeHardwareResponse = ReinitializeHardwareResponses[keyof ReinitializeHardwareResponses];
 
-export type RebootDeviceRebootPostData = {
+export type RebootData = {
     body?: never;
     path?: never;
     query?: {
@@ -2804,7 +2804,7 @@ export type RebootDeviceRebootPostData = {
     url: '/device/reboot';
 };
 
-export type RebootDeviceRebootPostErrors = {
+export type RebootErrors = {
     /**
      * Not found
      */
@@ -2815,9 +2815,9 @@ export type RebootDeviceRebootPostErrors = {
     422: HttpValidationError;
 };
 
-export type RebootDeviceRebootPostError = RebootDeviceRebootPostErrors[keyof RebootDeviceRebootPostErrors];
+export type RebootError = RebootErrors[keyof RebootErrors];
 
-export type RebootDeviceRebootPostResponses = {
+export type RebootResponses = {
     /**
      * Response Reboot Device Reboot Post
      *
@@ -2826,9 +2826,9 @@ export type RebootDeviceRebootPostResponses = {
     200: boolean;
 };
 
-export type RebootDeviceRebootPostResponse = RebootDeviceRebootPostResponses[keyof RebootDeviceRebootPostResponses];
+export type RebootResponse = RebootResponses[keyof RebootResponses];
 
-export type ShutdownDeviceShutdownPostData = {
+export type ShutdownData = {
     body?: never;
     path?: never;
     query?: {
@@ -2840,7 +2840,7 @@ export type ShutdownDeviceShutdownPostData = {
     url: '/device/shutdown';
 };
 
-export type ShutdownDeviceShutdownPostErrors = {
+export type ShutdownErrors = {
     /**
      * Not found
      */
@@ -2851,9 +2851,9 @@ export type ShutdownDeviceShutdownPostErrors = {
     422: HttpValidationError;
 };
 
-export type ShutdownDeviceShutdownPostError = ShutdownDeviceShutdownPostErrors[keyof ShutdownDeviceShutdownPostErrors];
+export type ShutdownError = ShutdownErrors[keyof ShutdownErrors];
 
-export type ShutdownDeviceShutdownPostResponses = {
+export type ShutdownResponses = {
     /**
      * Response Shutdown Device Shutdown Post
      *
@@ -2862,23 +2862,23 @@ export type ShutdownDeviceShutdownPostResponses = {
     200: boolean;
 };
 
-export type ShutdownDeviceShutdownPostResponse = ShutdownDeviceShutdownPostResponses[keyof ShutdownDeviceShutdownPostResponses];
+export type ShutdownResponse = ShutdownResponses[keyof ShutdownResponses];
 
-export type GetAllTasksTasksGetData = {
+export type GetAllTasksData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/tasks/';
 };
 
-export type GetAllTasksTasksGetErrors = {
+export type GetAllTasksErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type GetAllTasksTasksGetResponses = {
+export type GetAllTasksResponses = {
     /**
      * Response Get All Tasks Tasks  Get
      *
@@ -2887,9 +2887,9 @@ export type GetAllTasksTasksGetResponses = {
     200: Array<Task>;
 };
 
-export type GetAllTasksTasksGetResponse = GetAllTasksTasksGetResponses[keyof GetAllTasksTasksGetResponses];
+export type GetAllTasksResponse = GetAllTasksResponses[keyof GetAllTasksResponses];
 
-export type CancelTaskTasksTaskIdDeleteData = {
+export type CancelTaskData = {
     body?: never;
     path: {
         /**
@@ -2901,7 +2901,7 @@ export type CancelTaskTasksTaskIdDeleteData = {
     url: '/tasks/{task_id}';
 };
 
-export type CancelTaskTasksTaskIdDeleteErrors = {
+export type CancelTaskErrors = {
     /**
      * Not found
      */
@@ -2912,18 +2912,18 @@ export type CancelTaskTasksTaskIdDeleteErrors = {
     422: HttpValidationError;
 };
 
-export type CancelTaskTasksTaskIdDeleteError = CancelTaskTasksTaskIdDeleteErrors[keyof CancelTaskTasksTaskIdDeleteErrors];
+export type CancelTaskError = CancelTaskErrors[keyof CancelTaskErrors];
 
-export type CancelTaskTasksTaskIdDeleteResponses = {
+export type CancelTaskResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type CancelTaskTasksTaskIdDeleteResponse = CancelTaskTasksTaskIdDeleteResponses[keyof CancelTaskTasksTaskIdDeleteResponses];
+export type CancelTaskResponse = CancelTaskResponses[keyof CancelTaskResponses];
 
-export type GetTaskStatusTasksTaskIdGetData = {
+export type GetTaskStatusData = {
     body?: never;
     path: {
         /**
@@ -2935,7 +2935,7 @@ export type GetTaskStatusTasksTaskIdGetData = {
     url: '/tasks/{task_id}';
 };
 
-export type GetTaskStatusTasksTaskIdGetErrors = {
+export type GetTaskStatusErrors = {
     /**
      * Not found
      */
@@ -2946,18 +2946,18 @@ export type GetTaskStatusTasksTaskIdGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetTaskStatusTasksTaskIdGetError = GetTaskStatusTasksTaskIdGetErrors[keyof GetTaskStatusTasksTaskIdGetErrors];
+export type GetTaskStatusError = GetTaskStatusErrors[keyof GetTaskStatusErrors];
 
-export type GetTaskStatusTasksTaskIdGetResponses = {
+export type GetTaskStatusResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type GetTaskStatusTasksTaskIdGetResponse = GetTaskStatusTasksTaskIdGetResponses[keyof GetTaskStatusTasksTaskIdGetResponses];
+export type GetTaskStatusResponse = GetTaskStatusResponses[keyof GetTaskStatusResponses];
 
-export type PauseTaskTasksTaskIdPausePostData = {
+export type PauseTaskData = {
     body?: never;
     path: {
         /**
@@ -2969,7 +2969,7 @@ export type PauseTaskTasksTaskIdPausePostData = {
     url: '/tasks/{task_id}/pause';
 };
 
-export type PauseTaskTasksTaskIdPausePostErrors = {
+export type PauseTaskErrors = {
     /**
      * Not found
      */
@@ -2980,18 +2980,18 @@ export type PauseTaskTasksTaskIdPausePostErrors = {
     422: HttpValidationError;
 };
 
-export type PauseTaskTasksTaskIdPausePostError = PauseTaskTasksTaskIdPausePostErrors[keyof PauseTaskTasksTaskIdPausePostErrors];
+export type PauseTaskError = PauseTaskErrors[keyof PauseTaskErrors];
 
-export type PauseTaskTasksTaskIdPausePostResponses = {
+export type PauseTaskResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type PauseTaskTasksTaskIdPausePostResponse = PauseTaskTasksTaskIdPausePostResponses[keyof PauseTaskTasksTaskIdPausePostResponses];
+export type PauseTaskResponse = PauseTaskResponses[keyof PauseTaskResponses];
 
-export type ResumeTaskTasksTaskIdResumePostData = {
+export type ResumeTaskData = {
     body?: never;
     path: {
         /**
@@ -3003,7 +3003,7 @@ export type ResumeTaskTasksTaskIdResumePostData = {
     url: '/tasks/{task_id}/resume';
 };
 
-export type ResumeTaskTasksTaskIdResumePostErrors = {
+export type ResumeTaskErrors = {
     /**
      * Not found
      */
@@ -3014,18 +3014,18 @@ export type ResumeTaskTasksTaskIdResumePostErrors = {
     422: HttpValidationError;
 };
 
-export type ResumeTaskTasksTaskIdResumePostError = ResumeTaskTasksTaskIdResumePostErrors[keyof ResumeTaskTasksTaskIdResumePostErrors];
+export type ResumeTaskError = ResumeTaskErrors[keyof ResumeTaskErrors];
 
-export type ResumeTaskTasksTaskIdResumePostResponses = {
+export type ResumeTaskResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type ResumeTaskTasksTaskIdResumePostResponse = ResumeTaskTasksTaskIdResumePostResponses[keyof ResumeTaskTasksTaskIdResumePostResponses];
+export type ResumeTaskResponse = ResumeTaskResponses[keyof ResumeTaskResponses];
 
-export type CreateTaskTasksTaskNamePostData = {
+export type CreateTaskData = {
     body?: BodyCreateTaskTasksTaskNamePost;
     path: {
         /**
@@ -3037,7 +3037,7 @@ export type CreateTaskTasksTaskNamePostData = {
     url: '/tasks/{task_name}';
 };
 
-export type CreateTaskTasksTaskNamePostErrors = {
+export type CreateTaskErrors = {
     /**
      * Not found
      */
@@ -3048,25 +3048,25 @@ export type CreateTaskTasksTaskNamePostErrors = {
     422: HttpValidationError;
 };
 
-export type CreateTaskTasksTaskNamePostError = CreateTaskTasksTaskNamePostErrors[keyof CreateTaskTasksTaskNamePostErrors];
+export type CreateTaskError = CreateTaskErrors[keyof CreateTaskErrors];
 
-export type CreateTaskTasksTaskNamePostResponses = {
+export type CreateTaskResponses = {
     /**
      * Successful Response
      */
     202: Task;
 };
 
-export type CreateTaskTasksTaskNamePostResponse = CreateTaskTasksTaskNamePostResponses[keyof CreateTaskTasksTaskNamePostResponses];
+export type CreateTaskResponse = CreateTaskResponses[keyof CreateTaskResponses];
 
-export type MoveToPositionDevelopScannerPositionPutData = {
+export type MoveToPositionData = {
     body: PolarPoint3d;
     path?: never;
     query?: never;
     url: '/develop/scanner-position';
 };
 
-export type MoveToPositionDevelopScannerPositionPutErrors = {
+export type MoveToPositionErrors = {
     /**
      * Not found
      */
@@ -3077,30 +3077,30 @@ export type MoveToPositionDevelopScannerPositionPutErrors = {
     422: HttpValidationError;
 };
 
-export type MoveToPositionDevelopScannerPositionPutError = MoveToPositionDevelopScannerPositionPutErrors[keyof MoveToPositionDevelopScannerPositionPutErrors];
+export type MoveToPositionError = MoveToPositionErrors[keyof MoveToPositionErrors];
 
-export type MoveToPositionDevelopScannerPositionPutResponses = {
+export type MoveToPositionResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type RestartApplicationDevelopRestartPostData = {
+export type RestartApplicationData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/develop/restart';
 };
 
-export type RestartApplicationDevelopRestartPostErrors = {
+export type RestartApplicationErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type RestartApplicationDevelopRestartPostResponses = {
+export type RestartApplicationResponses = {
     /**
      * Response Restart Application Develop Restart Post
      *
@@ -3111,9 +3111,9 @@ export type RestartApplicationDevelopRestartPostResponses = {
     };
 };
 
-export type RestartApplicationDevelopRestartPostResponse = RestartApplicationDevelopRestartPostResponses[keyof RestartApplicationDevelopRestartPostResponses];
+export type RestartApplicationResponse = RestartApplicationResponses[keyof RestartApplicationResponses];
 
-export type CropImageDevelopCropImageGetData = {
+export type CropImageData = {
     body?: never;
     path?: never;
     query: {
@@ -3129,7 +3129,7 @@ export type CropImageDevelopCropImageGetData = {
     url: '/develop/crop_image';
 };
 
-export type CropImageDevelopCropImageGetErrors = {
+export type CropImageErrors = {
     /**
      * Not found
      */
@@ -3140,16 +3140,16 @@ export type CropImageDevelopCropImageGetErrors = {
     422: HttpValidationError;
 };
 
-export type CropImageDevelopCropImageGetError = CropImageDevelopCropImageGetErrors[keyof CropImageDevelopCropImageGetErrors];
+export type CropImageError = CropImageErrors[keyof CropImageErrors];
 
-export type CropImageDevelopCropImageGetResponses = {
+export type CropImageResponses = {
     /**
      * Successful Response
      */
     200: unknown;
 };
 
-export type HelloWorldAsyncDevelopHelloWorldAsyncPostData = {
+export type HelloWorldAsyncData = {
     body?: never;
     path?: never;
     query: {
@@ -3165,7 +3165,7 @@ export type HelloWorldAsyncDevelopHelloWorldAsyncPostData = {
     url: '/develop/hello-world-async';
 };
 
-export type HelloWorldAsyncDevelopHelloWorldAsyncPostErrors = {
+export type HelloWorldAsyncErrors = {
     /**
      * Not found
      */
@@ -3176,18 +3176,18 @@ export type HelloWorldAsyncDevelopHelloWorldAsyncPostErrors = {
     422: HttpValidationError;
 };
 
-export type HelloWorldAsyncDevelopHelloWorldAsyncPostError = HelloWorldAsyncDevelopHelloWorldAsyncPostErrors[keyof HelloWorldAsyncDevelopHelloWorldAsyncPostErrors];
+export type HelloWorldAsyncError = HelloWorldAsyncErrors[keyof HelloWorldAsyncErrors];
 
-export type HelloWorldAsyncDevelopHelloWorldAsyncPostResponses = {
+export type HelloWorldAsyncResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type HelloWorldAsyncDevelopHelloWorldAsyncPostResponse = HelloWorldAsyncDevelopHelloWorldAsyncPostResponses[keyof HelloWorldAsyncDevelopHelloWorldAsyncPostResponses];
+export type HelloWorldAsyncResponse = HelloWorldAsyncResponses[keyof HelloWorldAsyncResponses];
 
-export type GetPathDevelopMethodGetData = {
+export type GetPathData = {
     body?: never;
     path: {
         method: PathMethod;
@@ -3201,7 +3201,7 @@ export type GetPathDevelopMethodGetData = {
     url: '/develop/{method}';
 };
 
-export type GetPathDevelopMethodGetErrors = {
+export type GetPathErrors = {
     /**
      * Not found
      */
@@ -3212,9 +3212,9 @@ export type GetPathDevelopMethodGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetPathDevelopMethodGetError = GetPathDevelopMethodGetErrors[keyof GetPathDevelopMethodGetErrors];
+export type GetPathError = GetPathErrors[keyof GetPathErrors];
 
-export type GetPathDevelopMethodGetResponses = {
+export type GetPathResponses = {
     /**
      * Response Get Path Develop  Method  Get
      *
@@ -3223,62 +3223,62 @@ export type GetPathDevelopMethodGetResponses = {
     200: Array<CartesianPoint3d>;
 };
 
-export type GetPathDevelopMethodGetResponse = GetPathDevelopMethodGetResponses[keyof GetPathDevelopMethodGetResponses];
+export type GetPathResponse = GetPathResponses[keyof GetPathResponses];
 
-export type GetCloudStatusCloudStatusGetData = {
+export type GetCloudStatusData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/cloud/status';
 };
 
-export type GetCloudStatusCloudStatusGetErrors = {
+export type GetCloudStatusErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type GetCloudStatusCloudStatusGetResponses = {
+export type GetCloudStatusResponses = {
     /**
      * Successful Response
      */
     200: CloudStatusResponse;
 };
 
-export type GetCloudStatusCloudStatusGetResponse = GetCloudStatusCloudStatusGetResponses[keyof GetCloudStatusCloudStatusGetResponses];
+export type GetCloudStatusResponse = GetCloudStatusResponses[keyof GetCloudStatusResponses];
 
-export type GetCloudSettingsCloudSettingsGetData = {
+export type GetCloudSettingsData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/cloud/settings';
 };
 
-export type GetCloudSettingsCloudSettingsGetErrors = {
+export type GetCloudSettingsErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type GetCloudSettingsCloudSettingsGetResponses = {
+export type GetCloudSettingsResponses = {
     /**
      * Successful Response
      */
     200: CloudSettingsResponse;
 };
 
-export type GetCloudSettingsCloudSettingsGetResponse = GetCloudSettingsCloudSettingsGetResponses[keyof GetCloudSettingsCloudSettingsGetResponses];
+export type GetCloudSettingsResponse = GetCloudSettingsResponses[keyof GetCloudSettingsResponses];
 
-export type UpdateCloudSettingsCloudSettingsPostData = {
+export type UpdateCloudSettingsData = {
     body: CloudSettings;
     path?: never;
     query?: never;
     url: '/cloud/settings';
 };
 
-export type UpdateCloudSettingsCloudSettingsPostErrors = {
+export type UpdateCloudSettingsErrors = {
     /**
      * Not found
      */
@@ -3289,32 +3289,32 @@ export type UpdateCloudSettingsCloudSettingsPostErrors = {
     422: HttpValidationError;
 };
 
-export type UpdateCloudSettingsCloudSettingsPostError = UpdateCloudSettingsCloudSettingsPostErrors[keyof UpdateCloudSettingsCloudSettingsPostErrors];
+export type UpdateCloudSettingsError = UpdateCloudSettingsErrors[keyof UpdateCloudSettingsErrors];
 
-export type UpdateCloudSettingsCloudSettingsPostResponses = {
+export type UpdateCloudSettingsResponses = {
     /**
      * Successful Response
      */
     200: CloudSettingsResponse;
 };
 
-export type UpdateCloudSettingsCloudSettingsPostResponse = UpdateCloudSettingsCloudSettingsPostResponses[keyof UpdateCloudSettingsCloudSettingsPostResponses];
+export type UpdateCloudSettingsResponse = UpdateCloudSettingsResponses[keyof UpdateCloudSettingsResponses];
 
-export type ListCloudProjectsCloudProjectsGetData = {
+export type ListCloudProjectsData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/cloud/projects';
 };
 
-export type ListCloudProjectsCloudProjectsGetErrors = {
+export type ListCloudProjectsErrors = {
     /**
      * Not found
      */
     404: unknown;
 };
 
-export type ListCloudProjectsCloudProjectsGetResponses = {
+export type ListCloudProjectsResponses = {
     /**
      * Response List Cloud Projects Cloud Projects Get
      *
@@ -3323,9 +3323,9 @@ export type ListCloudProjectsCloudProjectsGetResponses = {
     200: Array<CloudProjectStatus>;
 };
 
-export type ListCloudProjectsCloudProjectsGetResponse = ListCloudProjectsCloudProjectsGetResponses[keyof ListCloudProjectsCloudProjectsGetResponses];
+export type ListCloudProjectsResponse = ListCloudProjectsResponses[keyof ListCloudProjectsResponses];
 
-export type ResetCloudProjectCloudProjectsProjectNameDeleteData = {
+export type ResetCloudProjectData = {
     body?: never;
     path: {
         /**
@@ -3337,7 +3337,7 @@ export type ResetCloudProjectCloudProjectsProjectNameDeleteData = {
     url: '/cloud/projects/{project_name}';
 };
 
-export type ResetCloudProjectCloudProjectsProjectNameDeleteErrors = {
+export type ResetCloudProjectErrors = {
     /**
      * Not found
      */
@@ -3348,9 +3348,9 @@ export type ResetCloudProjectCloudProjectsProjectNameDeleteErrors = {
     422: HttpValidationError;
 };
 
-export type ResetCloudProjectCloudProjectsProjectNameDeleteError = ResetCloudProjectCloudProjectsProjectNameDeleteErrors[keyof ResetCloudProjectCloudProjectsProjectNameDeleteErrors];
+export type ResetCloudProjectError = ResetCloudProjectErrors[keyof ResetCloudProjectErrors];
 
-export type ResetCloudProjectCloudProjectsProjectNameDeleteResponses = {
+export type ResetCloudProjectResponses = {
     /**
      * Response Reset Cloud Project Cloud Projects  Project Name  Delete
      *
@@ -3361,9 +3361,9 @@ export type ResetCloudProjectCloudProjectsProjectNameDeleteResponses = {
     };
 };
 
-export type ResetCloudProjectCloudProjectsProjectNameDeleteResponse = ResetCloudProjectCloudProjectsProjectNameDeleteResponses[keyof ResetCloudProjectCloudProjectsProjectNameDeleteResponses];
+export type ResetCloudProjectResponse = ResetCloudProjectResponses[keyof ResetCloudProjectResponses];
 
-export type GetCloudProjectCloudProjectsProjectNameGetData = {
+export type GetCloudProjectData = {
     body?: never;
     path: {
         /**
@@ -3375,7 +3375,7 @@ export type GetCloudProjectCloudProjectsProjectNameGetData = {
     url: '/cloud/projects/{project_name}';
 };
 
-export type GetCloudProjectCloudProjectsProjectNameGetErrors = {
+export type GetCloudProjectErrors = {
     /**
      * Not found
      */
@@ -3386,18 +3386,18 @@ export type GetCloudProjectCloudProjectsProjectNameGetErrors = {
     422: HttpValidationError;
 };
 
-export type GetCloudProjectCloudProjectsProjectNameGetError = GetCloudProjectCloudProjectsProjectNameGetErrors[keyof GetCloudProjectCloudProjectsProjectNameGetErrors];
+export type GetCloudProjectError = GetCloudProjectErrors[keyof GetCloudProjectErrors];
 
-export type GetCloudProjectCloudProjectsProjectNameGetResponses = {
+export type GetCloudProjectResponses = {
     /**
      * Successful Response
      */
     200: CloudProjectStatus;
 };
 
-export type GetCloudProjectCloudProjectsProjectNameGetResponse = GetCloudProjectCloudProjectsProjectNameGetResponses[keyof GetCloudProjectCloudProjectsProjectNameGetResponses];
+export type GetCloudProjectResponse = GetCloudProjectResponses[keyof GetCloudProjectResponses];
 
-export type StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostData = {
+export type StartFocusStackingData = {
     body?: never;
     path: {
         /**
@@ -3413,25 +3413,25 @@ export type StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStar
     url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/start';
 };
 
-export type StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostErrors = {
+export type StartFocusStackingErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostError = StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostErrors[keyof StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostErrors];
+export type StartFocusStackingError = StartFocusStackingErrors[keyof StartFocusStackingErrors];
 
-export type StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostResponses = {
+export type StartFocusStackingResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostResponse = StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostResponses[keyof StartFocusStackingProjectsProjectNameScansScanIndexFocusStackingStartPostResponses];
+export type StartFocusStackingResponse = StartFocusStackingResponses[keyof StartFocusStackingResponses];
 
-export type PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchData = {
+export type PauseFocusStackingData = {
     body?: never;
     path: {
         /**
@@ -3447,25 +3447,25 @@ export type PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPaus
     url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/pause';
 };
 
-export type PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchErrors = {
+export type PauseFocusStackingErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchError = PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchErrors[keyof PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchErrors];
+export type PauseFocusStackingError = PauseFocusStackingErrors[keyof PauseFocusStackingErrors];
 
-export type PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchResponses = {
+export type PauseFocusStackingResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchResponse = PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchResponses[keyof PauseFocusStackingProjectsProjectNameScansScanIndexFocusStackingPausePatchResponses];
+export type PauseFocusStackingResponse = PauseFocusStackingResponses[keyof PauseFocusStackingResponses];
 
-export type ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchData = {
+export type ResumeFocusStackingData = {
     body?: never;
     path: {
         /**
@@ -3481,25 +3481,25 @@ export type ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingRes
     url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/resume';
 };
 
-export type ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchErrors = {
+export type ResumeFocusStackingErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchError = ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchErrors[keyof ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchErrors];
+export type ResumeFocusStackingError = ResumeFocusStackingErrors[keyof ResumeFocusStackingErrors];
 
-export type ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchResponses = {
+export type ResumeFocusStackingResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchResponse = ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchResponses[keyof ResumeFocusStackingProjectsProjectNameScansScanIndexFocusStackingResumePatchResponses];
+export type ResumeFocusStackingResponse = ResumeFocusStackingResponses[keyof ResumeFocusStackingResponses];
 
-export type CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchData = {
+export type CancelFocusStackingData = {
     body?: never;
     path: {
         /**
@@ -3515,20 +3515,20 @@ export type CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCan
     url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/cancel';
 };
 
-export type CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchErrors = {
+export type CancelFocusStackingErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchError = CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchErrors[keyof CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchErrors];
+export type CancelFocusStackingError = CancelFocusStackingErrors[keyof CancelFocusStackingErrors];
 
-export type CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchResponses = {
+export type CancelFocusStackingResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchResponse = CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchResponses[keyof CancelFocusStackingProjectsProjectNameScansScanIndexFocusStackingCancelPatchResponses];
+export type CancelFocusStackingResponse = CancelFocusStackingResponses[keyof CancelFocusStackingResponses];

@@ -34,3 +34,10 @@ export interface ScanSettingsModel {
   method?: any;
   points: number;
 }
+
+export interface EssentialLinkProps {
+  title: string;
+  target?: string;
+  link?: string;
+  icon?: string;
+}
