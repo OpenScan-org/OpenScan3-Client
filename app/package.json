@@ -6,7 +6,7 @@
   "author": "polectron <polectron@gmail.com>",
   "private": true,
   "scripts": {
-    "api:gen": "openapi-ts",
+    "api:gen": "openapi-ts && node scripts/generate-field-descriptions.mjs",
     "dev": "quasar dev",
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",

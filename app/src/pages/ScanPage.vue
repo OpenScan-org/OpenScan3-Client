@@ -34,7 +34,7 @@
                           color="primary"
                           track-color="grey-3"
                         >
-                          <q-tooltip>Number of points in scanning path.</q-tooltip>
+                          <q-tooltip>{{ scanSettingDescription('points') }}</q-tooltip>
                         </q-slider>
                       </div>
                       <div class="col-6">
@@ -67,7 +67,7 @@
                         color="primary"
                         track-color="grey-3"
                       >
-                        <q-tooltip>Number of photos with different focus per position. This ignores AF and you need to set a focus range. Focus values will then be evenly spaced between min and max.</q-tooltip>
+                        <q-tooltip>{{ scanSettingDescription('focus_stacks') }}</q-tooltip>
                       </q-slider>
                       <q-input
                         type="number"
@@ -77,7 +77,7 @@
                         dense
                         :rules="[(val: number) => val && val > 0 || 'Please enter a number > 0']"
                       >
-                        <q-tooltip>Number of photos with different focus per position. This ignores AF and you need to set a focus range. Focus values will then be evenly spaced between min and max.</q-tooltip>
+                        <q-tooltip>{{ scanSettingDescription('focus_stacks') }}</q-tooltip>
                       </q-input>
                     </div>
                   </div>
@@ -94,7 +94,7 @@
                             color="primary"
                             track-color="grey-3"
                           >
-                            <q-tooltip>Minimum and maximum focus distance in diopters.</q-tooltip>
+                            <q-tooltip>{{ scanSettingDescription('focus_range') }}</q-tooltip>
                           </q-range>
                         </div>
                         <div class="col-auto">
@@ -136,34 +136,34 @@
 
                           <div class="col-12">
                             <q-select v-model="pathMethod" :options="pathMethods" label="Path Method" >
-                              <q-tooltip>Path method to use for scanning.</q-tooltip>
+                              <q-tooltip>{{ scanSettingDescription('path_method') }}</q-tooltip>
                             </q-select>
                           </div>
                           <div class="col-12">
                             <q-select v-model="imageFormat" :options="['jpeg', 'dng', 'rgb_array', 'yuv_array']" label="Image Format" >
-                              <q-tooltip>Image Format</q-tooltip>
+                              <q-tooltip>{{ scanSettingDescription('image_format') }}</q-tooltip>
                             </q-select>
                           </div>
                           <div class="col-6">
                             <q-input type="number" v-model.number="minTheta" label="Min Theta (degrees)" >
-                              <q-tooltip>Minimum theta angle in degrees for constrained paths.</q-tooltip>
+                              <q-tooltip>{{ scanSettingDescription('min_theta') }}</q-tooltip>
                             </q-input>
                           </div>
                           <div class="col-6">
                             <q-input type="number" v-model.number="maxTheta" label="Max Theta (degrees)" >
-                              <q-tooltip>Maximum theta angle in degrees for constrained paths.</q-tooltip>
+                              <q-tooltip>{{ scanSettingDescription('max_theta') }}</q-tooltip>
                             </q-input>
                           </div>
                           <div class="col-12">
                             <div class="row items-center q-col-gutter-md">
                               <div class="col-auto">
                                 <q-checkbox v-model="optimizePath" label="Optimize Path" >
-                                  <q-tooltip>Enable path optimization for faster scanning.</q-tooltip>
+                                  <q-tooltip>{{ scanSettingDescription('optimize_path') }}</q-tooltip>
                                 </q-checkbox>
                               </div>
                               <div class="col">
                                 <q-input v-model="optimizationAlgorithm" label="Optimization Algorithm" :disable="!optimizePath" >
-                                  <q-tooltip>Path optimization algorithm to use.</q-tooltip>
+                                  <q-tooltip>{{ scanSettingDescription('optimization_algorithm') }}</q-tooltip>
                                 </q-input>
                               </div>
                             </div>
@@ -211,6 +211,7 @@ import {
   type CameraStatusResponse,
   type ScanSetting
 } from 'src/generated/api'
+import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import generateDashedName from 'src/utils/randomName'
 
 import CameraPreview from 'components/CameraPreview.vue'
@@ -248,6 +249,10 @@ const optimizationAlgorithm = ref('nearest_neighbor')
 const focusStacks = ref<number>(1)
 const enableFocusStacking = ref(false)
 const focusRange = ref({ min: 10.0, max: 15.0 })
+
+type ScanSettingField = keyof (typeof fieldDescriptions)['ScanSetting']
+
+const scanSettingDescription = (field: ScanSettingField) => getFieldDescription('ScanSetting', field)
 
 const scanner_available = ref(false)
 const scanner_pinged = ref(false)

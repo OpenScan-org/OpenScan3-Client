@@ -5,7 +5,7 @@
         <div class="col-12 col-lg-8">
           <q-card flat bordered class="q-mb-lg">
             <q-card-section>
-              <div class="text-h6">Allgemein</div>
+              <div class="text-h6">General</div>
             </q-card-section>
             <q-card-section class="q-pt-none">
               <div class="row q-col-gutter-md">
@@ -19,7 +19,7 @@
                       <q-select
                         v-model="selectedConfig"
                         :options="configOptions"
-                        label="Konfigurationsdatei"
+                        label="Configuration File"
                         :loading="configOptionsLoading"
                         emit-value
                         map-options
@@ -32,7 +32,7 @@
                         outline
                         color="primary"
                         icon="refresh"
-                        label="Neu laden"
+                        label="Reload"
                         :loading="configOptionsLoading"
                         @click="loadDeviceConfigs"
                       />
@@ -41,7 +41,7 @@
                       <q-btn
                         color="primary"
                         icon="publish"
-                        label="Setzen"
+                        label="Apply"
                         :disable="!selectedConfig"
                         :loading="configApplying"
                         @click="applySelectedConfig"
@@ -51,12 +51,12 @@
                 </div>
 
                 <div class="col-12 col-md-6">
-                  <q-toggle v-model="detectCameras" label="Kameras bei Reinit erkennen" />
+                  <q-toggle v-model="detectCameras" label="Detect cameras on reinit" />
                 </div>
                 <div class="col-12 col-md-6">
                   <q-toggle
                     v-model="saveConfigBeforePowerAction"
-                    label="Konfiguration vor Reboot/Shutdown speichern"
+                    label="Save configuration before reboot/shutdown"
                   />
                 </div>
               </div>
@@ -68,7 +68,7 @@
                   class="full-width"
                   color="primary"
                   icon="save"
-                  label="Config sichern"
+                  label="Save config"
                   :loading="hardwareActions.save"
                   @click="saveCurrentConfig"
                 />
@@ -79,7 +79,7 @@
                   class="full-width"
                   color="warning"
                   icon="autorenew"
-                  label="Hardware reinitialisieren"
+                  label="Reinitialize hardware"
                   :loading="hardwareActions.reinitialize"
                   @click="reinitializeHardware"
                 />
@@ -111,7 +111,7 @@
 
           <q-card flat bordered class="q-mb-lg">
             <q-card-section>
-              <div class="text-h6">Kameraeinstellungen</div>
+              <div class="text-h6">Camera Settings</div>
             </q-card-section>
             <q-card-section class="q-pt-none">
               <div class="row q-col-gutter-md">
@@ -119,7 +119,7 @@
                   <q-select
                     v-model="selectedCamera"
                     :options="cameraOptions"
-                    label="Kamera"
+                    label="Camera"
                     :loading="cameraOptionsLoading"
                     emit-value
                     map-options
@@ -134,31 +134,49 @@
 
                 <template v-else-if="selectedCamera">
                   <div class="col-6">
-                    <q-input v-model.number="cameraForm.shutter" type="number" label="Shutter (µs)" />
+                    <q-input v-model.number="cameraForm.shutter" type="number" label="Shutter (µs)">
+                      <q-tooltip>{{ cameraSettingDescription('shutter') }}</q-tooltip>
+                    </q-input>
                   </div>
                   <div class="col-6">
-                    <q-input v-model.number="cameraForm.gain" type="number" label="Analogue Gain" />
+                    <q-input v-model.number="cameraForm.gain" type="number" label="Analogue Gain">
+                      <q-tooltip>{{ cameraSettingDescription('gain') }}</q-tooltip>
+                    </q-input>
                   </div>
                   <div class="col-6">
-                    <q-input v-model.number="cameraForm.saturation" type="number" label="Saturation" />
+                    <q-input v-model.number="cameraForm.saturation" type="number" label="Saturation">
+                      <q-tooltip>{{ cameraSettingDescription('saturation') }}</q-tooltip>
+                    </q-input>
                   </div>
                   <div class="col-6">
-                    <q-input v-model.number="cameraForm.contrast" type="number" label="Contrast" />
+                    <q-input v-model.number="cameraForm.contrast" type="number" label="Contrast">
+                      <q-tooltip>{{ cameraSettingDescription('contrast') }}</q-tooltip>
+                    </q-input>
                   </div>
                   <div class="col-6">
-                    <q-input v-model.number="cameraForm.awbg_red" type="number" label="AWBG Red" />
+                    <q-input v-model.number="cameraForm.awbg_red" type="number" label="AWBG Red">
+                      <q-tooltip>{{ cameraSettingDescription('awbg_red') }}</q-tooltip>
+                    </q-input>
                   </div>
                   <div class="col-6">
-                    <q-input v-model.number="cameraForm.awbg_blue" type="number" label="AWBG Blue" />
+                    <q-input v-model.number="cameraForm.awbg_blue" type="number" label="AWBG Blue">
+                      <q-tooltip>{{ cameraSettingDescription('awbg_blue') }}</q-tooltip>
+                    </q-input>
                   </div>
                   <div class="col-6">
-                    <q-input v-model.number="cameraForm.jpeg_quality" type="number" label="JPEG Quality" />
+                    <q-input v-model.number="cameraForm.jpeg_quality" type="number" label="JPEG Quality">
+                      <q-tooltip>{{ cameraSettingDescription('jpeg_quality') }}</q-tooltip>
+                    </q-input>
                   </div>
                   <div class="col-6">
-                    <q-input v-model.number="cameraForm.manual_focus" type="number" label="Manual Focus" />
+                    <q-input v-model.number="cameraForm.manual_focus" type="number" label="Manual Focus">
+                      <q-tooltip>{{ cameraSettingDescription('manual_focus') }}</q-tooltip>
+                    </q-input>
                   </div>
                   <div class="col-6">
-                    <q-toggle v-model="cameraForm.AF" label="Autofokus" />
+                    <q-toggle v-model="cameraForm.AF" label="Autofocus">
+                      <q-tooltip>{{ cameraSettingDescription('AF') }}</q-tooltip>
+                    </q-toggle>
                   </div>
                 </template>
               </div>
@@ -167,7 +185,7 @@
               <q-btn
                 color="primary"
                 icon="save"
-                label="Speichern"
+                label="Save"
                 :disable="!selectedCamera"
                 :loading="cameraSaving"
                 @click="saveCameraSettings"
@@ -177,12 +195,12 @@
 
           <q-card flat bordered class="q-mb-lg">
             <q-card-section>
-              <div class="text-h6">Motoren</div>
+              <div class="text-h6">Motors</div>
             </q-card-section>
             <q-card-section class="q-pt-none">
               <div class="row q-col-gutter-md">
                 <div class="col-12" v-if="motorNames.length === 0">
-                  <q-banner dense>Keine Motoren gefunden.</q-banner>
+                  <q-banner dense>No motors found.</q-banner>
                 </div>
 
                 <div class="col-12" v-for="motorName in motorNames" :key="motorName">
@@ -202,10 +220,14 @@
                           <q-input v-model.number="motorForms[motorName].step_pin" type="number" label="Step Pin" />
                         </div>
                         <div class="col-4">
-                          <q-input v-model.number="motorForms[motorName].acceleration" type="number" label="Acceleration" />
+                          <q-input v-model.number="motorForms[motorName].acceleration" type="number" label="Acceleration">
+                            <q-tooltip>{{ motorConfigDescription('acceleration') }}</q-tooltip>
+                          </q-input>
                         </div>
                         <div class="col-4">
-                          <q-input v-model.number="motorForms[motorName].max_speed" type="number" label="Max Speed" />
+                          <q-input v-model.number="motorForms[motorName].max_speed" type="number" label="Max Speed">
+                            <q-tooltip>{{ motorConfigDescription('max_speed') }}</q-tooltip>
+                          </q-input>
                         </div>
                         <div class="col-4">
                           <q-select
@@ -217,13 +239,19 @@
                           />
                         </div>
                         <div class="col-4">
-                          <q-input v-model.number="motorForms[motorName].steps_per_rotation" type="number" label="Steps per Rotation" />
+                          <q-input v-model.number="motorForms[motorName].steps_per_rotation" type="number" label="Steps per Rotation">
+                            <q-tooltip>{{ motorConfigDescription('steps_per_rotation') }}</q-tooltip>
+                          </q-input>
                         </div>
                         <div class="col-4">
-                          <q-input v-model.number="motorForms[motorName].min_angle" type="number" label="Min Angle" />
+                          <q-input v-model.number="motorForms[motorName].min_angle" type="number" label="Min Angle">
+                            <q-tooltip>{{ motorConfigDescription('min_angle') }}</q-tooltip>
+                          </q-input>
                         </div>
                         <div class="col-4">
-                          <q-input v-model.number="motorForms[motorName].max_angle" type="number" label="Max Angle" />
+                          <q-input v-model.number="motorForms[motorName].max_angle" type="number" label="Max Angle">
+                            <q-tooltip>{{ motorConfigDescription('max_angle') }}</q-tooltip>
+                          </q-input>
                         </div>
                       </div>
                     </q-card-section>
@@ -231,7 +259,7 @@
                       <q-btn
                         color="primary"
                         icon="save"
-                        label="Speichern"
+                        label="Save"
                         :loading="motorSaving[motorName] === true"
                         @click="saveMotorSettings(motorName)"
                       />
@@ -244,12 +272,12 @@
 
           <q-card flat bordered class="q-mb-lg">
             <q-card-section>
-              <div class="text-h6">Lichter</div>
+              <div class="text-h6">Lights</div>
             </q-card-section>
             <q-card-section class="q-pt-none">
               <div class="row q-col-gutter-md">
                 <div class="col-12" v-if="lightNames.length === 0">
-                  <q-banner dense>Keine Lichter gefunden.</q-banner>
+                  <q-banner dense>No lights found.</q-banner>
                 </div>
 
                 <div class="col-12" v-for="lightName in lightNames" :key="lightName">
@@ -265,11 +293,11 @@
                         <div class="col-6">
                           <q-input
                             v-model="lightForms[lightName].pins"
-                            label="Pins (kommagetrennt)"
+                            label="Pins (comma-separated)"
                           />
                         </div>
                         <div class="col-12">
-                          <q-toggle v-model="lightForms[lightName].pwm" label="PWM aktiviert" />
+                          <q-toggle v-model="lightForms[lightName].pwm" label="PWM enabled" />
                         </div>
                       </div>
                     </q-card-section>
@@ -277,7 +305,7 @@
                       <q-btn
                         color="primary"
                         icon="save"
-                        label="Speichern"
+                        label="Save"
                         :loading="lightSaving[lightName] === true"
                         @click="saveLightSettings(lightName)"
                       />
@@ -297,6 +325,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { API_BASE_URL, apiClient } from 'src/services/apiClient'
+import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import {
   listConfigFiles,
   setConfigFile,
@@ -356,9 +385,17 @@ const cameraLoading = ref(false)
 const cameraSaving = ref(false)
 const cameraForm = reactive<{ [K in keyof CameraSettings]?: CameraSettings[K] | null }>({})
 
+type CameraSettingsField = keyof (typeof fieldDescriptions)['CameraSettings']
+
+const cameraSettingDescription = (field: CameraSettingsField) => getFieldDescription('CameraSettings', field)
+
 const motorNames = ref<string[]>([])
 const motorForms = reactive<Record<string, MotorForm>>({})
 const motorSaving = reactive<Record<string, boolean>>({})
+
+type MotorConfigField = keyof (typeof fieldDescriptions)['MotorConfig']
+
+const motorConfigDescription = (field: MotorConfigField) => getFieldDescription('MotorConfig', field)
 
 const lightNames = ref<string[]>([])
 const lightForms = reactive<Record<string, LightForm>>({})
@@ -383,8 +420,8 @@ type LightForm = {
 }
 
 const directionOptions = [
-  { label: 'Vorwärts (1)', value: 1 },
-  { label: 'Rückwärts (-1)', value: -1 }
+  { label: 'Forward (1)', value: 1 },
+  { label: 'Reverse (-1)', value: -1 }
 ]
 
 function resetCameraForm() {
@@ -432,7 +469,7 @@ async function loadCameraOptions() {
     selectedCamera.value = options[0]?.value ?? null
   } catch (error) {
     cameraOptions.value = []
-    $q.notify({ type: 'negative', message: 'Kameras konnten nicht geladen werden.' })
+    $q.notify({ type: 'negative', message: 'Could not load cameras.' })
   } finally {
     cameraOptionsLoading.value = false
   }
@@ -462,7 +499,7 @@ async function loadDeviceConfigs() {
   } catch (error) {
     configOptions.value = []
     selectedConfig.value = null
-    $q.notify({ type: 'negative', message: 'Gerätekonfigurationen konnten nicht geladen werden.' })
+    $q.notify({ type: 'negative', message: 'Device configurations could not be loaded.' })
   } finally {
     configOptionsLoading.value = false
   }
@@ -480,9 +517,9 @@ async function applySelectedConfig() {
       body: { config_file: selectedConfig.value }
     })
 
-    $q.notify({ type: 'positive', message: 'Konfiguration angewendet. Hardware ggf. neu initialisieren.' })
+    $q.notify({ type: 'positive', message: 'Configuration applied. Reinitialize hardware if necessary.' })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Konfiguration konnte nicht gesetzt werden.' })
+    $q.notify({ type: 'negative', message: 'Configuration could not be applied.' })
   } finally {
     configApplying.value = false
   }
@@ -510,7 +547,7 @@ async function loadCameraSettings(name: string) {
       manual_focus: settings?.manual_focus ?? null
     })
   } catch (error) {
-    $q.notify({ type: 'negative', message: `Einstellungen für Kamera "${name}" konnten nicht geladen werden.` })
+    $q.notify({ type: 'negative', message: `Settings for camera "${name}" could not be loaded.` })
   } finally {
     cameraLoading.value = false
   }
@@ -533,9 +570,9 @@ async function saveCameraSettings() {
       body: payload
     })
 
-    $q.notify({ type: 'positive', message: 'Kameraeinstellungen gespeichert.' })
+    $q.notify({ type: 'positive', message: 'Camera settings saved.' })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Kameraeinstellungen konnten nicht gespeichert werden.' })
+    $q.notify({ type: 'negative', message: 'Camera settings could not be saved.' })
   } finally {
     cameraSaving.value = false
   }
@@ -552,7 +589,7 @@ async function loadMotors() {
     })
   } catch (error) {
     motorNames.value = []
-    $q.notify({ type: 'negative', message: 'Motoren konnten nicht geladen werden.' })
+    $q.notify({ type: 'negative', message: 'Motors could not be loaded.' })
   }
 }
 
@@ -585,9 +622,9 @@ async function saveMotorSettings(name: string) {
     })
 
     motorForms[name] = mapMotorConfig(updated)
-    $q.notify({ type: 'positive', message: `Motor "${name}" gespeichert.` })
+    $q.notify({ type: 'positive', message: `Motor "${name}" saved.` })
   } catch (error) {
-    $q.notify({ type: 'negative', message: `Motor "${name}" konnte nicht gespeichert werden.` })
+    $q.notify({ type: 'negative', message: `Motor "${name}" could not be saved.` })
   } finally {
     motorSaving[name] = false
   }
@@ -604,7 +641,7 @@ async function loadLights() {
     })
   } catch (error) {
     lightNames.value = []
-    $q.notify({ type: 'negative', message: 'Lichter konnten nicht geladen werden.' })
+    $q.notify({ type: 'negative', message: 'Lights could not be loaded.' })
   }
 }
 
@@ -638,9 +675,9 @@ async function saveLightSettings(name: string) {
     })
 
     lightForms[name] = mapLightConfig(updated)
-    $q.notify({ type: 'positive', message: `Licht "${name}" gespeichert.` })
+    $q.notify({ type: 'positive', message: `Light "${name}" saved.` })
   } catch (error) {
-    $q.notify({ type: 'negative', message: `Licht "${name}" konnte nicht gespeichert werden.` })
+    $q.notify({ type: 'negative', message: `Light "${name}" could not be saved.` })
   } finally {
     lightSaving[name] = false
   }
@@ -658,9 +695,9 @@ async function saveCurrentConfig() {
   hardwareActions.save = true
   try {
     await saveDeviceConfig({ client: apiClient })
-    $q.notify({ type: 'positive', message: 'Aktuelle Konfiguration gespeichert.' })
+    $q.notify({ type: 'positive', message: 'Current configuration saved.' })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Konfiguration konnte nicht gespeichert werden.' })
+    $q.notify({ type: 'negative', message: 'Configuration could not be saved.' })
   } finally {
     hardwareActions.save = false
   }
@@ -673,9 +710,9 @@ async function reinitializeHardware() {
       client: apiClient,
       query: { detect_cameras: detectCameras.value }
     })
-    $q.notify({ type: 'positive', message: 'Hardware wird neu initialisiert.' })
+    $q.notify({ type: 'positive', message: 'Hardware is reinitializing.' })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Hardware konnte nicht neu initialisiert werden.' })
+    $q.notify({ type: 'negative', message: 'Hardware could not be reinitialized.' })
   } finally {
     hardwareActions.reinitialize = false
   }
@@ -683,8 +720,8 @@ async function reinitializeHardware() {
 
 function confirmReboot() {
   $q.dialog({
-    title: 'Reboot bestätigen',
-    message: 'Der Scanner wird neu gestartet. Fortfahren?',
+    title: 'Confirm reboot',
+    message: 'The scanner will restart. Continue?',
     cancel: true,
     persistent: true
   }).onOk(rebootDevice)
@@ -692,8 +729,8 @@ function confirmReboot() {
 
 function confirmShutdown() {
   $q.dialog({
-    title: 'Shutdown bestätigen',
-    message: 'Der Scanner wird heruntergefahren. Fortfahren?',
+    title: 'Confirm shutdown',
+    message: 'The scanner will shut down. Continue?',
     cancel: true,
     persistent: true
   }).onOk(shutdownDevice)
@@ -706,9 +743,9 @@ async function rebootDevice() {
       client: apiClient,
       query: { save_config: saveConfigBeforePowerAction.value }
     })
-    $q.notify({ type: 'positive', message: 'Reboot ausgelöst.' })
+    $q.notify({ type: 'positive', message: 'Reboot triggered.' })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Reboot konnte nicht ausgelöst werden.' })
+    $q.notify({ type: 'negative', message: 'Reboot could not be triggered.' })
   } finally {
     hardwareActions.reboot = false
   }
@@ -721,9 +758,9 @@ async function shutdownDevice() {
       client: apiClient,
       query: { save_config: saveConfigBeforePowerAction.value }
     })
-    $q.notify({ type: 'positive', message: 'Shutdown ausgelöst.' })
+    $q.notify({ type: 'positive', message: 'Shutdown triggered.' })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Shutdown konnte nicht ausgelöst werden.' })
+    $q.notify({ type: 'negative', message: 'Shutdown could not be triggered.' })
   } finally {
     hardwareActions.shutdown = false
   }

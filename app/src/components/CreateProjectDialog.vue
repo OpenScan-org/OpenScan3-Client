@@ -12,7 +12,9 @@
             label="Project Name"
             autofocus
             class="col"
-          />
+          >
+            <q-tooltip>{{ projectFieldDescription('name') }}</q-tooltip>
+          </q-input>
           <q-btn
             icon="casino"
             @click="projectName = generateDashedName()"
@@ -26,7 +28,9 @@
           label="Project Description (optional)"
           type="textarea"
           rows="3"
-        />
+        >
+          <q-tooltip>{{ projectFieldDescription('description') }}</q-tooltip>
+        </q-input>
       </q-card-section>
 
       <q-card-actions align="right">
@@ -45,6 +49,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { generateDashedName } from 'src/utils/randomName'
+import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 
 interface Props {
   modelValue: boolean
@@ -60,6 +65,10 @@ const emit = defineEmits<Emits>()
 
 const projectName = ref('')
 const projectDescription = ref('')
+
+type ProjectField = keyof (typeof fieldDescriptions)['Project']
+
+const projectFieldDescription = (field: ProjectField) => getFieldDescription('Project', field)
 
 const confirm = () => {
   if (projectName.value.trim()) {
