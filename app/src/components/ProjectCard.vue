@@ -15,7 +15,7 @@
                 <q-btn color="primary" unelevated label="Add Scan" @click="add_scan"></q-btn>
             </q-card-section>
             <q-separator />
-            <ScansList v-if="detail" :scans="projectScans" :project_name="project.name" @delete:scan="handleDeleteScan" @pause:scan="handlePauseScan" @select:scan="handleSelectScan" />
+            <ScansList v-if="detail" :scans="projectScans" :project_name="project.name" @delete:scan="handleDeleteScan" @pause:scan="handlePauseScan" @resume:scan="handleResumeScan" @select:scan="handleSelectScan" />
         </q-card>
     </div>
 </template>
@@ -24,7 +24,7 @@
 import { computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiClient } from 'src/services/apiClient'
-import { deleteProject, uploadProjectToCloud, deleteScan, pauseScan, type Project, type Scan } from 'src/generated/api'
+import { deleteProject, uploadProjectToCloud, deleteScan, pauseScan, resumeScan, type Project, type Scan } from 'src/generated/api'
 import ScansList from './ScansList.vue'
 
 const $q = useQuasar()
@@ -126,6 +126,16 @@ const handlePauseScan = async (data: { project_name: string; scan_index: number 
         $q.notify({ type: 'positive', message: 'Scan paused.' })
     } catch (error) {
         $q.notify({ type: 'negative', message: 'Could not pause scan.' })
+    }
+}
+
+const handleResumeScan = async (data: { project_name: string; scan_index: number; camera_name: string }) => {
+    try {
+        await resumeScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, query: { camera_name: data.camera_name }, client: apiClient })
+        emit('reload')
+        $q.notify({ type: 'positive', message: 'Scan resumed.' })
+    } catch (error) {
+        $q.notify({ type: 'negative', message: 'Could not resume scan.' })
     }
 }
 

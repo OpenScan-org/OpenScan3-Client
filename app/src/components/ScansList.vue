@@ -16,6 +16,7 @@
           <div class="row items-center q-gutter-sm">
             <div class="text-body1">Scan #{{ scan.index }}</div>
             <q-badge :color="get_status_color(scan.status)" :label="scan.status ?? 'unknown'" />
+            <q-badge v-if="scan.settings?.focus_stacks > 1" :color="scan.stacking_task_status?.status === 'completed' ? 'green' : 'grey'" :label="scan.stacking_task_status?.status === 'completed' ? 'stacked' : 'stackable'" />
           </div>
           <div v-if="get_scan_photos_info(scan)" class="text-caption text-grey-8">
             {{ get_scan_photos_info(scan) }}
@@ -33,9 +34,31 @@
           <q-item-section side class="q-pa-none">
             <div class="row items-center no-wrap q-gutter-xs">
               <q-btn flat round icon="pause" v-if="scan.status === 'running'" @click.stop="pause_scan(scan.index)" />
-              <q-btn flat round icon="layers" @click.stop="stack_scan(scan.index)" />
-              <q-btn flat round icon="download" @click.stop="download_scan(scan.index)" />
-              <q-btn flat round icon="delete" @click.stop="delete_scan(scan.index)" />
+              <q-btn flat round icon="play_arrow" v-if="scan.status === 'paused' || scan.status === 'interrupted'" @click.stop="resume_scan(scan.index)" />
+              <q-btn
+                flat
+                round
+                icon="layers"
+                :disable="!(scan.status === 'completed' && scan.settings?.focus_stacks > 1 && scan.stacking_task_status?.status !== 'completed')"
+                :color="scan.status === 'completed' && scan.settings?.focus_stacks > 1 && scan.stacking_task_status?.status !== 'completed' ? 'primary' : 'grey-5'"
+                @click.stop="stack_scan(scan.index)"
+              />
+              <q-btn
+                flat
+                round
+                icon="download"
+                :color="scan.status === 'completed' ? 'primary' : 'grey-5'"
+                :disable="scan.status !== 'completed'"
+                @click.stop="download_scan(scan.index)"
+              />
+              <q-btn
+                flat
+                round
+                icon="delete"
+                :color="['pending', 'running'].includes(scan.status ?? '') ? 'grey-5' : 'negative'"
+                :disable="['pending', 'running'].includes(scan.status ?? '')"
+                @click.stop="delete_scan(scan.index)"
+              />
             </div>
           </q-item-section>
         </q-item>
@@ -54,7 +77,7 @@ interface ScansListProp {
 }
 
 const props = defineProps<ScansListProp>()
-const emit = defineEmits(['select:scan', 'delete:scan', 'pause:scan', 'download:scan', 'stack:scan', 'create:scan'])
+const emit = defineEmits(['select:scan', 'delete:scan', 'pause:scan', 'resume:scan', 'download:scan', 'stack:scan', 'create:scan'])
 
 const format_date = (value?: string) => {
   if (!value) {
@@ -117,6 +140,11 @@ const delete_scan = (index: number) => {
 
 const pause_scan = (index: number) => {
   emit('pause:scan', { project_name: props.project_name, scan_index: index })
+}
+
+const resume_scan = (index: number) => {
+  const scan = props.scans.find(s => s.index === index)
+  emit('resume:scan', { project_name: props.project_name, scan_index: index, camera_name: scan?.camera_name || 'default' })
 }
 
 const download_scan = (index: number) => {
