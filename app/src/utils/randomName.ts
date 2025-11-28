@@ -1,43 +1,64 @@
+const adverbs = [
+  'perfectly',
+  'precisely',
+  'cleanly',
+  'clearly',
+  'fully',
+  'faithfully',
+  'reliably',
+  'consistently',
+  'repeatably',
+  'smoothly',
+  'evenly',
+  'automatically',
+  'digitally'
+];
+
 const adjectives = [
-  'accurate',
-  'calibrated',
-  'detailed',
-  'geared',
-  'macro',
+  'scannable',
+  'reconstructable',
+  'digitalized',
+  'digitized',
   'meshed',
-  'micro',
-  'pixelated',
-  'precise',
-  'scanned',
-  'stitched',
   'textured',
-  'triangulated',
-  'trimmed',
-  'ultra',
-  'voxel',
-  'wired',
-  'zoomed'
+  'aligned',
+  'calibrated',
+  'clean',
+  'smooth',
+  'sharp',
+  'detailed',
+  'accurate',
+  'complete',
+  'solid',
+  'stable',
+  'precise'
 ];
 
 const nouns = [
   'artifact',
-  'bead',
-  'figurine',
+  'relic',
+  'object',
+  'thing',
+  'specimen',
+  'sample',
+  'replica',
+  'copy',
   'fragment',
-  'gear',
+  'shard',
+  'figurine',
+  'statuette',
   'miniature',
   'model',
   'mold',
-  'object',
-  'pebble',
-  'replica',
-  'relic',
-  'sample',
-  'specimen',
-  'statue',
+  'vessel',
   'token',
   'trinket',
-  'vessel'
+  'keepsake',
+  'bead',
+  'pebble',
+  'vial',
+  'totem',
+  'part'
 ];
 
 function pick<T>(values: T[]): T {
@@ -46,7 +67,7 @@ function pick<T>(values: T[]): T {
 }
 
 export function generateDashedName(): string {
-  return `${pick(adjectives)}-${pick(nouns)}`;
+  return `${pick(adverbs)}-${pick(adjectives)}-${pick(nouns)}`;
 }
 
 export default generateDashedName;
