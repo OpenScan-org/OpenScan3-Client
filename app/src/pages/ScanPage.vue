@@ -62,7 +62,7 @@
                       <q-slider
                         v-model="focusStacks"
                         :min="1"
-                        :max="99"
+                        :max="15"
                         :step="1"
                         color="primary"
                         track-color="grey-3"
@@ -173,6 +173,15 @@
                     </q-card>
                   </q-expansion-item>
                 </div>
+                <div class="col-12">
+                  <q-btn
+                    :label="`Start scan with ${photoCount} photos`"
+                    type="submit"
+                    size="lg"
+                    color="primary"
+                    class="full-width q-mt-md"
+                  />
+                </div>
               </div>
             </q-form>
           </q-card>
@@ -202,7 +211,7 @@
 
 <script setup lang="ts">
 import { QSelectProps, useQuasar } from 'quasar'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { apiClient } from 'src/services/apiClient'
 import {
   getCameras,
@@ -249,6 +258,8 @@ const optimizationAlgorithm = ref('nearest_neighbor')
 const focusStacks = ref<number>(1)
 const enableFocusStacking = ref(false)
 const focusRange = ref({ min: 10.0, max: 15.0 })
+
+const photoCount = computed(() => points.value * (enableFocusStacking.value ? focusStacks.value : 1))
 
 type ScanSettingField = keyof (typeof fieldDescriptions)['ScanSetting']
 
