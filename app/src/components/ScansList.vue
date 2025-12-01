@@ -35,6 +35,7 @@
             <div class="row items-center no-wrap q-gutter-xs">
               <q-btn flat round icon="pause" v-if="scan.status === 'running'" @click.stop="pause_scan(scan.index)" />
               <q-btn flat round icon="play_arrow" v-if="scan.status === 'paused' || scan.status === 'interrupted'" @click.stop="resume_scan(scan.index)" />
+              <q-btn flat round icon="cancel" v-if="['pending', 'running', 'paused'].includes(scan.status ?? '')" @click.stop="cancel_scan(scan.index)" color="negative" />
               <q-btn
                 flat
                 round
@@ -77,7 +78,7 @@ interface ScansListProp {
 }
 
 const props = defineProps<ScansListProp>()
-const emit = defineEmits(['select:scan', 'delete:scan', 'pause:scan', 'resume:scan', 'download:scan', 'stack:scan', 'create:scan'])
+const emit = defineEmits(['select:scan', 'delete:scan', 'pause:scan', 'resume:scan', 'download:scan', 'stack:scan', 'cancel:scan', 'create:scan'])
 
 const format_date = (value?: string) => {
   if (!value) {
@@ -153,6 +154,10 @@ const download_scan = (index: number) => {
 
 const stack_scan = (index: number) => {
   emit('stack:scan', { project_name: props.project_name, scan_index: index })
+}
+
+const cancel_scan = (index: number) => {
+  emit('cancel:scan', { project_name: props.project_name, scan_index: index })
 }
 </script>
 

@@ -1,6 +1,6 @@
 <template>
-  <q-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" persistent max-width="800px">
-    <q-card>
+  <q-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" persistent :max-width="maxWidth">
+    <q-card :style="cardStyle">
       <q-card-section class="row items-center">
         <span class="q-ml-sm">Create New Project</span>
       </q-card-section>
@@ -27,7 +27,7 @@
           v-model="projectDescription"
           label="Project Description (optional)"
           type="textarea"
-          rows="3"
+          rows="4"
         >
           <q-tooltip>{{ projectFieldDescription('description') }}</q-tooltip>
         </q-input>
@@ -47,9 +47,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { generateDashedName } from 'src/utils/randomName'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
+import { useQuasar } from 'quasar'
 
 interface Props {
   modelValue: boolean
@@ -63,8 +64,13 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+const $q = useQuasar()
+
 const projectName = ref('')
 const projectDescription = ref('')
+
+const maxWidth = computed(() => $q.screen.lt.sm ? '100vw' : '1200px')
+const cardStyle = computed(() => $q.screen.lt.sm ? {} : { 'min-width': '600px' })
 
 type ProjectField = keyof (typeof fieldDescriptions)['Project']
 

@@ -15,7 +15,7 @@
                 <q-btn color="primary" unelevated label="Add Scan" @click="add_scan"></q-btn>
             </q-card-section>
             <q-separator />
-            <ScansList v-if="detail" :scans="projectScans" :project_name="project.name" @delete:scan="handleDeleteScan" @pause:scan="handlePauseScan" @resume:scan="handleResumeScan" @select:scan="handleSelectScan" />
+            <ScansList v-if="detail" :scans="projectScans" :project_name="project.name" @delete:scan="handleDeleteScan" @pause:scan="handlePauseScan" @resume:scan="handleResumeScan" @cancel:scan="handleCancelScan" @stack:scan="handleStackScan" @select:scan="handleSelectScan" />
         </q-card>
     </div>
 </template>
@@ -23,11 +23,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useQuasar } from 'quasar'
+import { useRouter } from 'vue-router'
 import { apiClient } from 'src/services/apiClient'
-import { deleteProject, uploadProjectToCloud, deleteScan, pauseScan, resumeScan, type Project, type Scan } from 'src/generated/api'
+import { deleteProject, uploadProjectToCloud, deleteScan, pauseScan, resumeScan, cancelScan, startFocusStacking, type Project, type Scan } from 'src/generated/api'
 import ScansList from './ScansList.vue'
 
 const $q = useQuasar()
+const router = useRouter()
 
 interface ProjectProp {
     project: Project
@@ -98,8 +100,7 @@ const confirm_download = () => {
 }
 
 const add_scan = () => {
-    // Placeholder for add scan logic
-    $q.notify({ type: 'info', message: 'Add scan functionality not implemented yet.' })
+    router.push({ path: '/scan', query: { project: props.project.name } })
 }
 
 const handleDeleteScan = async (data: { project_name: string; scan_index: number }) => {
@@ -136,6 +137,26 @@ const handleResumeScan = async (data: { project_name: string; scan_index: number
         $q.notify({ type: 'positive', message: 'Scan resumed.' })
     } catch (error) {
         $q.notify({ type: 'negative', message: 'Could not resume scan.' })
+    }
+}
+
+const handleCancelScan = async (data: { project_name: string; scan_index: number }) => {
+    try {
+        await cancelScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
+        emit('reload')
+        $q.notify({ type: 'positive', message: 'Scan cancelled.' })
+    } catch (error) {
+        $q.notify({ type: 'negative', message: 'Could not cancel scan.' })
+    }
+}
+
+const handleStackScan = async (data: { project_name: string; scan_index: number }) => {
+    try {
+        await startFocusStacking({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
+        emit('reload')
+        $q.notify({ type: 'positive', message: 'Focus stacking started.' })
+    } catch (error) {
+        $q.notify({ type: 'negative', message: 'Could not start focus stacking.' })
     }
 }
 

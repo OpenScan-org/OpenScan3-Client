@@ -21,7 +21,7 @@ export const useProjectsStore = defineStore('projects', {
         const data = await getProjects({ client: apiClient });
         this.projects = Object.values(data ?? {});
       } catch (error) {
-        this.error = 'Fehler beim Laden der Projekte';
+        this.error = 'Error loading projects';
         console.error(error);
       } finally {
         this.loading = false;
@@ -37,7 +37,7 @@ export const useProjectsStore = defineStore('projects', {
         this.projects.push(newProj);
         return newProj;
       } catch (error) {
-        this.error = 'Fehler beim Erstellen des Projekts';
+        this.error = 'Error creating the project';
         throw error;
       }
     },
