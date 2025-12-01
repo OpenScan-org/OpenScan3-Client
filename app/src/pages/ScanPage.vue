@@ -126,7 +126,7 @@
                       <q-card-section>
                         <div class="row q-col-gutter-md">
                           <div class="col-12">
-                            <q-select v-model="selectedCamera" :options="cameraOptions" label="Camera" />
+                            <q-select v-model="selectedCameraName" :options="cameraStore.cameraOptions" label="Camera" />
                           </div>
 
 
@@ -192,12 +192,11 @@
 </template>
 
 <script setup lang="ts">
-import { QSelectProps, useQuasar } from 'quasar'
-import { ref, onMounted, computed } from 'vue'
+import { useQuasar } from 'quasar'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiClient } from 'src/services/apiClient'
 import {
-  getCameras,
   addScanWithDescription,
   type ScanSetting
 } from 'src/generated/api'
@@ -207,20 +206,20 @@ import generateDashedName from 'src/utils/randomName'
 import CameraPreview from 'components/CameraPreview.vue'
 import CreateProjectDialog from 'components/CreateProjectDialog.vue'
 import { useProjectsStore } from 'src/stores/projects'
+import { useCameraStore } from 'src/stores/camera'
 
 const $q = useQuasar()
 const route = useRoute()
 
 const projectsStore = useProjectsStore()
-
-const cameraOptions = ref<QSelectProps['options']>([])
+const cameraStore = useCameraStore()
 
 const pathMethods = [
   { label: 'Fibonacci', value: 'fibonacci' },
   { label: 'Spiral', value: 'spiral' }
 ]
 
-const selectedCamera = ref<QSelectProps['options'] | null>(null)
+const selectedCameraName = ref<string>('')
 const selectedProject = ref('')
 const pathMethod = ref(pathMethods[0])
 const points = ref(130)
@@ -243,20 +242,9 @@ const scanSettingDescription = (field: ScanSettingField) => getFieldDescription(
 const scanning = ref(false)
 const showCreateProjectDialog = ref(false)
 
-const update_cameras = async () => {
-  try {
-    const data = await getCameras({ client: apiClient })
-    const cameras = Object.values(data ?? {}).map((camera) => ({
-      label: camera.name,
-      value: camera.name,
-      orientationFlag: camera.settings?.orientation_flag ?? null
-    }))
-    cameraOptions.value = cameras
-    selectedCamera.value = cameras[0] ?? null
-  } catch (error) {
-    $q.notify({ type: 'negative', message: 'Camera list could not be loaded.' })
-  }
-}
+const selectedCamera = computed(() => cameraStore.cameraOptions.find(c => c.value === selectedCameraName.value) || null)
+
+watch(selectedCameraName, (newVal) => cameraStore.setSelectedCamera(newVal))
 
 const generateProjectName = () => {
   selectedProject.value = generateDashedName()
@@ -272,7 +260,7 @@ const onCreateProject = async (data: { name: string; description?: string }) => 
 }
 
 const startScan = async () => {
-  if (!selectedCamera.value?.value) {
+  if (!selectedCameraName.value) {
     $q.notify({ type: 'negative', message: 'Please select a camera.' })
     return
   }
@@ -303,7 +291,7 @@ const startScan = async () => {
     await addScanWithDescription({
       client: apiClient,
       path: { project_name: selectedProject.value },
-      query: { camera_name: selectedCamera.value.value },
+      query: { camera_name: selectedCameraName.value },
       body: scanSettings
     })
 
@@ -322,8 +310,10 @@ const startScan = async () => {
 }
 
 onMounted(async () => {
-  await update_cameras()
+  await cameraStore.fetchCameras()
   await projectsStore.fetchProjects()
+
+  selectedCameraName.value = cameraStore.selectedCamera || ''
 
   // Set default project if available
   if (projectsStore.projects.length === 0) {
@@ -336,5 +326,4 @@ onMounted(async () => {
     selectedProject.value = projectFromQuery
   }
 })
-
 </script>

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
-import { ref, onMounted, onUnmounted } from 'vue'
-import { apiClient, API_BASE_URL } from 'src/services/apiClient'
-import { getSoftwareInfo, getCameras } from 'src/generated/api'
+import { ref, onMounted } from 'vue'
+import { apiClient } from 'src/services/apiClient'
+import { getSoftwareInfo } from 'src/generated/api'
+import { useCameraStore } from 'src/stores/camera'
 
 const $q = useQuasar()
+const cameraStore = useCameraStore()
 
 type ScannerInfo = {
   model?: string
@@ -14,39 +16,6 @@ type ScannerInfo = {
 const scanner_info = ref<ScannerInfo | null>(null)
 const scanner_available = ref(false)
 const scanner_pinged = ref(false)
-
-const selectedCamera = ref<string | null>(null)
-const previewUrl = ref<string | null>(null)
-
-const updatePreview = () => {
-  if (selectedCamera.value) {
-    previewUrl.value = `${API_BASE_URL}cameras/${selectedCamera.value}/preview`
-  }
-}
-
-const startPreviewUpdate = () => {
-  updatePreview()
-}
-
-const stopPreviewUpdate = () => {
-  previewUrl.value = null
-}
-
-const update_cameras = async () => {
-  try {
-    const data = await getCameras({ client: apiClient })
-    const cameras = Object.keys(data ?? {})
-    if (cameras.length > 0) {
-      selectedCamera.value = cameras[0]
-      startPreviewUpdate()
-    } else {
-      stopPreviewUpdate()
-    }
-  } catch (error) {
-    stopPreviewUpdate()
-    $q.notify({ type: 'negative', message: 'Camera list could not be loaded.' })
-  }
-}
 
 const reload_page = () => {
   window.location.reload()
@@ -63,7 +32,7 @@ onMounted(async () => {
     scanner_available.value = true
     scanner_info.value = data ?? null
 
-    await update_cameras()
+    await cameraStore.fetchCameras()
   } catch (error) {
     $q.notify({ type: 'negative', message: 'Scanner not reachable.' })
   } finally {
@@ -71,16 +40,12 @@ onMounted(async () => {
     scanner_pinged.value = true
   }
 })
-
-onUnmounted(() => {
-  stopPreviewUpdate()
-})
 </script>
 
 <template>
   <q-page>
     <!-- Blurred background camera preview -->
-    <img v-if="previewUrl" class="camera-background" :src="previewUrl" />
+    <img v-if="cameraStore.previewUrl" class="camera-background" :src="cameraStore.previewUrl" />
 
     <div class="q-pa-md">
       <div class="row justify-center">

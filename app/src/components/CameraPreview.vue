@@ -47,8 +47,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { API_BASE_URL } from 'src/services/apiClient'
+import { ref, computed } from 'vue'
+import { useCameraStore } from 'src/stores/camera'
 
 interface CameraPreviewProps {
     scanning: boolean,
@@ -63,7 +63,9 @@ const props = defineProps<CameraPreviewProps>()
 
 let _show_preview = ref(true)
 
-const previewUrl = ref<string | null>(null)
+const cameraStore = useCameraStore()
+
+const previewUrl = computed(() => cameraStore.getPreviewUrl(props.camera?.value || ''))
 
 const show_preview = computed({
     get() {
@@ -73,23 +75,6 @@ const show_preview = computed({
         _show_preview.value = value
     }
 })
-
-watch(show_preview, (active) => {
-    if (active && props.camera?.value) {
-        previewUrl.value = `${API_BASE_URL}cameras/${props.camera.value}/preview`
-    } else {
-        previewUrl.value = null
-    }
-}, { immediate: true })
-
-watch(
-    () => props.camera?.value,
-    (cameraName) => {
-        if (cameraName && show_preview.value) {
-            previewUrl.value = `${API_BASE_URL}cameras/${cameraName}/preview`
-        }
-    }
-, { immediate: true })
 
 // let crop_x = ref({
 //     min: 0,
