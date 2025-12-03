@@ -1159,14 +1159,14 @@ export type RestartCameraResponses = {
 
 export type GetCameraNameSettingsData = {
     body?: never;
-    path?: never;
-    query: {
+    path: {
         /**
          * Name
          */
         name: string;
     };
-    url: '/cameras/{camera_name}/settings';
+    query?: never;
+    url: '/cameras/{name}/settings';
 };
 
 export type GetCameraNameSettingsErrors = {
@@ -1198,14 +1198,14 @@ export type UpdateCameraNameSettingsData = {
     body: {
         [key: string]: unknown;
     };
-    path?: never;
-    query: {
+    path: {
         /**
          * Name
          */
         name: string;
     };
-    url: '/cameras/{camera_name}/settings';
+    query?: never;
+    url: '/cameras/{name}/settings';
 };
 
 export type UpdateCameraNameSettingsErrors = {
@@ -1232,15 +1232,16 @@ export type UpdateCameraNameSettingsResponse = UpdateCameraNameSettingsResponses
 
 export type ReplaceCameraNameSettingsData = {
     body?: never;
-    path?: never;
-    query: {
+    path: {
         /**
          * Name
          */
         name: string;
+    };
+    query: {
         settings: BaseModel;
     };
-    url: '/cameras/{camera_name}/settings';
+    url: '/cameras/{name}/settings';
 };
 
 export type ReplaceCameraNameSettingsErrors = {
@@ -1435,14 +1436,14 @@ export type MoveMotorToHomePositionResponse = MoveMotorToHomePositionResponses[k
 
 export type GetMotorNameSettingsData = {
     body?: never;
-    path?: never;
-    query: {
+    path: {
         /**
          * Name
          */
         name: string;
     };
-    url: '/motors/{motor_name}/settings';
+    query?: never;
+    url: '/motors/{name}/settings';
 };
 
 export type GetMotorNameSettingsErrors = {
@@ -1474,14 +1475,14 @@ export type UpdateMotorNameSettingsData = {
     body: {
         [key: string]: unknown;
     };
-    path?: never;
-    query: {
+    path: {
         /**
          * Name
          */
         name: string;
     };
-    url: '/motors/{motor_name}/settings';
+    query?: never;
+    url: '/motors/{name}/settings';
 };
 
 export type UpdateMotorNameSettingsErrors = {
@@ -1508,15 +1509,16 @@ export type UpdateMotorNameSettingsResponse = UpdateMotorNameSettingsResponses[k
 
 export type ReplaceMotorNameSettingsData = {
     body?: never;
-    path?: never;
-    query: {
+    path: {
         /**
          * Name
          */
         name: string;
+    };
+    query: {
         settings: BaseModel;
     };
-    url: '/motors/{motor_name}/settings';
+    url: '/motors/{name}/settings';
 };
 
 export type ReplaceMotorNameSettingsErrors = {
@@ -1706,14 +1708,14 @@ export type ToggleLightResponse = ToggleLightResponses[keyof ToggleLightResponse
 
 export type GetLightNameSettingsData = {
     body?: never;
-    path?: never;
-    query: {
+    path: {
         /**
          * Name
          */
         name: string;
     };
-    url: '/lights/{light_name}/settings';
+    query?: never;
+    url: '/lights/{name}/settings';
 };
 
 export type GetLightNameSettingsErrors = {
@@ -1745,14 +1747,14 @@ export type UpdateLightNameSettingsData = {
     body: {
         [key: string]: unknown;
     };
-    path?: never;
-    query: {
+    path: {
         /**
          * Name
          */
         name: string;
     };
-    url: '/lights/{light_name}/settings';
+    query?: never;
+    url: '/lights/{name}/settings';
 };
 
 export type UpdateLightNameSettingsErrors = {
@@ -1779,15 +1781,16 @@ export type UpdateLightNameSettingsResponse = UpdateLightNameSettingsResponses[k
 
 export type ReplaceLightNameSettingsData = {
     body?: never;
-    path?: never;
-    query: {
+    path: {
         /**
          * Name
          */
         name: string;
+    };
+    query: {
         settings: BaseModel;
     };
-    url: '/lights/{light_name}/settings';
+    url: '/lights/{name}/settings';
 };
 
 export type ReplaceLightNameSettingsErrors = {

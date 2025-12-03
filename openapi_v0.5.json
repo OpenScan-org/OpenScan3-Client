@@ -212,7 +212,7 @@
         }
       }
     },
-    "/cameras/{camera_name}/settings": {
+    "/cameras/{name}/settings": {
       "get": {
         "tags": [
           "cameras"
@@ -223,7 +223,7 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string",
@@ -267,7 +267,7 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string",
@@ -319,7 +319,7 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string",
@@ -601,7 +601,7 @@
         }
       }
     },
-    "/motors/{motor_name}/settings": {
+    "/motors/{name}/settings": {
       "get": {
         "tags": [
           "motors"
@@ -612,7 +612,7 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string",
@@ -656,7 +656,7 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string",
@@ -708,7 +708,7 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string",
@@ -973,7 +973,7 @@
         }
       }
     },
-    "/lights/{light_name}/settings": {
+    "/lights/{name}/settings": {
       "get": {
         "tags": [
           "lights"
@@ -984,7 +984,7 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string",
@@ -1028,7 +1028,7 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string",
@@ -1080,7 +1080,7 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
+            "in": "path",
             "required": true,
             "schema": {
               "type": "string",

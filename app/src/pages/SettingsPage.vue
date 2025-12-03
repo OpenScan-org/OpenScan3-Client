@@ -570,8 +570,7 @@ async function loadCameraSettings(name: string) {
   try {
     const settings = await getCameraNameSettings({
       client: apiClient,
-      path: { camera_name: name },
-      query: { name }
+      path: { name }
     })
 
     Object.assign(cameraForm, {
@@ -604,8 +603,7 @@ async function saveCameraSettings() {
 
     await updateCameraNameSettings({
       client: apiClient,
-      path: { camera_name: selectedCamera.value },
-      query: { name: selectedCamera.value },
+      path: { name: selectedCamera.value },
       body: payload
     })
 
@@ -655,12 +653,11 @@ async function saveMotorSettings(name: string) {
 
     const updated = await updateMotorNameSettings({
       client: apiClient,
-      path: { motor_name: name },
-      query: { name },
+      path: { name },
       body: payload
     })
 
-    motorForms[name] = mapMotorConfig(updated)
+    motorForms[name] = mapMotorConfig(updated.data)
     $q.notify({ type: 'positive', message: `Motor "${name}" saved.` })
   } catch (error) {
     $q.notify({ type: 'negative', message: `Motor "${name}" could not be saved.` })
@@ -708,12 +705,11 @@ async function saveLightSettings(name: string) {
 
     const updated = await updateLightNameSettings({
       client: apiClient,
-      path: { light_name: name },
-      query: { name },
+      path: { name },
       body: payload
     })
 
-    lightForms[name] = mapLightConfig(updated)
+    lightForms[name] = mapLightConfig(updated.data)
     $q.notify({ type: 'positive', message: `Light "${name}" saved.` })
   } catch (error) {
     $q.notify({ type: 'negative', message: `Light "${name}" could not be saved.` })
