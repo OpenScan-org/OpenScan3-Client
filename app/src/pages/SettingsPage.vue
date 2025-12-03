@@ -108,28 +108,33 @@
                   @click="reinitializeHardware"
                 />
               </div>
-              <div class="col-12 col-md-3">
-                <q-btn
-                  v-ripple
-                  class="full-width"
-                  color="secondary"
-                  icon="restart_alt"
-                  label="Reboot"
-                  :loading="hardwareActions.reboot"
-                  @click="confirmReboot"
-                />
-              </div>
-              <div class="col-12 col-md-3">
-                <q-btn
-                  v-ripple
-                  class="full-width"
-                  color="negative"
-                  icon="power_settings_new"
-                  label="Shutdown"
-                  :loading="hardwareActions.shutdown"
-                  @click="confirmShutdown"
-                />
-              </div>
+              <PowerControls
+                :save-config="saveConfigBeforePowerAction"
+                v-slot="{ confirmReboot, confirmShutdown, rebooting, shuttingDown }"
+              >
+                <div class="col-12 col-md-3">
+                  <q-btn
+                    v-ripple
+                    class="full-width"
+                    color="secondary"
+                    icon="restart_alt"
+                    label="Reboot"
+                    :loading="rebooting"
+                    @click="confirmReboot"
+                  />
+                </div>
+                <div class="col-12 col-md-3">
+                  <q-btn
+                    v-ripple
+                    class="full-width"
+                    color="negative"
+                    icon="power_settings_new"
+                    label="Shutdown"
+                    :loading="shuttingDown"
+                    @click="confirmShutdown"
+                  />
+                </div>
+              </PowerControls>
             </q-card-actions>
           </q-card>
 
@@ -347,9 +352,12 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useQuasar } from 'quasar'
 import { API_BASE_URL, apiClient, updateApiClientConfig } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
+import { useDeviceStore } from 'src/stores/device'
+import PowerControls from 'src/components/PowerControls.vue'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import {
   listConfigFiles,
@@ -358,18 +366,13 @@ import {
   reinitializeHardware,
   reboot,
   shutdown,
-  getCameras,
-  getLights,
-  getMotors,
   getCameraNameSettings,
   updateCameraNameSettings,
   updateLightNameSettings,
   updateMotorNameSettings,
   type CameraSettings,
   type LightConfig,
-  type LightStatusResponse,
-  type MotorConfig,
-  type MotorStatusResponse
+  type MotorConfig
 } from 'src/generated/api'
 
 const $q = useQuasar()
@@ -410,15 +413,18 @@ const saveConfigBeforePowerAction = ref(false)
 
 const hardwareActions = reactive({
   save: false,
-  reinitialize: false,
-  reboot: false,
-  shutdown: false
+  reinitialize: false
 })
 
 type CameraOption = { label: string; value: string }
 
-const cameraOptions = ref<CameraOption[]>([])
-const cameraOptionsLoading = ref(false)
+const deviceStore = useDeviceStore()
+const { cameras, motors, lights, status: deviceStatus } = storeToRefs(deviceStore)
+
+const cameraOptions = computed<CameraOption[]>(() =>
+  Object.keys(cameras.value ?? {}).map((name) => ({ label: name, value: name }))
+)
+const cameraOptionsLoading = computed(() => deviceStatus.value !== 'open')
 const selectedCamera = ref<string | null>(null)
 const cameraLoading = ref(false)
 const cameraSaving = ref(false)
@@ -428,7 +434,7 @@ type CameraSettingsField = keyof (typeof fieldDescriptions)['CameraSettings']
 
 const cameraSettingDescription = (field: CameraSettingsField) => getFieldDescription('CameraSettings', field)
 
-const motorNames = ref<string[]>([])
+const motorNames = computed(() => Object.keys(motors.value ?? {}))
 const motorForms = reactive<Record<string, MotorForm>>({})
 const motorSaving = reactive<Record<string, boolean>>({})
 
@@ -436,7 +442,7 @@ type MotorConfigField = keyof (typeof fieldDescriptions)['MotorConfig']
 
 const motorConfigDescription = (field: MotorConfigField) => getFieldDescription('MotorConfig', field)
 
-const lightNames = ref<string[]>([])
+const lightNames = computed(() => Object.keys(lights.value ?? {}))
 const lightForms = reactive<Record<string, LightForm>>({})
 const lightSaving = reactive<Record<string, boolean>>({})
 
@@ -496,21 +502,6 @@ function mapLightConfig(config: LightConfig | null | undefined): LightForm {
     pin: config?.pin ?? null,
     pins: (config?.pins ?? []).join(', '),
     pwm: config?.pwm ?? false
-  }
-}
-
-async function loadCameraOptions() {
-  cameraOptionsLoading.value = true
-  try {
-    const data = await getCameras({ client: apiClient })
-    const options = Object.keys(data ?? {}).map((name) => ({ label: name, value: name }))
-    cameraOptions.value = options
-    selectedCamera.value = options[0]?.value ?? null
-  } catch (error) {
-    cameraOptions.value = []
-    $q.notify({ type: 'negative', message: 'Could not load cameras.' })
-  } finally {
-    cameraOptionsLoading.value = false
   }
 }
 
@@ -615,21 +606,6 @@ async function saveCameraSettings() {
   }
 }
 
-async function loadMotors() {
-  try {
-    const data = await getMotors({ client: apiClient })
-    const entries = Object.entries<MotorStatusResponse>(data ?? {})
-    motorNames.value = entries.map(([name]) => name)
-    entries.forEach(([name, status]) => {
-      motorForms[name] = mapMotorConfig(status?.settings)
-      motorSaving[name] = false
-    })
-  } catch (error) {
-    motorNames.value = []
-    $q.notify({ type: 'negative', message: 'Motors could not be loaded.' })
-  }
-}
-
 async function saveMotorSettings(name: string) {
   const form = motorForms[name]
   if (!form) {
@@ -663,21 +639,6 @@ async function saveMotorSettings(name: string) {
     $q.notify({ type: 'negative', message: `Motor "${name}" could not be saved.` })
   } finally {
     motorSaving[name] = false
-  }
-}
-
-async function loadLights() {
-  try {
-    const data = await getLights({ client: apiClient })
-    const entries = Object.entries<LightStatusResponse>(data ?? {})
-    lightNames.value = entries.map(([name]) => name)
-    entries.forEach(([name, status]) => {
-      lightForms[name] = mapLightConfig(status?.settings)
-      lightSaving[name] = false
-    })
-  } catch (error) {
-    lightNames.value = []
-    $q.notify({ type: 'negative', message: 'Lights could not be loaded.' })
   }
 }
 
@@ -726,6 +687,65 @@ watch(selectedCamera, (name) => {
   }
 })
 
+watch(
+  cameraOptions,
+  (options) => {
+    if (!selectedCamera.value && options.length > 0) {
+      selectedCamera.value = options[0].value
+      return
+    }
+
+    if (selectedCamera.value && !options.some((option) => option.value === selectedCamera.value)) {
+      selectedCamera.value = options[0]?.value ?? null
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  motors,
+  (current = {}) => {
+    const names = new Set(Object.keys(current))
+
+    Object.keys(motorForms).forEach((name) => {
+      if (!names.has(name)) {
+        delete motorForms[name]
+        delete motorSaving[name]
+      }
+    })
+
+    Object.entries(current).forEach(([name, status]) => {
+      motorForms[name] = mapMotorConfig(status?.settings)
+      if (!(name in motorSaving)) {
+        motorSaving[name] = false
+      }
+    })
+  },
+  { immediate: true, deep: true }
+)
+
+watch(
+  lights,
+  (current = {}) => {
+    const names = new Set(Object.keys(current))
+
+    Object.keys(lightForms).forEach((name) => {
+      if (!names.has(name)) {
+        delete lightForms[name]
+        delete lightSaving[name]
+      }
+    })
+
+    Object.entries(current).forEach(([name, status]) => {
+      lightForms[name] = mapLightConfig(status?.settings)
+      if (!(name in lightSaving)) {
+        lightSaving[name] = false
+      }
+    })
+  },
+  { immediate: true, deep: true }
+)
+
 async function saveApiConfig() {
   apiConfigStore.setConfig(apiConfigForm)
   updateApiClientConfig()
@@ -759,58 +779,8 @@ async function reinitializeHardware() {
   }
 }
 
-function confirmReboot() {
-  $q.dialog({
-    title: 'Confirm reboot',
-    message: 'The scanner will restart. Continue?',
-    cancel: true,
-    persistent: true
-  }).onOk(rebootDevice)
-}
-
-function confirmShutdown() {
-  $q.dialog({
-    title: 'Confirm shutdown',
-    message: 'The scanner will shut down. Continue?',
-    cancel: true,
-    persistent: true
-  }).onOk(shutdownDevice)
-}
-
-async function rebootDevice() {
-  hardwareActions.reboot = true
-  try {
-    await reboot({
-      client: apiClient,
-      query: { save_config: saveConfigBeforePowerAction.value }
-    })
-    $q.notify({ type: 'positive', message: 'Reboot triggered.' })
-  } catch (error) {
-    $q.notify({ type: 'negative', message: 'Reboot could not be triggered.' })
-  } finally {
-    hardwareActions.reboot = false
-  }
-}
-
-async function shutdownDevice() {
-  hardwareActions.shutdown = true
-  try {
-    await shutdown({
-      client: apiClient,
-      query: { save_config: saveConfigBeforePowerAction.value }
-    })
-    $q.notify({ type: 'positive', message: 'Shutdown triggered.' })
-  } catch (error) {
-    $q.notify({ type: 'negative', message: 'Shutdown could not be triggered.' })
-  } finally {
-    hardwareActions.shutdown = false
-  }
-}
-
 onMounted(async () => {
   await loadDeviceConfigs()
-  await loadCameraOptions()
-  await Promise.all([loadMotors(), loadLights()])
 })
 </script>
 

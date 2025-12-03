@@ -8,8 +8,31 @@
           OpenScan3
         </q-toolbar-title>
 
-        <q-btn flat round icon="restart_alt" @click="reboot" />
-        <q-btn flat round icon="power_settings_new" @click="shutdown" />
+        <q-chip
+          dense
+          text-color="white"
+          :color="deviceStatusColor"
+          icon="circle"
+        >
+          {{ deviceStatusLabel }}
+        </q-chip>
+
+        <PowerControls v-slot="{ confirmReboot, confirmShutdown, rebooting, shuttingDown }">
+          <q-btn
+            flat
+            round
+            icon="restart_alt"
+            :loading="rebooting"
+            @click="confirmReboot"
+          />
+          <q-btn
+            flat
+            round
+            icon="power_settings_new"
+            :loading="shuttingDown"
+            @click="confirmShutdown"
+          />
+        </PowerControls>
 
       </q-toolbar>
     </q-header>
@@ -29,10 +52,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { api } from 'src/api'
+import { computed, ref } from 'vue';
+import { storeToRefs } from 'pinia'
 import EssentialLink from 'components/EssentialLink.vue';
 import type { EssentialLinkProps } from 'components/models';
+import { useDeviceStore } from 'src/stores/device'
+import PowerControls from 'components/PowerControls.vue'
 
 const upperLinks: EssentialLinkProps[] = [
   {
@@ -80,16 +105,39 @@ const lowerLinks: EssentialLinkProps[] = [
 
 const leftDrawerOpen = ref(false)
 
+const deviceStore = useDeviceStore()
+void deviceStore.ensureConnected()
+
+const { status: deviceStatus } = storeToRefs(deviceStore)
+
+const deviceStatusLabel = computed(() => {
+  switch (deviceStatus.value) {
+    case 'open':
+      return 'Device connected'
+    case 'connecting':
+      return 'Connecting…'
+    case 'error':
+      return 'Device error'
+    default:
+      return 'Device offline'
+  }
+})
+
+const deviceStatusColor = computed(() => {
+  switch (deviceStatus.value) {
+    case 'open':
+      return 'positive'
+    case 'connecting':
+      return 'warning'
+    case 'error':
+      return 'negative'
+    default:
+      return 'grey-7'
+  }
+})
+
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
-}
-
-const shutdown = () => {
-  api.post('/shutdown')
-}
-
-const reboot = () => {
-  api.post('/reboot')
 }
 
 
