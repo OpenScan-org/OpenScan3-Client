@@ -9,8 +9,32 @@
             </q-card-section>
             <q-card-section class="q-pt-none">
               <div class="row q-col-gutter-md">
+                <div class="col-3">
+                  <q-select
+                    v-model="apiConfigForm.schema"
+                    :options="schemaOptions"
+                    label="Schema"
+                    emit-value
+                    map-options
+                  />
+                </div>
+                <div class="col-4">
+                  <q-input v-model="apiConfigForm.host" label="Host/IP" />
+                </div>
+                <div class="col-2">
+                  <q-input v-model.number="apiConfigForm.port" type="number" label="Port" />
+                </div>
+                <div class="col-3">
+                  <q-input v-model="apiConfigForm.version" label="Version" />
+                </div>
+
                 <div class="col-12">
-                  <q-input v-model="scannerAddress" label="Scanner Address" readonly />
+                  <q-btn
+                    color="primary"
+                    icon="save"
+                    label="Save API Configuration"
+                    @click="saveApiConfig"
+                  />
                 </div>
 
                 <div class="col-12">
@@ -324,7 +348,8 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
-import { API_BASE_URL, apiClient } from 'src/services/apiClient'
+import { API_BASE_URL, apiClient, updateApiClientConfig } from 'src/services/apiClient'
+import { useApiConfigStore } from 'src/stores/apiConfig'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import {
   listConfigFiles,
@@ -349,7 +374,21 @@ import {
 
 const $q = useQuasar()
 
-const scannerAddress = computed(() => API_BASE_URL.replace(/\/$/, ''))
+const apiConfigStore = useApiConfigStore()
+
+const scannerAddress = computed(() => apiConfigStore.baseURL.replace(/\/$/, ''))
+
+const apiConfigForm = reactive({
+  schema: apiConfigStore.schema,
+  host: apiConfigStore.host,
+  port: apiConfigStore.port,
+  version: apiConfigStore.version
+})
+
+const schemaOptions = [
+  { label: 'HTTP', value: 'http' },
+  { label: 'HTTPS', value: 'https' }
+]
 
 type DeviceConfigOption = { label: string; value: string; meta?: DeviceConfigListItem }
 
@@ -690,6 +729,12 @@ watch(selectedCamera, (name) => {
     resetCameraForm()
   }
 })
+
+async function saveApiConfig() {
+  apiConfigStore.setConfig(apiConfigForm)
+  updateApiClientConfig()
+  $q.notify({ type: 'positive', message: 'API configuration saved.' })
+}
 
 async function saveCurrentConfig() {
   hardwareActions.save = true

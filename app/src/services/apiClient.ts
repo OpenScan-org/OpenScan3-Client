@@ -1,12 +1,20 @@
 import { createClient } from 'src/generated/api/client'
+import { useApiConfigStore } from 'src/stores/apiConfig'
 
-const API_BASE_URL = 'http://openscan3-dev:8000/v0.5/'
+const apiConfigStore = useApiConfigStore()
 
-const apiClient = createClient()
+apiConfigStore.loadFromStorage()
 
-apiClient.setConfig({
-  baseUrl: API_BASE_URL,
-  responseStyle: 'data'
-})
+export const apiClient = createClient()
 
-export { apiClient, API_BASE_URL }
+export function updateApiClientConfig() {
+  apiClient.setConfig({
+    baseUrl: apiConfigStore.baseURL,
+    responseStyle: 'data'
+  })
+}
+
+updateApiClientConfig()
+
+// Export the old API_BASE_URL for backward compatibility, but it's now computed
+export const API_BASE_URL = apiConfigStore.baseURL
