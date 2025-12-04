@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar'
 import { ref, onMounted } from 'vue'
+import TaskStatusCard from 'components/TaskStatusCard.vue'
 import { apiClient } from 'src/services/apiClient'
 import { getSoftwareInfo } from 'src/generated/api'
 import { useCameraStore } from 'src/stores/camera'
@@ -48,7 +49,7 @@ onMounted(async () => {
     <img v-if="cameraStore.previewUrl" class="camera-background" :src="cameraStore.previewUrl" />
 
     <div class="q-pa-md">
-      <div class="row justify-center">
+      <div class="row q-col-gutter-md justify-center">
         <div class="col-12 col-md-6">
           <q-card v-if="scanner_available" class="q-pa-md">
             <q-card-title>Connected to OpenScan Device</q-card-title>
@@ -67,6 +68,10 @@ onMounted(async () => {
               <q-btn flat color="white" label="Retry" @click="reload_page" />
             </template>
           </q-banner>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <TaskStatusCard />
         </div>
       </div>
     </div>

@@ -43,9 +43,16 @@ import { type Project } from 'src/generated/api'
 import CreateProjectDialog from './CreateProjectDialog.vue'
 import ProjectListItem from './ProjectListItem.vue'
 
+type SortField = 'name' | 'date'
+type SortOrder = 'asc' | 'desc'
+type SortState = { field: SortField; order: SortOrder }
+
+const DEFAULT_SORT: SortState = { field: 'name', order: 'asc' }
+
 interface Props {
   projects: Project[]
   selectedProjectName?: string | null
+  sortState?: SortState
 }
 
 const props = defineProps<Props>()
@@ -54,7 +61,10 @@ const selected_project_name = computed({
   set: (value) => emit('select:project', value)
 })
 const showCreateDialog = ref(false)
-const sortBy = ref<{ field: 'name' | 'date', order: 'asc' | 'desc' }>({ field: 'name', order: 'asc' })
+const sortBy = computed<SortState>({
+  get: () => props.sortState ?? DEFAULT_SORT,
+  set: (value) => emit('update:sort', value)
+})
 
 const sortedProjects = computed(() => {
   return [...props.projects].sort((a, b) => {
@@ -68,21 +78,31 @@ const sortedProjects = computed(() => {
   })
 })
 
-const emit = defineEmits(['select:project', 'delete:project', 'download:project', 'create:project'])
+const emit = defineEmits([
+  'select:project',
+  'delete:project',
+  'download:project',
+  'create:project',
+  'update:sort'
+])
+
+const setSort = (value: SortState) => {
+  sortBy.value = value
+}
 
 const toggleDateSort = () => {
   if (sortBy.value.field === 'date') {
-    sortBy.value.order = sortBy.value.order === 'asc' ? 'desc' : 'asc'
+    setSort({ field: 'date', order: sortBy.value.order === 'asc' ? 'desc' : 'asc' })
   } else {
-    sortBy.value = { field: 'date', order: 'asc' }
+    setSort({ field: 'date', order: 'asc' })
   }
 }
 
 const toggleNameSort = () => {
   if (sortBy.value.field === 'name') {
-    sortBy.value.order = sortBy.value.order === 'asc' ? 'desc' : 'asc'
+    setSort({ field: 'name', order: sortBy.value.order === 'asc' ? 'desc' : 'asc' })
   } else {
-    sortBy.value = { field: 'name', order: 'asc' }
+    setSort({ field: 'name', order: 'asc' })
   }
 }
 

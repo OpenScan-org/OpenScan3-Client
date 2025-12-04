@@ -5,8 +5,10 @@
         <ProjectsList
           :projects="projectsStore.projects"
           :selected-project-name="selectedProjectName"
+          :sort-state="sortState"
           @select:project="selectProject"
           @create:project="createProject"
+          @update:sort="updateSortState"
         />
       </div>
       <div class="col-12 col-md-8 col-lg-9">
@@ -24,8 +26,10 @@
               <ProjectsList
                 :projects="projectsStore.projects"
                 :selected-project-name="selectedProjectName"
+                :sort-state="sortState"
                 @select:project="selectProject"
                 @create:project="createProject"
+                @update:sort="updateSortState"
               />
             </div>
           </q-slide-transition>
@@ -44,8 +48,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
+import { useRoute, useRouter } from 'vue-router'
 import { apiClient } from 'src/services/apiClient'
 import { newProject, type Project, type Scan } from 'src/generated/api'
 import ProjectsList from 'src/components/ProjectsList.vue'
@@ -55,8 +60,65 @@ import { useProjectsStore } from 'src/stores/projects'
 const $q = useQuasar()
 
 const projectsStore = useProjectsStore()
+const route = useRoute()
+const router = useRouter()
 
-const selectedProjectName = ref<string | null>(null)
+const getProjectFromRoute = () => (typeof route.query.project === 'string' ? route.query.project : null)
+
+const PROJECT_STORAGE_KEY = 'openscan.selectedProject'
+
+const readStoredProject = () => {
+  try {
+    return localStorage.getItem(PROJECT_STORAGE_KEY)
+  } catch {
+    return null
+  }
+}
+
+const writeStoredProject = (name: string | null) => {
+  try {
+    if (name) {
+      localStorage.setItem(PROJECT_STORAGE_KEY, name)
+    } else {
+      localStorage.removeItem(PROJECT_STORAGE_KEY)
+    }
+  } catch {}
+}
+
+const SORT_STORAGE_KEY = 'openscan.projectSort'
+
+type SortField = 'name' | 'date'
+type SortOrder = 'asc' | 'desc'
+type SortState = { field: SortField; order: SortOrder }
+
+const DEFAULT_SORT: SortState = { field: 'name', order: 'asc' }
+
+const readStoredSort = (): SortState => {
+  try {
+    const raw = localStorage.getItem(SORT_STORAGE_KEY)
+    if (!raw) {
+      return DEFAULT_SORT
+    }
+    const parsed = JSON.parse(raw) as Partial<SortState>
+    if (parsed.field === 'date' || parsed.field === 'name') {
+      if (parsed.order === 'asc' || parsed.order === 'desc') {
+        return parsed as SortState
+      }
+    }
+    return DEFAULT_SORT
+  } catch {
+    return DEFAULT_SORT
+  }
+}
+
+const writeStoredSort = (value: SortState) => {
+  try {
+    localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(value))
+  } catch {}
+}
+
+const selectedProjectName = ref<string | null>(getProjectFromRoute() ?? readStoredProject())
+const sortState = ref<SortState>(readStoredSort())
 const projectsListOpen = ref(false)
 const isMobile = computed(() => $q.screen.lt.md)
 
@@ -72,8 +134,30 @@ const projectScans = computed<Scan[]>(() => {
   return Object.values(selectedProject.value.scans).sort((a, b) => a.index - b.index)
 })
 
+const updateRouteProject = (name: string | null) => {
+  const currentQuery = { ...route.query }
+  const currentValue = typeof currentQuery.project === 'string' ? currentQuery.project : null
+
+  if (name && currentValue === name) {
+    return
+  }
+
+  if (name) {
+    currentQuery.project = name
+    void router.replace({ query: currentQuery })
+    return
+  }
+
+  if ('project' in currentQuery) {
+    delete currentQuery.project
+    void router.replace({ query: currentQuery })
+  }
+}
+
 const selectProject = (name: string) => {
   selectedProjectName.value = name
+  updateRouteProject(name)
+  writeStoredProject(name)
   if (isMobile.value) {
     projectsListOpen.value = false
   }
@@ -83,6 +167,8 @@ const createProject = async (data: { name: string; description?: string }) => {
   try {
     await projectsStore.createProject(data.name, data.description)
     selectedProjectName.value = data.name
+    updateRouteProject(data.name)
+    writeStoredProject(data.name)
     $q.notify({ type: 'positive', message: 'Project created.' })
   } catch (error) {
     $q.notify({ type: 'negative', message: 'Could not create project.' })
@@ -91,13 +177,45 @@ const createProject = async (data: { name: string; description?: string }) => {
 
 const loadProjects = async () => {
   await projectsStore.fetchProjects()
-  if (projectsStore.projects.length && !selectedProjectName.value) {
-    selectedProjectName.value = projectsStore.projects[0].name
+  const routeProject = getProjectFromRoute()
+  if (routeProject && projectsStore.projects.some((project) => project.name === routeProject)) {
+    selectedProjectName.value = routeProject
+    writeStoredProject(routeProject)
+    return
   }
+
+  const storedProject = readStoredProject()
+  if (storedProject && projectsStore.projects.some((project) => project.name === storedProject)) {
+    selectedProjectName.value = storedProject
+    updateRouteProject(storedProject)
+    return
+  }
+
+  if (projectsStore.projects.length && !selectedProjectName.value) {
+    const fallback = projectsStore.projects[0].name
+    selectedProjectName.value = fallback
+    updateRouteProject(fallback)
+    writeStoredProject(fallback)
+  }
+}
+
+const updateSortState = (value: SortState) => {
+  sortState.value = value
+  writeStoredSort(value)
 }
 
 // Setup initial load
 onMounted(() => {
   loadProjects()
 })
+
+watch(
+  () => route.query.project,
+  (projectParam) => {
+    const value = typeof projectParam === 'string' ? projectParam : null
+    if (value !== selectedProjectName.value) {
+      selectedProjectName.value = value
+    }
+  }
+)
 </script>
