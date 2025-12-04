@@ -188,6 +188,10 @@
         </div>
       </div>
     </div>
+    <create-project-dialog
+      v-model="showCreateProjectDialog"
+      @create-project="onCreateProject"
+    />
   </q-page>
 </template>
 
