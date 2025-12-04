@@ -2,7 +2,7 @@
   <div class="fast-preview">
     <div v-if="!camera || !active" class="fast-preview__placeholder">
       <slot name="placeholder">
-        <div class="text-caption text-grey-6">Fast Preview wird angezeigt, sobald eine Kamera aktiv ist.</div>
+        <div class="text-caption text-grey-6">Fast preview will appear once a camera is active.</div>
       </slot>
     </div>
 
@@ -14,6 +14,7 @@
           class="preview-image"
           :src="previewUrl"
           alt="Camera preview"
+          :style="imageTransformStyle"
           @load="onImageLoad"
         />
 
@@ -58,6 +59,7 @@ import { useDeviceStore } from 'src/stores/device'
 import { apiClient } from 'src/services/apiClient'
 import { updateCameraNameSettings } from 'src/generated/api'
 import type { PreviewOrientation } from 'src/stores/previewSettings'
+import { getOrientationTransform } from 'src/utils/orientation'
 
 interface FastPreviewProps {
   active: boolean
@@ -98,13 +100,20 @@ const orientation = computed<PreviewOrientation>(() => props.orientation ?? 'lan
 const wrapperStyle = computed(() => {
   const isPortrait = orientation.value === 'portrait'
   const aspectRatio = isPortrait ? '3 / 4' : '4 / 3'
-  const maxWidth = isPortrait ? '480px' : '640px'
+  const maxWidth = isPortrait ? '240px' : '320px'
   return {
     width: '100%',
     maxWidth,
     aspectRatio,
     margin: '0 auto'
   }
+})
+
+const imageTransformStyle = computed(() => {
+  const transform = getOrientationTransform(props.camera?.orientationFlag ?? null)
+  return transform === 'none'
+    ? {}
+    : { transform, transformOrigin: 'center center' }
 })
 
 const previewUrl = computed(() =>
@@ -443,7 +452,7 @@ async function persistCrop(widthPercent: number, heightPercent: number) {
     lastConfirmedCrop.value = { ...payload }
     clearPendingCrop(pendingRequestId.value)
     editingCrop.value = { ...payload }
-    $q.notify({ type: 'positive', message: 'Crop aktualisiert.' })
+    $q.notify({ type: 'positive', message: 'Crop updated.' })
   } catch (error) {
     console.error('Failed to update crop', error)
     clearPendingCrop(pendingRequestId.value)
@@ -451,7 +460,7 @@ async function persistCrop(widthPercent: number, heightPercent: number) {
     if (!dragMode.value) {
       editingCrop.value = { ...appliedCrop.value }
     }
-    $q.notify({ type: 'negative', message: 'Crop konnte nicht gespeichert werden.' })
+    $q.notify({ type: 'negative', message: 'Failed to save crop.' })
   } finally {
     cropSaving.value = false
   }
@@ -533,7 +542,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
   border-radius: 8px;
   background: #000;
-  width: min(100%, 640px);
+  width: 100%;
   aspect-ratio: 4 / 3;
   margin: 0 auto;
 }

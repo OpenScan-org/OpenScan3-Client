@@ -17,6 +17,7 @@ export const useCameraStore = defineStore('camera', {
     })),
     previewUrl: (state) => state.selectedCamera ? `${API_BASE_URL}cameras/${state.selectedCamera}/preview` : null,
     getPreviewUrl: () => (cameraName: string) => cameraName ? `${API_BASE_URL}cameras/${cameraName}/preview` : null,
+    getPhotoUrl: () => (cameraName: string) => cameraName ? `${API_BASE_URL}cameras/${cameraName}/photo` : null,
   },
   actions: {
     async fetchCameras() {

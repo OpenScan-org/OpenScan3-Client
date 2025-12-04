@@ -184,7 +184,7 @@
           </q-card>
         </div>
         <div class="col-12 col-md-6">
-          <camera-preview :scanning="scanning" :camera="selectedCamera" />
+          <camera-view :scanning="scanning" :camera="selectedCamera" />
         </div>
       </div>
     </div>
@@ -207,7 +207,7 @@ import {
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import generateDashedName from 'src/utils/randomName'
 
-import CameraPreview from 'components/CameraPreview.vue'
+import CameraView from 'components/CameraView.vue'
 import CreateProjectDialog from 'components/CreateProjectDialog.vue'
 import { useProjectsStore } from 'src/stores/projects'
 import { useCameraStore } from 'src/stores/camera'
