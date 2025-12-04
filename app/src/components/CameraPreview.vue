@@ -1,104 +1,75 @@
 <template>
-    <q-card class="camera-preview-card">
-        <q-card-section>
-            <div class="row">
-                <div class="col-2">
-                    <div class="text-h6">Preview</div>
-                </div>
-                <div class="col">
-                    <q-toggle v-model="show_preview" :disable="scanning" />
-                </div>
-            </div>
-        </q-card-section>
-        <q-card-section class="q-pt-none">
-            <div v-if="show_preview" class="preview-wrapper">
-                <img
-                    class="preview-image"
-                    :src="previewUrl"
-                    alt="Camera preview"
-                />
-            </div>
-        </q-card-section>
-        <!-- <q-separator inset />
-        <q-card-section class="q-pt-none">
-            <div class="row">
-                <div class="col-2">
-                    Crop X
-                </div>
-                <div class="col">
-                    <q-range v-model="crop_x" :min="0" :max="100" :left-label-value="crop_x.min + '%'"
-                        :right-label-value="crop_x.max + '%'" label-always />
-                </div>
-            </div>
-            <div class="row">
-                &nbsp;
-            </div>
-            <div class="row">
-                <div class="col-2">
-                    Crop Y
-                </div>
-                <div class="col">
-                    <q-range v-model="crop_y" :min="0" :max="100" :left-label-value="crop_y.min + '%'"
-                        :right-label-value="crop_y.max + '%'" label-always />
-                </div>
-            </div>
-        </q-card-section> -->
-    </q-card>
+  <q-card class="camera-preview-card">
+    <q-card-section>
+      <div class="row items-center q-col-gutter-sm">
+        <div class="col-12 col-sm">
+          <div class="text-h6">Fast Preview</div>
+        </div>
+        <div class="col-12 col-sm-auto flex items-center q-gutter-sm justify-end">
+          <q-btn-toggle
+            v-model="orientation"
+            size="sm"
+            dense
+            toggle-color="primary"
+            :options="[
+              { label: 'Landscape', value: 'landscape' },
+              { label: 'Portrait', value: 'portrait' }
+            ]"
+          />
+          <q-toggle v-model="showFastPreview" :disable="scanning" label="aktiv" />
+        </div>
+      </div>
+    </q-card-section>
+
+    <q-card-section class="q-pt-none">
+      <FastPreview :camera="camera" :active="showFastPreview" :orientation="orientation" />
+    </q-card-section>
+  </q-card>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useCameraStore } from 'src/stores/camera'
+import FastPreview from './FastPreview.vue'
+import { usePreviewSettingsStore, type PreviewOrientation } from 'src/stores/previewSettings'
 
 interface CameraPreviewProps {
-    scanning: boolean,
-    camera?: {
-        label: string
-        value: string
-        orientationFlag?: number | null
-    } | null
+  scanning: boolean
+  camera?: {
+    label: string
+    value: string
+    orientationFlag?: number | null
+  } | null
 }
 
 const props = defineProps<CameraPreviewProps>()
 
-let _show_preview = ref(true)
+const previewSettings = usePreviewSettingsStore()
 
-const cameraStore = useCameraStore()
+const _showFastPreview = ref(true)
 
-const previewUrl = computed(() => cameraStore.getPreviewUrl(props.camera?.value || ''))
-
-const show_preview = computed({
-    get() {
-        return _show_preview.value && !props.scanning && props.camera !== null
-    },
-    set(value) {
-        _show_preview.value = value
-    }
+const showFastPreview = computed({
+  get() {
+    return _showFastPreview.value && !props.scanning && props.camera !== null
+  },
+  set(value) {
+    _showFastPreview.value = value
+  }
 })
 
-// let crop_x = ref({
-//     min: 0,
-//     max: 100
-// })
-
-// let crop_y = ref({
-//     min: 0,
-//     max: 100
-// })
-
+const orientation = computed<PreviewOrientation>({
+  get() {
+    return previewSettings.getOrientation(props.camera?.value)
+  },
+  set(value) {
+    if (props.camera?.value) {
+      previewSettings.setOrientation(props.camera.value, value)
+    }
+  }
+})
 </script>
 
 <style scoped>
-.preview-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #000;
-}
-
-.preview-image {
-    width: 100%;
-    max-height: 360px;
-    object-fit: contain;
+.camera-preview-card {
+  width: 100%;
 }
 </style>
