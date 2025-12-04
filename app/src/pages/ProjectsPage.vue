@@ -6,9 +6,12 @@
           :projects="projectsStore.projects"
           :selected-project-name="selectedProjectName"
           :sort-state="sortState"
+          :selected-projects="selectedProjects"
           @select:project="selectProject"
           @create:project="createProject"
           @update:sort="updateSortState"
+          @update:selected-projects="setSelectedProjects"
+          @bulk:deleted="handleBulkDeleted"
         />
       </div>
       <div class="col-12 col-md-8 col-lg-9">
@@ -27,9 +30,12 @@
                 :projects="projectsStore.projects"
                 :selected-project-name="selectedProjectName"
                 :sort-state="sortState"
+                :selected-projects="selectedProjects"
                 @select:project="selectProject"
                 @create:project="createProject"
                 @update:sort="updateSortState"
+                @update:selected-projects="setSelectedProjects"
+                @bulk:deleted="handleBulkDeleted"
               />
             </div>
           </q-slide-transition>
@@ -121,6 +127,7 @@ const selectedProjectName = ref<string | null>(getProjectFromRoute() ?? readStor
 const sortState = ref<SortState>(readStoredSort())
 const projectsListOpen = ref(false)
 const isMobile = computed(() => $q.screen.lt.md)
+const selectedProjects = ref<string[]>([])
 
 const selectedProject = computed(() =>
   projectsStore.projects.find((project) => project.name === selectedProjectName.value) ?? null
@@ -177,6 +184,10 @@ const createProject = async (data: { name: string; description?: string }) => {
 
 const loadProjects = async () => {
   await projectsStore.fetchProjects()
+  // prune selected projects that no longer exist
+  selectedProjects.value = selectedProjects.value.filter((name) =>
+    projectsStore.projects.some((project) => project.name === name)
+  )
   const routeProject = getProjectFromRoute()
   if (routeProject && projectsStore.projects.some((project) => project.name === routeProject)) {
     selectedProjectName.value = routeProject
@@ -202,6 +213,15 @@ const loadProjects = async () => {
 const updateSortState = (value: SortState) => {
   sortState.value = value
   writeStoredSort(value)
+}
+
+const setSelectedProjects = (names: string[]) => {
+  selectedProjects.value = names
+}
+
+const handleBulkDeleted = async () => {
+  selectedProjects.value = []
+  await loadProjects()
 }
 
 // Setup initial load

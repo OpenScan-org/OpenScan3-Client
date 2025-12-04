@@ -12,6 +12,14 @@
           v-for="scan in scans"
           :key="scan.index"
         >
+          <q-item-section avatar>
+            <q-checkbox
+              size="sm"
+              :model-value="selectedScansSet.has(scan.index)"
+              @update:model-value="(checked) => toggle_scan_selection(scan.index, checked)"
+              @click.stop
+            />
+          </q-item-section>
         <q-item-section>
           <div class="row items-center q-gutter-sm">
             <div class="text-body1">Scan #{{ scan.index }}</div>
@@ -64,21 +72,78 @@
           </q-item-section>
         </q-item>
       </q-list>
+      <div class="row justify-start q-gutter-sm q-mt-sm">
+        <q-btn
+          outline
+          dense
+          color="primary"
+          label="Select all"
+          :disable="!scans.length"
+          @click="select_all_scans"
+        />
+        <q-btn
+          outline
+          dense
+          color="primary"
+          label="Inverse selection"
+          :disable="!scans.length"
+          @click="inverse_scan_selection"
+        />
+      </div>
+      <div class="row justify-start q-gutter-sm q-mt-sm">
+        <q-btn
+          color="negative"
+          unelevated
+          label="Delete selected"
+          :disable="!selectedScansSet.size"
+          @click="requestDeleteSelected"
+        />
+        <q-btn
+          outline
+          color="negative"
+          label="Delete errored"
+          :disable="!erroredCount"
+          @click="requestDeleteErrored"
+        />
+        <q-btn
+          outline
+          color="negative"
+          label="Delete cancelled"
+          :disable="!cancelledCount"
+          @click="requestDeleteCancelled"
+        />
+        <q-btn
+          color="primary"
+          unelevated
+          label="Download selected"
+          :disable="!selectedScansSet.size"
+          @click="requestDownloadSelected"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useQuasar } from 'quasar'
 import { type Scan } from 'src/generated/api'
+import { API_BASE_URL } from 'src/services/apiClient'
 
 interface ScansListProp {
   scans: Scan[]
   selected_scan_index?: number
   project_name: string
+  selectedScans?: number[]
 }
 
 const props = defineProps<ScansListProp>()
-const emit = defineEmits(['select:scan', 'delete:scan', 'pause:scan', 'resume:scan', 'download:scan', 'stack:scan', 'cancel:scan', 'create:scan'])
+const emit = defineEmits(['select:scan', 'delete:scan', 'pause:scan', 'resume:scan', 'download:scan', 'stack:scan', 'cancel:scan', 'create:scan', 'update:selected-scans', 'bulk:delete-selected', 'bulk:delete-status', 'bulk:download-selected'])
+const $q = useQuasar()
+const selectedScansSet = computed(() => new Set(props.selectedScans ?? []))
+const erroredStatuses = new Set(['failed', 'error'])
+const erroredCount = computed(() => props.scans.filter((scan) => erroredStatuses.has(scan.status ?? '')).length)
+const cancelledCount = computed(() => props.scans.filter((scan) => scan.status === 'cancelled').length)
 
 const format_date = (value?: string) => {
   if (!value) {
@@ -149,7 +214,67 @@ const resume_scan = (index: number) => {
 }
 
 const download_scan = (index: number) => {
-  emit('download:scan', { project_name: props.project_name, scan_index: index })
+  try {
+    const params = new URLSearchParams()
+    params.append('scan_indices', index.toString())
+    const downloadUrl = `${API_BASE_URL}projects/${encodeURIComponent(props.project_name)}/scans/zip?${params.toString()}`
+    window.open(downloadUrl, '_blank')
+    $q.notify({ type: 'positive', message: 'Scan download started.' })
+    emit('download:scan', { project_name: props.project_name, scan_index: index })
+  } catch (error) {
+    $q.notify({ type: 'negative', message: 'Could not download scan.' })
+  }
+}
+
+const toggle_scan_selection = (index: number, checked: boolean) => {
+  const next = new Set(selectedScansSet.value)
+  if (checked) {
+    next.add(index)
+  } else {
+    next.delete(index)
+  }
+  emit('update:selected-scans', Array.from(next))
+}
+
+const select_all_scans = () => {
+  emit('update:selected-scans', props.scans.map((scan) => scan.index))
+}
+
+const inverse_scan_selection = () => {
+  const next = props.scans
+    .filter((scan) => !selectedScansSet.value.has(scan.index))
+    .map((scan) => scan.index)
+  emit('update:selected-scans', next)
+}
+
+const requestDeleteSelected = () => {
+  if (!selectedScansSet.value.size) {
+    return
+  }
+  emit('bulk:delete-selected', { project_name: props.project_name, scan_indices: Array.from(selectedScansSet.value) })
+}
+
+const requestDeleteErrored = () => {
+  const indices = props.scans.filter((scan) => erroredStatuses.has(scan.status ?? '')).map((scan) => scan.index)
+  if (!indices.length) {
+    return
+  }
+  emit('bulk:delete-status', { project_name: props.project_name, scan_indices: indices, status: 'error' })
+}
+
+const requestDeleteCancelled = () => {
+  const indices = props.scans.filter((scan) => scan.status === 'cancelled').map((scan) => scan.index)
+  if (!indices.length) {
+    return
+  }
+  emit('bulk:delete-status', { project_name: props.project_name, scan_indices: indices, status: 'cancelled' })
+}
+
+const requestDownloadSelected = () => {
+  if (!selectedScansSet.value.size) {
+    return
+  }
+  emit('bulk:download-selected', { project_name: props.project_name, scan_indices: Array.from(selectedScansSet.value) })
 }
 
 const stack_scan = (index: number) => {

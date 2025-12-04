@@ -6,6 +6,14 @@
     :class="{ 'bg-blue-2 text-dark': isSelected }"
     @click="handleSelect"
   >
+    <q-item-section avatar>
+      <q-checkbox
+        size="sm"
+        :model-value="bulkSelected"
+        @update:model-value="toggleBulk"
+        @click.stop
+      />
+    </q-item-section>
     <q-item-section>
       <div class="text-body1">{{ project.name }}</div>
       <div class="text-caption text-secondary row justify-between items-center">
@@ -26,10 +34,11 @@ import { type Project } from 'src/generated/api'
 interface Props {
   project: Project
   isSelected: boolean
+  bulkSelected?: boolean
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits(['select'])
+const emit = defineEmits(['select', 'toggle:bulk-select'])
 
 const formattedDate = computed(() => {
   if (!props.project.created) {
@@ -44,5 +53,9 @@ const scanCount = computed(() => Object.keys(props.project.scans || {}).length)
 
 const handleSelect = () => {
   emit('select', props.project.name)
+}
+
+const toggleBulk = (value: boolean) => {
+  emit('toggle:bulk-select', value)
 }
 </script>

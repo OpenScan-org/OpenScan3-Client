@@ -9,22 +9,37 @@
                 <div class="text-subtitle2 text-grey-7">{{ displayDate }}</div>
             </q-card-section>
             <q-card-section class="row justify-center q-gutter-sm">
-                <q-btn color="primary" unelevated label="Upload project" v-if="!project.uploaded" @click="confirm_upload"></q-btn>
+                <q-btn color="grey-5" disable unelevated label="Cloud process project" v-if="!project.uploaded"></q-btn>
                 <q-btn color="primary" unelevated label="Download project" @click="confirm_download"></q-btn>
-                <q-btn color="primary" unelevated label="Delete project" @click="confirm_delete"></q-btn>
-                <q-btn color="primary" unelevated label="Add Scan" @click="add_scan"></q-btn>
+                <q-btn color="negative" unelevated label="Delete project" @click="confirm_delete"></q-btn>
+                <q-btn color="positive" unelevated label="Add Scan" @click="add_scan"></q-btn>
             </q-card-section>
             <q-separator />
-            <ScansList v-if="detail" :scans="projectScans" :project_name="project.name" @delete:scan="handleDeleteScan" @pause:scan="handlePauseScan" @resume:scan="handleResumeScan" @cancel:scan="handleCancelScan" @stack:scan="handleStackScan" @select:scan="handleSelectScan" />
+            <ScansList
+                v-if="detail"
+                :scans="projectScans"
+                :project_name="project.name"
+                :selected-scans="selectedScans"
+                @update:selected-scans="setSelectedScans"
+                @delete:scan="handleDeleteScan"
+                @pause:scan="handlePauseScan"
+                @resume:scan="handleResumeScan"
+                @cancel:scan="handleCancelScan"
+                @stack:scan="handleStackScan"
+                @select:scan="handleSelectScan"
+                @bulk:delete-selected="handleBulkDeleteSelected"
+                @bulk:delete-status="handleBulkDeleteByStatus"
+                @bulk:download-selected="handleBulkDownloadSelected"
+            />
         </q-card>
     </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
-import { apiClient } from 'src/services/apiClient'
+import { apiClient, API_BASE_URL } from 'src/services/apiClient'
 import { deleteProject, uploadProjectToCloud, deleteScan, pauseScan, resumeScan, cancelScan, startFocusStacking, type Project, type Scan } from 'src/generated/api'
 import ScansList from './ScansList.vue'
 
@@ -37,8 +52,79 @@ interface ProjectProp {
     projectScans?: Scan[]
 }
 
+const handleBulkDeleteSelected = (data: { project_name: string; scan_indices: number[] }) => {
+    if (!data.scan_indices.length) {
+        return
+    }
+    $q.dialog({
+        title: 'Delete selected scans',
+        message: `Delete ${data.scan_indices.length} selected scan${data.scan_indices.length === 1 ? '' : 's'}?`,
+        cancel: true,
+        persistent: true
+    }).onOk(async () => {
+        try {
+            await Promise.all(
+                data.scan_indices.map((scan_index) =>
+                    deleteScan({ path: { project_name: data.project_name, scan_index }, client: apiClient })
+                )
+            )
+            emit('reload')
+            setSelectedScans([])
+            $q.notify({ type: 'positive', message: 'Selected scans deleted.' })
+        } catch (error) {
+            $q.notify({ type: 'negative', message: 'Could not delete selected scans.' })
+        }
+    })
+}
+
+const handleBulkDeleteByStatus = (data: { project_name: string; scan_indices: number[]; status: string }) => {
+    if (!data.scan_indices.length) {
+        return
+    }
+    const statusLabel = data.status === 'cancelled' ? 'cancelled' : 'errored'
+    $q.dialog({
+        title: `Delete ${statusLabel} scans`,
+        message: `Delete ${data.scan_indices.length} ${statusLabel} scan${data.scan_indices.length === 1 ? '' : 's'}?`,
+        cancel: true,
+        persistent: true
+    }).onOk(async () => {
+        try {
+            await Promise.all(
+                data.scan_indices.map((scan_index) =>
+                    deleteScan({ path: { project_name: data.project_name, scan_index }, client: apiClient })
+                )
+            )
+            emit('reload')
+            setSelectedScans((prev) => prev.filter((index) => !data.scan_indices.includes(index)))
+            $q.notify({ type: 'positive', message: `${statusLabel[0]?.toUpperCase() ?? ''}${statusLabel.slice(1)} scans deleted.` })
+        } catch (error) {
+            $q.notify({ type: 'negative', message: `Could not delete ${statusLabel} scans.` })
+        }
+    })
+}
+
+const handleBulkDownloadSelected = (data: { project_name: string; scan_indices: number[] }) => {
+    if (!data.scan_indices.length) {
+        return
+    }
+    try {
+        const params = new URLSearchParams()
+        data.scan_indices.forEach((index) => params.append('scan_indices', index.toString()))
+        const downloadUrl = `${API_BASE_URL}projects/${encodeURIComponent(data.project_name)}/scans/zip?${params.toString()}`
+        window.open(downloadUrl, '_blank')
+        $q.notify({ type: 'positive', message: 'Scan download started.' })
+    } catch (error) {
+        $q.notify({ type: 'negative', message: 'Could not download selected scans.' })
+    }
+}
+
 const props = defineProps<ProjectProp>()
 const emit = defineEmits(['delete:project', 'upload:project', 'delete:scan', 'pause:scan', 'select:scan'])
+const selectedScans = ref<number[]>([])
+
+const setSelectedScans = (value: number[]) => {
+    selectedScans.value = value
+}
 
 const displayDate = computed(() => {
     if (!props.project.created) {
@@ -84,19 +170,13 @@ const confirm_upload = () => {
 }
 
 const confirm_download = () => {
-    $q.dialog({
-        title: 'Confirm Download',
-        message: `Do you want to download ${props.project.name}?`,
-        cancel: true,
-        persistent: true
-    }).onOk(async () => {
-        try {
-            // Placeholder for download logic
-            $q.notify({ type: 'positive', message: 'Download not implemented yet.' })
-        } catch (error) {
-            $q.notify({ type: 'negative', message: 'Could not download project.' })
-        }
-    })
+    try {
+        const downloadUrl = `${API_BASE_URL}projects/${encodeURIComponent(props.project.name)}/zip`
+        window.open(downloadUrl, '_blank')
+        $q.notify({ type: 'positive', message: 'Download started.' })
+    } catch (error) {
+        $q.notify({ type: 'negative', message: 'Could not download project.' })
+    }
 }
 
 const add_scan = () => {
