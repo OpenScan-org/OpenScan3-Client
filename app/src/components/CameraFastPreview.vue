@@ -53,13 +53,14 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import type { Ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { useCameraStore } from 'src/stores/camera'
 import { useDeviceStore } from 'src/stores/device'
 import { apiClient } from 'src/services/apiClient'
 import { updateCameraNameSettings } from 'src/generated/api'
-import type { PreviewOrientation } from 'src/stores/previewSettings'
-import { getOrientationTransform } from 'src/utils/orientation'
+import { usePreviewSettingsStore, type PreviewOrientation } from 'src/stores/previewSettings'
+import { getOrientationRotation, getOrientationTransform } from 'src/utils/orientation'
 
 interface FastPreviewProps {
   active: boolean
@@ -68,13 +69,18 @@ interface FastPreviewProps {
     value: string
     orientationFlag?: number | null
   } | null
-  orientation?: PreviewOrientation
 }
 
 type DragMode = 'box' | 'handle'
 
+export type CameraFastPreviewExposed = {
+  previewImage: Ref<HTMLImageElement | null>
+  imageLoaded: Ref<boolean>
+}
+
 const props = defineProps<FastPreviewProps>()
 
+const previewSettingsStore = usePreviewSettingsStore()
 const cameraStore = useCameraStore()
 const deviceStore = useDeviceStore()
 void deviceStore.ensureConnected()
@@ -95,17 +101,16 @@ const cropSaving = ref(false)
 const dragMode = ref<DragMode | null>(null)
 const orientationInitialized = ref(false)
 
-const orientation = computed<PreviewOrientation>(() => props.orientation ?? 'landscape')
+const orientation = computed<PreviewOrientation>(() =>
+  previewSettingsStore.getOrientation(props.camera?.value ?? null)
+)
 
 const wrapperStyle = computed(() => {
   const isPortrait = orientation.value === 'portrait'
   const aspectRatio = isPortrait ? '3 / 4' : '4 / 3'
-  const maxWidth = isPortrait ? '240px' : '320px'
   return {
     width: '100%',
-    maxWidth,
-    aspectRatio,
-    margin: '0 auto'
+    aspectRatio
   }
 })
 
@@ -288,7 +293,28 @@ function normalizeCrop(cropWidthPercent: number, cropHeightPercent: number) {
 function onImageLoad() {
   updateImageSize()
   imageLoaded.value = true
+  updateOrientationFromImage()
   nextTick(() => drawCropCanvas())
+}
+
+function updateOrientationFromImage() {
+  const cameraName = props.camera?.value
+  const img = previewImage.value
+  if (!cameraName || !img) {
+    return
+  }
+
+  const naturalWidth = img.naturalWidth
+  const naturalHeight = img.naturalHeight
+  const rotation = getOrientationRotation(props.camera?.orientationFlag ?? null)
+
+  const rotatedWidth = rotation === 90 || rotation === 270 ? naturalHeight : naturalWidth
+  const rotatedHeight = rotation === 90 || rotation === 270 ? naturalWidth : naturalHeight
+
+  const effectiveOrientation: PreviewOrientation =
+    rotatedWidth >= rotatedHeight ? 'landscape' : 'portrait'
+
+  previewSettingsStore.setOrientation(cameraName, effectiveOrientation)
 }
 
 function updateImageSize() {
@@ -496,6 +522,16 @@ watch(
   }
 )
 
+watch(
+  () => props.camera?.orientationFlag,
+  () => {
+    if (!imageLoaded.value) {
+      return
+    }
+    updateOrientationFromImage()
+  }
+)
+
 watch(currentCrop, () => {
   drawCropCanvas()
 })
@@ -516,6 +552,11 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
   detachInteractionListeners()
 })
+
+defineExpose<CameraFastPreviewExposed>({
+  previewImage,
+  imageLoaded
+})
 </script>
 
 <style scoped>
@@ -527,7 +568,6 @@ onBeforeUnmount(() => {
   padding: 1rem;
   min-height: 160px;
   border: 1px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -540,11 +580,9 @@ onBeforeUnmount(() => {
 .image-wrapper {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
   background: #000;
   width: 100%;
   aspect-ratio: 4 / 3;
-  margin: 0 auto;
 }
 
 .preview-image {

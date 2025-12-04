@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { useApiConfigStore, buildWebSocketUrl } from './apiConfig'
 import { apiClient } from 'src/services/apiClient'
 import { getDeviceInfo, type DeviceStatusResponse } from 'src/generated/api'
+import { useCameraStore } from './camera'
 
 export type DeviceStoreStatus = 'idle' | 'connecting' | 'open' | 'closed' | 'error'
 
@@ -195,6 +196,11 @@ export const useDeviceStore = defineStore('device', {
       if (payload.type === 'device.status') {
         this.device = payload.device ?? null
         this.lastChanged = payload.changed ?? null
+
+        if (payload.changed?.length) {
+          const cameraStore = useCameraStore()
+          cameraStore.handleCameraSettingsChanged(payload.changed)
+        }
       }
     }
   }

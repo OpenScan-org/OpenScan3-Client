@@ -77,7 +77,7 @@ const upperLinks: EssentialLinkProps[] = [
     link: '/scan'
   },
   {
-    title: '(dev) settings',
+    title: '(wip) settings',
     icon: 'settings',
     link: '/settings'
   },
@@ -91,13 +91,19 @@ const upperLinks: EssentialLinkProps[] = [
 
 const lowerLinks: EssentialLinkProps[] = [
   {
-    title: 'Contribute (Github)',
+    title: 'Contribute on Github',
     icon: 'code',
     link: 'https://github.com/OpenScan-org',
     target: '_blank'
   },
   {
-    title: 'Donate (Patreon)',
+    title: 'Join Discord',
+    icon: 'forum',
+    link: 'https://discord.gg/eBdqtdkXyF',
+    target: '_blank'
+  },
+  {
+    title: 'Donate on Patreon',
     icon: 'volunteer_activism',
     link: 'https://www.patreon.com/OpenScan',
     target: '_blank'

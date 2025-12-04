@@ -1,13 +1,16 @@
 export type DisplayOrientation = 'landscape' | 'portrait'
 
+export const LANDSCAPE_HQ_MAX_HEIGHT = 390
+export const PORTRAIT_HQ_MAX_HEIGHT = 600
+
 const orientationInfo: Record<number, { transform: string; rotation: number }> = {
   1: { transform: 'none', rotation: 0 },
   2: { transform: 'scaleX(-1)', rotation: 0 },
   3: { transform: 'rotate(180deg)', rotation: 180 },
   4: { transform: 'scaleY(-1)', rotation: 0 },
-  5: { transform: 'rotate(90deg) scaleX(-1)', rotation: 90 },
+  5: { transform: 'rotate(270deg) scaleX(-1)', rotation: 90 },
   6: { transform: 'rotate(90deg)', rotation: 90 },
-  7: { transform: 'rotate(270deg) scaleX(-1)', rotation: 270 },
+  7: { transform: 'rotate(90deg) scaleX(-1)', rotation: 270 },
   8: { transform: 'rotate(270deg)', rotation: 270 }
 }
 

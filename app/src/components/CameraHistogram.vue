@@ -38,7 +38,7 @@
 
     <q-dialog v-model="histogramViewDialog" persistent>
       <q-card class="histogram-view-dialog" :style="histogramDialogStyle">
-        <q-card-section class="text-h6">Histogram preview</q-card-section>
+        <q-card-section class="text-h6">Histogram</q-card-section>
         <q-card-section>
           <canvas ref="histogramCanvasDialog" class="histogram-dialog__canvas" />
         </q-card-section>
@@ -58,21 +58,19 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
-
-interface CameraHistogramProps {
-  imageElement?: HTMLImageElement | null
-  imageLoaded: boolean
-}
-
-const props = defineProps<CameraHistogramProps>()
+import { useCameraStore } from 'src/stores/camera'
 
 const $q = useQuasar()
+
+const cameraStore = useCameraStore()
 
 const histogramCanvas = ref<HTMLCanvasElement | null>(null)
 const histogramCanvasDialog = ref<HTMLCanvasElement | null>(null)
 const histogramInfoDialog = ref(false)
 const histogramViewDialog = ref(false)
 const redrawInterval = ref<number | null>(null)
+const histogramImage = ref<HTMLImageElement | null>(null)
+const imageLoaded = ref(false)
 
 const histogramTheme = computed(() => {
   const isDark = $q.dark.isActive
@@ -98,7 +96,7 @@ const histogramDialogStyle = computed(() => ({
 }))
 
 function drawHistogram() {
-  const img = props.imageElement
+  const img = histogramImage.value
   const canvases = [histogramCanvas.value, histogramCanvasDialog.value].filter(
     (canvas): canvas is HTMLCanvasElement => Boolean(canvas)
   )
@@ -185,29 +183,53 @@ function clearHistogram() {
 }
 
 function scheduleDraw() {
-  if (props.imageLoaded) {
+  if (imageLoaded.value && histogramImage.value) {
     nextTick(() => drawHistogram())
   } else {
     clearHistogram()
   }
 }
 
-watch(
-  () => props.imageLoaded,
-  () => {
+function loadHistogramImage() {
+  const url = cameraStore.photoObjectUrl
+  if (!url) {
+    histogramImage.value = null
+    imageLoaded.value = false
+    clearHistogram()
+    return
+  }
+
+  const img = new Image()
+  img.crossOrigin = 'anonymous'
+  imageLoaded.value = false
+
+  img.onload = () => {
+    histogramImage.value = img
+    imageLoaded.value = true
     scheduleDraw()
   }
-)
+
+  img.onerror = () => {
+    imageLoaded.value = false
+  }
+
+  img.src = url
+}
 
 watch(
-  () => props.imageElement,
+  () => cameraStore.photoObjectUrl,
   () => {
-    scheduleDraw()
-  }
+    loadHistogramImage()
+  },
+  { immediate: true }
 )
+
+watch(imageLoaded, () => {
+  scheduleDraw()
+})
 
 watch(histogramViewDialog, (open) => {
-  if (open) {
+  if (open && imageLoaded.value && histogramImage.value) {
     nextTick(() => drawHistogram())
   }
 })
@@ -215,7 +237,7 @@ watch(histogramViewDialog, (open) => {
 watch(
   () => histogramTheme.value,
   () => {
-    if (props.imageLoaded) {
+    if (imageLoaded.value && histogramImage.value) {
       nextTick(() => drawHistogram())
     }
   }
@@ -223,7 +245,7 @@ watch(
 
 onMounted(() => {
   redrawInterval.value = window.setInterval(() => {
-    if (props.imageLoaded) {
+    if (imageLoaded.value && histogramImage.value) {
       drawHistogram()
     }
   }, 500)
@@ -239,9 +261,6 @@ onBeforeUnmount(() => {
 <style scoped>
 .camera-histogram {
   width: 100%;
-  max-width: 320px;
-  margin: 0 auto;
-  border-radius: 12px;
   padding: 0;
 }
 
@@ -257,9 +276,9 @@ onBeforeUnmount(() => {
 }
 
 .histogram {
+  display: block;
   width: 100%;
   height: 120px;
-  border-radius: 6px;
   background: var(--histogram-canvas-bg, rgba(248, 250, 252, 0.95));
 }
 
@@ -270,7 +289,6 @@ onBeforeUnmount(() => {
 .histogram-dialog__canvas {
   width: 100%;
   height: 280px;
-  border-radius: 8px;
   background: var(--histogram-canvas-bg, rgba(248, 250, 252, 0.95));
 }
 </style>

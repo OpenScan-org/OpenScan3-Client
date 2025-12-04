@@ -1,7 +1,7 @@
 <template>
   <q-page>
     <div class="q-pa-md">
-      <div class="row justify-center">
+      <div class="row justify-center q-col-gutter-md">
         <div class="col-12 col-md-3">
           <scan-settings-card
             ref="scanSettingsCardRef"
