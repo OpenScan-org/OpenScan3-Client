@@ -2090,7 +2090,7 @@ export type DeletePhotosData = {
         scan_index: number;
     };
     query?: never;
-    url: '/projects/{project_name}/{scan_index}/';
+    url: '/projects/{project_name}/{scan_index}/photos';
 };
 
 export type DeletePhotosErrors = {
@@ -2122,14 +2122,13 @@ export type DeleteScanData = {
          * Project Name
          */
         project_name: string;
-    };
-    query: {
         /**
          * Scan Index
          */
         scan_index: number;
     };
-    url: '/projects/{project_name}/scans/';
+    query?: never;
+    url: '/projects/{project_name}/scans/{scan_index}';
 };
 
 export type DeleteScanErrors = {
@@ -2153,6 +2152,44 @@ export type DeleteScanResponses = {
 };
 
 export type DeleteScanResponse = DeleteScanResponses[keyof DeleteScanResponses];
+
+export type GetScanData = {
+    body?: never;
+    path: {
+        /**
+         * Project Name
+         */
+        project_name: string;
+        /**
+         * Scan Index
+         */
+        scan_index: number;
+    };
+    query?: never;
+    url: '/projects/{project_name}/scans/{scan_index}';
+};
+
+export type GetScanErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetScanError = GetScanErrors[keyof GetScanErrors];
+
+export type GetScanResponses = {
+    /**
+     * Successful Response
+     */
+    200: Scan;
+};
+
+export type GetScanResponse = GetScanResponses[keyof GetScanResponses];
 
 export type GetScanStatusData = {
     body?: never;
@@ -2379,44 +2416,6 @@ export type DownloadScansResponses = {
      */
     200: unknown;
 };
-
-export type GetScanData = {
-    body?: never;
-    path: {
-        /**
-         * Project Name
-         */
-        project_name: string;
-        /**
-         * Scan Index
-         */
-        scan_index: number;
-    };
-    query?: never;
-    url: '/projects/{project_name}/scans/{scan_index}';
-};
-
-export type GetScanErrors = {
-    /**
-     * Not found
-     */
-    404: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type GetScanError = GetScanErrors[keyof GetScanErrors];
-
-export type GetScanResponses = {
-    /**
-     * Successful Response
-     */
-    200: Scan;
-};
-
-export type GetScanResponse = GetScanResponses[keyof GetScanResponses];
 
 export type GetPinsData = {
     body?: never;

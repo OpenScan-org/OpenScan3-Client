@@ -457,7 +457,7 @@ export const downloadProjectFromCloud = <ThrowOnError extends boolean = false>(o
  * True if the photos were deleted successfully, False otherwise
  */
 export const deletePhotos = <ThrowOnError extends boolean = false>(options: Options<DeletePhotosData, ThrowOnError>) => (options.client ?? client).delete<DeletePhotosResponses, DeletePhotosErrors, ThrowOnError>({
-    url: '/projects/{project_name}/{scan_index}/',
+    url: '/projects/{project_name}/{scan_index}/photos',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -477,7 +477,21 @@ export const deletePhotos = <ThrowOnError extends boolean = false>(options: Opti
  * Returns:
  * DeleteResponse: Result of the deletion operation
  */
-export const deleteScan = <ThrowOnError extends boolean = false>(options: Options<DeleteScanData, ThrowOnError>) => (options.client ?? client).delete<DeleteScanResponses, DeleteScanErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/', ...options });
+export const deleteScan = <ThrowOnError extends boolean = false>(options: Options<DeleteScanData, ThrowOnError>) => (options.client ?? client).delete<DeleteScanResponses, DeleteScanErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}', ...options });
+
+/**
+ * Get Scan
+ *
+ * Get Scan by project and index
+ *
+ * Args:
+ * project_name: The name of the project
+ * scan_index: The index of the scan
+ *
+ * Returns:
+ * Scan: The scan object
+ */
+export const getScan = <ThrowOnError extends boolean = false>(options: Options<GetScanData, ThrowOnError>) => (options.client ?? client).get<GetScanResponses, GetScanErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}', ...options });
 
 /**
  * Get Scan Status
@@ -568,20 +582,6 @@ export const downloadProject = <ThrowOnError extends boolean = false>(options: O
  * StreamingResponse: ZIP file stream
  */
 export const downloadScans = <ThrowOnError extends boolean = false>(options: Options<DownloadScansData, ThrowOnError>) => (options.client ?? client).get<DownloadScansResponses, DownloadScansErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/zip', ...options });
-
-/**
- * Get Scan
- *
- * Get Scan by project and index
- *
- * Args:
- * project_name: The name of the project
- * scan_index: The index of the scan
- *
- * Returns:
- * Scan: The scan object
- */
-export const getScan = <ThrowOnError extends boolean = false>(options: Options<GetScanData, ThrowOnError>) => (options.client ?? client).get<GetScanResponses, GetScanErrors, ThrowOnError>({ url: '/projects/{project_name}/scans/{scan_index}', ...options });
 
 /**
  * Get Pins
