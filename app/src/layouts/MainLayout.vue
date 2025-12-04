@@ -57,6 +57,7 @@ import { storeToRefs } from 'pinia'
 import EssentialLink from 'components/EssentialLink.vue';
 import type { EssentialLinkProps } from 'components/models';
 import { useDeviceStore } from 'src/stores/device'
+import { useTaskStore } from 'src/stores/tasks'
 import PowerControls from 'components/PowerControls.vue'
 
 const upperLinks: EssentialLinkProps[] = [
@@ -107,6 +108,9 @@ const leftDrawerOpen = ref(false)
 
 const deviceStore = useDeviceStore()
 void deviceStore.ensureConnected()
+
+const taskStore = useTaskStore()
+void taskStore.ensureConnected()
 
 const { status: deviceStatus } = storeToRefs(deviceStore)
 

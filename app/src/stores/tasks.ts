@@ -1,21 +1,19 @@
 import { defineStore } from 'pinia'
 import { useApiConfigStore, buildWebSocketUrl } from './apiConfig'
 import { apiClient } from 'src/services/apiClient'
-import { getDeviceInfo, type DeviceStatusResponse } from 'src/generated/api'
+import { getAllTasks, type Task } from 'src/generated/api'
 
-export type DeviceStoreStatus = 'idle' | 'connecting' | 'open' | 'closed' | 'error'
+export type TaskStoreStatus = 'idle' | 'connecting' | 'open' | 'closed' | 'error'
 
-interface DeviceStatusMessage {
+interface TaskEventMessage {
   type: string
-  device?: DeviceStatusResponse
-  changed?: string[]
+  task?: Task
 }
 
-interface DeviceStoreState {
-  device: DeviceStatusResponse | null
-  lastChanged: string[] | null
+interface TaskStoreState {
+  tasks: Task[]
   lastHeartbeat: number | null
-  status: DeviceStoreStatus
+  status: TaskStoreStatus
   error: string | null
 }
 
@@ -25,22 +23,16 @@ let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 let reconnectAttempts = 0
 let allowReconnect = true
 
-export const useDeviceStore = defineStore('device', {
-  state: (): DeviceStoreState => ({
-    device: null,
-    lastChanged: null,
+export const useTaskStore = defineStore('tasks', {
+  state: (): TaskStoreState => ({
+    tasks: [],
     lastHeartbeat: null,
     status: 'idle',
     error: null
   }),
   getters: {
-    isReady: (state) => state.status === 'open' && !!state.device,
-    cameras: (state) => state.device?.cameras ?? {},
-    motors: (state) => state.device?.motors ?? {},
-    lights: (state) => state.device?.lights ?? {},
-    getCamera: (state) => (name: string) => state.device?.cameras?.[name] ?? null,
-    getMotor: (state) => (name: string) => state.device?.motors?.[name] ?? null,
-    getLight: (state) => (name: string) => state.device?.lights?.[name] ?? null
+    taskList: (state) => state.tasks,
+    runningTasks: (state) => state.tasks.filter((task) => task.status === 'running')
   },
   actions: {
     clearReconnectTimer() {
@@ -65,8 +57,7 @@ export const useDeviceStore = defineStore('device', {
 
         try {
           await this.connect()
-        } catch (error) {
-          console.warn('Device websocket reconnect failed, retrying...', error)
+        } catch {
           this.scheduleReconnect()
         }
       }, delay)
@@ -78,7 +69,7 @@ export const useDeviceStore = defineStore('device', {
 
       await this.connect()
 
-      if (!this.device) {
+      if (!this.tasks.length) {
         await this.refreshFromRest()
       }
     },
@@ -92,7 +83,7 @@ export const useDeviceStore = defineStore('device', {
       }
 
       const apiConfigStore = useApiConfigStore()
-      const wsUrl = buildWebSocketUrl(apiConfigStore.baseURL, 'device')
+      const wsUrl = buildWebSocketUrl(apiConfigStore.baseURL, 'tasks')
 
       this.status = 'connecting'
       this.error = null
@@ -130,7 +121,7 @@ export const useDeviceStore = defineStore('device', {
           this.scheduleReconnect()
           if (!settled) {
             settled = true
-            reject(new Error('Failed to connect to device WebSocket'))
+            reject(new Error('Failed to connect to task WebSocket'))
           }
         }
 
@@ -142,7 +133,7 @@ export const useDeviceStore = defineStore('device', {
           if (!settled) {
             settled = true
             this.status = 'closed'
-            reject(new Error('Device WebSocket closed before opening'))
+            reject(new Error('Task WebSocket closed before opening'))
             return
           }
 
@@ -169,21 +160,20 @@ export const useDeviceStore = defineStore('device', {
     },
     async refreshFromRest() {
       try {
-        const snapshot = await getDeviceInfo({ client: apiClient })
-        this.device = snapshot ?? null
-        this.lastChanged = null
+        const snapshot = await getAllTasks({ client: apiClient })
+        this.tasks = snapshot ?? []
         return snapshot
       } catch (error) {
-        this.error = 'Failed to load device snapshot'
+        this.error = 'Failed to load tasks snapshot'
         throw error
       }
     },
     handleMessage(raw: string) {
-      let payload: DeviceStatusMessage
+      let payload: TaskEventMessage
       try {
-        payload = JSON.parse(raw) as DeviceStatusMessage
+        payload = JSON.parse(raw) as TaskEventMessage
       } catch (error) {
-        console.error('Invalid device message', error)
+        console.error('Invalid task message', error)
         return
       }
 
@@ -192,10 +182,18 @@ export const useDeviceStore = defineStore('device', {
         return
       }
 
-      if (payload.type === 'device.status') {
-        this.device = payload.device ?? null
-        this.lastChanged = payload.changed ?? null
+      if (payload.type === 'task.update' && payload.task) {
+        this.applyTaskUpdate(payload.task)
       }
+    },
+    applyTaskUpdate(task: Task) {
+      const index = this.tasks.findIndex((existing) => existing.id === task.id)
+      if (index === -1) {
+        this.tasks = [task, ...this.tasks]
+        return
+      }
+
+      this.tasks.splice(index, 1, task)
     }
   }
 })

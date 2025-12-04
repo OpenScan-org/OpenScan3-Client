@@ -24,3 +24,27 @@ export const useApiConfigStore = defineStore('apiConfig', {
     }
   }
 });
+
+export function buildWebSocketUrl(baseUrl: string, namespace: string): string {
+  try {
+    const url = new URL(baseUrl)
+    url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
+    const strippedPath = url.pathname
+      .replace(/\/+$/g, '')
+      .replace(/(?<=^)\//, '')
+      .replace(/\/+/, '/')
+      .trim()
+    const prefix = strippedPath.length ? `/${strippedPath}` : ''
+    let nextPath = `${prefix}/ws/${namespace}`.replace(/\/+/, '/').replace(/\/$/, '')
+    if (!nextPath.startsWith('/')) {
+      nextPath = `/${nextPath}`
+    }
+    url.pathname = nextPath
+    url.search = ''
+    url.hash = ''
+    return url.toString()
+  } catch (error) {
+    console.error('Invalid base URL for websocket', error)
+    return baseUrl.replace(/^http/i, 'ws')
+  }
+}
