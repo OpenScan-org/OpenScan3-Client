@@ -1,5 +1,10 @@
 <template>
-  <q-item clickable tag="a" :target="target" :href="link">
+  <q-item
+    clickable
+    :to="!isExternal ? link : undefined"
+    :href="isExternal ? link : undefined"
+    :target="isExternal ? target : undefined"
+  >
     <q-item-section v-if="icon" avatar>
       <q-icon :name="icon" />
     </q-item-section>

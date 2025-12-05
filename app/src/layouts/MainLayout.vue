@@ -109,7 +109,7 @@ const lowerLinks: EssentialLinkProps[] = [
   },
 ];
 
-const leftDrawerOpen = ref(false)
+const leftDrawerOpen = ref(true)
 
 const deviceStore = useDeviceStore()
 void deviceStore.ensureConnected()
