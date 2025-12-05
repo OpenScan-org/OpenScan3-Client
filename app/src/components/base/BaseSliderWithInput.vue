@@ -17,6 +17,7 @@ const props = withDefaults(
     inputWidth?: string
     tooltip?: string
     rules?: ((val: number) => true | string)[]
+    disabled?: boolean
   }>(),
   {
     sliderMin: 1,
@@ -26,10 +27,9 @@ const props = withDefaults(
     sliderMarkerLabels: () => [],
     sliderColor: 'primary',
     sliderTrackColor: 'grey-3',
-    inputMin: 1,
-    inputMax: 100,
     inputWidth: '80px',
-    rules: () => [(val: number) => (val > 0) || 'Please enter a number > 0']
+    rules: () => [(val: number) => (val > 0) || 'Please enter a number > 0'],
+    disabled: false
   }
 )
 
@@ -41,6 +41,10 @@ const value = computed({
   get: () => props.modelValue,
   set: (v: number) => emit('update:modelValue', v)
 })
+
+const inputMin = computed(() => props.inputMin ?? props.sliderMin)
+const inputMax = computed(() => props.inputMax ?? props.sliderMax)
+const inputStep = computed(() => props.sliderStep)
 </script>
 
 <template>
@@ -56,6 +60,7 @@ const value = computed({
         :marker-labels="sliderMarkerLabels"
         :color="sliderColor"
         :track-color="sliderTrackColor"
+        :disable="disabled"
         class="col"
       >
         <q-tooltip v-if="tooltip">{{ tooltip }}</q-tooltip>
@@ -65,10 +70,12 @@ const value = computed({
         type="number"
         :min="inputMin"
         :max="inputMax"
+        :step="inputStep"
         dense
         outlined
         :style="`width: ${inputWidth}`"
         :rules="rules"
+        :disable="disabled"
       >
         <q-tooltip v-if="tooltip">{{ tooltip }}</q-tooltip>
       </q-input>

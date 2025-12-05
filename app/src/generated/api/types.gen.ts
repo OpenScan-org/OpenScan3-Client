@@ -1231,16 +1231,14 @@ export type UpdateCameraNameSettingsResponses = {
 export type UpdateCameraNameSettingsResponse = UpdateCameraNameSettingsResponses[keyof UpdateCameraNameSettingsResponses];
 
 export type ReplaceCameraNameSettingsData = {
-    body?: never;
+    body: BaseModel;
     path: {
         /**
          * Name
          */
         name: string;
     };
-    query: {
-        settings: BaseModel;
-    };
+    query?: never;
     url: '/cameras/{name}/settings';
 };
 
@@ -1508,16 +1506,14 @@ export type UpdateMotorNameSettingsResponses = {
 export type UpdateMotorNameSettingsResponse = UpdateMotorNameSettingsResponses[keyof UpdateMotorNameSettingsResponses];
 
 export type ReplaceMotorNameSettingsData = {
-    body?: never;
+    body: BaseModel;
     path: {
         /**
          * Name
          */
         name: string;
     };
-    query: {
-        settings: BaseModel;
-    };
+    query?: never;
     url: '/motors/{name}/settings';
 };
 
@@ -1780,16 +1776,14 @@ export type UpdateLightNameSettingsResponses = {
 export type UpdateLightNameSettingsResponse = UpdateLightNameSettingsResponses[keyof UpdateLightNameSettingsResponses];
 
 export type ReplaceLightNameSettingsData = {
-    body?: never;
+    body: BaseModel;
     path: {
         /**
          * Name
          */
         name: string;
     };
-    query: {
-        settings: BaseModel;
-    };
+    query?: never;
     url: '/lights/{name}/settings';
 };
 

@@ -46,6 +46,8 @@ export const getCamera = <ThrowOnError extends boolean = false>(options: Options
  *
  * Get a camera preview stream in lower resolution
  *
+ * Note: The preview is not rotated by orientation_flag and has to be rotated by client.
+ *
  * Args:
  * camera_name: The name of the camera to get the preview stream from
  *
@@ -120,7 +122,14 @@ export const updateCameraNameSettings = <ThrowOnError extends boolean = false>(o
  * Returns:
  * The updated settings for the resource
  */
-export const replaceCameraNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceCameraNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceCameraNameSettingsResponses, ReplaceCameraNameSettingsErrors, ThrowOnError>({ url: '/cameras/{name}/settings', ...options });
+export const replaceCameraNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceCameraNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceCameraNameSettingsResponses, ReplaceCameraNameSettingsErrors, ThrowOnError>({
+    url: '/cameras/{name}/settings',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get Motors
@@ -235,7 +244,14 @@ export const updateMotorNameSettings = <ThrowOnError extends boolean = false>(op
  * Returns:
  * The updated settings for the resource
  */
-export const replaceMotorNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceMotorNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceMotorNameSettingsResponses, ReplaceMotorNameSettingsErrors, ThrowOnError>({ url: '/motors/{name}/settings', ...options });
+export const replaceMotorNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceMotorNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceMotorNameSettingsResponses, ReplaceMotorNameSettingsErrors, ThrowOnError>({
+    url: '/motors/{name}/settings',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get Lights
@@ -339,7 +355,14 @@ export const updateLightNameSettings = <ThrowOnError extends boolean = false>(op
  * Returns:
  * The updated settings for the resource
  */
-export const replaceLightNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceLightNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceLightNameSettingsResponses, ReplaceLightNameSettingsErrors, ThrowOnError>({ url: '/lights/{name}/settings', ...options });
+export const replaceLightNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceLightNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceLightNameSettingsResponses, ReplaceLightNameSettingsErrors, ThrowOnError>({
+    url: '/lights/{name}/settings',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get Projects

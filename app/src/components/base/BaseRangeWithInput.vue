@@ -17,6 +17,7 @@ const props = withDefaults(
     inputWidth?: string
     tooltip?: string
     rules?: ((val: number) => true | string)[]
+    disabled?: boolean
   }>(),
   {
     min: 0,
@@ -26,10 +27,9 @@ const props = withDefaults(
     markerLabels: () => [],
     color: 'primary',
     trackColor: 'grey-3',
-    inputMin: 0,
-    inputMax: 100,
     inputWidth: '80px',
-    rules: () => [(val: number) => (val >= 0) || 'Please enter a number < or equal to 0']
+    rules: () => [(val: number) => (val >= 0) || 'Please enter a number < or equal to 0'],
+    disabled: false
   }
 )
 
@@ -55,6 +55,9 @@ const maxValue = computed({
     range.value = { ...range.value, max: v }
   }
 })
+
+const inputMin = computed(() => props.inputMin ?? props.min)
+const inputMax = computed(() => props.inputMax ?? props.max)
 </script>
 
 <template>
@@ -71,6 +74,7 @@ const maxValue = computed({
         outlined
         :style="`width: ${inputWidth}`"
         label="Min"
+        :disable="disabled"
       />
       <q-range
         v-model="range"
@@ -81,6 +85,7 @@ const maxValue = computed({
         :marker-labels="markerLabels"
         :color="color"
         :track-color="trackColor"
+        :disable="disabled"
         class="col"
         style="min-width: 200px"
       >
@@ -96,6 +101,7 @@ const maxValue = computed({
         outlined
         :style="`width: ${inputWidth}`"
         label="Max"
+        :disable="disabled"
       />
     </div>
   </div>

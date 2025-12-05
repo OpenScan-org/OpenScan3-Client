@@ -6,14 +6,26 @@
           <scan-settings-card
             ref="scanSettingsCardRef"
             :project-options="projectsStore.projectNames"
-            :camera-options="cameraStore.cameraOptions"
             v-model:selected-project="selectedProject"
-            v-model:selected-camera-name="selectedCameraName"
             @create-project-click="showCreateProjectDialog = true"
             @submit="startScan"
           />
         </div>
-        <div class="col-12 col-md-9">
+        <div class="col-12 col-md-3">
+          <q-card flat bordered>
+            <q-card-section>
+              <div class="text-h6">Camera Settings</div>
+            </q-card-section>
+            <q-card-section>
+              <CameraSettings
+                :camera="selectedCamera"
+                :camera-options="cameraStore.cameraOptions"
+                v-model:selected-camera-name="selectedCameraName"
+              />
+            </q-card-section>
+          </q-card>
+        </div>
+        <div class="col-12 col-md-6">
           <camera-view :scanning="scanning" :camera="selectedCamera" />
         </div>
       </div>
@@ -36,6 +48,7 @@ import generateDashedName from 'src/utils/randomName'
 import CameraView from 'components/CameraView.vue'
 import ScanSettingsCard from 'components/ScanSettingsCard.vue'
 import CreateProjectDialog from 'components/CreateProjectDialog.vue'
+import CameraSettings from 'components/camera/CameraSettings.vue'
 import { useProjectsStore } from 'src/stores/projects'
 import { useCameraStore } from 'src/stores/camera'
 

@@ -19,8 +19,6 @@
         </div>
         <scan-settings-section
           ref="scanSettingsSectionRef"
-          :camera-options="cameraOptions"
-          v-model:selected-camera-name="selectedCameraNameModel"
         />
       </div>
     </q-form>
@@ -40,13 +38,10 @@ type Option = { label: string; value: string }
 
 const props = defineProps<{
   projectOptions: Option[]
-  cameraOptions: Option[]
   selectedProject: string
-  selectedCameraName: string
 }>()
 const emit = defineEmits<{
   (e: 'update:selectedProject', value: string): void
-  (e: 'update:selectedCameraName', value: string): void
   (e: 'create-project-click'): void
   (e: 'submit'): void
 }>()
@@ -54,11 +49,6 @@ const emit = defineEmits<{
 const selectedProjectModel = computed({
   get: () => props.selectedProject,
   set: value => emit('update:selectedProject', value || '')
-})
-
-const selectedCameraNameModel = computed({
-  get: () => props.selectedCameraName,
-  set: value => emit('update:selectedCameraName', value)
 })
 
 const scanSettingsSectionRef = ref<InstanceType<typeof ScanSettingsSection> | null>(null)

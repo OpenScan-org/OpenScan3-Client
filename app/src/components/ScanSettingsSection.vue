@@ -13,32 +13,41 @@
       :tooltip="scanSettingDescription('points')"
     />
 
-    <q-checkbox v-model="enableFocusStacking" label="Focus Stacking" class="q-mt-md" />
+    <div class="q-mt-md">
+      <div class="row items-center q-col-gutter-sm">
+        <div class="col-auto">
+          <q-checkbox v-model="enableFocusStacking" label="Focus Stacking" />
+        </div>
+        <div class="col">
+          <BaseSliderWithInput
+            v-model="focusStacks"
+            label="Focus Stacks"
+            :slider-min="2"
+            :slider-max="15"
+            :slider-step="1"
+            :input-min="2"
+            :input-max="99"
+            :tooltip="scanSettingDescription('focus_stacks')"
+            :disabled="!enableFocusStacking"
+          />
+        </div>
+      </div>
 
-    <div v-if="enableFocusStacking" class="q-mt-sm">
-      <BaseSliderWithInput
-        v-model="focusStacks"
-        label="Focus Stacks"
-        :slider-min="1"
-        :slider-max="15"
-        :slider-step="1"
-        :input-min="1"
-        :input-max="99"
-        :tooltip="scanSettingDescription('focus_stacks')"
-      />
-
-      <BaseRangeWithInput
-        v-model="focusRange"
-        label="Focus Range (diopters)"
-        :min="0"
-        :max="15"
-        :step="0.1"
-        :markers="true"
-        :marker-labels="[5, 10, 15]"
-        :input-min="0"
-        :input-max="15"
-        :tooltip="scanSettingDescription('focus_range')"
-      />
+      <div class="q-mt-sm">
+        <BaseRangeWithInput
+          v-model="focusRange"
+          label="Focus Range (diopters)"
+          :min="0"
+          :max="15"
+          :step="0.1"
+          :markers="true"
+          :marker-labels="[5, 10, 15]"
+          :input-min="0"
+          :input-max="15"
+          :tooltip="scanSettingDescription('focus_range')"
+          :disabled="!enableFocusStacking"
+        />
+      </div>
     </div>
 
     <q-expansion-item label="Advanced Settings" header-class="text-h6" class="q-mt-md">
@@ -46,17 +55,13 @@
         <q-card-section>
           <div class="row q-col-gutter-md">
             <div class="col-12">
-              <q-select v-model="selectedCameraNameModel" :options="cameraOptions" label="Camera" />
-            </div>
-
-            <div class="col-12">
-              <q-select v-model="pathMethod" :options="pathMethods" label="Path Method">
-                <q-tooltip>{{ scanSettingDescription('path_method') }}</q-tooltip>
+              <q-select v-model="imageFormat" :options="imageFormats" label="Image Format">
+                <q-tooltip>{{ scanSettingDescription('image_format') }}</q-tooltip>
               </q-select>
             </div>
             <div class="col-12">
-              <q-select v-model="imageFormat" :options="imageFormats" label="Image Format">
-                <q-tooltip>{{ scanSettingDescription('image_format') }}</q-tooltip>
+              <q-select v-model="pathMethod" :options="pathMethods" label="Path Method">
+                <q-tooltip>{{ scanSettingDescription('path_method') }}</q-tooltip>
               </q-select>
             </div>
             <div class="col-6">
@@ -106,28 +111,12 @@ import BaseRangeWithInput from './base/BaseRangeWithInput.vue'
 import type { ScanSetting } from 'src/generated/api'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 
-type CameraOption = { label: string; value: string }
-
-const props = defineProps<{
-  cameraOptions: CameraOption[]
-  selectedCameraName: string
-}>()
-const cameraOptions = computed(() => props.cameraOptions)
-const emit = defineEmits<{
-  (e: 'update:selectedCameraName', value: string): void
-}>()
-
 const pathMethods = [
   { label: 'Fibonacci', value: 'fibonacci' },
   { label: 'Spiral', value: 'spiral' }
 ]
 
 const imageFormats = ['jpeg', 'dng', 'rgb_array', 'yuv_array']
-
-const selectedCameraNameModel = computed({
-  get: () => props.selectedCameraName,
-  set: value => emit('update:selectedCameraName', value)
-})
 
 const pathMethod = ref(pathMethods[0])
 const points = ref(130)
@@ -136,7 +125,7 @@ const minTheta = ref<number>(12.0)
 const maxTheta = ref<number>(125.0)
 const optimizePath = ref(true)
 const optimizationAlgorithm = ref('nearest_neighbor')
-const focusStacks = ref<number>(1)
+const focusStacks = ref<number>(2)
 const enableFocusStacking = ref(false)
 const focusRange = ref({ min: 10.0, max: 15.0 })
 
