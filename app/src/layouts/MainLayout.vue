@@ -103,10 +103,9 @@ const lowerLinks: EssentialLinkProps[] = [
     target: '_blank'
   },
   {
-    title: 'Donate on Patreon',
+    title: 'Donate',
     icon: 'volunteer_activism',
-    link: 'https://www.patreon.com/OpenScan',
-    target: '_blank'
+    link: '/donate'
   },
 ];
 
