@@ -87,6 +87,7 @@ const inputMax = computed(() => props.inputMax ?? props.max)
         :track-color="trackColor"
         :disable="disabled"
         class="col"
+        dense
         style="min-width: 200px"
       >
         <q-tooltip v-if="tooltip">{{ tooltip }}</q-tooltip>

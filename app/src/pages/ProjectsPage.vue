@@ -59,8 +59,8 @@ import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
 import { apiClient } from 'src/services/apiClient'
 import { newProject, type Project, type Scan } from 'src/generated/api'
-import ProjectsList from 'src/components/ProjectsList.vue'
-import ProjectCard from 'src/components/ProjectCard.vue'
+import ProjectsList from 'src/components/project/ProjectsList.vue'
+import ProjectCard from 'src/components/project/ProjectCard.vue'
 import { useProjectsStore } from 'src/stores/projects'
 const $q = useQuasar()
 const projectsStore = useProjectsStore()

@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import TextCard from 'components/common/TextCard.vue'
+import TextCard from 'components/base/TextCard.vue'
 import BaseLink from 'components/base/BaseLink.vue'
 import BasePage from 'components/base/BasePage.vue'
 </script>

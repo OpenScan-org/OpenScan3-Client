@@ -22,6 +22,7 @@ const props = withDefaults(
     :icon="props.icon"
     :target="props.target"
     :color="props.color"
+    dense
   />
 </template>
 

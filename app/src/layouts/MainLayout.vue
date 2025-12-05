@@ -1,12 +1,13 @@
 <template>
   <q-layout view="hHh Lpr lFf">
     <q-header elevated>
-      <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
+      <q-toolbar class="main-toolbar">
+        <div class="row items-center no-wrap">
+          <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
+          <img :src="openscanLogo" alt="OpenScan3 logo" class="main-logo" />
+        </div>
 
-        <q-toolbar-title>
-          OpenScan3
-        </q-toolbar-title>
+        <q-space />
 
         <PowerControls v-slot="{ confirmReboot, confirmShutdown, rebooting, shuttingDown }">
           <q-btn
@@ -49,6 +50,7 @@ import type { EssentialLinkProps } from 'components/models';
 import { useDeviceStore } from 'src/stores/device'
 import { useTaskStore } from 'src/stores/tasks'
 import PowerControls from 'components/PowerControls.vue'
+import openscanLogo from 'src/assets/openscan_black_Rahmen.avif'
 
 const upperLinks: EssentialLinkProps[] = [
   {
@@ -97,6 +99,14 @@ void taskStore.ensureConnected()
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
+ </script>
 
+<style scoped>
+.main-toolbar {
+  min-height: 56px;
+}
 
-</script>
+.main-logo {
+  height: 40px;
+}
+</style>

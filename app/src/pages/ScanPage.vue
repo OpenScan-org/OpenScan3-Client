@@ -1,33 +1,30 @@
 <template>
   <q-page>
     <div class="q-pa-md">
-      <div class="row justify-center q-col-gutter-md">
-        <div class="col-12 col-md-3">
-          <scan-settings-card
-            ref="scanSettingsCardRef"
+      <div class="row justify-center q-col-gutter-sm">
+        <div class="col-12 col-md-4 col-lg-3">
+          <ScanProjectSection
             :project-options="projectsStore.projectNames"
             v-model:selected-project="selectedProject"
+            :photo-count="photoCount"
             @create-project-click="showCreateProjectDialog = true"
             @submit="startScan"
           />
         </div>
-        <div class="col-12 col-md-3">
-          <q-card flat bordered>
-            <q-card-section>
-              <div class="text-h6">Camera Settings</div>
-            </q-card-section>
-            <q-card-section>
-              <CameraSettings
-                :camera="selectedCamera"
-                :camera-options="cameraStore.cameraOptions"
-                v-model:selected-camera-name="selectedCameraName"
-              />
-            </q-card-section>
-          </q-card>
-        </div>
-        <div class="col-12 col-md-6">
+        <div class="col-12 col-md-8 col-lg-9">
           <camera-view :scanning="scanning" :camera="selectedCamera" />
         </div>
+      </div>
+
+      <div class="q-mt-md">
+        <ScanSettingsSection
+          ref="scanSettingsSectionRef"
+          :camera-name="selectedCameraName"
+          :camera="selectedCamera"
+          :camera-options="cameraStore.cameraOptions"
+          v-model:selectedCameraName="selectedCameraName"
+          @update:photoCount="value => (photoCount = value)"
+        />
       </div>
     </div>
     <create-project-dialog
@@ -45,9 +42,9 @@ import { addScanWithDescription } from 'src/generated/api'
 import generateDashedName from 'src/utils/randomName'
 
 import CameraView from 'components/CameraView.vue'
-import ScanSettingsCard from 'components/ScanSettingsCard.vue'
-import CreateProjectDialog from 'components/CreateProjectDialog.vue'
-import CameraSettings from 'components/camera/CameraSettings.vue'
+import ScanProjectSection from 'components/scan/ScanSettingsCard.vue'
+import ScanSettingsSection from 'components/scan/ScanSettingsSection.vue'
+import CreateProjectDialog from 'components/project/CreateProjectDialog.vue'
 import { useProjectsStore } from 'src/stores/projects'
 import { useCameraStore } from 'src/stores/camera'
 const route = useRoute()
@@ -57,9 +54,10 @@ const cameraStore = useCameraStore()
 
 const selectedCameraName = ref<string>('')
 const selectedProject = ref('')
+const photoCount = ref(0)
 
-type ScanSettingsCardInstance = InstanceType<typeof ScanSettingsCard>
-const scanSettingsCardRef = ref<ScanSettingsCardInstance | null>(null)
+type ScanSettingsSectionInstance = InstanceType<typeof ScanSettingsSection>
+const scanSettingsSectionRef = ref<ScanSettingsSectionInstance | null>(null)
 
 const scanning = ref(false)
 const showCreateProjectDialog = ref(false)
@@ -90,13 +88,13 @@ const startScan = async () => {
     return
   }
 
-  if (!scanSettingsCardRef.value) {
+  if (!scanSettingsSectionRef.value) {
     return
   }
 
   scanning.value = true
 
-  const scanSettings = scanSettingsCardRef.value.getScanSettings()
+  const scanSettings = scanSettingsSectionRef.value.getScanSettings()
 
   try {
     await addScanWithDescription({

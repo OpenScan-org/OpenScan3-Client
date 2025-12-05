@@ -27,7 +27,7 @@ const props = withDefaults(
     sliderMarkerLabels: () => [],
     sliderColor: 'primary',
     sliderTrackColor: 'grey-3',
-    inputWidth: '80px',
+    inputWidth: '64px',
     rules: () => [(val: number) => (val > 0) || 'Please enter a number > 0'],
     disabled: false
   }
@@ -48,8 +48,8 @@ const inputStep = computed(() => props.sliderStep)
 </script>
 
 <template>
-  <div class="q-pa-sm">
-    <label v-if="label" class="q-field__label">{{ label }}</label>
+  <div class="q-pa-xs">
+    <label v-if="label" class="text-body2">{{ label }}</label>
     <div class="row items-center q-gutter-sm">
       <q-slider
         v-model="value"
@@ -62,6 +62,7 @@ const inputStep = computed(() => props.sliderStep)
         :track-color="sliderTrackColor"
         :disable="disabled"
         class="col"
+        dense
       >
         <q-tooltip v-if="tooltip">{{ tooltip }}</q-tooltip>
       </q-slider>
@@ -74,6 +75,7 @@ const inputStep = computed(() => props.sliderStep)
         dense
         outlined
         :style="`width: ${inputWidth}`"
+        input-class="text-caption"
         :rules="rules"
         :disable="disabled"
       >

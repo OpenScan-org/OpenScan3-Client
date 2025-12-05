@@ -30,6 +30,7 @@ const value = computed({
       :options="options"
       type="radio"
       inline
+      dense
     />
   </div>
 </template>

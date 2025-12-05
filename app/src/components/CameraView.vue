@@ -24,9 +24,9 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import CameraFastPreview, { type CameraFastPreviewExposed } from './CameraFastPreview.vue'
-import CameraHistogram from './CameraHistogram.vue'
-import CameraHQPreview, { type CameraHQPreviewExposed } from './CameraHQPreview.vue'
+import CameraFastPreview, { type CameraFastPreviewExposed } from './camera/CameraFastPreview.vue'
+import CameraHistogram from './camera/CameraHistogram.vue'
+import CameraHQPreview, { type CameraHQPreviewExposed } from './camera/CameraHQPreview.vue'
 
 interface CameraViewProps {
   scanning: boolean
