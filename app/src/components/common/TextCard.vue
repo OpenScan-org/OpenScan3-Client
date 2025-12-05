@@ -6,10 +6,10 @@ const props = defineProps<{
 
 <template>
   <q-card flat bordered>
-    <q-card-section>
+    <q-card-section class="q-pb-xs">
       <div class="text-h6">{{ props.title }}</div>
     </q-card-section>
-    <q-card-section>
+    <q-card-section class="q-pt-none">
       <slot />
     </q-card-section>
     <q-separator v-if="$slots.links" />

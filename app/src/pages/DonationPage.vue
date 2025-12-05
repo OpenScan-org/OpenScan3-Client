@@ -1,8 +1,6 @@
 <template>
-  <q-page padding>
-    <div class="row justify-center q-col-gutter-md">
-      <div class="col-12 col-md-8 col-lg-6">
-        <TextCard title="Support OpenScan">
+  <BasePage>
+    <TextCard title="Support OpenScan">
           <template #default>
             <p>
               Hey, this is Thomas, the guy behind OpenScan :)
@@ -51,14 +49,13 @@
             />
           </template>
         </TextCard>
-      </div>
-    </div>
-  </q-page>
+    </BasePage>
 </template>
 
 <script setup lang="ts">
 import TextCard from 'components/common/TextCard.vue'
 import BaseLink from 'components/base/BaseLink.vue'
+import BasePage from 'components/base/BasePage.vue'
 </script>
 
 <style scoped>

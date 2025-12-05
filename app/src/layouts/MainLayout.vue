@@ -82,26 +82,13 @@ const upperLinks: EssentialLinkProps[] = [
     link: '/settings'
   },
   {
-    title: 'Docs',
-    icon: 'school',
-    link: 'https://openscan-org.github.io/OpenScan-Doc/',
-    target: '_blank'
+    title: 'About',
+    icon: 'help',
+    link: '/about'
   },
 ];
 
 const lowerLinks: EssentialLinkProps[] = [
-  {
-    title: 'Contribute on Github',
-    icon: 'code',
-    link: 'https://github.com/OpenScan-org',
-    target: '_blank'
-  },
-  {
-    title: 'Join Discord',
-    icon: 'forum',
-    link: 'https://discord.gg/eBdqtdkXyF',
-    target: '_blank'
-  },
   {
     title: 'Donate',
     icon: 'volunteer_activism',

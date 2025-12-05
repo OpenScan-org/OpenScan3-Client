@@ -4,6 +4,7 @@
     :to="!isExternal ? link : undefined"
     :href="isExternal ? link : undefined"
     :target="isExternal ? target : undefined"
+    :exact="!isExternal && link === '/'"
   >
     <q-item-section v-if="icon" avatar>
       <q-icon :name="icon" />
