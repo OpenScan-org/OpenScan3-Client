@@ -1,99 +1,44 @@
 <template>
   <div class="col-12">
-    <div class="q-pa-sm">
-      <label class="q-field__label">Number of Points</label>
-      <div class="row items-center q-gutter-sm">
-        <q-slider
-          v-model="points"
-          :min="1"
-          :max="300"
-          :step="1"
-          :markers="true"
-          :marker-labels="[70, 130, 200]"
-          color="primary"
-          track-color="grey-3"
-          class="col"
-        >
-          <q-tooltip>{{ scanSettingDescription('points') }}</q-tooltip>
-        </q-slider>
-        <q-input
-          v-model.number="points"
-          type="number"
-          :min="1"
-          :max="500"
-          dense
-          outlined
-          style="width: 80px"
-          :rules="[(val: number) => val && val > 0 || 'Please enter a number > 0']"
-        >
-          <q-tooltip>Number of points in scanning path.</q-tooltip>
-        </q-input>
-      </div>
-    </div>
+    <BaseSliderWithInput
+      v-model="points"
+      label="Number of Points"
+      :slider-min="1"
+      :slider-max="300"
+      :slider-step="1"
+      :slider-markers="false"
+      :slider-marker-labels="[70, 130, 200]"
+      :input-min="1"
+      :input-max="500"
+      :tooltip="scanSettingDescription('points')"
+    />
 
     <q-checkbox v-model="enableFocusStacking" label="Focus Stacking" class="q-mt-md" />
 
     <div v-if="enableFocusStacking" class="q-mt-sm">
-      <label class="q-field__label">Focus Stacks</label>
-      <q-slider
+      <BaseSliderWithInput
         v-model="focusStacks"
-        :min="1"
+        label="Focus Stacks"
+        :slider-min="1"
+        :slider-max="15"
+        :slider-step="1"
+        :input-min="1"
+        :input-max="99"
+        :tooltip="scanSettingDescription('focus_stacks')"
+      />
+
+      <BaseRangeWithInput
+        v-model="focusRange"
+        label="Focus Range (diopters)"
+        :min="0"
         :max="15"
-        :step="1"
-        color="primary"
-        track-color="grey-3"
-      >
-        <q-tooltip>{{ scanSettingDescription('focus_stacks') }}</q-tooltip>
-      </q-slider>
-      <q-input
-        type="number"
-        v-model.number="focusStacks"
-        :min="1"
-        :max="99"
-        dense
-        outlined
-        style="width: 80px"
-        :rules="[(val: number) => val && val > 0 || 'Please enter a number > 0']"
-      >
-        <q-tooltip>{{ scanSettingDescription('focus_stacks') }}</q-tooltip>
-      </q-input>
-      <label class="q-field__label">Focus Range (diopters)</label>
-      <div class="row items-center q-gutter-sm">
-        <q-input
-          type="number"
-          v-model.number="focusRange.min"
-          :min="0"
-          :max="15"
-          dense
-          outlined
-          style="width: 80px"
-          label="Min"
-        />
-        <q-range
-          v-model="focusRange"
-          :min="0"
-          :max="15"
-          :step="0.1"
-          :markers="true"
-          :marker-labels="[5, 10, 15]"
-          color="primary"
-          track-color="grey-3"
-          class="col"
-          style="min-width: 200px"
-        >
-          <q-tooltip>{{ scanSettingDescription('focus_range') }}</q-tooltip>
-        </q-range>
-        <q-input
-          type="number"
-          v-model.number="focusRange.max"
-          :min="0"
-          :max="15"
-          dense
-          outlined
-          style="width: 80px"
-          label="Max"
-        />
-      </div>
+        :step="0.1"
+        :markers="true"
+        :marker-labels="[5, 10, 15]"
+        :input-min="0"
+        :input-max="15"
+        :tooltip="scanSettingDescription('focus_range')"
+      />
     </div>
 
     <q-expansion-item label="Advanced Settings" header-class="text-h6" class="q-mt-md">
@@ -156,6 +101,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import BaseSliderWithInput from './base/BaseSliderWithInput.vue'
+import BaseRangeWithInput from './base/BaseRangeWithInput.vue'
 import type { ScanSetting } from 'src/generated/api'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 
