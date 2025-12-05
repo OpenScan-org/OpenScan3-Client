@@ -38,7 +38,6 @@
 </template>
 
 <script setup lang="ts">
-import { useQuasar } from 'quasar'
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiClient } from 'src/services/apiClient'
@@ -51,8 +50,6 @@ import CreateProjectDialog from 'components/CreateProjectDialog.vue'
 import CameraSettings from 'components/camera/CameraSettings.vue'
 import { useProjectsStore } from 'src/stores/projects'
 import { useCameraStore } from 'src/stores/camera'
-
-const $q = useQuasar()
 const route = useRoute()
 
 const projectsStore = useProjectsStore()
@@ -80,23 +77,20 @@ const onCreateProject = async (data: { name: string; description?: string }) => 
     await projectsStore.createProject(data.name, data.description)
     selectedProject.value = data.name
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Failed to create project.' })
+    console.error('Failed to create project.', error)
   }
 }
 
 const startScan = async () => {
   if (!selectedCameraName.value) {
-    $q.notify({ type: 'negative', message: 'Please select a camera.' })
     return
   }
 
   if (!selectedProject.value) {
-    $q.notify({ type: 'negative', message: 'Please select or enter a project.' })
     return
   }
 
   if (!scanSettingsCardRef.value) {
-    $q.notify({ type: 'negative', message: 'Scan settings are not available.' })
     return
   }
 
@@ -114,13 +108,8 @@ const startScan = async () => {
 
     // Refresh projects list after starting scan (in case a new project was created)
     await projectsStore.fetchProjects()
-
-    $q.notify({
-      type: 'positive',
-      message: 'Scan has been started.'
-    })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Scan could not be started.' })
+    console.error('Scan could not be started.', error)
   } finally {
     scanning.value = false
   }

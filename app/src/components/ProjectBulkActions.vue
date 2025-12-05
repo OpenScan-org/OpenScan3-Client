@@ -61,10 +61,9 @@ const deleteProjects = async (projectsToDelete: Project[]) => {
     for (const project of projectsToDelete) {
       await deleteProject({ path: { project_name: project.name }, client: apiClient })
     }
-    $q.notify({ type: 'positive', message: `Deleted ${projectsToDelete.length} project${projectsToDelete.length === 1 ? '' : 's'}.` })
     emit('deleted')
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Could not complete bulk delete.' })
+    console.error('Could not complete bulk delete.', error)
   } finally {
     working.value = false
   }

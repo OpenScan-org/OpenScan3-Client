@@ -70,9 +70,8 @@ const handleBulkDeleteSelected = (data: { project_name: string; scan_indices: nu
             )
             emit('reload')
             setSelectedScans([])
-            $q.notify({ type: 'positive', message: 'Selected scans deleted.' })
         } catch (error) {
-            $q.notify({ type: 'negative', message: 'Could not delete selected scans.' })
+            console.error('Could not delete selected scans.', error)
         }
     })
 }
@@ -96,9 +95,8 @@ const handleBulkDeleteByStatus = (data: { project_name: string; scan_indices: nu
             )
             emit('reload')
             setSelectedScans((prev) => prev.filter((index) => !data.scan_indices.includes(index)))
-            $q.notify({ type: 'positive', message: `${statusLabel[0]?.toUpperCase() ?? ''}${statusLabel.slice(1)} scans deleted.` })
         } catch (error) {
-            $q.notify({ type: 'negative', message: `Could not delete ${statusLabel} scans.` })
+            console.error(`Could not delete ${statusLabel} scans.`, error)
         }
     })
 }
@@ -112,9 +110,8 @@ const handleBulkDownloadSelected = (data: { project_name: string; scan_indices: 
         data.scan_indices.forEach((index) => params.append('scan_indices', index.toString()))
         const downloadUrl = `${API_BASE_URL}projects/${encodeURIComponent(data.project_name)}/scans/zip?${params.toString()}`
         window.open(downloadUrl, '_blank')
-        $q.notify({ type: 'positive', message: 'Scan download started.' })
     } catch (error) {
-        $q.notify({ type: 'negative', message: 'Could not download selected scans.' })
+        console.error('Could not download selected scans.', error)
     }
 }
 
@@ -145,9 +142,8 @@ const confirm_delete = () => {
         try {
             await deleteProject({ path: { project_name: props.project.name }, client: apiClient })
             emit('reload')
-            $q.notify({ type: 'positive', message: 'Project deleted.' })
         } catch (error) {
-            $q.notify({ type: 'negative', message: 'Could not delete project.' })
+            console.error('Could not delete project.', error)
         }
     })
 }
@@ -162,9 +158,8 @@ const confirm_upload = () => {
         try {
             await uploadProjectToCloud({ path: { project_name: props.project.name }, client: apiClient })
             emit('reload')
-            $q.notify({ type: 'positive', message: 'Project uploaded.' })
         } catch (error) {
-            $q.notify({ type: 'negative', message: 'Could not upload project.' })
+            console.error('Could not upload project.', error)
         }
     })
 }
@@ -173,9 +168,8 @@ const confirm_download = () => {
     try {
         const downloadUrl = `${API_BASE_URL}projects/${encodeURIComponent(props.project.name)}/zip`
         window.open(downloadUrl, '_blank')
-        $q.notify({ type: 'positive', message: 'Download started.' })
     } catch (error) {
-        $q.notify({ type: 'negative', message: 'Could not download project.' })
+        console.error('Could not download project.', error)
     }
 }
 
@@ -193,9 +187,8 @@ const handleDeleteScan = async (data: { project_name: string; scan_index: number
         try {
             await deleteScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
             emit('reload')
-            $q.notify({ type: 'positive', message: 'Scan deleted.' })
         } catch (error) {
-            $q.notify({ type: 'negative', message: 'Could not delete scan.' })
+            console.error('Could not delete scan.', error)
         }
     })
 }
@@ -204,9 +197,8 @@ const handlePauseScan = async (data: { project_name: string; scan_index: number 
     try {
         await pauseScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
         emit('reload')
-        $q.notify({ type: 'positive', message: 'Scan paused.' })
     } catch (error) {
-        $q.notify({ type: 'negative', message: 'Could not pause scan.' })
+        console.error('Could not pause scan.', error)
     }
 }
 
@@ -214,9 +206,8 @@ const handleResumeScan = async (data: { project_name: string; scan_index: number
     try {
         await resumeScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, query: { camera_name: data.camera_name }, client: apiClient })
         emit('reload')
-        $q.notify({ type: 'positive', message: 'Scan resumed.' })
     } catch (error) {
-        $q.notify({ type: 'negative', message: 'Could not resume scan.' })
+        console.error('Could not resume scan.', error)
     }
 }
 
@@ -224,9 +215,8 @@ const handleCancelScan = async (data: { project_name: string; scan_index: number
     try {
         await cancelScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
         emit('reload')
-        $q.notify({ type: 'positive', message: 'Scan cancelled.' })
     } catch (error) {
-        $q.notify({ type: 'negative', message: 'Could not cancel scan.' })
+        console.error('Could not cancel scan.', error)
     }
 }
 
@@ -234,9 +224,8 @@ const handleStackScan = async (data: { project_name: string; scan_index: number 
     try {
         await startFocusStacking({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
         emit('reload')
-        $q.notify({ type: 'positive', message: 'Focus stacking started.' })
     } catch (error) {
-        $q.notify({ type: 'negative', message: 'Could not start focus stacking.' })
+        console.error('Could not start focus stacking.', error)
     }
 }
 

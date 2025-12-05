@@ -35,7 +35,7 @@ onMounted(async () => {
 
     await cameraStore.fetchCameras()
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Scanner not reachable.' })
+    console.error('Scanner not reachable.', error)
   } finally {
     $q.loading.hide()
     scanner_pinged.value = true

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { debounce, useQuasar } from 'quasar'
+import { debounce } from 'quasar'
 
 import BaseSliderWithInput from '../base/BaseSliderWithInput.vue'
 import BaseRadio from '../base/BaseRadio.vue'
@@ -39,8 +39,6 @@ const emit = defineEmits<{
 
 const deviceStore = useDeviceStore()
 void deviceStore.ensureConnected()
-
-const $q = useQuasar()
 
 type CameraSettingsField = keyof (typeof fieldDescriptions)['CameraSettings']
 
@@ -109,10 +107,8 @@ async function persistShutter(value: number) {
       path: { name: props.camera.value },
       body: { shutter: value }
     })
-    $q.notify({ type: 'positive', message: 'Shutter updated.' })
   } catch (error) {
     console.error('Failed to update shutter', error)
-    $q.notify({ type: 'negative', message: 'Failed to update shutter.' })
   }
 }
 
@@ -131,10 +127,8 @@ async function persistAF(value: boolean) {
       path: { name: props.camera.value },
       body: { AF: value }
     })
-    $q.notify({ type: 'positive', message: 'Autofocus updated.' })
   } catch (error) {
     console.error('Failed to update autofocus', error)
-    $q.notify({ type: 'negative', message: 'Failed to update autofocus.' })
   }
 }
 
@@ -149,10 +143,8 @@ async function persistManualFocus(value: number) {
       path: { name: props.camera.value },
       body: { manual_focus: value }
     })
-    $q.notify({ type: 'positive', message: 'Manual focus updated.' })
   } catch (error) {
     console.error('Failed to update manual focus', error)
-    $q.notify({ type: 'negative', message: 'Failed to update manual focus.' })
   }
 }
 
@@ -167,10 +159,8 @@ async function persistOrientationFlag(value: number) {
       path: { name: props.camera.value },
       body: { orientation_flag: value }
     })
-    $q.notify({ type: 'positive', message: 'Orientation flag updated.' })
   } catch (error) {
     console.error('Failed to update orientation flag', error)
-    $q.notify({ type: 'negative', message: 'Failed to update orientation flag.' })
   }
 }
 

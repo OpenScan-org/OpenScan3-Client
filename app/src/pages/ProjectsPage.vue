@@ -62,9 +62,7 @@ import { newProject, type Project, type Scan } from 'src/generated/api'
 import ProjectsList from 'src/components/ProjectsList.vue'
 import ProjectCard from 'src/components/ProjectCard.vue'
 import { useProjectsStore } from 'src/stores/projects'
-
 const $q = useQuasar()
-
 const projectsStore = useProjectsStore()
 const route = useRoute()
 const router = useRouter()
@@ -176,9 +174,8 @@ const createProject = async (data: { name: string; description?: string }) => {
     selectedProjectName.value = data.name
     updateRouteProject(data.name)
     writeStoredProject(data.name)
-    $q.notify({ type: 'positive', message: 'Project created.' })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Could not create project.' })
+    console.error('Could not create project.', error)
   }
 }
 

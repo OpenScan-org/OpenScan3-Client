@@ -54,7 +54,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { Ref } from 'vue'
-import { useQuasar } from 'quasar'
 import { useCameraStore } from 'src/stores/camera'
 import { useDeviceStore } from 'src/stores/device'
 import { apiClient } from 'src/services/apiClient'
@@ -84,8 +83,6 @@ const previewSettingsStore = usePreviewSettingsStore()
 const cameraStore = useCameraStore()
 const deviceStore = useDeviceStore()
 void deviceStore.ensureConnected()
-
-const $q = useQuasar()
 
 const previewImage = ref<HTMLImageElement | null>(null)
 const cropCanvas = ref<HTMLCanvasElement | null>(null)
@@ -478,7 +475,6 @@ async function persistCrop(widthPercent: number, heightPercent: number) {
     lastConfirmedCrop.value = { ...payload }
     clearPendingCrop(pendingRequestId.value)
     editingCrop.value = { ...payload }
-    $q.notify({ type: 'positive', message: 'Crop updated.' })
   } catch (error) {
     console.error('Failed to update crop', error)
     clearPendingCrop(pendingRequestId.value)
@@ -486,7 +482,6 @@ async function persistCrop(widthPercent: number, heightPercent: number) {
     if (!dragMode.value) {
       editingCrop.value = { ...appliedCrop.value }
     }
-    $q.notify({ type: 'negative', message: 'Failed to save crop.' })
   } finally {
     cropSaving.value = false
   }

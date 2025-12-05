@@ -37,9 +37,8 @@ async function rebootAction() {
       client: apiClient,
       query: { save_config: props.saveConfig ?? false }
     })
-    $q.notify({ type: 'positive', message: 'Reboot triggered.' })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Reboot failed.' })
+    console.error('Reboot failed.', error)
     throw error
   } finally {
     rebooting.value = false
@@ -53,9 +52,8 @@ async function shutdownAction() {
       client: apiClient,
       query: { save_config: props.saveConfig ?? false }
     })
-    $q.notify({ type: 'positive', message: 'Shutdown triggered.' })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Shutdown failed.' })
+    console.error('Shutdown failed.', error)
     throw error
   } finally {
     shuttingDown.value = false

@@ -529,7 +529,7 @@ async function loadDeviceConfigs() {
   } catch (error) {
     configOptions.value = []
     selectedConfig.value = null
-    $q.notify({ type: 'negative', message: 'Device configurations could not be loaded.' })
+    console.error('Device configurations could not be loaded.', error)
   } finally {
     configOptionsLoading.value = false
   }
@@ -546,10 +546,8 @@ async function applySelectedConfig() {
       client: apiClient,
       body: { config_file: selectedConfig.value }
     })
-
-    $q.notify({ type: 'positive', message: 'Configuration applied. Reinitialize hardware if necessary.' })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Configuration could not be applied.' })
+    console.error('Configuration could not be applied.', error)
   } finally {
     configApplying.value = false
   }
@@ -576,7 +574,7 @@ async function loadCameraSettings(name: string) {
       manual_focus: settings?.manual_focus ?? null
     })
   } catch (error) {
-    $q.notify({ type: 'negative', message: `Settings for camera "${name}" could not be loaded.` })
+    console.error(`Settings for camera "${name}" could not be loaded.`, error)
   } finally {
     cameraLoading.value = false
   }
@@ -597,10 +595,8 @@ async function saveCameraSettings() {
       path: { name: selectedCamera.value },
       body: payload
     })
-
-    $q.notify({ type: 'positive', message: 'Camera settings saved.' })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Camera settings could not be saved.' })
+    console.error('Camera settings could not be saved.', error)
   } finally {
     cameraSaving.value = false
   }
@@ -634,9 +630,8 @@ async function saveMotorSettings(name: string) {
     })
 
     motorForms[name] = mapMotorConfig(updated.data)
-    $q.notify({ type: 'positive', message: `Motor "${name}" saved.` })
   } catch (error) {
-    $q.notify({ type: 'negative', message: `Motor "${name}" could not be saved.` })
+    console.error(`Motor "${name}" could not be saved.`, error)
   } finally {
     motorSaving[name] = false
   }
@@ -671,9 +666,8 @@ async function saveLightSettings(name: string) {
     })
 
     lightForms[name] = mapLightConfig(updated.data)
-    $q.notify({ type: 'positive', message: `Light "${name}" saved.` })
   } catch (error) {
-    $q.notify({ type: 'negative', message: `Light "${name}" could not be saved.` })
+    console.error(`Light "${name}" could not be saved.`, error)
   } finally {
     lightSaving[name] = false
   }
@@ -749,16 +743,14 @@ watch(
 async function saveApiConfig() {
   apiConfigStore.setConfig(apiConfigForm)
   updateApiClientConfig()
-  $q.notify({ type: 'positive', message: 'API configuration saved.' })
 }
 
 async function saveCurrentConfig() {
   hardwareActions.save = true
   try {
     await saveDeviceConfig({ client: apiClient })
-    $q.notify({ type: 'positive', message: 'Current configuration saved.' })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Configuration could not be saved.' })
+    console.error('Configuration could not be saved.', error)
   } finally {
     hardwareActions.save = false
   }
@@ -771,9 +763,8 @@ async function reinitializeHardware() {
       client: apiClient,
       query: { detect_cameras: detectCameras.value }
     })
-    $q.notify({ type: 'positive', message: 'Hardware is reinitializing.' })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Hardware could not be reinitialized.' })
+    console.error('Hardware could not be reinitialized.', error)
   } finally {
     hardwareActions.reinitialize = false
   }

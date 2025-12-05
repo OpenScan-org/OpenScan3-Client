@@ -8,15 +8,6 @@
           OpenScan3
         </q-toolbar-title>
 
-        <q-chip
-          dense
-          text-color="white"
-          :color="deviceStatusColor"
-          icon="circle"
-        >
-          {{ deviceStatusLabel }}
-        </q-chip>
-
         <PowerControls v-slot="{ confirmReboot, confirmShutdown, rebooting, shuttingDown }">
           <q-btn
             flat
@@ -52,8 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { storeToRefs } from 'pinia'
+import { ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
 import type { EssentialLinkProps } from 'components/models';
 import { useDeviceStore } from 'src/stores/device'
@@ -103,34 +93,6 @@ void deviceStore.ensureConnected()
 
 const taskStore = useTaskStore()
 void taskStore.ensureConnected()
-
-const { status: deviceStatus } = storeToRefs(deviceStore)
-
-const deviceStatusLabel = computed(() => {
-  switch (deviceStatus.value) {
-    case 'open':
-      return 'Device connected'
-    case 'connecting':
-      return 'Connecting…'
-    case 'error':
-      return 'Device error'
-    default:
-      return 'Device offline'
-  }
-})
-
-const deviceStatusColor = computed(() => {
-  switch (deviceStatus.value) {
-    case 'open':
-      return 'positive'
-    case 'connecting':
-      return 'warning'
-    case 'error':
-      return 'negative'
-    default:
-      return 'grey-7'
-  }
-})
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value

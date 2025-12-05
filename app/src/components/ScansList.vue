@@ -126,7 +126,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useQuasar } from 'quasar'
 import { type Scan } from 'src/generated/api'
 import { API_BASE_URL } from 'src/services/apiClient'
 
@@ -139,7 +138,6 @@ interface ScansListProp {
 
 const props = defineProps<ScansListProp>()
 const emit = defineEmits(['select:scan', 'delete:scan', 'pause:scan', 'resume:scan', 'download:scan', 'stack:scan', 'cancel:scan', 'create:scan', 'update:selected-scans', 'bulk:delete-selected', 'bulk:delete-status', 'bulk:download-selected'])
-const $q = useQuasar()
 const selectedScansSet = computed(() => new Set(props.selectedScans ?? []))
 const erroredStatuses = new Set(['failed', 'error'])
 const erroredCount = computed(() => props.scans.filter((scan) => erroredStatuses.has(scan.status ?? '')).length)
@@ -219,10 +217,9 @@ const download_scan = (index: number) => {
     params.append('scan_indices', index.toString())
     const downloadUrl = `${API_BASE_URL}projects/${encodeURIComponent(props.project_name)}/scans/zip?${params.toString()}`
     window.open(downloadUrl, '_blank')
-    $q.notify({ type: 'positive', message: 'Scan download started.' })
     emit('download:scan', { project_name: props.project_name, scan_index: index })
   } catch (error) {
-    $q.notify({ type: 'negative', message: 'Could not download scan.' })
+    console.error('Could not download scan.', error)
   }
 }
 
