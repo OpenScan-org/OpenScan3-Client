@@ -18,6 +18,7 @@ interface DeviceStoreState {
   lastHeartbeat: number | null
   status: DeviceStoreStatus
   error: string | null
+  needsSetup: boolean
 }
 
 let socket: WebSocket | null = null
@@ -32,7 +33,8 @@ export const useDeviceStore = defineStore('device', {
     lastChanged: null,
     lastHeartbeat: null,
     status: 'idle',
-    error: null
+    error: null,
+    needsSetup: false
   }),
   getters: {
     isReady: (state) => state.status === 'open' && !!state.device,
@@ -170,12 +172,24 @@ export const useDeviceStore = defineStore('device', {
     },
     async refreshFromRest() {
       try {
-        const snapshot = await getDeviceInfo({ client: apiClient })
+        const snapshot = await getDeviceInfo<true>({ client: apiClient, throwOnError: true })
         this.device = snapshot ?? null
         this.lastChanged = null
+        this.needsSetup = false
         return snapshot
       } catch (error) {
+        const message = (error as any)?.detail?.message
+
+        if (message === 'Device configuration is not loaded.') {
+          this.device = null
+          this.lastChanged = null
+          this.needsSetup = true
+          this.error = null
+          return null
+        }
+
         this.error = 'Failed to load device snapshot'
+        this.needsSetup = false
         throw error
       }
     },

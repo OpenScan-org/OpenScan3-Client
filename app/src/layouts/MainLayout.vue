@@ -38,18 +38,34 @@
     </q-drawer>
 
     <q-page-container>
+      <div class="row justify-center q-ma-md">
+        <div class="col-12 col-md-5 col-lg-5">
+          <q-banner
+            v-if="showSetupBanner"
+            class="text-black bg-amber-4"
+            inline-actions
+          >
+              Your OpenScan device is not configured yet.
+            <template v-slot:action>
+              <BaseButtonPrimary label="Setup device" @click="openSetupPage" />
+            </template>
+          </q-banner>
+        </div>
+      </div>
       <router-view />
     </q-page-container>
   </q-layout>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import EssentialLink from 'components/EssentialLink.vue';
 import type { EssentialLinkProps } from 'components/models';
 import { useDeviceStore } from 'src/stores/device'
 import { useTaskStore } from 'src/stores/tasks'
 import PowerControls from 'components/PowerControls.vue'
+import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import openscanLogo from 'src/assets/openscan_black_Rahmen.avif'
 
 const upperLinks: EssentialLinkProps[] = [
@@ -96,8 +112,19 @@ void deviceStore.ensureConnected()
 const taskStore = useTaskStore()
 void taskStore.ensureConnected()
 
+const router = useRouter()
+const route = useRoute()
+
+const showSetupBanner = computed(
+  () => deviceStore.needsSetup && route.path !== '/setup'
+)
+
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
+}
+
+function openSetupPage() {
+  void router.push('/setup')
 }
  </script>
 

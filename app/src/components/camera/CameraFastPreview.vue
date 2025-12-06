@@ -68,6 +68,7 @@ interface FastPreviewProps {
     value: string
     orientationFlag?: number | null
   } | null
+  enableCrop?: boolean
 }
 
 type DragMode = 'box' | 'handle'
@@ -77,7 +78,9 @@ export type CameraFastPreviewExposed = {
   imageLoaded: Ref<boolean>
 }
 
-const props = defineProps<FastPreviewProps>()
+const props = withDefaults(defineProps<FastPreviewProps>(), {
+  enableCrop: true
+})
 
 const previewSettingsStore = usePreviewSettingsStore()
 const cameraStore = useCameraStore()
@@ -169,7 +172,7 @@ const currentCrop = computed(() => {
 const hasCropReduction = computed(
   () => currentCrop.value.widthPercent < 100 || currentCrop.value.heightPercent < 100
 )
-const showCropUI = computed(() => props.active && imageLoaded.value)
+const showCropUI = computed(() => props.enableCrop && props.active && imageLoaded.value)
 const overlayActive = computed(() => showCropUI.value)
 
 const dimStyles = computed(() => {

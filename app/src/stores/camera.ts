@@ -77,7 +77,12 @@ export const useCameraStore = defineStore('camera', {
       }
 
       if (affectedCameras.has(this.selectedCamera)) {
-        void this.fetchPhoto(this.selectedCamera);
+        const onlyOrientationChange = paths.every((path) => path.includes('.settings.orientation_flag'));
+
+        if (!onlyOrientationChange) {
+          void this.fetchPhoto(this.selectedCamera);
+        }
+
         void this.fetchCameras();
       }
     },
