@@ -15,6 +15,7 @@ import {
   type MoveMotorByDegreeData,
   type MoveToPositionData
 } from 'src/generated/api'
+import { getOrientationTransform } from 'src/utils/orientation'
 
 const $q = useQuasar()
 const cameraStore = useCameraStore()
@@ -29,6 +30,15 @@ const TURNTABLE_MOTOR = 'turntable'
 const firstLightName = computed(() => {
   const names = Object.keys(deviceStore.lights)
   return names[0] ?? null
+})
+
+const selectedCamera = computed(() =>
+  cameraStore.cameras.find(camera => camera.name === cameraStore.selectedCamera) ?? null
+)
+
+const previewImageStyle = computed(() => {
+  const transform = getOrientationTransform(selectedCamera.value?.settings?.orientation_flag ?? null)
+  return transform === 'none' ? {} : { transform, transformOrigin: 'center center' }
 })
 
 const isLightOn = computed(() => {
@@ -110,7 +120,12 @@ onMounted(() => {
 <template>
   <q-page class="dashboard-page">
     <!-- Blurred background camera preview -->
-    <img v-if="cameraStore.previewUrl" class="camera-background" :src="cameraStore.previewUrl" />
+    <img
+      v-if="cameraStore.previewUrl"
+      class="camera-background"
+      :src="cameraStore.previewUrl"
+      :style="previewImageStyle"
+    />
 
     <div class="content-wrapper q-pa-md">
       <div class="row q-col-gutter-md justify-center">
