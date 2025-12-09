@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch, type CSSProperties } from 'vue'
 import { useQuasar } from 'quasar'
 
 import { useCameraStore } from 'src/stores/camera'
@@ -36,10 +36,51 @@ const selectedCamera = computed(() =>
   cameraStore.cameras.find(camera => camera.name === cameraStore.selectedCamera) ?? null
 )
 
-const previewImageStyle = computed(() => {
+const previewImageStyle = computed<CSSProperties>(() => {
   const transform = getOrientationTransform(selectedCamera.value?.settings?.orientation_flag ?? null)
-  return transform === 'none' ? {} : { transform, transformOrigin: 'center center' }
+  const baseTransform = 'translate(-50%, -50%)'
+  const transformValue = transform === 'none' ? baseTransform : `${baseTransform} ${transform}`
+
+  return {
+    transform: transformValue,
+    transformOrigin: 'center center'
+  }
 })
+
+const previewImageVisible = ref(false)
+const previewImageKey = ref(0)
+
+watch(
+  () => cameraStore.previewUrl,
+  (url) => {
+    if (url) {
+      previewImageVisible.value = false
+      previewImageKey.value += 1
+    } else {
+      previewImageVisible.value = false
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  () => selectedCamera.value?.settings?.orientation_flag ?? null,
+  (newFlag, oldFlag) => {
+    if (newFlag === oldFlag || !cameraStore.previewUrl) {
+      return
+    }
+    previewImageVisible.value = false
+    previewImageKey.value += 1
+  }
+)
+
+function handlePreviewLoad() {
+  previewImageVisible.value = true
+}
+
+function handlePreviewError() {
+  previewImageVisible.value = false
+}
 
 const isLightOn = computed(() => {
   const name = firstLightName.value
@@ -120,12 +161,18 @@ onMounted(() => {
 <template>
   <q-page class="dashboard-page">
     <!-- Blurred background camera preview -->
-    <img
-      v-if="cameraStore.previewUrl"
-      class="camera-background"
-      :src="cameraStore.previewUrl"
-      :style="previewImageStyle"
-    />
+    <div v-if="cameraStore.previewUrl" class="camera-background">
+      <img
+        :key="previewImageKey"
+        class="camera-background__image"
+        :class="{ 'camera-background__image--visible': previewImageVisible }"
+        :src="cameraStore.previewUrl"
+        :style="previewImageStyle"
+        @load="handlePreviewLoad"
+        @error="handlePreviewError"
+        alt="Camera preview background"
+      />
+    </div>
 
     <div class="content-wrapper q-pa-md">
       <div class="row q-col-gutter-md justify-center">
@@ -195,10 +242,25 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.camera-background__image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120vmax;
+  height: 120vmax;
   object-fit: cover;
   filter: blur(10px);
+  opacity: 0;
+  transition: opacity 800ms ease, transform 1400ms ease;
+  will-change: opacity, transform;
+}
+
+.camera-background__image--visible {
   opacity: 0.3;
-  z-index: -1;
 }
 
 .dashboard-page {
