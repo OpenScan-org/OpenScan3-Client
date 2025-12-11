@@ -114,13 +114,6 @@ export const updateCameraNameSettings = <ThrowOnError extends boolean = false>(o
  * Replace Camera Name Settings
  *
  * Replace all settings for a specific resource
- *
- * Args:
- * name: The name of the resource to replace settings for
- * settings: The new settings for the resource
- *
- * Returns:
- * The updated settings for the resource
  */
 export const replaceCameraNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceCameraNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceCameraNameSettingsResponses, ReplaceCameraNameSettingsErrors, ThrowOnError>({
     url: '/cameras/{name}/settings',
@@ -236,13 +229,6 @@ export const updateMotorNameSettings = <ThrowOnError extends boolean = false>(op
  * Replace Motor Name Settings
  *
  * Replace all settings for a specific resource
- *
- * Args:
- * name: The name of the resource to replace settings for
- * settings: The new settings for the resource
- *
- * Returns:
- * The updated settings for the resource
  */
 export const replaceMotorNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceMotorNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceMotorNameSettingsResponses, ReplaceMotorNameSettingsErrors, ThrowOnError>({
     url: '/motors/{name}/settings',
@@ -347,13 +333,6 @@ export const updateLightNameSettings = <ThrowOnError extends boolean = false>(op
  * Replace Light Name Settings
  *
  * Replace all settings for a specific resource
- *
- * Args:
- * name: The name of the resource to replace settings for
- * settings: The new settings for the resource
- *
- * Returns:
- * The updated settings for the resource
  */
 export const replaceLightNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceLightNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceLightNameSettingsResponses, ReplaceLightNameSettingsErrors, ThrowOnError>({
     url: '/lights/{name}/settings',

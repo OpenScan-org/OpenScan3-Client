@@ -5,13 +5,6 @@ export type ClientOptions = {
 };
 
 /**
- * BaseModel
- */
-export type BaseModel = {
-    [key: string]: unknown;
-};
-
-/**
  * Body_add_config_json_device_configurations__post
  */
 export type BodyAddConfigJsonDeviceConfigurationsPost = {
@@ -72,7 +65,7 @@ export type CameraSettings = {
     /**
      * Shutter
      *
-     * Shutter speed in microseconds.
+     * Shutter speed in milliseconds.
      */
     shutter?: number | null;
     /**
@@ -1231,7 +1224,7 @@ export type UpdateCameraNameSettingsResponses = {
 export type UpdateCameraNameSettingsResponse = UpdateCameraNameSettingsResponses[keyof UpdateCameraNameSettingsResponses];
 
 export type ReplaceCameraNameSettingsData = {
-    body: BaseModel;
+    body: CameraSettings;
     path: {
         /**
          * Name
@@ -1506,7 +1499,7 @@ export type UpdateMotorNameSettingsResponses = {
 export type UpdateMotorNameSettingsResponse = UpdateMotorNameSettingsResponses[keyof UpdateMotorNameSettingsResponses];
 
 export type ReplaceMotorNameSettingsData = {
-    body: BaseModel;
+    body: MotorConfig;
     path: {
         /**
          * Name
@@ -1776,7 +1769,7 @@ export type UpdateLightNameSettingsResponses = {
 export type UpdateLightNameSettingsResponse = UpdateLightNameSettingsResponses[keyof UpdateLightNameSettingsResponses];
 
 export type ReplaceLightNameSettingsData = {
-    body: BaseModel;
+    body: LightConfig;
     path: {
         /**
          * Name
