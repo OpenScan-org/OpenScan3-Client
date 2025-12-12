@@ -22,10 +22,22 @@
                   <q-input v-model="apiConfigForm.host" label="Host/IP" />
                 </div>
                 <div class="col-2">
-                  <q-input v-model.number="apiConfigForm.port" type="number" label="Port" />
+                  <q-input
+                    v-model.number="apiConfigForm.port"
+                    :disable="!apiConfigForm.developerMode"
+                    type="number"
+                    label="Port"
+                  />
                 </div>
                 <div class="col-3">
                   <q-input v-model="apiConfigForm.version" label="Version" />
+                </div>
+                <div class="col-12">
+                  <q-toggle
+                    v-model="apiConfigForm.developerMode"
+                    label="Developer mode (connect directly to port)"
+                    left-label
+                  />
                 </div>
 
                 <div class="col-12">
@@ -385,7 +397,8 @@ const apiConfigForm = reactive({
   schema: apiConfigStore.schema,
   host: apiConfigStore.host,
   port: apiConfigStore.port,
-  version: apiConfigStore.version
+  version: apiConfigStore.version,
+  developerMode: apiConfigStore.developerMode
 })
 
 const schemaOptions = [

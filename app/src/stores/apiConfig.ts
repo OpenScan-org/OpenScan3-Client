@@ -5,10 +5,16 @@ export const useApiConfigStore = defineStore('apiConfig', {
     schema: 'http' as 'http' | 'https',
     host: 'openscan3-dev',
     port: 8000,
-    version: 'v0.5'
+    version: 'v0.5',
+    developerMode: false
   }),
   getters: {
-    baseURL: (state) => `${state.schema}://${state.host}:${state.port}/${state.version}/`
+    baseURL: (state) => {
+      const portSegment = state.developerMode && state.port ? `:${state.port}` : ''
+      const pathSegment = state.developerMode ? `/${state.version}/` : `/api/${state.version}/`
+
+      return `${state.schema}://${state.host}${portSegment}${pathSegment}`
+    }
   },
   actions: {
     setConfig(config: Partial<typeof this.$state>) {
@@ -19,6 +25,10 @@ export const useApiConfigStore = defineStore('apiConfig', {
       const saved = localStorage.getItem('apiConfig');
       if (saved) {
         const parsed = JSON.parse(saved);
+        if ('useApiPath' in parsed && !('developerMode' in parsed)) {
+          parsed.developerMode = !parsed.useApiPath
+          delete parsed.useApiPath
+        }
         Object.assign(this.$state, parsed);
       }
     }
