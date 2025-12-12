@@ -7,7 +7,7 @@
     </div>
 
     <div v-else class="fast-preview__stage">
-      <div class="image-wrapper" :style="wrapperStyle">
+      <div class="image-wrapper" ref="imageWrapper" :style="wrapperStyle">
         <img
           v-if="previewUrl"
           ref="previewImage"
@@ -88,6 +88,7 @@ const deviceStore = useDeviceStore()
 void deviceStore.ensureConnected()
 
 const previewImage = ref<HTMLImageElement | null>(null)
+const imageWrapper = ref<HTMLElement | null>(null)
 const cropCanvas = ref<HTMLCanvasElement | null>(null)
 const imageLoaded = ref(false)
 const imageSize = ref({ width: 0, height: 0 })
@@ -116,9 +117,24 @@ const wrapperStyle = computed(() => {
 
 const imageTransformStyle = computed(() => {
   const transform = getOrientationTransform(props.camera?.orientationFlag ?? null)
-  return transform === 'none'
-    ? {}
-    : { transform, transformOrigin: 'center center' }
+  const isPortrait = orientation.value === 'portrait'
+
+  if (transform === 'none' && !isPortrait) {
+    return {}
+  }
+
+  if (isPortrait) {
+    return {
+      transform,
+      transformOrigin: 'center center',
+      width: '133.333%',
+      height: '75%',
+      left: '-16.667%',
+      top: '12.5%'
+    }
+  }
+
+  return { transform, transformOrigin: 'center center' }
 })
 
 const previewUrl = computed(() =>
@@ -318,12 +334,12 @@ function updateOrientationFromImage() {
 }
 
 function updateImageSize() {
-  const img = previewImage.value
+  const wrapper = imageWrapper.value
   const canvas = cropCanvas.value
-  if (!img || !canvas) return
+  if (!wrapper || !canvas) return
   imageSize.value = {
-    width: img.clientWidth,
-    height: img.clientHeight
+    width: wrapper.clientWidth,
+    height: wrapper.clientHeight
   }
   canvas.width = imageSize.value.width
   canvas.height = imageSize.value.height
@@ -585,7 +601,6 @@ defineExpose<CameraFastPreviewExposed>({
 
 .preview-image {
   position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
