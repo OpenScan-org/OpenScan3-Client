@@ -144,6 +144,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useQuasar } from 'quasar'
+import { useRouter } from 'vue-router'
 import BasePage from 'components/base/BasePage.vue'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseWizard from 'components/base/BaseWizard.vue'
@@ -170,6 +171,7 @@ const activeStepId = ref(steps[0].id)
 
 const deviceStore = useDeviceStore()
 const cameraStore = useCameraStore()
+const router = useRouter()
 
 interface DeviceConfigFile {
   filename: string
@@ -333,8 +335,9 @@ function handleToggleMirror() {
   })
 }
 
-function handleFinishSetup() {
-  void deviceStore.refreshFromRest()
+async function handleFinishSetup() {
+  await deviceStore.refreshFromRest()
+  void router.push('/scan')
 }
 </script>
 

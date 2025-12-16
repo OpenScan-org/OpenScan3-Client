@@ -4,7 +4,7 @@
       <q-toolbar class="main-toolbar">
         <div class="row items-center no-wrap">
           <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-          <img :src="openscanLogo" alt="OpenScan3 logo" class="main-logo" />
+          <q-toolbar-title>OpenScan3 [v0.5.0-alpha]</q-toolbar-title>
         </div>
 
         <q-space />
@@ -85,7 +85,7 @@ const upperLinks: EssentialLinkProps[] = [
     link: '/scan'
   },
   {
-    title: '(wip) settings',
+    title: '(wip) Settings',
     icon: 'settings',
     link: '/settings'
   },
@@ -96,13 +96,13 @@ const upperLinks: EssentialLinkProps[] = [
   },
 ];
 
-const lowerLinks: EssentialLinkProps[] = [
-  {
-    title: 'Donate',
-    icon: 'volunteer_activism',
-    link: '/donate'
-  },
-];
+// const lowerLinks: EssentialLinkProps[] = [
+//   {
+//     title: 'Donate',
+//     icon: 'volunteer_activism',
+//     link: '/donate'
+//   },
+// ];
 
 const leftDrawerOpen = ref(true)
 

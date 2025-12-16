@@ -56,13 +56,13 @@ export default configure(function (/* ctx */) {
       },
 
       vueRouterMode: 'history', // available values: 'hash', 'history'
-      vueRouterBase: '/client/',
+      vueRouterBase: '/',
       // vueDevtools,
       // vueOptionsAPI: false,
 
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
-      publicPath: '/client/',
+      publicPath: '/',
       // analyze: true,
       // env: {},
       // rawDefine: {}

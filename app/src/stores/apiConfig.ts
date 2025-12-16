@@ -5,7 +5,7 @@ export const useApiConfigStore = defineStore('apiConfig', {
     schema: 'http' as 'http' | 'https',
     host: 'openscan3-dev',
     port: 8000,
-    version: 'v0.5',
+    version: 'next',
     developerMode: false
   }),
   getters: {
