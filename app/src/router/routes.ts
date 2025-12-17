@@ -7,8 +7,10 @@ const routes: RouteRecordRaw[] = [
     children: [
       { path: '', component: () => import('pages/IndexPage.vue') },
       { path: 'scan', component: () => import('pages/ScanPage.vue') },
+      { path: 'scan/progress/:taskId?', component: () => import('pages/ScanProgressPage.vue') },
       { path: 'setup', component: () => import('pages/SetupPage.vue') },
       { path: 'settings', component: () => import('pages/SettingsPage.vue') },
+      { path: 'logs', component: () => import('pages/LogsPage.vue') },
       { path: 'projects', component: () => import('pages/ProjectsPage.vue') },
       { path: 'donate', component: () => import('pages/DonationPage.vue') },
       { path: 'about', component: () => import('pages/AboutPage.vue') },

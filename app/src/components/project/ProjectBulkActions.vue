@@ -7,23 +7,30 @@
     <q-card-section>
       <div class="row q-col-gutter-sm">
         <div class="col-12 col-sm-6">
-          <q-btn
+          <BaseButtonPrimary
             color="negative"
             class="full-width"
             unelevated
             :disable="!selectedCount || working"
-            :label="selectedCount ? `Delete ${selectedCount} selected` : 'Delete selected projects'"
+            icon="delete"
+            :label="selectedCount.toString()"
             @click="confirmDeleteSelected"
-          />
+          >
+            <q-tooltip>Delete selected projects</q-tooltip>
+          </BaseButtonPrimary>
         </div>
         <div class="col-12 col-sm-6">
-          <q-btn
+          <BaseButtonSecondary
             class="full-width"
             unelevated
+            color="negative"
             :disable="!zeroScanCount || working"
-            :label="`Delete ${zeroScanCount} empty project${zeroScanCount === 1 ? '' : 's'}`"
+            icon="delete"
+            :label="`${zeroScanCount} empty`"
             @click="confirmDeleteEmpty"
-          />
+          >
+            <q-tooltip>Delete projects without scans</q-tooltip>
+          </BaseButtonSecondary>
         </div>
       </div>
     </q-card-section>
@@ -35,6 +42,8 @@ import { computed, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { deleteProject, type Project } from 'src/generated/api'
 import { apiClient } from 'src/services/apiClient'
+import BaseButtonPrimary from 'src/components/base/BaseButtonPrimary.vue'
+import BaseButtonSecondary from 'src/components/base/BaseButtonSecondary.vue'
 
 interface Props {
   projects: Project[]

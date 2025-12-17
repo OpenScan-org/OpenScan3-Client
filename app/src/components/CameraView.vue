@@ -85,11 +85,12 @@ onBeforeUnmount(() => {
 
 .camera-surface {
   display: flex;
-  width: fit-content;
+  /*width: fit-content;*/
+  width: 100%;
   max-width: 900px;
   margin: 0 auto;
   border-radius: 16px;
-  background: #ff0000; /* TODO: debug color, remove later */
+  background: #00aa00; /* TODO: debug color, remove later */
   overflow: hidden;
 }
 

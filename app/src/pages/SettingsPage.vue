@@ -175,7 +175,7 @@
 
                 <template v-else-if="selectedCamera">
                   <div class="col-6">
-                    <q-input v-model.number="cameraForm.shutter" type="number" label="Shutter (µs)">
+                    <q-input v-model.number="cameraForm.shutter" type="number" label="Shutter (ms)">
                       <q-tooltip>{{ cameraSettingDescription('shutter') }}</q-tooltip>
                     </q-input>
                   </div>

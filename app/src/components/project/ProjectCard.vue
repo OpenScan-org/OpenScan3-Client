@@ -9,10 +9,24 @@
                 <div class="text-subtitle2 text-grey-7">{{ displayDate }}</div>
             </q-card-section>
             <q-card-section class="row justify-center q-gutter-sm">
-                <q-btn color="grey-5" disable unelevated label="Cloud process project" v-if="!project.uploaded"></q-btn>
-                <q-btn color="primary" unelevated label="Download project" @click="confirm_download"></q-btn>
-                <q-btn color="negative" unelevated label="Delete project" @click="confirm_delete"></q-btn>
-                <q-btn color="positive" unelevated label="Add Scan" @click="add_scan"></q-btn>
+                <BaseButtonSecondary
+                    disable
+                    unelevated
+                    icon="cloud_upload"
+                    label="process project"
+                    v-if="!project.uploaded"
+                >
+                    <q-tooltip>Coming Soon: Upload this project to the cloud</q-tooltip>
+                </BaseButtonSecondary>
+                <BaseButtonPrimary unelevated icon="cloud_download" label="Download" @click="confirm_download">
+                    <q-tooltip>Download the project archive</q-tooltip>
+                </BaseButtonPrimary>
+                <BaseButtonSecondary color="negative" unelevated icon="delete" label="project" @click="confirm_delete">
+                    <q-tooltip>Delete this project</q-tooltip>
+                </BaseButtonSecondary>
+                <BaseButtonPrimary color="positive" unelevated icon="add" label="Add Scan" @click="add_scan">
+                    <q-tooltip>Create a new scan in this project</q-tooltip>
+                </BaseButtonPrimary>
             </q-card-section>
             <q-separator />
             <ScansList
@@ -41,6 +55,8 @@ import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { apiClient, API_BASE_URL } from 'src/services/apiClient'
 import { deleteProject, uploadProjectToCloud, deleteScan, pauseScan, resumeScan, cancelScan, startFocusStacking, type Project, type Scan } from 'src/generated/api'
+import BaseButtonPrimary from 'src/components/base/BaseButtonPrimary.vue'
+import BaseButtonSecondary from 'src/components/base/BaseButtonSecondary.vue'
 import ScansList from './ScansList.vue'
 
 const $q = useQuasar()

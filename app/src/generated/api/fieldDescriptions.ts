@@ -21,7 +21,7 @@ export const fieldDescriptions = {
     "photo_resolution": "Preview resolution (x,y). Changing resolution can break cropping.",
     "preview_resolution": "Preview resolution (x,y). Changing resolution can break cropping.",
     "saturation": "Image color saturation from 0 to 32",
-    "shutter": "Shutter speed in microseconds."
+    "shutter": "Shutter speed in milliseconds."
   },
   "CloudSettings": {
     "host": "Base URL of the cloud service.",

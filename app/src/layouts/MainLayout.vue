@@ -4,7 +4,7 @@
       <q-toolbar class="main-toolbar">
         <div class="row items-center no-wrap">
           <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-          <q-toolbar-title>OpenScan3 [v0.5.0-alpha]</q-toolbar-title>
+          <q-toolbar-title>OpenScan3 [alpha]</q-toolbar-title>
         </div>
 
         <q-space />
@@ -85,9 +85,14 @@ const upperLinks: EssentialLinkProps[] = [
     link: '/scan'
   },
   {
-    title: '(wip) Settings',
+    title: 'Settings',
     icon: 'settings',
     link: '/settings'
+  },
+  {
+    title: 'Logs',
+    icon: 'article',
+    link: '/logs'
   },
   {
     title: 'About',
@@ -96,13 +101,14 @@ const upperLinks: EssentialLinkProps[] = [
   },
 ];
 
-// const lowerLinks: EssentialLinkProps[] = [
-//   {
-//     title: 'Donate',
-//     icon: 'volunteer_activism',
-//     link: '/donate'
-//   },
-// ];
+const lowerLinks: EssentialLinkProps[] = [
+  {
+    title: 'Updater',
+    icon: 'system_update',
+    target: '_self',
+    link: '/admin/'
+  }
+]
 
 const leftDrawerOpen = ref(true)
 
@@ -136,4 +142,5 @@ function openSetupPage() {
 .main-logo {
   height: 40px;
 }
+
 </style>

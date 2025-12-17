@@ -34,7 +34,9 @@ const attrs = useAttrs()
     :size="props.size"
     color="primary"
     unelevated
-  />
+  >
+    <slot />
+  </q-btn>
 </template>
 
 <style scoped>

@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { apiClient } from 'src/services/apiClient'
 import { addScanWithDescription } from 'src/generated/api'
 import generateDashedName from 'src/utils/randomName'
@@ -47,10 +47,13 @@ import ScanSettingsSection from 'components/scan/ScanSettingsSection.vue'
 import CreateProjectDialog from 'components/project/CreateProjectDialog.vue'
 import { useProjectsStore } from 'src/stores/projects'
 import { useCameraStore } from 'src/stores/camera'
+import { useTaskStore } from 'src/stores/tasks'
 const route = useRoute()
+const router = useRouter()
 
 const projectsStore = useProjectsStore()
 const cameraStore = useCameraStore()
+const taskStore = useTaskStore()
 
 const selectedCameraName = ref<string>('')
 const selectedProject = ref('')
@@ -63,6 +66,39 @@ const scanning = ref(false)
 const showCreateProjectDialog = ref(false)
 
 const selectedCamera = computed(() => cameraStore.cameraOptions.find(c => c.value === selectedCameraName.value) || null)
+
+const activeScanTaskId = computed(() => {
+  const tasks = taskStore.taskList
+
+  const running = tasks.find((task) => task.task_type === 'scan_task' && task.status === 'running')
+  if (running?.id) {
+    return running.id
+  }
+
+  const pendingCandidates = tasks
+    .filter((task) => task.task_type === 'scan_task' && task.status === 'pending')
+    .slice()
+    .sort((a, b) => {
+      const aTime = new Date(a.started_at ?? a.created_at ?? 0).getTime()
+      const bTime = new Date(b.started_at ?? b.created_at ?? 0).getTime()
+      return bTime - aTime
+    })
+
+  if (pendingCandidates[0]?.id) {
+    return pendingCandidates[0].id
+  }
+
+  const pausedCandidates = tasks
+    .filter((task) => task.task_type === 'scan_task' && (task.status === 'paused' || task.status === 'interrupted'))
+    .slice()
+    .sort((a, b) => {
+      const aTime = new Date(a.started_at ?? a.created_at ?? 0).getTime()
+      const bTime = new Date(b.started_at ?? b.created_at ?? 0).getTime()
+      return bTime - aTime
+    })
+
+  return pausedCandidates[0]?.id ?? null
+})
 
 watch(selectedCameraName, (newVal) => cameraStore.setSelectedCamera(newVal))
 
@@ -97,12 +133,15 @@ const startScan = async () => {
   const scanSettings = scanSettingsSectionRef.value.getScanSettings()
 
   try {
-    await addScanWithDescription({
+    const task = await addScanWithDescription({
       client: apiClient,
       path: { project_name: selectedProject.value },
       query: { camera_name: selectedCameraName.value },
       body: scanSettings
     })
+
+    taskStore.applyTaskUpdate(task)
+    await router.push(`/scan/progress/${task.id}`)
 
     // Refresh projects list after starting scan (in case a new project was created)
     await projectsStore.fetchProjects()
@@ -114,6 +153,13 @@ const startScan = async () => {
 }
 
 onMounted(async () => {
+  await taskStore.ensureConnected()
+
+  if (activeScanTaskId.value) {
+    await router.replace(`/scan/progress/${activeScanTaskId.value}`)
+    return
+  }
+
   await cameraStore.fetchCameras()
   await projectsStore.fetchProjects()
 

@@ -91,34 +91,45 @@
         />
       </div>
       <div class="row justify-start q-gutter-sm q-mt-sm">
-        <q-btn
+        <BaseButtonSecondary
           color="negative"
           unelevated
-          label="Delete selected"
+          label="selected"
+          icon="delete"
           :disable="!selectedScansSet.size"
           @click="requestDeleteSelected"
-        />
-        <q-btn
-          outline
+        >
+          <q-tooltip>Delete the selected scans</q-tooltip>
+        </BaseButtonSecondary>
+        <BaseButtonSecondary
           color="negative"
-          label="Delete errored"
+          outline
+          label="errored"
+          icon="delete"
           :disable="!erroredCount"
           @click="requestDeleteErrored"
-        />
-        <q-btn
-          outline
+        >
+          <q-tooltip>Delete scans with error status</q-tooltip>
+        </BaseButtonSecondary>
+        <BaseButtonSecondary
           color="negative"
-          label="Delete cancelled"
+          outline
+          label="cancelled"
+          icon="delete"
           :disable="!cancelledCount"
           @click="requestDeleteCancelled"
-        />
-        <q-btn
+        >
+          <q-tooltip>Delete cancelled scans</q-tooltip>
+        </BaseButtonSecondary>
+        <BaseButtonPrimary
           color="primary"
           unelevated
           label="Download selected"
           :disable="!selectedScansSet.size"
           @click="requestDownloadSelected"
-        />
+        >
+          <q-tooltip>Download all selected scans</q-tooltip>
+        </BaseButtonPrimary>
       </div>
     </div>
   </div>
@@ -128,6 +139,9 @@
 import { computed } from 'vue'
 import { type Scan } from 'src/generated/api'
 import { API_BASE_URL } from 'src/services/apiClient'
+import { useTaskStore } from 'src/stores/tasks'
+import BaseButtonPrimary from 'src/components/base/BaseButtonPrimary.vue'
+import BaseButtonSecondary from 'src/components/base/BaseButtonSecondary.vue'
 
 interface ScansListProp {
   scans: Scan[]
@@ -138,10 +152,28 @@ interface ScansListProp {
 
 const props = defineProps<ScansListProp>()
 const emit = defineEmits(['select:scan', 'delete:scan', 'pause:scan', 'resume:scan', 'download:scan', 'stack:scan', 'cancel:scan', 'create:scan', 'update:selected-scans', 'bulk:delete-selected', 'bulk:delete-status', 'bulk:download-selected'])
+const taskStore = useTaskStore()
+
+const scans = computed<Scan[]>(() => {
+  return props.scans.map((scan) => {
+    const taskId = scan.task_id
+    if (!taskId) {
+      return scan
+    }
+
+    const task = taskStore.taskById(taskId)
+    if (!task?.status) {
+      return scan
+    }
+
+    return { ...scan, status: task.status }
+  })
+})
+
 const selectedScansSet = computed(() => new Set(props.selectedScans ?? []))
 const erroredStatuses = new Set(['failed', 'error'])
-const erroredCount = computed(() => props.scans.filter((scan) => erroredStatuses.has(scan.status ?? '')).length)
-const cancelledCount = computed(() => props.scans.filter((scan) => scan.status === 'cancelled').length)
+const erroredCount = computed(() => scans.value.filter((scan) => erroredStatuses.has(scan.status ?? '')).length)
+const cancelledCount = computed(() => scans.value.filter((scan) => scan.status === 'cancelled').length)
 
 const format_date = (value?: string) => {
   if (!value) {
@@ -207,7 +239,7 @@ const pause_scan = (index: number) => {
 }
 
 const resume_scan = (index: number) => {
-  const scan = props.scans.find(s => s.index === index)
+  const scan = scans.value.find((entry) => entry.index === index)
   emit('resume:scan', { project_name: props.project_name, scan_index: index, camera_name: scan?.camera_name || 'default' })
 }
 
@@ -234,11 +266,11 @@ const toggle_scan_selection = (index: number, checked: boolean) => {
 }
 
 const select_all_scans = () => {
-  emit('update:selected-scans', props.scans.map((scan) => scan.index))
+  emit('update:selected-scans', scans.value.map((scan) => scan.index))
 }
 
 const inverse_scan_selection = () => {
-  const next = props.scans
+  const next = scans.value
     .filter((scan) => !selectedScansSet.value.has(scan.index))
     .map((scan) => scan.index)
   emit('update:selected-scans', next)
@@ -252,7 +284,7 @@ const requestDeleteSelected = () => {
 }
 
 const requestDeleteErrored = () => {
-  const indices = props.scans.filter((scan) => erroredStatuses.has(scan.status ?? '')).map((scan) => scan.index)
+  const indices = scans.value.filter((scan) => erroredStatuses.has(scan.status ?? '')).map((scan) => scan.index)
   if (!indices.length) {
     return
   }
@@ -260,7 +292,7 @@ const requestDeleteErrored = () => {
 }
 
 const requestDeleteCancelled = () => {
-  const indices = props.scans.filter((scan) => scan.status === 'cancelled').map((scan) => scan.index)
+  const indices = scans.value.filter((scan) => scan.status === 'cancelled').map((scan) => scan.index)
   if (!indices.length) {
     return
   }

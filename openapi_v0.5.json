@@ -262,7 +262,7 @@
           "cameras"
         ],
         "summary": "Replace Camera Name Settings",
-        "description": "Replace all settings for a specific resource\n\nArgs:\n    name: The name of the resource to replace settings for\n    settings: The new settings for the resource\n\nReturns:\n    The updated settings for the resource",
+        "description": "Replace all settings for a specific resource",
         "operationId": "replace_camera_name_settings",
         "parameters": [
           {
@@ -280,7 +280,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BaseModel"
+                "$ref": "#/components/schemas/CameraSettings"
               }
             }
           }
@@ -653,7 +653,7 @@
           "motors"
         ],
         "summary": "Replace Motor Name Settings",
-        "description": "Replace all settings for a specific resource\n\nArgs:\n    name: The name of the resource to replace settings for\n    settings: The new settings for the resource\n\nReturns:\n    The updated settings for the resource",
+        "description": "Replace all settings for a specific resource",
         "operationId": "replace_motor_name_settings",
         "parameters": [
           {
@@ -671,7 +671,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BaseModel"
+                "$ref": "#/components/schemas/MotorConfig"
               }
             }
           }
@@ -1027,7 +1027,7 @@
           "lights"
         ],
         "summary": "Replace Light Name Settings",
-        "description": "Replace all settings for a specific resource\n\nArgs:\n    name: The name of the resource to replace settings for\n    settings: The new settings for the resource\n\nReturns:\n    The updated settings for the resource",
+        "description": "Replace all settings for a specific resource",
         "operationId": "replace_light_name_settings",
         "parameters": [
           {
@@ -1045,7 +1045,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BaseModel"
+                "$ref": "#/components/schemas/LightConfig"
               }
             }
           }
@@ -3578,11 +3578,6 @@
   },
   "components": {
     "schemas": {
-      "BaseModel": {
-        "properties": {},
-        "type": "object",
-        "title": "BaseModel"
-      },
       "Body_add_config_json_device_configurations__post": {
         "properties": {
           "config_data": {
@@ -3663,17 +3658,17 @@
           "shutter": {
             "anyOf": [
               {
-                "type": "integer",
-                "maximum": 435918849.0,
-                "minimum": 1.0
+                "type": "number",
+                "maximum": 435918.849,
+                "minimum": 0.001
               },
               {
                 "type": "null"
               }
             ],
             "title": "Shutter",
-            "description": "Shutter speed in microseconds.",
-            "default": 50000
+            "description": "Shutter speed in milliseconds.",
+            "default": 50.0
           },
           "saturation": {
             "anyOf": [

@@ -1,10 +1,10 @@
 <template>
   <q-item
     clickable
-    :to="!isExternal ? link : undefined"
-    :href="isExternal ? link : undefined"
-    :target="isExternal ? target : undefined"
-    :exact="!isExternal && link === '/'"
+    :to="!usesHref ? link : undefined"
+    :href="usesHref ? link : undefined"
+    :target="usesHref ? target : undefined"
+    :exact="!usesHref && link === '/'"
   >
     <q-item-section v-if="icon" avatar>
       <q-icon :name="icon" />
@@ -14,7 +14,7 @@
       <q-item-label>{{ title }}</q-item-label>
     </q-item-section>
 
-    <q-item-section v-if="isExternal" side>
+    <q-item-section v-if="showsExternalIcon" side>
       <q-icon name="open_in_new" />
     </q-item-section>
   </q-item>
@@ -30,7 +30,14 @@ const props = withDefaults(defineProps<EssentialLinkProps>(), {
   icon: '',
 });
 
-const isExternal = computed(
+const usesHref = computed(
+  () =>
+    !!props.target ||
+    props.link?.startsWith('http://') ||
+    props.link?.startsWith('https://')
+);
+
+const showsExternalIcon = computed(
   () =>
     props.target === '_blank' ||
     props.link?.startsWith('http://') ||
