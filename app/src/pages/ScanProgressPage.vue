@@ -1,20 +1,15 @@
 <template>
   <q-page class="q-pa-md">
-    <ScanRunningOverlay
-      v-if="resolvedTask"
-      :task-id="resolvedTaskId"
-      :project-name="resolvedProjectName"
-      :camera-name="resolvedCameraName"
-      :initial-task="resolvedTask"
-      @close="onClose"
-    />
+    <RunningScanProgress v-if="resolvedTask" :task-id="resolvedTask.id as string" :initial-task="resolvedTask" @close="onClose" />
+    <RunningScanDetails v-if="resolvedTask" :task-id="resolvedTask.id as string" :initial-task="resolvedTask" />
   </q-page>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import ScanRunningOverlay from 'components/scan/ScanRunningOverlay.vue'
+import RunningScanDetails from 'components/scan/RunningScanDetails.vue'
+import RunningScanProgress from 'components/scan/RunningScanProgress.vue'
 import { useTaskStore } from 'src/stores/tasks'
 
 const route = useRoute()
@@ -58,20 +53,6 @@ const activeScanTaskId = computed(() => {
 
 const resolvedTaskId = computed(() => routeTaskId.value ?? activeScanTaskId.value)
 const resolvedTask = computed(() => (resolvedTaskId.value ? taskStore.taskById(resolvedTaskId.value) : null))
-
-const resolvedProjectName = computed(() => {
-  const task = resolvedTask.value
-  const args = (task?.run_args as unknown as any[]) ?? []
-  const firstArg = args[0] as any
-  return (firstArg?.project_name as string) ?? 'Unknown project'
-})
-
-const resolvedCameraName = computed(() => {
-  const task = resolvedTask.value
-  const args = (task?.run_args as unknown as any[]) ?? []
-  const firstArg = args[0] as any
-  return (firstArg?.camera_name as string) ?? undefined
-})
 
 const ensureTask = async () => {
   await taskStore.ensureConnected()

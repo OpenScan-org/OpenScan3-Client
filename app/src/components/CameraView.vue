@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, unref, watch } from 'vue'
 import CameraFastPreview, { type CameraFastPreviewExposed } from './camera/CameraFastPreview.vue'
 import CameraHistogram from './camera/CameraHistogram.vue'
 import CameraHQPreview, { type CameraHQPreviewExposed } from './camera/CameraHQPreview.vue'
@@ -47,8 +47,8 @@ let stackResizeObserver: ResizeObserver | null = null
 
 const showFastPreview = computed(() => !props.scanning && props.camera !== null)
 
-const hqPreviewImageElement = computed(() => hqPreviewRef.value?.previewImage.value ?? null)
-const hqPreviewImageLoaded = computed(() => hqPreviewRef.value?.imageLoaded.value ?? false)
+const hqPreviewImageElement = computed(() => unref(hqPreviewRef.value?.previewImage) ?? null)
+const hqPreviewImageLoaded = computed(() => unref(hqPreviewRef.value?.imageLoaded) ?? false)
 
 function setupStackObserver(element: HTMLElement | null) {
   stackResizeObserver?.disconnect()
