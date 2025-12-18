@@ -1,6 +1,22 @@
 {
-  "extends": "@quasar/app-vite/tsconfig-preset",
   "compilerOptions": {
-    "baseUrl": "."
-  }
+    "baseUrl": ".",
+    "paths": {
+      "components/*": ["src/components/*"]
+    },
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "types": ["quasar"],
+    "noEmit": true,
+    "useDefineForClassFields": true
+  },
+  "include": ["src", "quasar.d.ts", "env.d.ts", "*.d.ts"],
+  "exclude": ["dist", "node_modules"]
 }

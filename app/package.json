@@ -1,42 +1,42 @@
 {
   "name": "openscan3-client",
   "version": "0.0.1",
-  "description": "A Quasar Project",
-  "productName": "OpenScan 3",
+  "description": "Frontend for OpenScan3 firmware devices",
+  "productName": "OpenScan3",
   "author": "polectron <polectron@gmail.com>",
   "private": true,
   "scripts": {
+    "api:gen": "openapi-ts && node scripts/generate-field-descriptions.mjs",
+    "dev": "quasar dev",
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
-    "axios": "^0.21.1",
-    "vue-i18n": "^9.0.0",
-    "pinia": "^2.0.11",
-    "@quasar/extras": "^1.0.0",
-    "quasar": "^2.6.0",
-    "vue": "^3.0.0",
-    "vue-router": "^4.0.0",
-    "project-name-generator": "^2.1.9"
+    "@quasar/extras": "^1.17.0",
+    "axios": "^1.13.2",
+    "pinia": "^3.0.4",
+    "quasar": "^2.18.6",
+    "vue": "^3.5.25",
+    "vue-i18n": "^11.2.1",
+    "vue-router": "^4.6.3"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.10.0",
-    "@typescript-eslint/parser": "^5.10.0",
-    "eslint": "^8.10.0",
-    "eslint-plugin-vue": "^9.0.0",
-    "eslint-config-prettier": "^8.1.0",
-    "prettier": "^2.5.1",
-    "@types/node": "^12.20.21",
-    "@intlify/vite-plugin-vue-i18n": "^3.3.1",
-    "@quasar/app-vite": "^1.0.0",
-    "autoprefixer": "^10.4.2",
-    "typescript": "^4.5.4",
-    "@types/project-name-generator": "^2.1.1"
+    "@hey-api/openapi-ts": "^0.88.0",
+    "@intlify/unplugin-vue-i18n": "^11.0.1",
+    "@quasar/app-vite": "^2.4.0",
+    "@typescript-eslint/eslint-plugin": "^8.47.0",
+    "@typescript-eslint/parser": "^8.47.0",
+    "autoprefixer": "^10.4.22",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.6.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3"
   },
   "engines": {
-    "node": "^18 || ^16 || ^14.19",
-    "npm": ">= 6.13.4",
-    "yarn": ">= 1.21.1"
+    "node": ">=24.0.0",
+    "npm": ">=11.0.0",
+    "yarn": ">=4.12.0"
   }
 }
