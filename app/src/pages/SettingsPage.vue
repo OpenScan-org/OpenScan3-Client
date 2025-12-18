@@ -117,7 +117,7 @@
                   icon="autorenew"
                   label="Reinitialize hardware"
                   :loading="hardwareActions.reinitialize"
-                  @click="reinitializeHardware"
+                  @click="handleReinitializeHardware"
                 />
               </div>
               <PowerControls
@@ -769,7 +769,7 @@ async function saveCurrentConfig() {
   }
 }
 
-async function reinitializeHardware() {
+async function handleReinitializeHardware() {
   hardwareActions.reinitialize = true
   try {
     await reinitializeHardware({

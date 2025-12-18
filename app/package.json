@@ -1,14 +1,14 @@
 {
   "name": "openscan3-client",
   "version": "0.0.1",
-  "description": "Frontend for OpenScan3 firmware devices",
+  "description": "Frontend client for OpenScan3 firmware devices",
   "productName": "OpenScan3",
-  "author": "polectron <polectron@gmail.com>",
+  "author": "OpenScan.eu Team <info@openscan.eu>",
   "private": true,
   "scripts": {
     "api:gen": "openapi-ts && node scripts/generate-field-descriptions.mjs",
     "dev": "quasar dev",
-    "lint": "eslint --ext .js,.ts,.vue ./",
+    "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0"
   },
@@ -22,6 +22,7 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@hey-api/openapi-ts": "^0.88.0",
     "@intlify/unplugin-vue-i18n": "^11.0.1",
     "@quasar/app-vite": "^2.4.0",

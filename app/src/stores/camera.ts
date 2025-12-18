@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { apiClient, API_BASE_URL } from 'src/services/apiClient';
 import { getCameras, type Camera } from 'src/generated/api';
 
-const CAMERA_SETTINGS_CHANGE = /^cameras\.([^\.\s]+)\.settings(?:\.|$)/;
+const CAMERA_SETTINGS_CHANGE = /^cameras\.([^.\s]+)\.settings(?:\.|$)/;
 
 function getCameraNamesWithSettingChanges(paths: string[] | null | undefined) {
   const affected = new Set<string>();

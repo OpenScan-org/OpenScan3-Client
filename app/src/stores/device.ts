@@ -178,7 +178,7 @@ export const useDeviceStore = defineStore('device', {
         this.needsSetup = false
         return snapshot
       } catch (error) {
-        const message = (error as any)?.detail?.message
+        const message = (error as { detail?: { message?: string } })?.detail?.message
 
         if (message === 'Device configuration is not loaded.') {
           this.device = null
