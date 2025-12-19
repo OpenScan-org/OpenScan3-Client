@@ -3,7 +3,7 @@
     <div class="q-pa-md">
       <div class="row justify-center q-col-gutter-sm">
         <div class="col-12 col-md-4 col-lg-3">
-          <ScanProjectSection
+          <ScanStartSection
             :project-options="projectsStore.projectNames"
             v-model:selected-project="selectedProject"
             :photo-count="photoCount"
@@ -42,7 +42,7 @@ import { addScanWithDescription } from 'src/generated/api'
 import generateDashedName from 'src/utils/randomName'
 
 import CameraView from 'components/CameraView.vue'
-import ScanProjectSection from 'components/scan/ScanSettingsCard.vue'
+import ScanStartSection from 'components/scan/ScanStartSection.vue'
 import ScanSettingsSection from 'components/scan/ScanSettingsSection.vue'
 import CreateProjectDialog from 'components/project/CreateProjectDialog.vue'
 import { useProjectsStore } from 'src/stores/projects'

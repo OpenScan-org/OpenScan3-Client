@@ -40,15 +40,11 @@
       />
     </div>
 
-    <div class="col-12 col-md-4">
-      <BaseSection title="Picture Quality">
-        <CameraSettings
-          :camera="camera"
-          :camera-options="cameraOptions"
-          v-model:selected-camera-name="selectedCameraNameModel"
-        />
-      </BaseSection>
-    </div>
+    <ScanPictureQualitySection
+      :camera="camera"
+      :camera-options="cameraOptions"
+      v-model:selected-camera-name="selectedCameraNameModel"
+    />
   </div>
 </template>
 
@@ -59,8 +55,7 @@ import { debounce } from 'quasar'
 import ScanQualitySection from 'components/scan/ScanQualitySection.vue'
 import ScanFocusSection from 'components/scan/ScanFocusSection.vue'
 import ScanAdvancedSection from 'components/scan/ScanAdvancedSection.vue'
-import CameraSettings from 'components/camera/CameraSettings.vue'
-import BaseSection from 'components/base/BaseSection.vue'
+import ScanPictureQualitySection from 'components/scan/ScanPictureQualitySection.vue'
 import { updateCameraNameSettings, type CameraSettings as CameraSettingsModel, type ScanSetting } from 'src/generated/api'
 import { apiClient } from 'src/services/apiClient'
 import { useDeviceStore } from 'src/stores/device'

@@ -29,7 +29,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" elevated>
+    <q-drawer v-model="leftDrawerOpen" elevated :width="200">
       <q-list>
         <EssentialLink v-for="link in upperLinks" :key="link.title" v-bind="link" />
         <q-separator />

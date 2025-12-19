@@ -1,13 +1,13 @@
 <template>
-  <BaseSection title="Scan quality">
+  <BaseSection title="Scan Quality">
     <BaseSliderWithInput
       v-model="pointsModel"
-      label="Number of Points"
+      label="Points"
       :slider-min="1"
       :slider-max="300"
       :slider-step="1"
       :slider-markers="false"
-      :slider-marker-labels="[70, 130, 200]"
+      :slider-marker-labels="[50, 130, 300]"
       :input-min="1"
       :input-max="500"
       :tooltip="pointsTooltip"
