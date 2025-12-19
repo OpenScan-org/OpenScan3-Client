@@ -7,6 +7,9 @@ A Quasar Project
 yarn
 # or
 npm install
+
+# or to install versions from package-lock.json:
+npm ci
 ```
 
 ### Start the app in development mode (hot-code reloading, error reporting, etc.)
@@ -34,8 +37,14 @@ npm run format
 
 ### Build the app for production
 ```bash
-quasar build
+npm run build
 ```
+
+### Build and create spa.zip for deployment
+```bash
+npm run build:zip
+```
+This produces `dist/spa.zip`. Requires the `zip` command to be available on the system.
 
 ### Customize the configuration
 See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).

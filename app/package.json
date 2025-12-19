@@ -7,9 +7,12 @@
   "private": true,
   "scripts": {
     "api:gen": "openapi-ts && node scripts/generate-field-descriptions.mjs",
+    "build": "quasar build",
+    "build:zip": "quasar build && npm run zip:spa",
     "dev": "quasar dev",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
+    "zip:spa": "sh -c 'command -v zip >/dev/null 2>&1 || { echo \"zip command not found (required to create spa.zip)\"; exit 1; }; rm -f dist/spa.zip; cd dist/spa && zip -r ../spa.zip .'",
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
