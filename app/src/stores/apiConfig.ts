@@ -2,8 +2,8 @@ import { defineStore } from 'pinia';
 
 export const useApiConfigStore = defineStore('apiConfig', {
   state: () => ({
-    schema: 'http' as 'http' | 'https',
-    host: 'openscan3-alpha.local',
+    schema: (window.location.protocol === 'https:' ? 'https' : 'http') as 'http' | 'https',
+    host: window.location.hostname || 'openscan3-alpha.local',
     port: 8000,
     version: 'v0.5',
     developerMode: false
