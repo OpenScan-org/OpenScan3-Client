@@ -6,10 +6,12 @@ const props = withDefaults(
     icon?: string
     target?: string
     color?: string
+    outline?: boolean
   }>(),
   {
     target: '_blank',
-    color: 'primary'
+    color: 'primary',
+    outline: false
   }
 )
 </script>
@@ -22,6 +24,7 @@ const props = withDefaults(
     :icon="props.icon"
     :target="props.target"
     :color="props.color"
+    :outline="props.outline"
     dense
   />
 </template>

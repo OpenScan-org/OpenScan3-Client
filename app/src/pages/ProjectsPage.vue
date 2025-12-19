@@ -86,7 +86,7 @@ const writeStoredProject = (name: string | null) => {
     } else {
       localStorage.removeItem(PROJECT_STORAGE_KEY)
     }
-  } catch {}
+  } catch { /* ignore storage errors */ }
 }
 
 const SORT_STORAGE_KEY = 'openscan.projectSort'
@@ -118,7 +118,7 @@ const readStoredSort = (): SortState => {
 const writeStoredSort = (value: SortState) => {
   try {
     localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(value))
-  } catch {}
+  } catch { /* ignore storage errors */ }
 }
 
 const selectedProjectName = ref<string | null>(getProjectFromRoute() ?? readStoredProject())

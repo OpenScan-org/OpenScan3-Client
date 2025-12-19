@@ -290,6 +290,10 @@ export const useTaskStore = defineStore('tasks', {
       }
     },
     applyTaskUpdate(task: Task) {
+      if (!task.id) {
+        return
+      }
+
       const timing = this.ensureTaskTiming(task.id)
       const nowMs = Date.now()
 
@@ -310,7 +314,14 @@ export const useTaskStore = defineStore('tasks', {
         return
       }
 
-      this.tasks.splice(index, 1, task)
+      const existing = this.tasks[index]
+      const merged: Task = {
+        ...existing,
+        ...task,
+        progress: { ...existing.progress, ...task.progress },
+        run_kwargs: { ...existing.run_kwargs, ...task.run_kwargs }
+      }
+      this.tasks.splice(index, 1, merged)
     }
   }
 })
