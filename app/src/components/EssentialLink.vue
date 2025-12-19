@@ -11,7 +11,10 @@
     </q-item-section>
 
     <q-item-section>
-      <q-item-label>{{ title }}</q-item-label>
+      <q-item-label>
+        <span>{{ title }}</span>
+        <q-icon v-if="props.badge" name="upgrade" color="primary" size="18px" class="q-ml-xs" />
+      </q-item-label>
     </q-item-section>
 
     <q-item-section v-if="showsExternalIcon" side>
@@ -28,6 +31,7 @@ const props = withDefaults(defineProps<EssentialLinkProps>(), {
   caption: '',
   link: '#',
   icon: '',
+  badge: '',
 });
 
 const usesHref = computed(

@@ -36,4 +36,5 @@ export interface EssentialLinkProps {
   target?: string;
   link?: string;
   icon?: string;
+  badge?: string;
 }

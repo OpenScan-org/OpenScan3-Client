@@ -64,9 +64,9 @@ import EssentialLink from 'components/EssentialLink.vue';
 import type { EssentialLinkProps } from 'components/models';
 import { useDeviceStore } from 'src/stores/device'
 import { useTaskStore } from 'src/stores/tasks'
+import { useVersionStore } from 'src/stores/version'
 import PowerControls from 'components/PowerControls.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
-import openscanLogo from 'src/assets/openscan_black_Rahmen.avif'
 
 const upperLinks: EssentialLinkProps[] = [
   {
@@ -101,14 +101,20 @@ const upperLinks: EssentialLinkProps[] = [
   },
 ];
 
-const lowerLinks: EssentialLinkProps[] = [
+const versionStore = useVersionStore()
+void versionStore.initialize()
+
+const updateBadge = computed(() => versionStore.anyUpdateAvailable ? '!' : '')
+
+const lowerLinks = computed<EssentialLinkProps[]>(() => [
   {
-    title: 'Updater',
+    title: 'Update',
     icon: 'system_update',
     target: '_self',
-    link: '/admin/'
+    link: '/admin/',
+    badge: updateBadge.value
   }
-]
+])
 
 const leftDrawerOpen = ref(true)
 

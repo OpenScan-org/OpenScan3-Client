@@ -4,11 +4,17 @@
       <div class="row q-col-gutter-md">
         <div class="col">
           <div class="text-caption">Frontend</div>
-          <div>{{ appInfoStore.version }}</div>
+          <div>{{ versionStore.frontendVersion }}</div>
+          <div v-if="versionStore.frontendUpdateAvailable" class="text-caption text-positive">
+            Update available: {{ versionStore.latestFrontendVersion }}
+          </div>
         </div>
         <div class="col">
           <div class="text-caption">Firmware</div>
-          <div>{{ firmwareVersion ?? 'Loading...' }}</div>
+          <div>{{ versionStore.firmwareVersion ?? 'Loading...' }}</div>
+          <div v-if="versionStore.firmwareUpdateAvailable" class="text-caption text-positive">
+            Update available: {{ versionStore.latestFirmwareVersion }}
+          </div>
         </div>
         <div class="col">
           <div class="text-caption">API version</div>
@@ -179,40 +185,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { computed } from 'vue';
 import BasePage from 'components/base/BasePage.vue';
 import TextCard from 'components/base/TextCard.vue';
 import BaseLink from 'components/base/BaseLink.vue';
 import { useApiConfigStore } from 'src/stores/apiConfig';
-import { useAppInfoStore } from 'src/stores/appInfo';
-
-interface SoftwareInfo {
-  model: string | null;
-  firmware_version: string;
-}
+import { useVersionStore } from 'src/stores/version';
 
 const apiConfigStore = useApiConfigStore();
-const appInfoStore = useAppInfoStore();
-const firmwareVersion = ref<string | null>(null);
+const versionStore = useVersionStore();
 
 const apiDocsUrl = computed(
   () => apiConfigStore.baseURL.replace(/\/$/, '') + '/docs',
 );
-
-onMounted(async () => {
-  try {
-    const response = await fetch(apiConfigStore.baseURL);
-    if (response.ok) {
-      const data: SoftwareInfo = await response.json();
-      firmwareVersion.value = data.firmware_version;
-    } else {
-      firmwareVersion.value = 'N/A';
-    }
-  } catch (error) {
-    console.error('Failed to fetch software info:', error);
-    firmwareVersion.value = 'N/A';
-  }
-});
 </script>
 
 <style scoped></style>
