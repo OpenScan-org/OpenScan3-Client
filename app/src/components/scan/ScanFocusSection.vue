@@ -9,13 +9,13 @@
     <q-tab-panels v-model="focusModeModel" animated class="q-mt-md">
       <q-tab-panel name="autofocus">
         <div class="text-body2">
-          {{ afDescription }}
+          Autofocus enabled
         </div>
       </q-tab-panel>
       <q-tab-panel name="manual">
         <BaseSliderWithInput
           v-model="manualFocusValueModel"
-          label="Manual Focus (diopters)"
+          label="Focus (diopters)"
           :slider-min="0"
           :slider-max="15"
           :slider-step="0.1"
@@ -40,7 +40,7 @@
         <div class="q-mt-sm">
           <BaseRangeWithInput
             v-model="focusRangeModel"
-            label="Focus Range (diopters)"
+            label="Focus Range"
             :min="0"
             :max="15"
             :step="0.1"

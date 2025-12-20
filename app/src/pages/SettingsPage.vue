@@ -3,359 +3,336 @@
     <div class="q-pa-md">
       <div class="row justify-center q-col-gutter-md">
         <div class="col-12 col-lg-8">
-          <q-card flat bordered class="q-mb-lg">
-            <q-card-section>
-              <div class="text-h6">General</div>
-            </q-card-section>
-            <q-card-section class="q-pt-none">
-              <div class="row q-col-gutter-md">
-                <div class="col-3">
-                  <q-select
-                    v-model="apiConfigForm.schema"
-                    :options="schemaOptions"
-                    label="Schema"
-                    emit-value
-                    map-options
-                  />
+          <div class="row q-col-gutter-md">
+            <div class="col-12 col-md-6">
+              <BaseSection class="q-mb-lg" title="Frontend Settings">
+                <div class="row q-col-gutter-sm">
+                  <div class="col-12 col-md-6">
+                    <q-input v-model="apiConfigForm.host" label="Host/IP" />
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <q-input
+                      v-model.number="apiConfigForm.port"
+                      :disable="!apiConfigForm.developerMode"
+                      type="number"
+                      label="Port"
+                    />
+                  </div>
+                  <div class="col-6 col-md-3">
+                    <q-input v-model="apiConfigForm.version" label="Version" />
+                  </div>
+                  <div class="col-12">
+                    <q-toggle
+                      v-model="apiConfigForm.developerMode"
+                      label="Developer mode (connect directly to port)"
+                      left-label
+                    />
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <BaseButtonSecondary
+                      class="full-width"
+                      icon="restart_alt"
+                      label="Reset"
+                      @click="resetApiConfigToWindow"
+                    />
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <BaseButtonPrimary
+                      class="full-width"
+                      icon="save"
+                      label="Save"
+                      @click="saveApiConfig"
+                    />
+                  </div>
                 </div>
-                <div class="col-4">
-                  <q-input v-model="apiConfigForm.host" label="Host/IP" />
-                </div>
-                <div class="col-2">
-                  <q-input
-                    v-model.number="apiConfigForm.port"
-                    :disable="!apiConfigForm.developerMode"
-                    type="number"
-                    label="Port"
-                  />
-                </div>
-                <div class="col-3">
-                  <q-input v-model="apiConfigForm.version" label="Version" />
-                </div>
-                <div class="col-12">
-                  <q-toggle
-                    v-model="apiConfigForm.developerMode"
-                    label="Developer mode (connect directly to port)"
-                    left-label
-                  />
+              </BaseSection>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <BaseSection class="q-mb-lg" title="Device Settings">
+                <div class="row q-col-gutter-sm items-end">
+                  <div class="col-12">
+                    <BaseSelect
+                      v-model="selectedConfig"
+                      :options="configOptions"
+                      label="Configuration File"
+                      :loading="configOptionsLoading"
+                      emit-value
+                      map-options
+                      behavior="menu"
+                      clearable
+                    />
+                  </div>
+                  <div class="col-6">
+                    <BaseButtonSecondary
+                      class="full-width"
+                      icon="refresh"
+                      label="Reload"
+                      :loading="configOptionsLoading"
+                      @click="loadDeviceConfigs"
+                    />
+                  </div>
+                  <div class="col-6">
+                    <BaseButtonPrimary
+                      class="full-width"
+                      icon="publish"
+                      label="Apply"
+                      :disable="!selectedConfig"
+                      :loading="configApplying"
+                      @click="applySelectedConfig"
+                    />
+                  </div>
                 </div>
 
-                <div class="col-12">
-                  <q-btn
-                    color="primary"
-                    icon="save"
-                    label="Save API Configuration"
-                    @click="saveApiConfig"
-                  />
+                <div class="row q-col-gutter-md q-mt-md">
+                  <div class="col-12">
+                    <q-toggle v-model="detectCameras" label="Detect cameras on reinit" />
+                  </div>
+                  <div class="col-12">
+                    <q-toggle
+                      v-model="saveConfigBeforePowerAction"
+                      label="Save configuration before reboot/shutdown"
+                    />
+                  </div>
                 </div>
 
-                <div class="col-12">
-                  <div class="row q-col-gutter-sm items-end">
-                    <div class="col-12 col-md-8">
-                      <q-select
-                        v-model="selectedConfig"
-                        :options="configOptions"
-                        label="Configuration File"
-                        :loading="configOptionsLoading"
-                        emit-value
-                        map-options
-                        behavior="menu"
-                        clearable
+                <div class="row q-col-gutter-sm q-mt-md">
+                  <div class="col-12 col-sm-6">
+                    <BaseButtonPrimary
+                      class="full-width"
+                      icon="save"
+                      label="Save config"
+                      :loading="hardwareActions.save"
+                      @click="saveCurrentConfig"
+                    />
+                  </div>
+                  <div class="col-12 col-sm-6">
+                    <BaseButtonSecondary
+                      class="full-width"
+                      icon="autorenew"
+                      label="Reinitialize hardware"
+                      :loading="hardwareActions.reinitialize"
+                      @click="handleReinitializeHardware"
+                    />
+                  </div>
+                  <PowerControls
+                    :save-config="saveConfigBeforePowerAction"
+                    v-slot="{ confirmReboot, confirmShutdown, rebooting, shuttingDown }"
+                  >
+                    <div class="col-12 col-sm-6">
+                      <BaseButtonSecondary
+                        class="full-width"
+                        icon="restart_alt"
+                        label="Reboot"
+                        :loading="rebooting"
+                        @click="confirmReboot"
                       />
                     </div>
-                    <div class="col-6 col-md-2">
-                      <q-btn
-                        outline
-                        color="primary"
-                        icon="refresh"
-                        label="Reload"
-                        :loading="configOptionsLoading"
-                        @click="loadDeviceConfigs"
+                    <div class="col-12 col-sm-6">
+                      <BaseButtonSecondary
+                        class="full-width"
+                        icon="power_settings_new"
+                        label="Shutdown"
+                        :loading="shuttingDown"
+                        @click="confirmShutdown"
                       />
                     </div>
-                    <div class="col-6 col-md-2">
-                      <q-btn
-                        color="primary"
-                        icon="publish"
-                        label="Apply"
-                        :disable="!selectedConfig"
-                        :loading="configApplying"
-                        @click="applySelectedConfig"
-                      />
+                  </PowerControls>
+                </div>
+              </BaseSection>
+            </div>
+
+            <div class="col-12 col-md-6">
+              <BaseSection class="q-mb-lg" title="Camera Settings">
+                <div class="row q-col-gutter-md">
+                  <div class="col-12">
+                    <BaseSelect
+                      v-model="selectedCamera"
+                      :options="cameraOptions"
+                      label="Camera"
+                      :loading="cameraOptionsLoading"
+                      emit-value
+                      map-options
+                      behavior="menu"
+                      clearable
+                    />
+                  </div>
+
+                  <div class="col-12" v-if="cameraLoading">
+                    <q-skeleton type="rect" height="150px" />
+                  </div>
+
+                  <template v-else-if="selectedCamera">
+                    <div class="col-12 col-sm-6">
+                      <q-input v-model.number="cameraForm.shutter" type="number" label="Shutter (ms)">
+                        <q-tooltip>{{ cameraSettingDescription('shutter') }}</q-tooltip>
+                      </q-input>
                     </div>
+                    <div class="col-12 col-sm-6">
+                      <q-input v-model.number="cameraForm.gain" type="number" label="Analogue Gain">
+                        <q-tooltip>{{ cameraSettingDescription('gain') }}</q-tooltip>
+                      </q-input>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <q-input v-model.number="cameraForm.saturation" type="number" label="Saturation">
+                        <q-tooltip>{{ cameraSettingDescription('saturation') }}</q-tooltip>
+                      </q-input>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <q-input v-model.number="cameraForm.contrast" type="number" label="Contrast">
+                        <q-tooltip>{{ cameraSettingDescription('contrast') }}</q-tooltip>
+                      </q-input>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <q-input v-model.number="cameraForm.awbg_red" type="number" label="AWBG Red">
+                        <q-tooltip>{{ cameraSettingDescription('awbg_red') }}</q-tooltip>
+                      </q-input>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <q-input v-model.number="cameraForm.awbg_blue" type="number" label="AWBG Blue">
+                        <q-tooltip>{{ cameraSettingDescription('awbg_blue') }}</q-tooltip>
+                      </q-input>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <q-input v-model.number="cameraForm.jpeg_quality" type="number" label="JPEG Quality">
+                        <q-tooltip>{{ cameraSettingDescription('jpeg_quality') }}</q-tooltip>
+                      </q-input>
+                    </div>
+                    <div class="col-12 col-sm-6">
+                      <q-input v-model.number="cameraForm.manual_focus" type="number" label="Manual Focus">
+                        <q-tooltip>{{ cameraSettingDescription('manual_focus') }}</q-tooltip>
+                      </q-input>
+                    </div>
+                    <div class="col-12">
+                      <q-toggle v-model="cameraForm.AF" label="Autofocus">
+                        <q-tooltip>{{ cameraSettingDescription('AF') }}</q-tooltip>
+                      </q-toggle>
+                    </div>
+                  </template>
+                </div>
+                <div class="row justify-end q-gutter-sm q-mt-md">
+                  <div class="col-auto">
+                    <BaseButtonPrimary
+                      icon="save"
+                      label="Save"
+                      :disable="!selectedCamera"
+                      :loading="cameraSaving"
+                      @click="saveCameraSettings"
+                    />
                   </div>
                 </div>
+              </BaseSection>
+            </div>
 
-                <div class="col-12 col-md-6">
-                  <q-toggle v-model="detectCameras" label="Detect cameras on reinit" />
-                </div>
-                <div class="col-12 col-md-6">
-                  <q-toggle
-                    v-model="saveConfigBeforePowerAction"
-                    label="Save configuration before reboot/shutdown"
-                  />
-                </div>
-              </div>
-            </q-card-section>
-            <q-card-actions class="row q-col-gutter-sm" align="right">
-              <div class="col-12 col-md-3">
-                <q-btn
-                  v-ripple
-                  class="full-width"
-                  color="primary"
-                  icon="save"
-                  label="Save config"
-                  :loading="hardwareActions.save"
-                  @click="saveCurrentConfig"
-                />
-              </div>
-              <div class="col-12 col-md-3">
-                <q-btn
-                  v-ripple
-                  class="full-width"
-                  color="warning"
-                  icon="autorenew"
-                  label="Reinitialize hardware"
-                  :loading="hardwareActions.reinitialize"
-                  @click="handleReinitializeHardware"
-                />
-              </div>
-              <PowerControls
-                :save-config="saveConfigBeforePowerAction"
-                v-slot="{ confirmReboot, confirmShutdown, rebooting, shuttingDown }"
-              >
-                <div class="col-12 col-md-3">
-                  <q-btn
-                    v-ripple
-                    class="full-width"
-                    color="secondary"
-                    icon="restart_alt"
-                    label="Reboot"
-                    :loading="rebooting"
-                    @click="confirmReboot"
-                  />
-                </div>
-                <div class="col-12 col-md-3">
-                  <q-btn
-                    v-ripple
-                    class="full-width"
-                    color="negative"
-                    icon="power_settings_new"
-                    label="Shutdown"
-                    :loading="shuttingDown"
-                    @click="confirmShutdown"
-                  />
-                </div>
-              </PowerControls>
-            </q-card-actions>
-          </q-card>
+            <div class="col-12 col-md-6">
+              <BaseSection class="q-mb-lg" title="Lights">
+                <div class="row q-col-gutter-md">
+                  <div class="col-12" v-if="lightNames.length === 0">
+                    <q-banner dense>No lights found.</q-banner>
+                  </div>
 
-          <q-card flat bordered class="q-mb-lg">
-            <q-card-section>
-              <div class="text-h6">Camera Settings</div>
-            </q-card-section>
-            <q-card-section class="q-pt-none">
-              <div class="row q-col-gutter-md">
-                <div class="col-12">
-                  <q-select
-                    v-model="selectedCamera"
-                    :options="cameraOptions"
-                    label="Camera"
-                    :loading="cameraOptionsLoading"
-                    emit-value
-                    map-options
-                    behavior="menu"
-                    clearable
-                  />
+                  <div class="col-12" v-for="lightName in lightNames" :key="lightName">
+                    <q-card flat bordered>
+                      <q-card-section>
+                        <div class="text-subtitle1">{{ lightName }}</div>
+                      </q-card-section>
+                      <q-card-section class="q-pt-none" v-if="lightForms[lightName]">
+                        <div class="row q-col-gutter-sm">
+                          <div class="col-12">
+                            <q-input
+                              v-model="lightForms[lightName].pins"
+                              label="Pins (comma-separated)"
+                            />
+                          </div>
+                        </div>
+                      </q-card-section>
+                      <q-card-actions align="right">
+                        <BaseButtonPrimary
+                          icon="save"
+                          label="Save"
+                          :loading="lightSaving[lightName] === true"
+                          @click="saveLightSettings(lightName)"
+                        />
+                      </q-card-actions>
+                    </q-card>
+                  </div>
                 </div>
+              </BaseSection>
+            </div>
 
-                <div class="col-12" v-if="cameraLoading">
-                  <q-skeleton type="rect" height="150px" />
+            <div class="col-12">
+              <BaseSection class="q-mb-lg" title="Motors">
+                <div class="row q-col-gutter-md">
+                  <div class="col-12" v-if="motorNames.length === 0">
+                    <q-banner dense>No motors found.</q-banner>
+                  </div>
+
+                  <div class="col-12 col-md-6" v-for="motorName in motorNames" :key="motorName">
+                    <q-card flat bordered>
+                      <q-card-section>
+                        <div class="text-subtitle1">{{ motorName }}</div>
+                      </q-card-section>
+                      <q-card-section class="q-pt-none" v-if="motorForms[motorName]">
+                        <div class="row q-col-gutter-md">
+                          <div class="col-12 col-md-6 col-lg-4">
+                            <q-input v-model.number="motorForms[motorName].direction_pin" type="number" label="Direction Pin" />
+                          </div>
+                          <div class="col-12 col-md-6 col-lg-4">
+                            <q-input v-model.number="motorForms[motorName].enable_pin" type="number" label="Enable Pin" />
+                          </div>
+                          <div class="col-12 col-md-6 col-lg-4">
+                            <q-input v-model.number="motorForms[motorName].step_pin" type="number" label="Step Pin" />
+                          </div>
+                          <div class="col-12 col-md-6 col-lg-4">
+                            <q-input v-model.number="motorForms[motorName].acceleration" type="number" label="Acceleration">
+                              <q-tooltip>{{ motorConfigDescription('acceleration') }}</q-tooltip>
+                            </q-input>
+                          </div>
+                          <div class="col-12 col-md-6 col-lg-4">
+                            <q-input v-model.number="motorForms[motorName].max_speed" type="number" label="Max Speed">
+                              <q-tooltip>{{ motorConfigDescription('max_speed') }}</q-tooltip>
+                            </q-input>
+                          </div>
+                          <div class="col-12 col-md-6 col-lg-4">
+                            <q-select
+                              v-model="motorForms[motorName].direction"
+                              :options="directionOptions"
+                              label="Direction"
+                              emit-value
+                              map-options
+                            />
+                          </div>
+                          <div class="col-12 col-md-6 col-lg-4">
+                            <q-input v-model.number="motorForms[motorName].steps_per_rotation" type="number" label="Steps per Rotation">
+                              <q-tooltip>{{ motorConfigDescription('steps_per_rotation') }}</q-tooltip>
+                            </q-input>
+                          </div>
+                          <div class="col-12 col-md-6 col-lg-4">
+                            <q-input v-model.number="motorForms[motorName].min_angle" type="number" label="Min Angle">
+                              <q-tooltip>{{ motorConfigDescription('min_angle') }}</q-tooltip>
+                            </q-input>
+                          </div>
+                          <div class="col-12 col-md-6 col-lg-4">
+                            <q-input v-model.number="motorForms[motorName].max_angle" type="number" label="Max Angle">
+                              <q-tooltip>{{ motorConfigDescription('max_angle') }}</q-tooltip>
+                            </q-input>
+                          </div>
+                        </div>
+                      </q-card-section>
+                      <q-card-actions align="right">
+                        <BaseButtonPrimary
+                          icon="save"
+                          label="Save"
+                          :loading="motorSaving[motorName] === true"
+                          @click="saveMotorSettings(motorName)"
+                        />
+                      </q-card-actions>
+                    </q-card>
+                  </div>
                 </div>
-
-                <template v-else-if="selectedCamera">
-                  <div class="col-6">
-                    <q-input v-model.number="cameraForm.shutter" type="number" label="Shutter (ms)">
-                      <q-tooltip>{{ cameraSettingDescription('shutter') }}</q-tooltip>
-                    </q-input>
-                  </div>
-                  <div class="col-6">
-                    <q-input v-model.number="cameraForm.gain" type="number" label="Analogue Gain">
-                      <q-tooltip>{{ cameraSettingDescription('gain') }}</q-tooltip>
-                    </q-input>
-                  </div>
-                  <div class="col-6">
-                    <q-input v-model.number="cameraForm.saturation" type="number" label="Saturation">
-                      <q-tooltip>{{ cameraSettingDescription('saturation') }}</q-tooltip>
-                    </q-input>
-                  </div>
-                  <div class="col-6">
-                    <q-input v-model.number="cameraForm.contrast" type="number" label="Contrast">
-                      <q-tooltip>{{ cameraSettingDescription('contrast') }}</q-tooltip>
-                    </q-input>
-                  </div>
-                  <div class="col-6">
-                    <q-input v-model.number="cameraForm.awbg_red" type="number" label="AWBG Red">
-                      <q-tooltip>{{ cameraSettingDescription('awbg_red') }}</q-tooltip>
-                    </q-input>
-                  </div>
-                  <div class="col-6">
-                    <q-input v-model.number="cameraForm.awbg_blue" type="number" label="AWBG Blue">
-                      <q-tooltip>{{ cameraSettingDescription('awbg_blue') }}</q-tooltip>
-                    </q-input>
-                  </div>
-                  <div class="col-6">
-                    <q-input v-model.number="cameraForm.jpeg_quality" type="number" label="JPEG Quality">
-                      <q-tooltip>{{ cameraSettingDescription('jpeg_quality') }}</q-tooltip>
-                    </q-input>
-                  </div>
-                  <div class="col-6">
-                    <q-input v-model.number="cameraForm.manual_focus" type="number" label="Manual Focus">
-                      <q-tooltip>{{ cameraSettingDescription('manual_focus') }}</q-tooltip>
-                    </q-input>
-                  </div>
-                  <div class="col-6">
-                    <q-toggle v-model="cameraForm.AF" label="Autofocus">
-                      <q-tooltip>{{ cameraSettingDescription('AF') }}</q-tooltip>
-                    </q-toggle>
-                  </div>
-                </template>
-              </div>
-            </q-card-section>
-            <q-card-actions align="right">
-              <q-btn
-                color="primary"
-                icon="save"
-                label="Save"
-                :disable="!selectedCamera"
-                :loading="cameraSaving"
-                @click="saveCameraSettings"
-              />
-            </q-card-actions>
-          </q-card>
-
-          <q-card flat bordered class="q-mb-lg">
-            <q-card-section>
-              <div class="text-h6">Motors</div>
-            </q-card-section>
-            <q-card-section class="q-pt-none">
-              <div class="row q-col-gutter-md">
-                <div class="col-12" v-if="motorNames.length === 0">
-                  <q-banner dense>No motors found.</q-banner>
-                </div>
-
-                <div class="col-12" v-for="motorName in motorNames" :key="motorName">
-                  <q-card flat bordered>
-                    <q-card-section>
-                      <div class="text-subtitle1">{{ motorName }}</div>
-                    </q-card-section>
-                    <q-card-section class="q-pt-none" v-if="motorForms[motorName]">
-                      <div class="row q-col-gutter-md">
-                        <div class="col-4">
-                          <q-input v-model.number="motorForms[motorName].direction_pin" type="number" label="Direction Pin" />
-                        </div>
-                        <div class="col-4">
-                          <q-input v-model.number="motorForms[motorName].enable_pin" type="number" label="Enable Pin" />
-                        </div>
-                        <div class="col-4">
-                          <q-input v-model.number="motorForms[motorName].step_pin" type="number" label="Step Pin" />
-                        </div>
-                        <div class="col-4">
-                          <q-input v-model.number="motorForms[motorName].acceleration" type="number" label="Acceleration">
-                            <q-tooltip>{{ motorConfigDescription('acceleration') }}</q-tooltip>
-                          </q-input>
-                        </div>
-                        <div class="col-4">
-                          <q-input v-model.number="motorForms[motorName].max_speed" type="number" label="Max Speed">
-                            <q-tooltip>{{ motorConfigDescription('max_speed') }}</q-tooltip>
-                          </q-input>
-                        </div>
-                        <div class="col-4">
-                          <q-select
-                            v-model="motorForms[motorName].direction"
-                            :options="directionOptions"
-                            label="Direction"
-                            emit-value
-                            map-options
-                          />
-                        </div>
-                        <div class="col-4">
-                          <q-input v-model.number="motorForms[motorName].steps_per_rotation" type="number" label="Steps per Rotation">
-                            <q-tooltip>{{ motorConfigDescription('steps_per_rotation') }}</q-tooltip>
-                          </q-input>
-                        </div>
-                        <div class="col-4">
-                          <q-input v-model.number="motorForms[motorName].min_angle" type="number" label="Min Angle">
-                            <q-tooltip>{{ motorConfigDescription('min_angle') }}</q-tooltip>
-                          </q-input>
-                        </div>
-                        <div class="col-4">
-                          <q-input v-model.number="motorForms[motorName].max_angle" type="number" label="Max Angle">
-                            <q-tooltip>{{ motorConfigDescription('max_angle') }}</q-tooltip>
-                          </q-input>
-                        </div>
-                      </div>
-                    </q-card-section>
-                    <q-card-actions align="right">
-                      <q-btn
-                        color="primary"
-                        icon="save"
-                        label="Save"
-                        :loading="motorSaving[motorName] === true"
-                        @click="saveMotorSettings(motorName)"
-                      />
-                    </q-card-actions>
-                  </q-card>
-                </div>
-              </div>
-            </q-card-section>
-          </q-card>
-
-          <q-card flat bordered class="q-mb-lg">
-            <q-card-section>
-              <div class="text-h6">Lights</div>
-            </q-card-section>
-            <q-card-section class="q-pt-none">
-              <div class="row q-col-gutter-md">
-                <div class="col-12" v-if="lightNames.length === 0">
-                  <q-banner dense>No lights found.</q-banner>
-                </div>
-
-                <div class="col-12" v-for="lightName in lightNames" :key="lightName">
-                  <q-card flat bordered>
-                    <q-card-section>
-                      <div class="text-subtitle1">{{ lightName }}</div>
-                    </q-card-section>
-                    <q-card-section class="q-pt-none" v-if="lightForms[lightName]">
-                      <div class="row q-col-gutter-md">
-                        <div class="col-6">
-                          <q-input v-model.number="lightForms[lightName].pin" type="number" label="Pin" clearable />
-                        </div>
-                        <div class="col-6">
-                          <q-input
-                            v-model="lightForms[lightName].pins"
-                            label="Pins (comma-separated)"
-                          />
-                        </div>
-                        <div class="col-12">
-                          <q-toggle v-model="lightForms[lightName].pwm" label="PWM enabled" />
-                        </div>
-                      </div>
-                    </q-card-section>
-                    <q-card-actions align="right">
-                      <q-btn
-                        color="primary"
-                        icon="save"
-                        label="Save"
-                        :loading="lightSaving[lightName] === true"
-                        @click="saveLightSettings(lightName)"
-                      />
-                    </q-card-actions>
-                  </q-card>
-                </div>
-              </div>
-            </q-card-section>
-          </q-card>
+              </BaseSection>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -366,10 +343,14 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useQuasar } from 'quasar'
-import { API_BASE_URL, apiClient, updateApiClientConfig } from 'src/services/apiClient'
+import { apiClient, updateApiClientConfig } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
 import { useDeviceStore } from 'src/stores/device'
 import PowerControls from 'src/components/PowerControls.vue'
+import BaseSection from 'components/base/BaseSection.vue'
+import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
+import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
+import BaseSelect from 'components/base/BaseSelect.vue'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import {
   listConfigFiles,
@@ -401,11 +382,6 @@ const apiConfigForm = reactive({
   developerMode: apiConfigStore.developerMode
 })
 
-const schemaOptions = [
-  { label: 'HTTP', value: 'http' },
-  { label: 'HTTPS', value: 'https' }
-]
-
 type DeviceConfigOption = { label: string; value: string; meta?: DeviceConfigListItem }
 
 type DeviceConfigListItem = {
@@ -415,6 +391,8 @@ type DeviceConfigListItem = {
   model: string | null
   shield: string | null
 }
+
+const DEFAULT_CONFIG_FILENAME = 'device_config.json'
 
 const configOptions = ref<DeviceConfigOption[]>([])
 const configOptionsLoading = ref(false)
@@ -472,9 +450,7 @@ type MotorForm = {
 }
 
 type LightForm = {
-  pin: number | null
   pins: string
-  pwm: boolean
 }
 
 const directionOptions = [
@@ -512,9 +488,7 @@ function mapMotorConfig(config: MotorConfig | null | undefined): MotorForm {
 
 function mapLightConfig(config: LightConfig | null | undefined): LightForm {
   return {
-    pin: config?.pin ?? null,
-    pins: (config?.pins ?? []).join(', '),
-    pwm: config?.pwm ?? false
+    pins: (config?.pins ?? []).join(', ')
   }
 }
 
@@ -526,19 +500,36 @@ async function loadDeviceConfigs() {
       configs?: DeviceConfigListItem[]
     }
 
-    const options = (response?.configs ?? []).map((item) => ({
-      label: item.name ?? item.filename,
-      value: item.filename,
-      meta: item
-    }))
+    const isDefaultConfig = (item: DeviceConfigListItem) => {
+      const filenameMatches = item.filename === DEFAULT_CONFIG_FILENAME
+      const pathMatches = item.path?.includes(`/${DEFAULT_CONFIG_FILENAME}`) ?? false
+      return filenameMatches || pathMatches
+    }
+
+    const options = (response?.configs ?? []).map((item) => {
+      const optionLabelBase = item.name ?? item.filename
+      const optionLabel = isDefaultConfig(item) ? `${optionLabelBase} (current)` : optionLabelBase
+
+      return {
+        label: optionLabel,
+        value: item.filename,
+        meta: item
+      }
+    })
 
     configOptions.value = options
 
-    if (options.length > 0) {
-      selectedConfig.value = options[0].value
-    } else {
-      selectedConfig.value = null
-    }
+    const defaultOption = options.find((option) => {
+      if (!option.meta) {
+        return option.value === DEFAULT_CONFIG_FILENAME
+      }
+
+      return (
+        option.meta.filename === DEFAULT_CONFIG_FILENAME ||
+        option.meta.path?.includes(`/${DEFAULT_CONFIG_FILENAME}`)
+      )
+    })
+    selectedConfig.value = defaultOption?.value ?? options[0]?.value ?? null
   } catch (error) {
     configOptions.value = []
     selectedConfig.value = null
@@ -666,11 +657,8 @@ async function saveLightSettings(name: string) {
       .filter((value) => !Number.isNaN(value))
 
     const payload: Record<string, unknown> = {
-      pwm: form.pwm
+      pins: pinsArray
     }
-
-    payload.pin = form.pin ?? null
-    payload.pins = pinsArray
 
     const updated = await updateLightNameSettings({
       client: apiClient,
@@ -756,6 +744,16 @@ watch(
 async function saveApiConfig() {
   apiConfigStore.setConfig(apiConfigForm)
   updateApiClientConfig()
+}
+
+function resetApiConfigToWindow() {
+  const loc = window.location
+  const defaultPort = loc.port ? Number(loc.port) : loc.protocol === 'https:' ? 443 : 80
+  apiConfigForm.schema = (loc.protocol.replace(':', '') as 'http' | 'https') ?? 'http'
+  apiConfigForm.host = loc.hostname
+  apiConfigForm.port = defaultPort
+  apiConfigForm.version = apiConfigStore.version
+  apiConfigForm.developerMode = false
 }
 
 async function saveCurrentConfig() {

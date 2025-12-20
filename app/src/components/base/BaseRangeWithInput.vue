@@ -15,6 +15,7 @@ const props = withDefaults(
     inputMin?: number
     inputMax?: number
     inputWidth?: string
+    containerWidth?: string
     tooltip?: string
     rules?: ((val: number) => true | string)[]
     disabled?: boolean
@@ -28,6 +29,7 @@ const props = withDefaults(
     color: 'primary',
     trackColor: 'grey-3',
     inputWidth: '80px',
+    containerWidth: '100%',
     rules: () => [(val: number) => (val >= 0) || 'Please enter a number < or equal to 0'],
     disabled: false
   }
@@ -61,52 +63,81 @@ const inputMax = computed(() => props.inputMax ?? props.max)
 </script>
 
 <template>
-  <div class="q-pa-sm">
-    <label v-if="label" class="q-field__label">{{ label }}</label>
-    <div class="row items-center q-gutter-sm">
-      <q-input
-        type="number"
-        v-model.number="minValue"
-        :min="inputMin"
-        :max="inputMax"
-        :step="step"
-        dense
-        outlined
-        :style="`width: ${inputWidth}`"
-        label="Min"
-        :disable="disabled"
-      />
-      <q-range
-        v-model="range"
-        :min="min"
-        :max="max"
-        :step="step"
-        :markers="markers"
-        :marker-labels="markerLabels"
-        :color="color"
-        :track-color="trackColor"
-        :disable="disabled"
-        class="col"
-        dense
-        style="min-width: 200px"
-      >
-        <q-tooltip v-if="tooltip">{{ tooltip }}</q-tooltip>
-      </q-range>
-      <q-input
-        type="number"
-        v-model.number="maxValue"
-        :min="inputMin"
-        :max="inputMax"
-        :step="step"
-        dense
-        outlined
-        :style="`width: ${inputWidth}`"
-        label="Max"
-        :disable="disabled"
-      />
-    </div>
+  <div class="range-wrapper q-pa-sm" :style="{ width: containerWidth }">
+    <label v-if="label" class="range-label text-body2">
+      {{ label }}
+      <q-tooltip v-if="tooltip">{{ tooltip }}</q-tooltip>
+    </label>
+    <q-input
+      type="number"
+      v-model.number="minValue"
+      :min="inputMin"
+      :max="inputMax"
+      :step="step"
+      dense
+      outlined
+      class="range-input"
+      :style="`width: ${inputWidth}`"
+      label="Min"
+      :disable="disabled"
+    >
+      <q-tooltip v-if="tooltip">{{ tooltip }}</q-tooltip>
+    </q-input>
+    <q-range
+      v-model="range"
+      :min="min"
+      :max="max"
+      :step="step"
+      :markers="markers"
+      :marker-labels="markerLabels"
+      :color="color"
+      :track-color="trackColor"
+      :disable="disabled"
+      class="range-track"
+      dense
+    >
+      <q-tooltip v-if="tooltip">{{ tooltip }}</q-tooltip>
+    </q-range>
+    <q-input
+      type="number"
+      v-model.number="maxValue"
+      :min="inputMin"
+      :max="inputMax"
+      :step="step"
+      dense
+      outlined
+      class="range-input"
+      :style="`width: ${inputWidth}`"
+      label="Max"
+      :disable="disabled"
+    >
+      <q-tooltip v-if="tooltip">{{ tooltip }}</q-tooltip>
+    </q-input>
   </div>
 </template>
 
 <style scoped>
+.range-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.range-label {
+  flex: 0 0 100%;
+  white-space: nowrap;
+  margin-bottom: 4px;
+}
+
+.range-input {
+  flex: 0 0 auto;
+}
+
+.range-track {
+  flex: 1 1 160px;
+  min-width: 0;
+  max-width: 100%;
+}
 </style>

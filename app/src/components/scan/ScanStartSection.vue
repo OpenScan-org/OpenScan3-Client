@@ -1,6 +1,6 @@
 <template>
   <q-form @submit.prevent="emit('submit')">
-    <BaseSection title="Choose or create project">
+    <BaseSection title="Start scan" description="Select a project or create a new one and start a scan.">
       <SelectWithButton
         v-model="selectedProjectModel"
         :options="projectOptions"
