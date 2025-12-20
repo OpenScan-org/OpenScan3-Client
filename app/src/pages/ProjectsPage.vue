@@ -69,26 +69,6 @@ const router = useRouter()
 
 const getProjectFromRoute = () => (typeof route.query.project === 'string' ? route.query.project : null)
 
-const PROJECT_STORAGE_KEY = 'openscan.selectedProject'
-
-const readStoredProject = () => {
-  try {
-    return localStorage.getItem(PROJECT_STORAGE_KEY)
-  } catch {
-    return null
-  }
-}
-
-const writeStoredProject = (name: string | null) => {
-  try {
-    if (name) {
-      localStorage.setItem(PROJECT_STORAGE_KEY, name)
-    } else {
-      localStorage.removeItem(PROJECT_STORAGE_KEY)
-    }
-  } catch { /* ignore storage errors */ }
-}
-
 const SORT_STORAGE_KEY = 'openscan.projectSort'
 
 type SortField = 'name' | 'date'
@@ -121,7 +101,7 @@ const writeStoredSort = (value: SortState) => {
   } catch { /* ignore storage errors */ }
 }
 
-const selectedProjectName = ref<string | null>(getProjectFromRoute() ?? readStoredProject())
+const selectedProjectName = ref<string | null>(getProjectFromRoute())
 const sortState = ref<SortState>(readStoredSort())
 const projectsListOpen = ref(false)
 const isMobile = computed(() => $q.screen.lt.md)
@@ -162,7 +142,6 @@ const updateRouteProject = (name: string | null) => {
 const selectProject = (name: string) => {
   selectedProjectName.value = name
   updateRouteProject(name)
-  writeStoredProject(name)
   if (isMobile.value) {
     projectsListOpen.value = false
   }
@@ -173,7 +152,6 @@ const createProject = async (data: { name: string; description?: string }) => {
     await projectsStore.createProject(data.name, data.description)
     selectedProjectName.value = data.name
     updateRouteProject(data.name)
-    writeStoredProject(data.name)
   } catch (error) {
     console.error('Could not create project.', error)
   }
@@ -188,23 +166,17 @@ const loadProjects = async () => {
   const routeProject = getProjectFromRoute()
   if (routeProject && projectsStore.projects.some((project) => project.name === routeProject)) {
     selectedProjectName.value = routeProject
-    writeStoredProject(routeProject)
     return
   }
 
-  const storedProject = readStoredProject()
-  if (storedProject && projectsStore.projects.some((project) => project.name === storedProject)) {
-    selectedProjectName.value = storedProject
-    updateRouteProject(storedProject)
-    return
+  const currentSelection = selectedProjectName.value
+  const stillExists =
+    currentSelection && projectsStore.projects.some((project) => project.name === currentSelection)
+
+  if (!stillExists) {
+    selectedProjectName.value = null
   }
 
-  if (projectsStore.projects.length && !selectedProjectName.value) {
-    const fallback = projectsStore.projects[0].name
-    selectedProjectName.value = fallback
-    updateRouteProject(fallback)
-    writeStoredProject(fallback)
-  }
 }
 
 const updateSortState = (value: SortState) => {

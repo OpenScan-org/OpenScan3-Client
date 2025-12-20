@@ -165,15 +165,12 @@ onMounted(async () => {
 
   selectedCameraName.value = cameraStore.selectedCamera || ''
 
-  // Set default project if available
-  if (projectsStore.projects.length === 0) {
-    selectedProject.value = generateDashedName()
-  }
-
   // Set project from query parameter if provided and exists
   const projectFromQuery = route.query.project as string
   if (projectFromQuery && projectsStore.projects.some(p => p.name === projectFromQuery)) {
     selectedProject.value = projectFromQuery
+  } else {
+    selectedProject.value = ''
   }
 })
 </script>
