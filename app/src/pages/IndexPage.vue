@@ -193,7 +193,7 @@ onMounted(() => {
                       icon="keyboard_arrow_up"
                       size="lg"
                       :loading="isMoving"
-                      @click="moveMotor(ROTOR_MOTOR, 10)"
+                      @click="moveMotor(ROTOR_MOTOR, -10)"
                     />
                   </div>
                   <div class="joystick-row">
@@ -222,7 +222,7 @@ onMounted(() => {
                       icon="keyboard_arrow_down"
                       size="lg"
                       :loading="isMoving"
-                      @click="moveMotor(ROTOR_MOTOR, -10)"
+                      @click="moveMotor(ROTOR_MOTOR, 10)"
                     />
                   </div>
                 </div>
