@@ -12,7 +12,12 @@
           />
         </div>
         <div class="col-12 col-md-8 col-lg-9">
-          <camera-view :scanning="scanning" :camera="selectedCamera" />
+          <camera-view
+            :scanning="scanning"
+            :camera="selectedCamera"
+            :camera-options="cameraStore.cameraOptions"
+            v-model:selectedCameraName="selectedCameraName"
+          />
         </div>
       </div>
 

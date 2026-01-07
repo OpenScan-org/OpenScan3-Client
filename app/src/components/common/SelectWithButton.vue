@@ -61,8 +61,12 @@ const onButtonClick = () => {
         :icon="props.buttonIcon"
         :type="props.buttonType"
         :aria-label="props.buttonAriaLabel"
+        size="md"
+        dense
         @click="onButtonClick"
-      />
+      >
+        <q-tooltip anchor="bottom middle" self="top middle">Create new project</q-tooltip>
+      </BaseButtonIconSecondary>
     </div>
   </div>
 </template>

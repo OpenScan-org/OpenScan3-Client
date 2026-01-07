@@ -31,15 +31,6 @@
 
       <BaseSection title="Advanced Picture Settings" class="q-mt-sm">
         <div class="row q-col-gutter-sm">
-          <div class="col-12">
-            <q-select
-              v-model="selectedCameraNameModel"
-              :options="cameraOptions"
-              label="Camera"
-              dense
-              outlined
-            />
-          </div>
 
           <div class="col-12">
             <BaseSliderWithInput
@@ -159,8 +150,6 @@ type CameraInfo = {
 
 interface Props {
   camera?: CameraInfo;
-  cameraOptions?: CameraOption[];
-  selectedCameraName?: string;
   shutterMin?: number;
   shutterMax?: number;
   shutterStep?: number;
@@ -168,15 +157,10 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   camera: null,
-  cameraOptions: () => [],
   shutterMin: 1,
   shutterMax: 1000,
   shutterStep: 1,
 });
-
-const emit = defineEmits<{
-  (e: 'update:selectedCameraName', value: string): void;
-}>();
 
 const deviceStore = useDeviceStore();
 void deviceStore.ensureConnected();
@@ -191,12 +175,6 @@ const cameraSettings = computed<CameraSettingsModel | null>(() =>
     ? (deviceStore.getCamera(props.camera.value)?.settings ?? null)
     : null,
 );
-
-const cameraOptions = computed<CameraOption[]>(() => props.cameraOptions ?? []);
-const selectedCameraNameModel = computed({
-  get: () => props.selectedCameraName ?? '',
-  set: (value: string) => emit('update:selectedCameraName', value),
-});
 
 const sliderMinMs = computed(() => props.shutterMin);
 const sliderMaxMs = computed(() => props.shutterMax);
