@@ -39,17 +39,23 @@
 
     <q-page-container>
       <div class="row justify-center q-ma-md">
-        <div class="col-12 col-md-5 col-lg-5">
-          <q-banner
-            v-if="showSetupBanner"
-            class="text-black bg-amber-4"
-            inline-actions
-          >
-              Your OpenScan device is not configured yet.
-            <template v-slot:action>
+        <div class="col-12 col-md-5 col-lg-5 q-gutter-y-sm">
+          <BaseBanner v-if="showSetupBanner">
+            Your OpenScan device is not configured yet.
+            <template #action>
               <BaseButtonPrimary label="Setup device" @click="openSetupPage" />
             </template>
-          </q-banner>
+          </BaseBanner>
+          <BaseBanner
+            v-else-if="showConnectionIssueBanner"
+            background-class="bg-amber-4"
+            text-class="text-black"
+          >
+            No connection to your OpenScan device.
+            <template #action>
+              <BaseButtonPrimary label="Check settings" @click="openSettingsPage" />
+            </template>
+          </BaseBanner>
         </div>
       </div>
       <router-view />
@@ -62,11 +68,12 @@ import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import EssentialLink from 'components/EssentialLink.vue';
 import type { EssentialLinkProps } from 'components/models';
-import { useDeviceStore } from 'src/stores/device'
-import { useTaskStore } from 'src/stores/tasks'
-import { useVersionStore } from 'src/stores/version'
-import PowerControls from 'components/PowerControls.vue'
-import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
+import { useDeviceStore } from 'src/stores/device';
+import { useTaskStore } from 'src/stores/tasks';
+import { useVersionStore } from 'src/stores/version';
+import PowerControls from 'components/PowerControls.vue';
+import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue';
+import BaseBanner from 'components/base/BaseBanner.vue';
 
 const upperLinks: EssentialLinkProps[] = [
   {
@@ -130,6 +137,9 @@ const route = useRoute()
 const showSetupBanner = computed(
   () => deviceStore.needsSetup && route.path !== '/setup'
 )
+const showConnectionIssueBanner = computed(
+  () => deviceStore.hasConnectionIssue && !showSetupBanner.value
+)
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
@@ -137,6 +147,10 @@ function toggleLeftDrawer() {
 
 function openSetupPage() {
   void router.push('/setup')
+}
+
+function openSettingsPage() {
+  void router.push('/settings')
 }
  </script>
 

@@ -19,6 +19,7 @@ interface DeviceStoreState {
   status: DeviceStoreStatus
   error: string | null
   needsSetup: boolean
+  hasConnectionIssue: boolean
 }
 
 let socket: WebSocket | null = null
@@ -34,7 +35,8 @@ export const useDeviceStore = defineStore('device', {
     lastHeartbeat: null,
     status: 'idle',
     error: null,
-    needsSetup: false
+    needsSetup: false,
+    hasConnectionIssue: false
   }),
   getters: {
     isReady: (state) => state.status === 'open' && !!state.device,
@@ -68,8 +70,10 @@ export const useDeviceStore = defineStore('device', {
 
         try {
           await this.connect()
+          this.hasConnectionIssue = false
         } catch (error) {
           console.warn('Device websocket reconnect failed, retrying...', error)
+          this.hasConnectionIssue = true
           this.scheduleReconnect()
         }
       }, delay)
@@ -79,7 +83,13 @@ export const useDeviceStore = defineStore('device', {
         return
       }
 
-      await this.connect()
+      try {
+        await this.connect()
+        this.hasConnectionIssue = false
+      } catch (error) {
+        this.hasConnectionIssue = true
+        throw error
+      }
 
       if (!this.device) {
         await this.refreshFromRest()
@@ -130,6 +140,7 @@ export const useDeviceStore = defineStore('device', {
           }
           this.error = 'WebSocket error'
           this.status = 'error'
+          this.hasConnectionIssue = true
           this.scheduleReconnect()
           if (!settled) {
             settled = true
@@ -150,12 +161,14 @@ export const useDeviceStore = defineStore('device', {
           }
 
           this.status = 'closed'
+          this.hasConnectionIssue = true
           this.scheduleReconnect()
         }
       })
 
       try {
         await connectPromise
+        this.hasConnectionIssue = false
       } finally {
         connectPromise = null
       }
@@ -169,6 +182,7 @@ export const useDeviceStore = defineStore('device', {
       }
       reconnectAttempts = 0
       this.status = 'closed'
+      this.hasConnectionIssue = true
     },
     async refreshFromRest() {
       try {
