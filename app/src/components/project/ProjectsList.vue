@@ -9,27 +9,67 @@
         <q-separator class="q-mt-sm q-mb-sm" />
         <div class="row items-center">
           <q-checkbox
-            dense
-            label="Select all"
+            size="sm"
+            class="q-ml-xs"
             :model-value="allProjectsSelected"
             :indeterminate="isPartialSelection"
             :disable="!props.projects.length"
             @update:model-value="toggleSelectAll"
-          />
-          <q-space />
-          <q-btn flat icon="sort_by_alpha" @click="toggleNameSort" :color="sortBy.field === 'name' ? 'primary' : ''">
-            <q-icon name="arrow_upward" v-if="sortBy.field === 'name' && sortBy.order === 'asc'" size="sm" class="q-ml-xs" />
-            <q-icon name="arrow_downward" v-if="sortBy.field === 'name' && sortBy.order === 'desc'" size="sm" class="q-ml-xs" />
+          >
+            <q-tooltip>Select all</q-tooltip>
+          </q-checkbox>
+
+          <q-separator vertical class="q-mx-md" v-if="selectedProjectsSet.size > 0" />
+
+          <q-btn
+            v-if="selectedProjectsSet.size > 0"
+            flat
+            round
+            dense
+            color="negative"
+            icon="delete"
+            @click="confirmDeleteSelected"
+          >
+            <q-tooltip>Delete {{ selectedProjectsSet.size }} selected project(s)</q-tooltip>
           </q-btn>
+
           <q-space />
-          <q-btn flat icon="schedule" @click="toggleDateSort" :color="sortBy.field === 'date' ? 'primary' : ''">
-            <q-icon name="arrow_upward" v-if="sortBy.field === 'date' && sortBy.order === 'asc'" size="sm" class="q-ml-xs" />
-            <q-icon name="arrow_downward" v-if="sortBy.field === 'date' && sortBy.order === 'desc'" size="sm" class="q-ml-xs" />
+
+          <div class="row q-gutter-sm">
+            <q-btn flat round dense icon="sort_by_alpha" @click="toggleNameSort" :color="sortBy.field === 'name' ? 'primary' : ''">
+              <q-icon name="arrow_upward" v-if="sortBy.field === 'name' && sortBy.order === 'asc'" size="xs" class="q-ml-xs" />
+              <q-icon name="arrow_downward" v-if="sortBy.field === 'name' && sortBy.order === 'desc'" size="xs" class="q-ml-xs" />
+              <q-tooltip>Sort by name</q-tooltip>
+            </q-btn>
+
+            <q-btn flat round dense icon="schedule" @click="toggleDateSort" :color="sortBy.field === 'date' ? 'primary' : ''">
+              <q-icon name="arrow_upward" v-if="sortBy.field === 'date' && sortBy.order === 'asc'" size="xs" class="q-ml-xs" />
+              <q-icon name="arrow_downward" v-if="sortBy.field === 'date' && sortBy.order === 'desc'" size="xs" class="q-ml-xs" />
+              <q-tooltip>Sort by date</q-tooltip>
+            </q-btn>
+          </div>
+
+          <q-space />
+
+          <q-btn flat round dense icon="more_vert" class="q-ml-sm">
+            <q-menu>
+              <q-list dense style="min-width: 150px">
+                <q-item clickable v-close-popup @click="inverse_project_selection" :disable="!props.projects.length">
+                  <q-item-section>Inverse selection</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item clickable v-close-popup @click="confirmDeleteEmpty" :disable="zeroScanCount === 0">
+                  <q-item-section :class="zeroScanCount > 0 ? 'text-negative' : ''">
+                    Delete empty projects ({{ zeroScanCount }})
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
           </q-btn>
         </div>
       </q-card-section>
       <q-separator />
-      <q-list>
+      <q-list separator>
         <ProjectListItem
           v-for="project in sortedProjects"
           :key="project.name"
@@ -40,23 +80,7 @@
           @toggle:bulk-select="(checked) => toggle_project_bulk(project.name, checked)"
         />
       </q-list>
-      <q-card-section class="row q-gutter-sm justify-start">
-        <q-btn
-          outline
-          dense
-          color="primary"
-          label="Inverse selection"
-          :disable="!props.projects.length"
-          @click="inverse_project_selection"
-        />
-      </q-card-section>
     </q-card>
-    <ProjectBulkActions
-      class="q-mt-lg"
-      :projects="props.projects"
-      :selected-projects="props.selectedProjects"
-      @deleted="handleBulkDeleted"
-    />
     <CreateProjectDialog
       v-model="showCreateDialog"
       @create-project="create_new_project"
@@ -66,10 +90,11 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { type Project } from 'src/generated/api'
+import { useQuasar } from 'quasar'
+import { deleteProject, type Project } from 'src/generated/api'
+import { apiClient } from 'src/services/apiClient'
 import CreateProjectDialog from './CreateProjectDialog.vue'
 import ProjectListItem from './ProjectListItem.vue'
-import ProjectBulkActions from './ProjectBulkActions.vue'
 
 type SortField = 'name' | 'date'
 type SortOrder = 'asc' | 'desc'
@@ -85,6 +110,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const $q = useQuasar()
+const working = ref(false)
+
 const selected_project_name = computed({
   get: () => props.selectedProjectName,
   set: (value) => emit('select:project', value)
@@ -121,6 +149,11 @@ const selectedProjectsSet = computed(() => new Set(props.selectedProjects ?? [])
 const allProjectsSelected = computed(() => props.projects.length > 0 && selectedProjectsSet.value.size === props.projects.length)
 const isPartialSelection = computed(() => selectedProjectsSet.value.size > 0 && !allProjectsSelected.value)
 
+const zeroScanProjects = computed(() => props.projects.filter((project) => !project.scans || Object.keys(project.scans).length === 0))
+const zeroScanCount = computed(() => zeroScanProjects.value.length)
+const selectedProjectList = computed(() => props.projects.filter((project) => selectedProjectsSet.value.has(project.name)))
+const selectedCount = computed(() => selectedProjectList.value.length)
+
 const setSort = (value: SortState) => {
   sortBy.value = value
 }
@@ -144,14 +177,6 @@ const toggleNameSort = () => {
 const select_project = (name: string) => {
   selected_project_name.value = name
   emit('select:project', name)
-}
-
-const download_project = (name: string) => {
-  emit('download:project', name)
-}
-
-const delete_project = (name: string) => {
-  emit('delete:project', name)
 }
 
 const create_new_project = (data: { name: string; description?: string }) => {
@@ -187,8 +212,46 @@ const toggleSelectAll = (checked: boolean) => {
   emit('update:selected-projects', [])
 }
 
-const handleBulkDeleted = () => {
-  emit('update:selected-projects', [])
-  emit('bulk:deleted')
+const deleteProjects = async (projectsToDelete: Project[]) => {
+  if (!projectsToDelete.length) {
+    return
+  }
+  working.value = true
+  try {
+    for (const project of projectsToDelete) {
+      await deleteProject({ path: { project_name: project.name }, client: apiClient })
+    }
+    emit('bulk:deleted')
+  } catch (error) {
+    console.error('Could not complete bulk delete.', error)
+    $q.notify({ type: 'negative', message: 'Failed to delete some projects' })
+  } finally {
+    working.value = false
+  }
+}
+
+const confirmDeleteEmpty = () => {
+  $q.dialog({
+    title: 'Delete empty projects',
+    message: `Delete ${zeroScanCount.value} project${zeroScanCount.value === 1 ? '' : 's'} without scans?`,
+    cancel: true,
+    persistent: true
+  }).onOk(async () => {
+    await deleteProjects(zeroScanProjects.value)
+  })
+}
+
+const confirmDeleteSelected = () => {
+  if (!selectedCount.value) {
+    return
+  }
+  $q.dialog({
+    title: 'Delete selected projects',
+    message: `Delete ${selectedCount.value} selected project${selectedCount.value === 1 ? '' : 's'}?`,
+    cancel: true,
+    persistent: true
+  }).onOk(async () => {
+    await deleteProjects(selectedProjectList.value)
+  })
 }
 </script>

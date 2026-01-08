@@ -3,8 +3,59 @@
     <div class="scans-nested q-pa-md">
       <div class="row items-center justify-between q-mb-sm scans-header">
         <div class="row items-center">
-          <q-icon name="folder_open" color="grey-7" class="q-mr-sm" />
+          <q-checkbox
+            dense
+            :model-value="allScansSelected"
+            :indeterminate="isPartialSelection"
+            :disable="!scans.length"
+            @update:model-value="toggleSelectAll"
+            class="q-mr-sm"
+          />
           <div class="text-subtitle2 text-grey-7">Scans</div>
+        </div>
+        <div class="row items-center q-gutter-xs">
+          <q-btn
+            v-if="selectedScansSet.size > 0"
+            flat
+            round
+            dense
+            color="negative"
+            icon="delete"
+            @click="requestDeleteSelected"
+          >
+            <q-tooltip>Delete {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
+          </q-btn>
+          <q-btn
+            v-if="selectedScansSet.size > 0"
+            flat
+            round
+            dense
+            color="primary"
+            icon="download"
+            @click="requestDownloadSelected"
+          >
+            <q-tooltip>Download {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
+          </q-btn>
+          <q-btn flat round dense icon="more_vert">
+            <q-menu>
+              <q-list dense style="min-width: 150px">
+                <q-item clickable v-close-popup @click="inverse_scan_selection" :disable="!scans.length">
+                  <q-item-section>Inverse selection</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item clickable v-close-popup @click="requestDeleteErrored" :disable="erroredCount === 0">
+                  <q-item-section :class="erroredCount > 0 ? 'text-negative' : ''">
+                    Delete errored ({{ erroredCount }})
+                  </q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup @click="requestDeleteCancelled" :disable="cancelledCount === 0">
+                  <q-item-section :class="cancelledCount > 0 ? 'text-grey-7' : ''">
+                    Delete cancelled ({{ cancelledCount }})
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-btn>
         </div>
       </div>
       <q-list separator dense>
@@ -72,65 +123,6 @@
           </q-item-section>
         </q-item>
       </q-list>
-      <div class="row justify-start q-gutter-sm q-mt-sm">
-        <q-btn
-          outline
-          dense
-          color="primary"
-          label="Select all"
-          :disable="!scans.length"
-          @click="select_all_scans"
-        />
-        <q-btn
-          outline
-          dense
-          color="primary"
-          label="Inverse selection"
-          :disable="!scans.length"
-          @click="inverse_scan_selection"
-        />
-      </div>
-      <div class="row justify-start q-gutter-sm q-mt-sm">
-        <BaseButtonSecondary
-          color="negative"
-          unelevated
-          label="selected"
-          icon="delete"
-          :disable="!selectedScansSet.size"
-          @click="requestDeleteSelected"
-        >
-          <q-tooltip>Delete the selected scans</q-tooltip>
-        </BaseButtonSecondary>
-        <BaseButtonSecondary
-          color="negative"
-          outline
-          label="errored"
-          icon="delete"
-          :disable="!erroredCount"
-          @click="requestDeleteErrored"
-        >
-          <q-tooltip>Delete scans with error status</q-tooltip>
-        </BaseButtonSecondary>
-        <BaseButtonSecondary
-          color="negative"
-          outline
-          label="cancelled"
-          icon="delete"
-          :disable="!cancelledCount"
-          @click="requestDeleteCancelled"
-        >
-          <q-tooltip>Delete cancelled scans</q-tooltip>
-        </BaseButtonSecondary>
-        <BaseButtonPrimary
-          color="primary"
-          unelevated
-          label="Download selected"
-          :disable="!selectedScansSet.size"
-          @click="requestDownloadSelected"
-        >
-          <q-tooltip>Download all selected scans</q-tooltip>
-        </BaseButtonPrimary>
-      </div>
     </div>
   </div>
 </template>
@@ -140,8 +132,6 @@ import { computed } from 'vue'
 import { type Scan } from 'src/generated/api'
 import { API_BASE_URL } from 'src/services/apiClient'
 import { useTaskStore } from 'src/stores/tasks'
-import BaseButtonPrimary from 'src/components/base/BaseButtonPrimary.vue'
-import BaseButtonSecondary from 'src/components/base/BaseButtonSecondary.vue'
 
 interface ScansListProp {
   scans: Scan[]
@@ -171,6 +161,9 @@ const scans = computed<Scan[]>(() => {
 })
 
 const selectedScansSet = computed(() => new Set(props.selectedScans ?? []))
+const allScansSelected = computed(() => props.scans.length > 0 && selectedScansSet.value.size === props.scans.length)
+const isPartialSelection = computed(() => selectedScansSet.value.size > 0 && !allScansSelected.value)
+
 const erroredStatuses = new Set(['failed', 'error'])
 const erroredCount = computed(() => scans.value.filter((scan) => erroredStatuses.has(scan.status ?? '')).length)
 const cancelledCount = computed(() => scans.value.filter((scan) => scan.status === 'cancelled').length)
@@ -267,6 +260,14 @@ const toggle_scan_selection = (index: number, checked: boolean) => {
 
 const select_all_scans = () => {
   emit('update:selected-scans', scans.value.map((scan) => scan.index))
+}
+
+const toggleSelectAll = (checked: boolean) => {
+  if (checked) {
+    select_all_scans()
+  } else {
+    emit('update:selected-scans', [])
+  }
 }
 
 const inverse_scan_selection = () => {
