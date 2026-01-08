@@ -4,8 +4,10 @@ import { useQuasar } from 'quasar'
 
 import { useCameraStore } from 'src/stores/camera'
 import { useDeviceStore } from 'src/stores/device'
+import { useProjectsStore } from 'src/stores/projects'
 import BaseButtonIconPrimary from 'components/base/BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
+import RecentProjectsList from 'src/components/project/RecentProjectsList.vue'
 import { apiClient } from 'src/services/apiClient'
 import {
   toggleLight,
@@ -20,6 +22,7 @@ import { getOrientationTransform } from 'src/utils/orientation'
 const $q = useQuasar()
 const cameraStore = useCameraStore()
 const deviceStore = useDeviceStore()
+const projectsStore = useProjectsStore()
 
 const isMoving = ref(false)
 const isLightBusy = ref(false)
@@ -155,6 +158,7 @@ async function moveHome() {
 onMounted(() => {
   cameraStore.fetchCameras()
   deviceStore.ensureConnected()
+  projectsStore.fetchProjects()
 })
 </script>
 
@@ -175,7 +179,10 @@ onMounted(() => {
     </div>
 
     <div class="content-wrapper q-pa-md">
-      <div class="row q-col-gutter-md justify-center">
+      <div class="row q-col-gutter-md justify-center items-start">
+        <div class="col-12 col-md-4">
+          <RecentProjectsList />
+        </div>
         <div class="col-12 col-md-4">
           <q-card flat bordered class="playground-card">
             <q-card-section>
