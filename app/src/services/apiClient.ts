@@ -16,5 +16,6 @@ export function updateApiClientConfig() {
 
 updateApiClientConfig()
 
-// Export the old API_BASE_URL for backward compatibility, but it's now computed
-export const API_BASE_URL = apiConfigStore.baseURL
+export function getApiBaseUrl() {
+  return apiConfigStore.baseURL
+}

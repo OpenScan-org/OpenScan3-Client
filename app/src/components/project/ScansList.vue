@@ -130,7 +130,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { type Scan } from 'src/generated/api'
-import { API_BASE_URL } from 'src/services/apiClient'
+import { getApiBaseUrl } from 'src/services/apiClient'
 import { useTaskStore } from 'src/stores/tasks'
 
 interface ScansListProp {
@@ -240,7 +240,7 @@ const download_scan = (index: number) => {
   try {
     const params = new URLSearchParams()
     params.append('scan_indices', index.toString())
-    const downloadUrl = `${API_BASE_URL}projects/${encodeURIComponent(props.project_name)}/scans/zip?${params.toString()}`
+    const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(props.project_name)}/scans/zip?${params.toString()}`
     window.open(downloadUrl, '_blank')
     emit('download:scan', { project_name: props.project_name, scan_index: index })
   } catch (error) {

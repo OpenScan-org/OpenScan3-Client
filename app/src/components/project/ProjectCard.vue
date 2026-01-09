@@ -55,7 +55,7 @@
 import { computed, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
-import { apiClient, API_BASE_URL } from 'src/services/apiClient'
+import { apiClient, getApiBaseUrl } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
 import { deleteProject, uploadProjectToCloud, deleteScan, pauseScan, resumeScan, cancelScan, startFocusStacking, type Project, type Scan } from 'src/generated/api'
 import BaseButtonPrimary from 'src/components/base/BaseButtonPrimary.vue'
@@ -128,7 +128,7 @@ const handleBulkDownloadSelected = (data: { project_name: string; scan_indices: 
     try {
         const params = new URLSearchParams()
         data.scan_indices.forEach((index) => params.append('scan_indices', index.toString()))
-        const downloadUrl = `${API_BASE_URL}projects/${encodeURIComponent(data.project_name)}/scans/zip?${params.toString()}`
+        const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(data.project_name)}/scans/zip?${params.toString()}`
         window.open(downloadUrl, '_blank')
     } catch (error) {
         console.error('Could not download selected scans.', error)
@@ -186,7 +186,7 @@ const confirm_upload = () => {
 
 const confirm_download = () => {
     try {
-        const downloadUrl = `${API_BASE_URL}projects/${encodeURIComponent(props.project.name)}/zip`
+        const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(props.project.name)}/zip`
         window.open(downloadUrl, '_blank')
     } catch (error) {
         console.error('Could not download project.', error)
