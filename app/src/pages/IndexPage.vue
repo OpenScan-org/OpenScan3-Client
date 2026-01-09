@@ -180,10 +180,7 @@ onMounted(() => {
 
     <div class="content-wrapper q-pa-md">
       <div class="row q-col-gutter-md justify-center items-start">
-        <div class="col-12 col-md-4">
-          <RecentProjectsList />
-        </div>
-        <div class="col-12 col-md-4">
+        <div class="col-12 col-md-6">
           <q-card flat bordered class="playground-card">
             <q-card-section>
               <div class="column items-center q-gutter-md">
@@ -192,7 +189,9 @@ onMounted(() => {
                   size="lg"
                   :loading="isLightBusy"
                   @click="handleToggleLight"
-                />
+                >
+                  <q-tooltip anchor="bottom middle" self="top middle">Toggle ring light</q-tooltip>
+                </BaseButtonIconPrimary>
 
                 <div class="joystick-grid">
                   <div class="joystick-row">
@@ -201,7 +200,9 @@ onMounted(() => {
                       size="lg"
                       :loading="isMoving"
                       @click="moveMotor(ROTOR_MOTOR, -10)"
-                    />
+                    >
+                      <q-tooltip anchor="bottom middle" self="top middle">Move rotor up</q-tooltip>
+                    </BaseButtonIconPrimary>
                   </div>
                   <div class="joystick-row">
                     <BaseButtonIconPrimary
@@ -209,20 +210,26 @@ onMounted(() => {
                       size="lg"
                       :loading="isMoving"
                       @click="moveMotor(TURNTABLE_MOTOR, -20)"
-                    />
+                    >
+                      <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable left</q-tooltip>
+                    </BaseButtonIconPrimary>
                     <BaseButtonIconSecondary
                       icon="home"
                       size="lg"
                       :loading="isHoming"
                       :dense="false"
                       @click="moveHome"
-                    />
+                    >
+                      <q-tooltip anchor="bottom middle" self="top middle">Return to home position</q-tooltip>
+                    </BaseButtonIconSecondary>
                     <BaseButtonIconPrimary
                       icon="keyboard_arrow_right"
                       size="lg"
                       :loading="isMoving"
                       @click="moveMotor(TURNTABLE_MOTOR, 20)"
-                    />
+                    >
+                      <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable right</q-tooltip>
+                    </BaseButtonIconPrimary>
                   </div>
                   <div class="joystick-row">
                     <BaseButtonIconPrimary
@@ -230,12 +237,20 @@ onMounted(() => {
                       size="lg"
                       :loading="isMoving"
                       @click="moveMotor(ROTOR_MOTOR, 10)"
-                    />
+                    >
+                      <q-tooltip anchor="bottom middle" self="top middle">Move rotor down</q-tooltip>
+                    </BaseButtonIconPrimary>
                   </div>
                 </div>
               </div>
             </q-card-section>
           </q-card>
+        </div>
+      </div>
+
+      <div class="row q-col-gutter-md q-mt-md justify-center items-start">
+        <div class="col-12 col-md-6">
+          <RecentProjectsList />
         </div>
       </div>
     </div>
