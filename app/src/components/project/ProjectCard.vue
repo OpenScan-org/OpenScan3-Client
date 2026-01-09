@@ -1,17 +1,17 @@
 <template>
     <div :class="detail ? 'col-12' : 'col-6'">
         <q-card class="project-card">
-            <q-card-section class="row items-start justify-between">
-                <div>
+            <q-card-section>
+                <div class="row items-start justify-between">
                     <div class="row items-center q-gutter-x-sm">
                         <div class="text-h6">{{ project.name }}</div>
                         <q-btn flat round dense color="negative" icon="delete" size="sm" @click="confirm_delete">
                             <q-tooltip>Delete this project</q-tooltip>
                         </q-btn>
                     </div>
-                    <div class="text-body2 text-grey-7">{{ project.description || 'No description' }}</div>
+                    <div class="text-subtitle2 text-grey-7">{{ displayDate }}</div>
                 </div>
-                <div class="text-subtitle2 text-grey-7">{{ displayDate }}</div>
+                <div class="text-body2 text-grey-7 q-mt-sm">{{ project.description || 'No description' }}</div>
             </q-card-section>
             <q-card-section class="row justify-center q-gutter-sm">
                 <BaseButtonSecondary
