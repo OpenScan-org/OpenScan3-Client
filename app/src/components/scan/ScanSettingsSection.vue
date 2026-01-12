@@ -230,7 +230,53 @@ const getScanSettings = () => {
   return settings
 }
 
+const applySettings = (scanSettings: ScanSetting, cameraSettings: CameraSettingsModel | null) => {
+  // Apply Scan Settings
+  if (scanSettings.points !== undefined) points.value = scanSettings.points
+  
+  if (scanSettings.path_method) {
+    const found = pathMethods.find(p => p.value === scanSettings.path_method)
+    if (found) pathMethod.value = found
+  }
+  
+  if (scanSettings.image_format && imageFormats.includes(scanSettings.image_format)) {
+    imageFormat.value = scanSettings.image_format
+  }
+  
+  if (scanSettings.min_theta !== undefined) minTheta.value = scanSettings.min_theta
+  if (scanSettings.max_theta !== undefined) maxTheta.value = scanSettings.max_theta
+  if (scanSettings.optimize_path !== undefined) optimizePath.value = scanSettings.optimize_path
+  if (scanSettings.optimization_algorithm !== undefined) optimizationAlgorithm.value = scanSettings.optimization_algorithm
+  
+  if (scanSettings.focus_stacks !== undefined) focusStacks.value = scanSettings.focus_stacks
+  if (scanSettings.focus_range && Array.isArray(scanSettings.focus_range) && scanSettings.focus_range.length === 2) {
+    focusRange.value = { min: scanSettings.focus_range[0], max: scanSettings.focus_range[1] }
+  }
+
+  // Apply Camera Settings (Focus)
+  if (cameraSettings) {
+    if (cameraSettings.AF !== undefined && cameraSettings.AF !== null) {
+      afValue.value = cameraSettings.AF
+    }
+    if (cameraSettings.manual_focus !== undefined && cameraSettings.manual_focus !== null) {
+      manualFocusValue.value = cameraSettings.manual_focus
+    }
+
+    // Determine Focus Mode
+    if (afValue.value) {
+      focusMode.value = 'autofocus'
+    } else if (scanSettings.focus_stacks && scanSettings.focus_stacks > 1) {
+      // If stack count is > 1, prefer stacking mode if AF is off
+      focusMode.value = 'stacking'
+      enableFocusStacking.value = true
+    } else {
+      focusMode.value = 'manual'
+      enableFocusStacking.value = false
+    }
+  }
+}
+
 const getPhotoCount = () => photoCount.value
 
-defineExpose({ getScanSettings, getPhotoCount })
+defineExpose({ getScanSettings, getPhotoCount, applySettings })
 </script>

@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiClient } from 'src/services/apiClient'
 import { addScanWithDescription } from 'src/generated/api'
@@ -53,12 +53,14 @@ import CreateProjectDialog from 'components/project/CreateProjectDialog.vue'
 import { useProjectsStore } from 'src/stores/projects'
 import { useCameraStore } from 'src/stores/camera'
 import { useTaskStore } from 'src/stores/tasks'
+import { useScanTemplateStore } from 'src/stores/scanTemplate'
 const route = useRoute()
 const router = useRouter()
 
 const projectsStore = useProjectsStore()
 const cameraStore = useCameraStore()
 const taskStore = useTaskStore()
+const scanTemplateStore = useScanTemplateStore()
 
 const selectedCameraName = ref<string>('')
 const selectedProject = ref('')
@@ -170,12 +172,27 @@ onMounted(async () => {
 
   selectedCameraName.value = cameraStore.selectedCamera || ''
 
+  // Set camera from query parameter if provided and exists
+  const cameraFromQuery = route.query.camera as string
+  if (cameraFromQuery && cameraStore.cameraOptions.some(c => c.value === cameraFromQuery)) {
+    selectedCameraName.value = cameraFromQuery
+  }
+
   // Set project from query parameter if provided and exists
   const projectFromQuery = route.query.project as string
   if (projectFromQuery && projectsStore.projects.some(p => p.name === projectFromQuery)) {
     selectedProject.value = projectFromQuery
   } else {
     selectedProject.value = ''
+  }
+
+  // Apply template settings if available
+  if (scanTemplateStore.hasTemplate()) {
+    await nextTick()
+    if (scanSettingsSectionRef.value && scanTemplateStore.scanSettings) {
+      scanSettingsSectionRef.value.applySettings(scanTemplateStore.scanSettings, scanTemplateStore.cameraSettings)
+      scanTemplateStore.clearTemplate()
+    }
   }
 })
 </script>

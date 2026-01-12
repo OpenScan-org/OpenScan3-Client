@@ -62,6 +62,7 @@
         <q-item
           v-for="scan in scans"
           :key="scan.index"
+          class="items-start"
         >
           <q-item-section avatar>
             <q-checkbox
@@ -81,11 +82,42 @@
             {{ get_scan_photos_info(scan) }}
           </div>
           <div class="text-caption text-grey-8">
-            Created: {{ format_date(scan.created) }}<span v-if="scan.duration && scan.duration > 0"> • Duration: {{ format_duration(scan.duration) }}</span><span v-if="scan.last_updated"> • Last Updated: {{ format_date(scan.last_updated) }}</span>
+            Created: {{ format_date(scan.created) }}<span v-if="scan.duration && scan.duration > 0"> • Duration: {{ format_duration(scan.duration) }}</span>
           </div>
-          <div v-if="scan.camera_name" :class="'text-caption text-grey-8'">
-            Camera: {{ scan.camera_name }}
+          <div class="row items-center q-gutter-x-sm text-caption text-grey-8">
+            <div v-if="scan.camera_name">
+              Camera: {{ scan.camera_name }}
+            </div>
+            <div class="cursor-pointer text-primary" @click.stop="toggleSettings(scan.index)">
+              {{ isExpanded(scan.index) ? 'Hide Settings' : 'Show Settings' }}
+            </div>
+            <div class="text-grey-5">•</div>
+            <div class="cursor-pointer text-primary" @click.stop="createScanFromSettings(scan)">
+              New Scan with this Settings
+            </div>
           </div>
+          
+          <q-slide-transition>
+            <div v-show="isExpanded(scan.index)" class="row q-mt-sm q-col-gutter-md">
+              <div class="col-12 col-md-6">
+                <div class="text-caption text-weight-bold q-mb-xs">Scan Settings</div>
+                <div class="text-caption text-grey-8 bg-grey-2 q-pa-sm rounded-borders" style="white-space: pre-wrap; word-break: break-all;">
+                  <div v-for="(value, key) in scan.settings" :key="key">
+                    <span class="text-weight-medium">{{ key }}:</span> {{ value }}
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6" v-if="scan.camera_settings">
+                <div class="text-caption text-weight-bold q-mb-xs">Camera Settings</div>
+                <div class="text-caption text-grey-8 bg-grey-2 q-pa-sm rounded-borders" style="white-space: pre-wrap; word-break: break-all;">
+                  <div v-for="(value, key) in scan.camera_settings" :key="key">
+                    <span class="text-weight-medium">{{ key }}:</span> {{ value }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </q-slide-transition>
+
           <div v-if="scan.description" :class="'text-caption text-grey-8'">
             Description: {{ scan.description }}
           </div>
@@ -128,10 +160,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { computed, ref } from 'vue'
 import { type Scan } from 'src/generated/api'
 import { getApiBaseUrl } from 'src/services/apiClient'
 import { useTaskStore } from 'src/stores/tasks'
+import { useScanTemplateStore } from 'src/stores/scanTemplate'
 
 interface ScansListProp {
   scans: Scan[]
@@ -143,6 +177,8 @@ interface ScansListProp {
 const props = defineProps<ScansListProp>()
 const emit = defineEmits(['select:scan', 'delete:scan', 'pause:scan', 'resume:scan', 'download:scan', 'stack:scan', 'cancel:scan', 'create:scan', 'update:selected-scans', 'bulk:delete-selected', 'bulk:delete-status', 'bulk:download-selected'])
 const taskStore = useTaskStore()
+const scanTemplateStore = useScanTemplateStore()
+const router = useRouter()
 
 const scans = computed<Scan[]>(() => {
   return props.scans.map((scan) => {
@@ -168,6 +204,18 @@ const erroredStatuses = new Set(['failed', 'error'])
 const erroredCount = computed(() => scans.value.filter((scan) => erroredStatuses.has(scan.status ?? '')).length)
 const cancelledCount = computed(() => scans.value.filter((scan) => scan.status === 'cancelled').length)
 
+const expandedScanIndices = ref(new Set<number>())
+const toggleSettings = (index: number) => {
+  const next = new Set(expandedScanIndices.value)
+  if (next.has(index)) {
+    next.delete(index)
+  } else {
+    next.add(index)
+  }
+  expandedScanIndices.value = next
+}
+const isExpanded = (index: number) => expandedScanIndices.value.has(index)
+
 const format_date = (value?: string) => {
   if (!value) {
     return '–'
@@ -192,7 +240,7 @@ const get_scan_photos_info = (scan: Scan) => {
   if (photos <= 0) {
     return null
   }
-  return `Positions: ${scan.settings.points} • Focus Stacks: ${scan.settings.focus_stacks} • Photos: ${photos}`
+  return `Photos: ${photos} (Positions: ${scan.settings.points}, Focus Stacks: ${scan.settings.focus_stacks})`
 }
 
 const get_status_icon = (status?: string) => {
@@ -217,6 +265,11 @@ const get_status_color = (status?: string) => {
     case 'cancelled': return 'grey'
     default: return 'grey'
   }
+}
+
+const createScanFromSettings = (scan: Scan) => {
+  scanTemplateStore.setTemplate(scan.settings, scan.camera_settings)
+  void router.push({ path: '/scan', query: { project: props.project_name, camera: scan.camera_name || undefined } })
 }
 
 const select_scan = (index: number) => {
