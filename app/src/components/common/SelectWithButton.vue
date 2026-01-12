@@ -16,19 +16,36 @@ const props = withDefaults(
     buttonIcon?: string
     buttonType?: 'button' | 'submit' | 'reset'
     buttonAriaLabel?: string
+    buttonTooltip?: string
+    buttonDisable?: boolean
+    showPrimaryButton?: boolean
+    secondaryButtonIcon?: string
+    secondaryButtonType?: 'button' | 'submit' | 'reset'
+    secondaryButtonAriaLabel?: string
+    secondaryButtonTooltip?: string
+    secondaryButtonDisable?: boolean
+    showSecondaryButton?: boolean
   }>(),
   {
     options: () => [],
     outlined: true,
     dense: true,
     buttonIcon: 'add',
-    buttonType: 'button'
+    buttonType: 'button',
+    buttonTooltip: 'Create new project',
+    buttonDisable: false,
+    showPrimaryButton: true,
+    secondaryButtonIcon: 'delete',
+    secondaryButtonType: 'button',
+    secondaryButtonDisable: false,
+    showSecondaryButton: false
   }
 )
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: unknown): void
   (e: 'button-click'): void
+  (e: 'secondary-button-click'): void
 }>()
 
 const attrs = useAttrs()
@@ -40,6 +57,10 @@ const value = computed({
 
 const onButtonClick = () => {
   emit('button-click')
+}
+
+const onSecondaryButtonClick = () => {
+  emit('secondary-button-click')
 }
 </script>
 
@@ -56,17 +77,40 @@ const onButtonClick = () => {
         hide-bottom-space
       />
     </div>
-    <div class="col-auto select-with-button__button">
+    <div
+      v-if="props.showPrimaryButton || props.showSecondaryButton"
+      class="col-auto select-with-button__button row no-wrap items-center"
+    >
       <BaseButtonIconSecondary
+        v-if="props.showPrimaryButton"
         :icon="props.buttonIcon"
         :type="props.buttonType"
         :aria-label="props.buttonAriaLabel"
         size="md"
         dense
+        :disable="props.buttonDisable"
         @click="onButtonClick"
       >
-        <q-tooltip anchor="bottom middle" self="top middle">Create new project</q-tooltip>
+        <q-tooltip v-if="props.buttonTooltip" anchor="bottom middle" self="top middle">
+          {{ props.buttonTooltip }}
+        </q-tooltip>
       </BaseButtonIconSecondary>
+      <div v-if="props.showSecondaryButton" class="q-ml-xs">
+        <BaseButtonIconSecondary
+          :icon="props.secondaryButtonIcon"
+          :type="props.secondaryButtonType"
+          :aria-label="props.secondaryButtonAriaLabel"
+          size="md"
+          dense
+          outline
+          :disable="props.secondaryButtonDisable"
+          @click="onSecondaryButtonClick"
+        >
+          <q-tooltip v-if="props.secondaryButtonTooltip" anchor="bottom middle" self="top middle">
+            {{ props.secondaryButtonTooltip }}
+          </q-tooltip>
+        </BaseButtonIconSecondary>
+      </div>
     </div>
   </div>
 </template>

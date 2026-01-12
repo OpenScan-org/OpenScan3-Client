@@ -135,6 +135,7 @@ import {
   fieldDescriptions,
   getFieldDescription,
 } from 'src/generated/api/fieldDescriptions';
+import { fieldDefaults } from 'src/generated/api/fieldDefaults';
 
 type CameraOption = {
   label: string;
@@ -447,6 +448,70 @@ async function persistOrientationFlag(value: number) {
 const debouncedPersistOrientationFlag = debounce((value: number) => {
   void persistOrientationFlag(value);
 }, 300);
+
+const resetToDefaults = () => {
+  const defaults = fieldDefaults.CameraSettings;
+  applyCameraSettings(defaults);
+};
+
+const applyCameraSettings = (settings: Partial<CameraSettingsModel> | null | undefined) => {
+  if (!settings) {
+    return;
+  }
+
+  const assignNumeric = (value: number | null | undefined, assign: (val: number) => void) => {
+    if (value === undefined || value === null) {
+      return;
+    }
+    assign(value);
+  };
+
+  assignNumeric(settings.shutter, (value) => {
+    shutterValue.value = value;
+    void persistShutter(value);
+  });
+  assignNumeric(settings.saturation, (value) => {
+    saturationValue.value = value;
+    void persistSaturation(value);
+  });
+  assignNumeric(settings.contrast, (value) => {
+    contrastValue.value = value;
+    void persistContrast(value);
+  });
+  assignNumeric(settings.gain, (value) => {
+    gainValue.value = value;
+    void persistGain(value);
+  });
+  assignNumeric(settings.awbg_red, (value) => {
+    awbgRedValue.value = value;
+    void persistAwbgRed(value);
+  });
+  assignNumeric(settings.awbg_blue, (value) => {
+    awbgBlueValue.value = value;
+    void persistAwbgBlue(value);
+  });
+  assignNumeric(settings.jpeg_quality, (value) => {
+    jpegQualityValue.value = value;
+    void persistJpegQuality(value);
+  });
+  assignNumeric(settings.orientation_flag, (value) => {
+    orientationFlagValue.value = value;
+    void persistOrientationFlag(value);
+  });
+};
+
+const getCameraSettingsSnapshot = (): CameraSettingsModel => ({
+  shutter: shutterValue.value,
+  saturation: saturationValue.value,
+  contrast: contrastValue.value,
+  gain: gainValue.value,
+  awbg_red: awbgRedValue.value,
+  awbg_blue: awbgBlueValue.value,
+  jpeg_quality: jpegQualityValue.value,
+  orientation_flag: orientationFlagValue.value,
+});
+
+defineExpose({ resetToDefaults, applyCameraSettings, getCameraSettingsSnapshot });
 </script>
 
 <style scoped>

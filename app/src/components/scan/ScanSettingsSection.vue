@@ -41,6 +41,7 @@
     </div>
 
     <ScanPictureQualitySection
+      ref="scanPictureQualitySectionRef"
       :camera="camera"
       :camera-options="cameraOptions"
       v-model:selected-camera-name="selectedCameraNameModel"
@@ -60,6 +61,7 @@ import { updateCameraNameSettings, type CameraSettings as CameraSettingsModel, t
 import { apiClient } from 'src/services/apiClient'
 import { useDeviceStore } from 'src/stores/device'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
+import { fieldDefaults } from 'src/generated/api/fieldDefaults'
 
 type CameraOption = { label: string; value: string; orientationFlag?: number | null }
 
@@ -211,6 +213,54 @@ const debouncedPersistManualFocus = debounce((value: number) => {
   void persistManualFocus(value)
 }, 300)
 
+const scanPictureQualitySectionRef = ref<InstanceType<typeof ScanPictureQualitySection> | null>(null)
+
+const resetToDefaults = () => {
+  const scanDefaults = fieldDefaults.ScanSetting
+  const cameraDefaults = fieldDefaults.CameraSettings
+
+  // Reset Scan Settings
+  if (scanDefaults.points !== undefined) points.value = scanDefaults.points
+  if (scanDefaults.min_theta !== undefined) minTheta.value = scanDefaults.min_theta
+  if (scanDefaults.max_theta !== undefined) maxTheta.value = scanDefaults.max_theta
+  if (scanDefaults.optimize_path !== undefined) optimizePath.value = scanDefaults.optimize_path
+  if (scanDefaults.optimization_algorithm !== undefined) optimizationAlgorithm.value = scanDefaults.optimization_algorithm
+  
+  if (scanDefaults.focus_stacks !== undefined) focusStacks.value = scanDefaults.focus_stacks
+  if (scanDefaults.focus_range && Array.isArray(scanDefaults.focus_range) && scanDefaults.focus_range.length === 2) {
+    focusRange.value = { min: scanDefaults.focus_range[0], max: scanDefaults.focus_range[1] }
+  }
+
+  // Reset Camera Settings (Focus)
+  if (cameraDefaults.AF !== undefined) {
+    afValue.value = cameraDefaults.AF
+    void persistAF(cameraDefaults.AF)
+  }
+  if (cameraDefaults.manual_focus !== undefined) {
+    manualFocusValue.value = cameraDefaults.manual_focus
+    void persistManualFocus(cameraDefaults.manual_focus)
+  }
+
+  // Update Focus Mode based on defaults
+  if (cameraDefaults.AF) {
+    focusMode.value = 'autofocus'
+    enableFocusStacking.value = false
+  } else {
+    // If AF is off, check if stacking should be enabled by default
+    const stackCount = scanDefaults.focus_stacks ?? 1
+    if (stackCount > 1) {
+      focusMode.value = 'stacking'
+      enableFocusStacking.value = true
+    } else {
+      focusMode.value = 'manual'
+      enableFocusStacking.value = false
+    }
+  }
+
+  // Trigger child component reset
+  scanPictureQualitySectionRef.value?.resetToDefaults()
+}
+
 const getScanSettings = () => {
   const settings: ScanSetting = {
     path_method: pathMethod.value.value as 'fibonacci' | 'spiral',
@@ -273,10 +323,30 @@ const applySettings = (scanSettings: ScanSetting, cameraSettings: CameraSettings
       focusMode.value = 'manual'
       enableFocusStacking.value = false
     }
+    scanPictureQualitySectionRef.value?.applyCameraSettings(cameraSettings)
   }
 }
 
 const getPhotoCount = () => photoCount.value
 
-defineExpose({ getScanSettings, getPhotoCount, applySettings })
+const getCameraSettingsSnapshot = (): CameraSettingsModel => {
+  const pictureSnapshot = scanPictureQualitySectionRef.value?.getCameraSettingsSnapshot() ?? {
+    shutter: fieldDefaults.CameraSettings.shutter,
+    saturation: fieldDefaults.CameraSettings.saturation,
+    contrast: fieldDefaults.CameraSettings.contrast,
+    gain: fieldDefaults.CameraSettings.gain,
+    awbg_red: fieldDefaults.CameraSettings.awbg_red,
+    awbg_blue: fieldDefaults.CameraSettings.awbg_blue,
+    jpeg_quality: fieldDefaults.CameraSettings.jpeg_quality,
+    orientation_flag: fieldDefaults.CameraSettings.orientation_flag
+  }
+
+  return {
+    ...pictureSnapshot,
+    AF: afValue.value,
+    manual_focus: manualFocusValue.value
+  }
+}
+
+defineExpose({ getScanSettings, getPhotoCount, applySettings, resetToDefaults, getCameraSettingsSnapshot })
 </script>
