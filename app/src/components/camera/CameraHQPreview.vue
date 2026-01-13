@@ -6,7 +6,15 @@
       </div>
     </div>
     <div v-else class="hq-preview__stage">
-      <div class="hq-preview__image-wrapper">
+      <div
+        class="hq-preview__image-wrapper"
+        :class="{ 'is-clickable': canEmitPreviewClick }"
+        :tabindex="canEmitPreviewClick ? 0 : -1"
+        role="button"
+        @click="handleImageClick"
+        @keydown.enter.prevent="handleImageClick"
+        @keydown.space.prevent="handleImageClick"
+      >
         <template v-if="imageUrl && !hasError">
           <img
             :key="imageUrl"
@@ -62,6 +70,9 @@ export type CameraHQPreviewExposed = {
 }
 
 const props = defineProps<CameraHQPreviewProps>()
+const emit = defineEmits<{
+  (e: 'preview-click'): void
+}>()
 
 const cameraStore = useCameraStore()
 const previewSettingsStore = usePreviewSettingsStore()
@@ -73,6 +84,7 @@ const previewImage = ref<HTMLImageElement | null>(null)
 const imageLoaded = ref(false)
 const showHeatmap = ref(false)
 const imageDimensions = ref<{ width: number; height: number } | null>(null)
+const canEmitPreviewClick = computed(() => Boolean(imageUrl.value) && imageLoaded.value)
 
 const imageUrl = computed(() => {
   if (!props.camera?.value) {
@@ -131,6 +143,13 @@ function onImageError() {
 
 function setHeatmapActive(active: boolean) {
   showHeatmap.value = active
+}
+
+function handleImageClick() {
+  if (!canEmitPreviewClick.value) {
+    return
+  }
+  emit('preview-click')
 }
 
 function updateImageDimensions() {
@@ -203,6 +222,10 @@ defineExpose<CameraHQPreviewExposed>({
   justify-content: center;
   background: #0000ff;
   overflow: hidden;
+}
+
+.hq-preview__image-wrapper.is-clickable {
+  cursor: pointer;
 }
 
 .hq-preview__image {

@@ -69,6 +69,14 @@
               Highlights image features detected by photogrammetry. Ideally only the object shows red areas.
             </q-tooltip>
           </BaseButtonSecondary>
+          <BaseButtonIconSecondary
+            icon="download"
+            size="sm"
+            :disable="!canDownloadHqPhoto"
+            @click="downloadHqPhoto"
+          >
+            <q-tooltip anchor="bottom middle" self="top middle">Download HQ preview</q-tooltip>
+          </BaseButtonIconSecondary>
           <BaseSelect
             class="camera-view__toolbar-select"
             v-model="selectedCameraNameModel"
@@ -86,41 +94,204 @@
       <div class="camera-surface">
         <div class="camera-surface__stack" ref="stackRef">
           <CameraFastPreview
+            class="camera-surface__fast-preview"
             ref="fastPreviewRef"
             :camera="camera"
             :active="showFastPreview"
           />
-          <CameraHistogram :image-element="hqPreviewImageElement" :image-loaded="hqPreviewImageLoaded" />
+          <CameraHistogram
+            class="camera-surface__histogram"
+            :image-element="hqPreviewImageElement"
+            :image-loaded="hqPreviewImageLoaded"
+          />
         </div>
 
         <div class="camera-surface__hq">
           <CameraHQPreview
+            class="camera-surface__hq-preview"
             ref="hqPreviewRef"
             :camera="camera"
             :scanning="scanning"
             :max-height="stackHeight"
+            @preview-click="openFullPreview"
           />
         </div>
       </div>
     </div>
   </q-card>
+  <q-dialog v-model="fullPreviewDialogVisible">
+    <q-card class="full-preview-dialog">
+      <q-card-section class="full-preview-dialog__header">
+        <div class="full-preview-dialog__title">
+          {{ props.camera?.label ?? 'HQ preview' }}
+        </div>
+        <q-btn icon="close" flat round dense @click="fullPreviewDialogVisible = false" />
+      </q-card-section>
+      <q-card-section class="full-preview-dialog__controls">
+        <div class="camera-view__toolbar full-preview-dialog__toolbar">
+          <div class="camera-view__toolbar-layout">
+            <div class="camera-view__toolbar-left">
+              <div class="camera-view__toolbar-motor">
+                <BaseButtonIconPrimary
+                  icon="keyboard_arrow_left"
+                  size="sm"
+                  :disable="motorBusy || props.scanning"
+                  @click="handleMotorMove(TURNTABLE_MOTOR, -20)"
+                >
+                  <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable left</q-tooltip>
+                </BaseButtonIconPrimary>
+                <BaseButtonIconPrimary
+                  icon="keyboard_arrow_up"
+                  size="sm"
+                  :disable="motorBusy || props.scanning"
+                  @click="handleMotorMove(ROTOR_MOTOR, -10)"
+                >
+                  <q-tooltip anchor="bottom middle" self="top middle">Move rotor up</q-tooltip>
+                </BaseButtonIconPrimary>
+                <BaseButtonIconPrimary
+                  icon="keyboard_arrow_down"
+                  size="sm"
+                  :disable="motorBusy || props.scanning"
+                  @click="handleMotorMove(ROTOR_MOTOR, 10)"
+                >
+                  <q-tooltip anchor="bottom middle" self="top middle">Move rotor down</q-tooltip>
+                </BaseButtonIconPrimary>
+                <BaseButtonIconPrimary
+                  icon="keyboard_arrow_right"
+                  size="sm"
+                  :disable="motorBusy || props.scanning"
+                  @click="handleMotorMove(TURNTABLE_MOTOR, 20)"
+                >
+                  <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable right</q-tooltip>
+                </BaseButtonIconPrimary>
+                <BaseButtonIconSecondary
+                  class="camera-view__toolbar-home"
+                  icon="home"
+                  size="sm"
+                  :disable="homeBusy || props.scanning"
+                  @click="handleMoveHome"
+                >
+                  <q-tooltip anchor="bottom middle" self="top middle">Return to home position</q-tooltip>
+                </BaseButtonIconSecondary>
+              </div>
+            </div>
+            <div class="camera-view__toolbar-actions">
+              <BaseButtonIconSecondary
+                class="camera-view__toolbar-refresh"
+                icon="refresh"
+                size="sm"
+                :disable="!props.camera || props.scanning"
+                @click="refreshHqPhoto"
+              >
+                <q-tooltip anchor="bottom middle" self="top middle">Refresh HQ preview</q-tooltip>
+              </BaseButtonIconSecondary>
+              <BaseButtonSecondary
+                class="camera-view__toolbar-button"
+                :label="heatmapEnabled ? 'feature heatmap' : 'feature heatmap'"
+                :disable="!props.camera"
+                dense
+                outline
+                @click="toggleHeatmap"
+              >
+                <q-tooltip anchor="bottom middle" self="top middle">
+                  Highlights image features detected by photogrammetry. Ideally only the object shows red areas.
+                </q-tooltip>
+              </BaseButtonSecondary>
+              <BaseButtonIconSecondary
+                icon="download"
+                size="sm"
+                :disable="!canDownloadHqPhoto"
+                @click="downloadHqPhoto"
+              >
+                <q-tooltip anchor="bottom middle" self="top middle">Download HQ preview</q-tooltip>
+              </BaseButtonIconSecondary>
+              <BaseSelect
+                class="camera-view__toolbar-select"
+                v-model="selectedCameraNameModel"
+                :options="cameraOptionsList"
+                label="Camera"
+                emit-value
+                map-options
+                behavior="menu"
+                :disable="cameraOptionsList.length === 0"
+              />
+            </div>
+          </div>
+        </div>
+      </q-card-section>
+      <q-card-section class="full-preview-dialog__body">
+        <template v-if="fullPreviewImageUrl">
+          <div class="full-preview-dialog__image-wrapper">
+            <div class="full-preview-dialog__image-stage">
+              <img
+                :src="fullPreviewImageUrl"
+                alt="High quality camera preview enlarged"
+                class="full-preview-dialog__image"
+                crossorigin="anonymous"
+                ref="fullPreviewImageRef"
+                @load="handleFullPreviewImageLoad"
+                @error="handleFullPreviewImageError"
+              />
+              <CameraHeatmapOverlay
+                :active="heatmapEnabled"
+                :image-element="fullPreviewImageElement"
+                :image-loaded="fullPreviewImageLoaded"
+              />
+              <q-inner-loading :showing="hqPhotoLoading">
+                <q-spinner-dots color="primary" size="42px" />
+              </q-inner-loading>
+            </div>
+          </div>
+        </template>
+        <div v-else class="full-preview-dialog__placeholder text-grey-5">
+          No high quality preview available.
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, unref, watch } from 'vue'
 import BaseButtonIconPrimary from 'components/base/BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
-import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseSelect from 'components/base/BaseSelect.vue'
 import CameraFastPreview, { type CameraFastPreviewExposed } from './camera/CameraFastPreview.vue'
+import CameraHeatmapOverlay from './camera/CameraHeatmapOverlay.vue'
 import CameraHistogram from './camera/CameraHistogram.vue'
 import CameraHQPreview, { type CameraHQPreviewExposed } from './camera/CameraHQPreview.vue'
 import { useDeviceStore } from 'src/stores/device'
+import { useCameraStore } from 'src/stores/camera'
 import { moveMotorByDegree, moveToPosition } from 'src/generated/api'
 import { apiClient } from 'src/services/apiClient'
 
 type CameraOption = { label: string; value: string; orientationFlag?: number | null }
+
+function openFullPreview() {
+  if (!fullPreviewImageUrl.value) {
+    return
+  }
+  fullPreviewDialogVisible.value = true
+}
+
+function downloadHqPhoto() {
+  if (!cameraStore.photoBlob || !props.camera?.value) {
+    return
+  }
+
+  const extension = cameraStore.photoBlob.type === 'image/png' ? 'png' : 'jpg'
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const filename = `${props.camera.value}-hq-${timestamp}.${extension}`
+  const url = URL.createObjectURL(cameraStore.photoBlob)
+
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  anchor.click()
+
+  URL.revokeObjectURL(url)
+}
 
 async function handleMoveHome() {
   if (homeBusy.value) {
@@ -163,6 +334,7 @@ const emit = defineEmits<{
 }>()
 
 const deviceStore = useDeviceStore()
+const cameraStore = useCameraStore()
 
 const fastPreviewRef = ref<CameraFastPreviewExposed | null>(null)
 const hqPreviewRef = ref<CameraHQPreviewExposed | null>(null)
@@ -173,6 +345,9 @@ const heatmapEnabled = ref(false)
 const motorBusy = ref(false)
 const homeBusy = ref(false)
 let hqRefreshTimeout: ReturnType<typeof setTimeout> | null = null
+const fullPreviewDialogVisible = ref(false)
+const fullPreviewImageRef = ref<HTMLImageElement | null>(null)
+const fullPreviewImageLoaded = ref(false)
 
 const ROTOR_MOTOR = 'rotor'
 const TURNTABLE_MOTOR = 'turntable'
@@ -242,6 +417,20 @@ async function handleMotorMove(motorName: string, degrees: number) {
 
 const hqPreviewImageElement = computed(() => unref(hqPreviewRef.value?.previewImage) ?? null)
 const hqPreviewImageLoaded = computed(() => unref(hqPreviewRef.value?.imageLoaded) ?? false)
+const canDownloadHqPhoto = computed(
+  () => Boolean(cameraStore.photoBlob) && Boolean(props.camera) && !props.scanning
+)
+const fullPreviewImageUrl = computed(() => cameraStore.photoObjectUrl)
+const fullPreviewImageElement = computed(() => fullPreviewImageRef.value)
+const hqPhotoLoading = computed(() => cameraStore.photoLoading)
+
+function handleFullPreviewImageLoad() {
+  fullPreviewImageLoaded.value = true
+}
+
+function handleFullPreviewImageError() {
+  fullPreviewImageLoaded.value = false
+}
 
 function setupStackObserver(element: HTMLElement | null) {
   stackResizeObserver?.disconnect()
@@ -282,6 +471,31 @@ watch(
   }
 )
 
+watch(
+  fullPreviewImageUrl,
+  () => {
+    fullPreviewImageLoaded.value = false
+  }
+)
+
+watch(
+  fullPreviewDialogVisible,
+  (isOpen) => {
+    if (!isOpen) {
+      fullPreviewImageLoaded.value = false
+    }
+  }
+)
+
+watch(
+  hqPhotoLoading,
+  (isLoading) => {
+    if (isLoading) {
+      fullPreviewImageLoaded.value = false
+    }
+  }
+)
+
 onBeforeUnmount(() => {
   stackResizeObserver?.disconnect()
   clearHqRefreshTimeout()
@@ -314,12 +528,6 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8px;
   margin-right: 16px;
-}
-
-.camera-view__toolbar-motor-vertical {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 .camera-view__toolbar-actions {
@@ -369,15 +577,89 @@ onBeforeUnmount(() => {
   padding: 16px;
 }
 
-.camera-surface__hq,
-.camera-surface__stack {
+.camera-surface__fast-preview,
+.camera-surface__histogram,
+.camera-surface__hq-preview,
+.camera-surface__stack,
+.camera-surface__hq {
   padding: 0;
 }
 
-.camera-surface :deep(.fast-preview),
-.camera-surface :deep(.camera-histogram),
-.camera-surface :deep(.camera-hq-preview) {
+.full-preview-dialog {
+  width: fit-content;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.full-preview-dialog__header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+}
+
+.full-preview-dialog__title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.full-preview-dialog__body {
+  flex: 1 1 auto;
+  min-height: 0;
   padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.full-preview-dialog__controls {
+  padding: 0 12px 12px;
+}
+
+.full-preview-dialog__toolbar {
+  padding: 0;
+}
+
+.full-preview-dialog__toolbar .camera-view__toolbar-layout {
+  flex-wrap: wrap;
+}
+
+.full-preview-dialog__image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.full-preview-dialog__image-stage {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+  max-height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.full-preview-dialog__image {
+  display: block;
+  max-width: calc(90vw - 48px);
+  max-height: calc(80vh - 48px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.full-preview-dialog__placeholder {
+  text-align: center;
 }
 
 @media (max-width: 1023px) {
