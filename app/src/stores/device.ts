@@ -90,10 +90,6 @@ export const useDeviceStore = defineStore('device', {
         this.hasConnectionIssue = true
         throw error
       }
-
-      if (!this.device) {
-        await this.refreshFromRest()
-      }
     },
     async connect() {
       if (this.status === 'open') {
@@ -172,6 +168,8 @@ export const useDeviceStore = defineStore('device', {
       } finally {
         connectPromise = null
       }
+
+      await this.refreshFromRest()
     },
     disconnect() {
       allowReconnect = false
