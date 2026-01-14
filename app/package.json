@@ -7,7 +7,7 @@
   "author": "OpenScan.eu Team <info@openscan.eu>",
   "private": true,
   "scripts": {
-    "api:gen": "openapi-ts && node scripts/generate-field-descriptions.mjs",
+    "api:gen": "node scripts/generate-api.mjs",
     "build": "quasar build",
     "build:zip": "quasar build && npm run zip:spa",
     "dev": "quasar dev",
