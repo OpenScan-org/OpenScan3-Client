@@ -1,5 +1,5 @@
 <template>
-  <BaseSection title="Task" description="This view shows live task state and backend logs for debugging.">
+  <BaseSection title="Task">
     <div class="row q-col-gutter-md">
       <div v-if="task?.error" class="col-12">
         <q-banner rounded class="bg-negative text-white">

@@ -1,5 +1,5 @@
 <template>
-  <BaseSection :title="scanTitle" :subtitle="scanSettingsDescription" :description="scanSubtitle">
+  <BaseSection :title="scanTitle" :subtitle="scanSettingsDescription">
     <div class="column items-center q-gutter-md">
       <q-circular-progress
         :value="placeholderProgress"
@@ -81,10 +81,6 @@ const scanIndex = computed(() => scanArgs.value.index as number)
 
 const scanTitle = computed(() => {
   return `Scan #${scanIndex.value} for ${scanProjectName.value}`
-})
-
-const scanSubtitle = computed(() => {
-  return 'This view shows live scan state and controls.'
 })
 
 const scanSettingsDescription = computed(() => {
