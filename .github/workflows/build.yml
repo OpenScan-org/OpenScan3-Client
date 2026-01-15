@@ -6,58 +6,65 @@ on:
     branches:
       - "main"
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: write
   pages: write
   id-token: write
 
-# Allow one concurrent deployment
 concurrency:
   group: "build"
   cancel-in-progress: true
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
 
       - name: Install Dependencies
         run: |
           npm install -g @quasar/cli
-          cd app
-          npm install --include=dev
+          npm ci
 
-      - name: Build SPA
+      - name: Build SPA zip
+        run: npm run build:zip
+
+      - name: Compute release name
+        id: version
         run: |
-          cd app
-          quasar build
+          VERSION=$(node -p "require('./package.json').version")
+          API_VERSION=$(node -p "require('./package.json').apiVersion")
+          RELEASE_NAME="v${VERSION}+api${API_VERSION}"
+          echo "release_name=$RELEASE_NAME" >> "$GITHUB_OUTPUT"
 
-      - name: Copy output
-        id: copy
+      - name: Check for duplicate release
+        env:
+          RELEASE_NAME: ${{ steps.version.outputs.release_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NOW=$(date +"%Y-%m-%d-%H%M")
-          IMAGE=$NOW-openscan-client
-          cd app/dist/spa/
-          zip -qr $IMAGE.zip *
-          cd ../../..
-          mv app/dist/spa/$IMAGE.zip $IMAGE.zip
-          echo "::set-output name=image::$IMAGE"
+          git fetch --tags --force
+          TAG_EXISTS=$(git rev-parse "$RELEASE_NAME" >/dev/null 2>&1 && echo true || echo false)
+          RELEASE_EXISTS=$(gh release view "$RELEASE_NAME" >/dev/null 2>&1 && echo true || echo false)
+          
+          if [ "$TAG_EXISTS" = "true" ] && [ "$RELEASE_EXISTS" = "true" ]; then
+            echo "::error::Release $RELEASE_NAME already exists. Run 'cd app && npm version <patch|minor|major>' before merging to main."
+            exit 1
+          fi
 
-      - name: Publish relese
-        uses: softprops/action-gh-release@v1
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.copy.outputs.image }}
-          files: ${{ steps.copy.outputs.image }}.zip
-
-  dispatch:
-    needs: build
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v2
-        with:
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
-          repository: OpenScan-org/OpenScan3-Image
-          event-type: client-release
+          tag_name: ${{ steps.version.outputs.release_name }}
+          name: ${{ steps.version.outputs.release_name }}
+          files: app/dist/spa.zip
