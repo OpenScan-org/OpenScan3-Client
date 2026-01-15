@@ -6,7 +6,8 @@ export const useApiConfigStore = defineStore('apiConfig', {
     host: window.location.hostname || 'openscan3-alpha.local',
     port: 8000,
     version: 'v0.5',
-    developerMode: false
+    developerMode: false,
+    cloudEnabled: false
   }),
   getters: {
     baseURL: (state) => {

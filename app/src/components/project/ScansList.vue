@@ -3,14 +3,66 @@
     <div class="scans-nested q-pa-md">
       <div class="row items-center justify-between q-mb-sm scans-header">
         <div class="row items-center">
-          <q-icon name="folder_open" color="grey-7" class="q-mr-sm" />
+          <q-checkbox
+            dense
+            :model-value="allScansSelected"
+            :indeterminate="isPartialSelection"
+            :disable="!scans.length"
+            @update:model-value="toggleSelectAll"
+            class="q-mr-sm"
+          />
           <div class="text-subtitle2 text-grey-7">Scans</div>
+        </div>
+        <div class="row items-center q-gutter-xs">
+          <q-btn
+            v-if="selectedScansSet.size > 0"
+            flat
+            round
+            dense
+            color="negative"
+            icon="delete"
+            @click="requestDeleteSelected"
+          >
+            <q-tooltip>Delete {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
+          </q-btn>
+          <q-btn
+            v-if="selectedScansSet.size > 0"
+            flat
+            round
+            dense
+            color="primary"
+            icon="download"
+            @click="requestDownloadSelected"
+          >
+            <q-tooltip>Download {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
+          </q-btn>
+          <q-btn flat round dense icon="more_vert">
+            <q-menu>
+              <q-list dense style="min-width: 150px">
+                <q-item clickable v-close-popup @click="inverse_scan_selection" :disable="!scans.length">
+                  <q-item-section>Inverse selection</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item clickable v-close-popup @click="requestDeleteErrored" :disable="erroredCount === 0">
+                  <q-item-section :class="erroredCount > 0 ? 'text-negative' : ''">
+                    Delete errored ({{ erroredCount }})
+                  </q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup @click="requestDeleteCancelled" :disable="cancelledCount === 0">
+                  <q-item-section :class="cancelledCount > 0 ? 'text-grey-7' : ''">
+                    Delete cancelled ({{ cancelledCount }})
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-btn>
         </div>
       </div>
       <q-list separator dense>
         <q-item
           v-for="scan in scans"
           :key="scan.index"
+          class="items-start"
         >
           <q-item-section avatar>
             <q-checkbox
@@ -30,11 +82,42 @@
             {{ get_scan_photos_info(scan) }}
           </div>
           <div class="text-caption text-grey-8">
-            Created: {{ format_date(scan.created) }}<span v-if="scan.duration && scan.duration > 0"> • Duration: {{ format_duration(scan.duration) }}</span><span v-if="scan.last_updated"> • Last Updated: {{ format_date(scan.last_updated) }}</span>
+            Created: {{ format_date(scan.created) }}<span v-if="scan.duration && scan.duration > 0"> • Duration: {{ format_duration(scan.duration) }}</span>
           </div>
-          <div v-if="scan.camera_name" :class="'text-caption text-grey-8'">
-            Camera: {{ scan.camera_name }}
+          <div class="row items-center q-gutter-x-sm text-caption text-grey-8">
+            <div v-if="scan.camera_name">
+              Camera: {{ scan.camera_name }}
+            </div>
+            <div class="cursor-pointer text-primary" @click.stop="toggleSettings(scan.index)">
+              {{ isExpanded(scan.index) ? 'Hide Settings' : 'Show Settings' }}
+            </div>
+            <div class="text-grey-5">•</div>
+            <div class="cursor-pointer text-primary" @click.stop="createScanFromSettings(scan)">
+              New Scan with this Settings
+            </div>
           </div>
+          
+          <q-slide-transition>
+            <div v-show="isExpanded(scan.index)" class="row q-mt-sm q-col-gutter-md">
+              <div class="col-12 col-md-6">
+                <div class="text-caption text-weight-bold q-mb-xs">Scan Settings</div>
+                <div class="text-caption text-grey-8 bg-grey-2 q-pa-sm rounded-borders" style="white-space: pre-wrap; word-break: break-all;">
+                  <div v-for="(value, key) in scan.settings" :key="key">
+                    <span class="text-weight-medium">{{ key }}:</span> {{ value }}
+                  </div>
+                </div>
+              </div>
+              <div class="col-12 col-md-6" v-if="scan.camera_settings">
+                <div class="text-caption text-weight-bold q-mb-xs">Camera Settings</div>
+                <div class="text-caption text-grey-8 bg-grey-2 q-pa-sm rounded-borders" style="white-space: pre-wrap; word-break: break-all;">
+                  <div v-for="(value, key) in scan.camera_settings" :key="key">
+                    <span class="text-weight-medium">{{ key }}:</span> {{ value }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </q-slide-transition>
+
           <div v-if="scan.description" :class="'text-caption text-grey-8'">
             Description: {{ scan.description }}
           </div>
@@ -72,76 +155,17 @@
           </q-item-section>
         </q-item>
       </q-list>
-      <div class="row justify-start q-gutter-sm q-mt-sm">
-        <q-btn
-          outline
-          dense
-          color="primary"
-          label="Select all"
-          :disable="!scans.length"
-          @click="select_all_scans"
-        />
-        <q-btn
-          outline
-          dense
-          color="primary"
-          label="Inverse selection"
-          :disable="!scans.length"
-          @click="inverse_scan_selection"
-        />
-      </div>
-      <div class="row justify-start q-gutter-sm q-mt-sm">
-        <BaseButtonSecondary
-          color="negative"
-          unelevated
-          label="selected"
-          icon="delete"
-          :disable="!selectedScansSet.size"
-          @click="requestDeleteSelected"
-        >
-          <q-tooltip>Delete the selected scans</q-tooltip>
-        </BaseButtonSecondary>
-        <BaseButtonSecondary
-          color="negative"
-          outline
-          label="errored"
-          icon="delete"
-          :disable="!erroredCount"
-          @click="requestDeleteErrored"
-        >
-          <q-tooltip>Delete scans with error status</q-tooltip>
-        </BaseButtonSecondary>
-        <BaseButtonSecondary
-          color="negative"
-          outline
-          label="cancelled"
-          icon="delete"
-          :disable="!cancelledCount"
-          @click="requestDeleteCancelled"
-        >
-          <q-tooltip>Delete cancelled scans</q-tooltip>
-        </BaseButtonSecondary>
-        <BaseButtonPrimary
-          color="primary"
-          unelevated
-          label="Download selected"
-          :disable="!selectedScansSet.size"
-          @click="requestDownloadSelected"
-        >
-          <q-tooltip>Download all selected scans</q-tooltip>
-        </BaseButtonPrimary>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { computed, ref } from 'vue'
 import { type Scan } from 'src/generated/api'
-import { API_BASE_URL } from 'src/services/apiClient'
+import { getApiBaseUrl } from 'src/services/apiClient'
 import { useTaskStore } from 'src/stores/tasks'
-import BaseButtonPrimary from 'src/components/base/BaseButtonPrimary.vue'
-import BaseButtonSecondary from 'src/components/base/BaseButtonSecondary.vue'
+import { useScanTemplateStore } from 'src/stores/scanTemplate'
 
 interface ScansListProp {
   scans: Scan[]
@@ -153,6 +177,8 @@ interface ScansListProp {
 const props = defineProps<ScansListProp>()
 const emit = defineEmits(['select:scan', 'delete:scan', 'pause:scan', 'resume:scan', 'download:scan', 'stack:scan', 'cancel:scan', 'create:scan', 'update:selected-scans', 'bulk:delete-selected', 'bulk:delete-status', 'bulk:download-selected'])
 const taskStore = useTaskStore()
+const scanTemplateStore = useScanTemplateStore()
+const router = useRouter()
 
 const scans = computed<Scan[]>(() => {
   return props.scans.map((scan) => {
@@ -171,9 +197,24 @@ const scans = computed<Scan[]>(() => {
 })
 
 const selectedScansSet = computed(() => new Set(props.selectedScans ?? []))
+const allScansSelected = computed(() => props.scans.length > 0 && selectedScansSet.value.size === props.scans.length)
+const isPartialSelection = computed(() => selectedScansSet.value.size > 0 && !allScansSelected.value)
+
 const erroredStatuses = new Set(['failed', 'error'])
 const erroredCount = computed(() => scans.value.filter((scan) => erroredStatuses.has(scan.status ?? '')).length)
 const cancelledCount = computed(() => scans.value.filter((scan) => scan.status === 'cancelled').length)
+
+const expandedScanIndices = ref(new Set<number>())
+const toggleSettings = (index: number) => {
+  const next = new Set(expandedScanIndices.value)
+  if (next.has(index)) {
+    next.delete(index)
+  } else {
+    next.add(index)
+  }
+  expandedScanIndices.value = next
+}
+const isExpanded = (index: number) => expandedScanIndices.value.has(index)
 
 const format_date = (value?: string) => {
   if (!value) {
@@ -199,7 +240,7 @@ const get_scan_photos_info = (scan: Scan) => {
   if (photos <= 0) {
     return null
   }
-  return `Positions: ${scan.settings.points} • Focus Stacks: ${scan.settings.focus_stacks} • Photos: ${photos}`
+  return `Photos: ${photos} (Positions: ${scan.settings.points}, Focus Stacks: ${scan.settings.focus_stacks})`
 }
 
 const get_status_icon = (status?: string) => {
@@ -226,6 +267,11 @@ const get_status_color = (status?: string) => {
   }
 }
 
+const createScanFromSettings = (scan: Scan) => {
+  scanTemplateStore.setTemplate(scan.settings, scan.camera_settings)
+  void router.push({ path: '/scan', query: { project: props.project_name, camera: scan.camera_name || undefined } })
+}
+
 const select_scan = (index: number) => {
   emit('select:scan', index)
 }
@@ -247,7 +293,7 @@ const download_scan = (index: number) => {
   try {
     const params = new URLSearchParams()
     params.append('scan_indices', index.toString())
-    const downloadUrl = `${API_BASE_URL}projects/${encodeURIComponent(props.project_name)}/scans/zip?${params.toString()}`
+    const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(props.project_name)}/scans/zip?${params.toString()}`
     window.open(downloadUrl, '_blank')
     emit('download:scan', { project_name: props.project_name, scan_index: index })
   } catch (error) {
@@ -267,6 +313,14 @@ const toggle_scan_selection = (index: number, checked: boolean) => {
 
 const select_all_scans = () => {
   emit('update:selected-scans', scans.value.map((scan) => scan.index))
+}
+
+const toggleSelectAll = (checked: boolean) => {
+  if (checked) {
+    select_all_scans()
+  } else {
+    emit('update:selected-scans', [])
+  }
 }
 
 const inverse_scan_selection = () => {

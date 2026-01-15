@@ -1,12 +1,17 @@
 <template>
     <div :class="detail ? 'col-12' : 'col-6'">
         <q-card class="project-card">
-            <q-card-section class="row items-start justify-between">
-                <div>
-                    <div class="text-h6">{{ project.name }}</div>
-                    <div class="text-body2 text-grey-7">{{ project.description || 'No description' }}</div>
+            <q-card-section>
+                <div class="row items-start justify-between">
+                    <div class="row items-center q-gutter-x-sm">
+                        <div class="text-h6">{{ project.name }}</div>
+                        <q-btn flat round dense color="negative" icon="delete" size="sm" @click="confirm_delete">
+                            <q-tooltip>Delete this project</q-tooltip>
+                        </q-btn>
+                    </div>
+                    <div class="text-subtitle2 text-grey-7">{{ displayDate }}</div>
                 </div>
-                <div class="text-subtitle2 text-grey-7">{{ displayDate }}</div>
+                <div class="text-body2 text-grey-7 q-mt-sm">{{ project.description || 'No description' }}</div>
             </q-card-section>
             <q-card-section class="row justify-center q-gutter-sm">
                 <BaseButtonSecondary
@@ -14,16 +19,13 @@
                     unelevated
                     icon="cloud_upload"
                     label="process project"
-                    v-if="!project.uploaded"
+                    v-if="apiConfigStore.cloudEnabled && !project.uploaded"
                 >
                     <q-tooltip>Coming Soon: Upload this project to the cloud</q-tooltip>
                 </BaseButtonSecondary>
                 <BaseButtonPrimary unelevated icon="cloud_download" label="Download" @click="confirm_download">
                     <q-tooltip>Download the project archive</q-tooltip>
                 </BaseButtonPrimary>
-                <BaseButtonSecondary color="negative" unelevated icon="delete" label="project" @click="confirm_delete">
-                    <q-tooltip>Delete this project</q-tooltip>
-                </BaseButtonSecondary>
                 <BaseButtonPrimary color="positive" unelevated icon="add" label="Add Scan" @click="add_scan">
                     <q-tooltip>Create a new scan in this project</q-tooltip>
                 </BaseButtonPrimary>
@@ -53,7 +55,8 @@
 import { computed, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
-import { apiClient, API_BASE_URL } from 'src/services/apiClient'
+import { apiClient, getApiBaseUrl } from 'src/services/apiClient'
+import { useApiConfigStore } from 'src/stores/apiConfig'
 import { deleteProject, uploadProjectToCloud, deleteScan, pauseScan, resumeScan, cancelScan, startFocusStacking, type Project, type Scan } from 'src/generated/api'
 import BaseButtonPrimary from 'src/components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'src/components/base/BaseButtonSecondary.vue'
@@ -61,6 +64,7 @@ import ScansList from './ScansList.vue'
 
 const $q = useQuasar()
 const router = useRouter()
+const apiConfigStore = useApiConfigStore()
 
 interface ProjectProp {
     project: Project
@@ -124,7 +128,7 @@ const handleBulkDownloadSelected = (data: { project_name: string; scan_indices: 
     try {
         const params = new URLSearchParams()
         data.scan_indices.forEach((index) => params.append('scan_indices', index.toString()))
-        const downloadUrl = `${API_BASE_URL}projects/${encodeURIComponent(data.project_name)}/scans/zip?${params.toString()}`
+        const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(data.project_name)}/scans/zip?${params.toString()}`
         window.open(downloadUrl, '_blank')
     } catch (error) {
         console.error('Could not download selected scans.', error)
@@ -182,7 +186,7 @@ const confirm_upload = () => {
 
 const confirm_download = () => {
     try {
-        const downloadUrl = `${API_BASE_URL}projects/${encodeURIComponent(props.project.name)}/zip`
+        const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(props.project.name)}/zip`
         window.open(downloadUrl, '_blank')
     } catch (error) {
         console.error('Could not download project.', error)

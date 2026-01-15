@@ -488,16 +488,22 @@ export type Light = {
 export type LightConfig = {
     /**
      * Pin
+     *
+     * Single GPIO pin controlling the light output.
      */
     pin?: number | null;
     /**
      * Pins
+     *
+     * Multiple GPIO pins driving grouped light outputs.
      */
     pins?: Array<number> | null;
     /**
-     * Pwm
+     * Pwm Support
+     *
+     * Indicates whether this light hardware can handle PWM (otherwise only on/off).
      */
-    pwm?: boolean;
+    pwm_support?: boolean;
 };
 
 /**
@@ -536,14 +542,20 @@ export type Motor = {
 export type MotorConfig = {
     /**
      * Direction Pin
+     *
+     * GPIO pin controlling the motor direction signal.
      */
     direction_pin: number;
     /**
      * Enable Pin
+     *
+     * GPIO pin toggling the motor driver enable line.
      */
     enable_pin: number;
     /**
      * Step Pin
+     *
+     * GPIO pin used to emit step pulses.
      */
     step_pin: number;
     /**
@@ -763,7 +775,10 @@ export type Scan = {
  * ScanSetting
  */
 export type ScanSetting = {
-    path_method: PathMethod;
+    /**
+     * Scanning path generator (e.g. fibonacci or spriral).
+     */
+    path_method?: PathMethod;
     /**
      * Points
      *
@@ -772,8 +787,10 @@ export type ScanSetting = {
     points?: number;
     /**
      * Image Format
+     *
+     * Output image format (JPEG, DNG, RGB array or YUV array).
      */
-    image_format: 'jpeg' | 'dng' | 'rgb_array' | 'yuv_array';
+    image_format?: 'jpeg' | 'dng' | 'rgb_array' | 'yuv_array';
     /**
      * Min Theta
      *

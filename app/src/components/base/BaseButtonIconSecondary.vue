@@ -17,7 +17,8 @@ const props = withDefaults(
     type: 'button',
     loading: false,
     disable: false,
-    dense: true,
+    dense: false,
+    size: 'lg',
     color: 'primary',
     outline: true,
     round: true
@@ -39,5 +40,7 @@ const attrs = useAttrs()
     :color="props.color"
     :outline="props.outline"
     :round="props.round"
-  />
+  >
+    <slot />
+  </q-btn>
 </template>

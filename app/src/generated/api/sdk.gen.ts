@@ -645,7 +645,7 @@ export const getSoftwareInfo = <ThrowOnError extends boolean = false>(options?: 
  * When follow=true (text mode only!), streams new lines as they are written (like `tail -f`).
  *
  * Args:
- * format: "text" for openscan.log, "json" for openscan_detailed_log.json.
+ * format: "text" for openscan_firmware.log, "json" for openscan_detailed_log.json.
  * lines: Number of last lines to return initially.
  * follow: If true, stream appended log lines in text mode.
  * poll_interval: Poll interval (seconds) when following in text mode.

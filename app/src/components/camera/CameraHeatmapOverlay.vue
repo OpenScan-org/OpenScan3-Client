@@ -37,7 +37,7 @@ function drawHeatmap() {
   tempCanvas.height = img.naturalHeight
   tempCtx.drawImage(img, 0, 0)
 
-  const targetCellSize = Math.min(img.naturalWidth, img.naturalHeight) / 32
+  const targetCellSize = Math.min(img.naturalWidth, img.naturalHeight) / 48
   const gridX = Math.max(1, Math.round(img.naturalWidth / targetCellSize))
   const gridY = Math.max(1, Math.round(img.naturalHeight / targetCellSize))
   const cellWidth = img.naturalWidth / gridX

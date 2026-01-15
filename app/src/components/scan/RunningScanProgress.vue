@@ -1,5 +1,5 @@
 <template>
-  <BaseSection :title="scanTitle" :subtitle="scanSettingsDescription" :description="scanSubtitle">
+  <BaseSection :title="scanTitle" :subtitle="scanSettingsDescription">
     <div class="column items-center q-gutter-md">
       <q-circular-progress
         :value="placeholderProgress"
@@ -31,6 +31,12 @@
           color="negative"
           @click="cancel"
         />
+        <BaseButtonPrimary
+          v-if="task.status === 'completed' || task.status === 'cancelled' || task.status === 'error'"
+          icon="folder_open"
+          label="Go to Project"
+          @click="goToProject"
+        />
         <BaseButtonSecondary
           v-if="task.status === 'completed' || task.status === 'cancelled' || task.status === 'error'"
           icon="close"
@@ -44,10 +50,12 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import type { Task } from 'src/generated/api'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseSection from 'components/base/BaseSection.vue'
 import { useTaskStore } from 'src/stores/tasks'
+import BaseButtonPrimary from "components/base/BaseButtonPrimary.vue";
 
 const props = defineProps<{
   taskId: string
@@ -59,6 +67,7 @@ const emit = defineEmits<{
 }>()
 
 const taskStore = useTaskStore()
+const router = useRouter()
 void taskStore.ensureConnected()
 
 const task = computed(() => (taskStore.taskById(props.taskId) ?? props.initialTask)!)
@@ -72,10 +81,6 @@ const scanIndex = computed(() => scanArgs.value.index as number)
 
 const scanTitle = computed(() => {
   return `Scan #${scanIndex.value} for ${scanProjectName.value}`
-})
-
-const scanSubtitle = computed(() => {
-  return 'This view shows live scan state and controls.'
 })
 
 const scanSettingsDescription = computed(() => {
@@ -140,6 +145,13 @@ const cancel = async () => {
 
 const close = () => {
   emit('close')
+}
+
+const goToProject = () => {
+  void router.push({
+    path: '/projects',
+    query: { project: scanProjectName.value }
+  })
 }
 
 const ensureTaskLoaded = async () => {

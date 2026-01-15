@@ -20,12 +20,23 @@
         <q-badge color="primary">{{ scanCount }} Scans</q-badge>
         <span>{{ formattedDate }}</span>
       </div>
-      <div class="text-caption text-grey-6">
+      <div class="text-caption text-grey-6 description-clamp">
         {{ project.description || 'No description' }}
       </div>
     </q-item-section>
   </q-item>
 </template>
+
+<style scoped>
+.description-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
 
 <script setup lang="ts">
 import { computed } from 'vue'

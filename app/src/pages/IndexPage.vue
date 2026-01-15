@@ -4,8 +4,10 @@ import { useQuasar } from 'quasar'
 
 import { useCameraStore } from 'src/stores/camera'
 import { useDeviceStore } from 'src/stores/device'
+import { useProjectsStore } from 'src/stores/projects'
 import BaseButtonIconPrimary from 'components/base/BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
+import RecentProjectsList from 'src/components/project/RecentProjectsList.vue'
 import { apiClient } from 'src/services/apiClient'
 import {
   toggleLight,
@@ -20,6 +22,7 @@ import { getOrientationTransform } from 'src/utils/orientation'
 const $q = useQuasar()
 const cameraStore = useCameraStore()
 const deviceStore = useDeviceStore()
+const projectsStore = useProjectsStore()
 
 const isMoving = ref(false)
 const isLightBusy = ref(false)
@@ -155,6 +158,7 @@ async function moveHome() {
 onMounted(() => {
   cameraStore.fetchCameras()
   deviceStore.ensureConnected()
+  projectsStore.fetchProjects()
 })
 </script>
 
@@ -175,8 +179,8 @@ onMounted(() => {
     </div>
 
     <div class="content-wrapper q-pa-md">
-      <div class="row q-col-gutter-md justify-center">
-        <div class="col-12 col-md-4">
+      <div class="row q-col-gutter-md justify-center items-start">
+        <div class="col-12 col-md-6">
           <q-card flat bordered class="playground-card">
             <q-card-section>
               <div class="column items-center q-gutter-md">
@@ -185,7 +189,9 @@ onMounted(() => {
                   size="lg"
                   :loading="isLightBusy"
                   @click="handleToggleLight"
-                />
+                >
+                  <q-tooltip anchor="bottom middle" self="top middle">Toggle ring light</q-tooltip>
+                </BaseButtonIconPrimary>
 
                 <div class="joystick-grid">
                   <div class="joystick-row">
@@ -194,7 +200,9 @@ onMounted(() => {
                       size="lg"
                       :loading="isMoving"
                       @click="moveMotor(ROTOR_MOTOR, -10)"
-                    />
+                    >
+                      <q-tooltip anchor="bottom middle" self="top middle">Move rotor up</q-tooltip>
+                    </BaseButtonIconPrimary>
                   </div>
                   <div class="joystick-row">
                     <BaseButtonIconPrimary
@@ -202,20 +210,26 @@ onMounted(() => {
                       size="lg"
                       :loading="isMoving"
                       @click="moveMotor(TURNTABLE_MOTOR, -20)"
-                    />
+                    >
+                      <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable left</q-tooltip>
+                    </BaseButtonIconPrimary>
                     <BaseButtonIconSecondary
                       icon="home"
                       size="lg"
                       :loading="isHoming"
                       :dense="false"
                       @click="moveHome"
-                    />
+                    >
+                      <q-tooltip anchor="bottom middle" self="top middle">Return to home position</q-tooltip>
+                    </BaseButtonIconSecondary>
                     <BaseButtonIconPrimary
                       icon="keyboard_arrow_right"
                       size="lg"
                       :loading="isMoving"
                       @click="moveMotor(TURNTABLE_MOTOR, 20)"
-                    />
+                    >
+                      <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable right</q-tooltip>
+                    </BaseButtonIconPrimary>
                   </div>
                   <div class="joystick-row">
                     <BaseButtonIconPrimary
@@ -223,12 +237,20 @@ onMounted(() => {
                       size="lg"
                       :loading="isMoving"
                       @click="moveMotor(ROTOR_MOTOR, 10)"
-                    />
+                    >
+                      <q-tooltip anchor="bottom middle" self="top middle">Move rotor down</q-tooltip>
+                    </BaseButtonIconPrimary>
                   </div>
                 </div>
               </div>
             </q-card-section>
           </q-card>
+        </div>
+      </div>
+
+      <div class="row q-col-gutter-md q-mt-md justify-center items-start">
+        <div class="col-12 col-md-6">
+          <RecentProjectsList />
         </div>
       </div>
     </div>

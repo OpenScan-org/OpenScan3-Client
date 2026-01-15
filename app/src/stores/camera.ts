@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { apiClient, API_BASE_URL } from 'src/services/apiClient';
+import { apiClient, getApiBaseUrl } from 'src/services/apiClient';
 import { getCameras, type Camera } from 'src/generated/api';
 
 const CAMERA_SETTINGS_CHANGE = /^cameras\.([^.\s]+)\.settings(?:\.|$)/;
@@ -37,9 +37,22 @@ export const useCameraStore = defineStore('camera', {
       value: camera.name,
       orientationFlag: camera.settings?.orientation_flag ?? null
     })),
-    previewUrl: (state) => state.selectedCamera ? `${API_BASE_URL}cameras/${state.selectedCamera}/preview` : null,
-    getPreviewUrl: () => (cameraName: string) => cameraName ? `${API_BASE_URL}cameras/${cameraName}/preview` : null,
-    getPhotoUrl: () => (cameraName: string) => cameraName ? `${API_BASE_URL}cameras/${cameraName}/photo` : null,
+    previewUrl: (state) => {
+      const baseUrl = getApiBaseUrl();
+      return state.selectedCamera ? `${baseUrl}cameras/${state.selectedCamera}/preview` : null;
+    },
+    getPreviewUrl: () => {
+      return (cameraName: string) => {
+        const baseUrl = getApiBaseUrl();
+        return cameraName ? `${baseUrl}cameras/${cameraName}/preview` : null;
+      };
+    },
+    getPhotoUrl: () => {
+      return (cameraName: string) => {
+        const baseUrl = getApiBaseUrl();
+        return cameraName ? `${baseUrl}cameras/${cameraName}/photo` : null;
+      };
+    },
   },
   actions: {
     async fetchCameras() {

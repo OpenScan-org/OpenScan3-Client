@@ -98,7 +98,7 @@ import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BasePage from 'components/base/BasePage.vue'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseSelect from 'components/base/BaseSelect.vue'
-import { API_BASE_URL } from 'src/services/apiClient'
+import { getApiBaseUrl } from 'src/services/apiClient'
 import { useLogsStore } from 'src/stores/logs'
 
 const formatOptions = [
@@ -122,7 +122,7 @@ const loadLogs = async () => {
 }
 
 const downloadLogs = () => {
-  window.open(`${API_BASE_URL}logs/archive`, '_blank')
+  window.open(`${getApiBaseUrl()}logs/archive`, '_blank')
 }
 
 const feedbackDialog = ref(false)

@@ -34,5 +34,7 @@ const attrs = useAttrs()
     color="primary"
     round
     unelevated
-  />
+  >
+    <slot />
+  </q-btn>
 </template>

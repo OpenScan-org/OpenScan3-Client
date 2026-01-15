@@ -31,15 +31,6 @@
 
       <BaseSection title="Advanced Picture Settings" class="q-mt-sm">
         <div class="row q-col-gutter-sm">
-          <div class="col-12">
-            <q-select
-              v-model="selectedCameraNameModel"
-              :options="cameraOptions"
-              label="Camera"
-              dense
-              outlined
-            />
-          </div>
 
           <div class="col-12">
             <BaseSliderWithInput
@@ -144,6 +135,7 @@ import {
   fieldDescriptions,
   getFieldDescription,
 } from 'src/generated/api/fieldDescriptions';
+import { fieldDefaults } from 'src/generated/api/fieldDefaults';
 
 type CameraOption = {
   label: string;
@@ -159,8 +151,6 @@ type CameraInfo = {
 
 interface Props {
   camera?: CameraInfo;
-  cameraOptions?: CameraOption[];
-  selectedCameraName?: string;
   shutterMin?: number;
   shutterMax?: number;
   shutterStep?: number;
@@ -168,15 +158,10 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   camera: null,
-  cameraOptions: () => [],
   shutterMin: 1,
   shutterMax: 1000,
   shutterStep: 1,
 });
-
-const emit = defineEmits<{
-  (e: 'update:selectedCameraName', value: string): void;
-}>();
 
 const deviceStore = useDeviceStore();
 void deviceStore.ensureConnected();
@@ -191,12 +176,6 @@ const cameraSettings = computed<CameraSettingsModel | null>(() =>
     ? (deviceStore.getCamera(props.camera.value)?.settings ?? null)
     : null,
 );
-
-const cameraOptions = computed<CameraOption[]>(() => props.cameraOptions ?? []);
-const selectedCameraNameModel = computed({
-  get: () => props.selectedCameraName ?? '',
-  set: (value: string) => emit('update:selectedCameraName', value),
-});
 
 const sliderMinMs = computed(() => props.shutterMin);
 const sliderMaxMs = computed(() => props.shutterMax);
@@ -469,6 +448,70 @@ async function persistOrientationFlag(value: number) {
 const debouncedPersistOrientationFlag = debounce((value: number) => {
   void persistOrientationFlag(value);
 }, 300);
+
+const resetToDefaults = () => {
+  const defaults = fieldDefaults.CameraSettings;
+  applyCameraSettings(defaults);
+};
+
+const applyCameraSettings = (settings: Partial<CameraSettingsModel> | null | undefined) => {
+  if (!settings) {
+    return;
+  }
+
+  const assignNumeric = (value: number | null | undefined, assign: (val: number) => void) => {
+    if (value === undefined || value === null) {
+      return;
+    }
+    assign(value);
+  };
+
+  assignNumeric(settings.shutter, (value) => {
+    shutterValue.value = value;
+    void persistShutter(value);
+  });
+  assignNumeric(settings.saturation, (value) => {
+    saturationValue.value = value;
+    void persistSaturation(value);
+  });
+  assignNumeric(settings.contrast, (value) => {
+    contrastValue.value = value;
+    void persistContrast(value);
+  });
+  assignNumeric(settings.gain, (value) => {
+    gainValue.value = value;
+    void persistGain(value);
+  });
+  assignNumeric(settings.awbg_red, (value) => {
+    awbgRedValue.value = value;
+    void persistAwbgRed(value);
+  });
+  assignNumeric(settings.awbg_blue, (value) => {
+    awbgBlueValue.value = value;
+    void persistAwbgBlue(value);
+  });
+  assignNumeric(settings.jpeg_quality, (value) => {
+    jpegQualityValue.value = value;
+    void persistJpegQuality(value);
+  });
+  assignNumeric(settings.orientation_flag, (value) => {
+    orientationFlagValue.value = value;
+    void persistOrientationFlag(value);
+  });
+};
+
+const getCameraSettingsSnapshot = (): CameraSettingsModel => ({
+  shutter: shutterValue.value,
+  saturation: saturationValue.value,
+  contrast: contrastValue.value,
+  gain: gainValue.value,
+  awbg_red: awbgRedValue.value,
+  awbg_blue: awbgBlueValue.value,
+  jpeg_quality: jpegQualityValue.value,
+  orientation_flag: orientationFlagValue.value,
+});
+
+defineExpose({ resetToDefaults, applyCameraSettings, getCameraSettingsSnapshot });
 </script>
 
 <style scoped>
