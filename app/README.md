@@ -40,6 +40,14 @@ npm run format
 npm run build
 ```
 
+### Release process
+All merges into `main` are treated as releases. Before pushing or opening a PR, bump the version in `app/package.json` via:
+```bash
+cd app
+npm version <patch|minor|major>
+```
+This keeps the automated GitHub release workflow from failing because of duplicated tags _with_ existing releases and ensures `spa.zip` is versioned correctly.
+
 ### Build and create spa.zip for deployment
 ```bash
 npm run build:zip
