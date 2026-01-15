@@ -47,32 +47,57 @@
         @secondary-button-click="handleDeletePreset"
       />
 
-      <div class="column q-gutter-xs q-mt-sm">
+      <div class="row q-gutter-sm q-mt-sm justify-center">
         <q-btn
           flat
           dense
           color="grey-7"
           icon="playlist_add"
-          label="Add current settings as preset"
+          label="Save"
           @click="emit('create-preset-click')"
-        />
+          >
+          <q-tooltip>Save current scan and camera settings as preset</q-tooltip>
+        </q-btn>
         <q-btn
           flat
           dense
           color="grey-7"
           icon="restart_alt"
-          label="Reset defaults"
-          @click="emit('reset-defaults')"
+          label="Reset"
+          @click="showResetConfirm = true"
         >
           <q-tooltip>Reset all scan and camera settings to defaults</q-tooltip>
         </q-btn>
       </div>
+
+      <q-dialog v-model="showResetConfirm">
+        <q-card>
+          <q-card-section class="text-h6">
+            Reset settings?
+          </q-card-section>
+          <q-card-section class="text-body2">
+            This will restore all scan and camera settings to their defaults. Any settings that are not saved as a preset will be lost.
+          </q-card-section>
+          <q-card-actions align="right">
+            <q-btn flat label="Cancel" color="primary" @click="showResetConfirm = false" />
+            <q-btn
+              flat
+              label="Reset"
+              color="negative"
+              @click="
+                showResetConfirm = false;
+                emit('reset-defaults');
+              "
+            />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
     </BaseSection>
   </q-form>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseSection from 'components/base/BaseSection.vue'
 import SelectWithButton from 'components/common/SelectWithButton.vue'
@@ -112,6 +137,8 @@ const selectedPresetModel = computed({
 })
 
 const presetSelectOptions = computed(() => props.presetOptions ?? [])
+
+const showResetConfirm = ref(false)
 
 const selectedPresetLabel = computed(() => {
   const presets = presetSelectOptions.value
