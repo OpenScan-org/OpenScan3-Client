@@ -1,5 +1,3 @@
-import internal from "stream";
-
 export interface Todo {
   id: number;
   content: string;
@@ -17,20 +15,26 @@ export interface Project {
   uploaded: boolean;
 }
 
-export interface ImageSettings {
-
-}
+export type ImageSettings = Record<string, unknown>;
 
 export interface Camera {
   type: string;
   name: string;
   path: string;
-  settings: any;
+  settings: Record<string, unknown>;
 }
 
 export interface ScanSettingsModel {
   project_name: string;
-  camera?: any;
-  method?: any;
+  camera?: Record<string, unknown>;
+  method?: Record<string, unknown>;
   points: number;
+}
+
+export interface EssentialLinkProps {
+  title: string;
+  target?: string;
+  link?: string;
+  icon?: string;
+  badge?: string;
 }
