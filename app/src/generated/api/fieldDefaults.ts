@@ -11,8 +11,8 @@ export const fieldDefaults = {
     "awbg_blue": 1.8,
     "awbg_red": 1.8,
     "contrast": 1,
-    "crop_height": 0,
-    "crop_width": 0,
+    "crop_height": 10,
+    "crop_width": 10,
     "gain": 1,
     "jpeg_quality": 90,
     "manual_focus": 12,
@@ -31,7 +31,7 @@ export const fieldDefaults = {
     "pull_up": true
   },
   "LightConfig": {
-    "pwm": false
+    "pwm_support": false
   },
   "Motor": {
     "angle": 90
@@ -61,10 +61,12 @@ export const fieldDefaults = {
       15
     ],
     "focus_stacks": 1,
+    "image_format": "jpeg",
     "max_theta": 125,
     "min_theta": 12,
     "optimization_algorithm": "nearest_neighbor",
     "optimize_path": true,
+    "path_method": "fibonacci",
     "points": 130
   },
   "Task": {

@@ -37,12 +37,20 @@ export const fieldDescriptions = {
     "pin": "GPIO pin number used for the endstop",
     "pull_up": "Whether to use a pull-up resistor"
   },
+  "LightConfig": {
+    "pin": "Single GPIO pin controlling the light output.",
+    "pins": "Multiple GPIO pins driving grouped light outputs.",
+    "pwm_support": "Indicates whether this light hardware can handle PWM (otherwise only on/off)."
+  },
   "MotorConfig": {
     "acceleration": "Acceleration in steps/s², Limits tested on Rpi 4 2GB under full load --> time estimation within 0.5%",
     "direction": "Motor direction (1 or -1).",
+    "direction_pin": "GPIO pin controlling the motor direction signal.",
+    "enable_pin": "GPIO pin toggling the motor driver enable line.",
     "max_angle": "Maximum allowed angle for the motor in degrees.",
     "max_speed": "Steps per second, Limits tested on RPi 4 2GB under full load --> time estimation within 0.5%",
     "min_angle": "Minimum allowed angle for the motor in degrees.",
+    "step_pin": "GPIO pin used to emit step pulses.",
     "steps_per_rotation": "Number of steps for a full motor rotation."
   },
   "Project": {
@@ -65,10 +73,12 @@ export const fieldDescriptions = {
   "ScanSetting": {
     "focus_range": "Minimum and maximum focus distance in diopters.",
     "focus_stacks": "Number of photos with different focus per position.This ignores AF and you need to set a focus range.Focus values will then be evenly spaced between min and max.",
+    "image_format": "Output image format (JPEG, DNG, RGB array or YUV array).",
     "max_theta": "Maximum theta angle in degrees for constrained paths.",
     "min_theta": "Minimum theta angle in degrees for constrained paths.",
     "optimization_algorithm": "Path optimization algorithm to use.",
     "optimize_path": "Enable path optimization for faster scanning.",
+    "path_method": "Scanning path generator (e.g. fibonacci or spriral).",
     "points": "Number of points in scanning path."
   },
   "Task": {
