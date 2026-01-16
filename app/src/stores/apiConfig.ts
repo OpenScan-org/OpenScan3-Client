@@ -1,11 +1,14 @@
-import { defineStore } from 'pinia';
+import { defineStore } from 'pinia'
+import packageJson from '../../package.json'
+
+const defaultApiVersion = packageJson.apiVersion ?? 'v0.6'
 
 export const useApiConfigStore = defineStore('apiConfig', {
   state: () => ({
     schema: (window.location.protocol === 'https:' ? 'https' : 'http') as 'http' | 'https',
     host: window.location.hostname || 'openscan3-alpha.local',
     port: 8000,
-    version: 'v0.5',
+    version: defaultApiVersion,
     developerMode: false,
     cloudEnabled: false
   }),
