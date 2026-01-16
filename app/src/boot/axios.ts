@@ -1,10 +1,13 @@
 import { boot } from 'quasar/wrappers';
 import axios, { AxiosInstance } from 'axios';
-import { api } from '../api';
+import { apiClient } from 'src/services/apiClient';
+import { useApiConfigStore } from 'src/stores/apiConfig';
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     $axios: AxiosInstance;
+    $apiClient: typeof apiClient;
+    $apiConfig: ReturnType<typeof useApiConfigStore>;
   }
 }
 
@@ -16,13 +19,14 @@ declare module '@vue/runtime-core' {
 // for each client)
 
 export default boot(({ app }) => {
-  // for use inside Vue files (Options API) through this.$axios and this.$api
+  // for use inside Vue files (Options API) through this.$axios and related helpers
+
+  const apiConfigStore = useApiConfigStore();
 
   app.config.globalProperties.$axios = axios;
   // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
   //       so you won't necessarily have to import axios in each vue file
-
-  app.config.globalProperties.$api = api;
-  // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
-  //       so you can easily perform requests against your app's API
+  app.config.globalProperties.$apiClient = apiClient;
+  app.config.globalProperties.$apiConfig = apiConfigStore;
+  // ^ ^ ^ expose generated API client and config store to Options API components
 });
