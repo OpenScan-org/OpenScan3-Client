@@ -1,7 +1,10 @@
 import { defineStore } from 'pinia'
 import packageJson from '../../package.json'
 
-const defaultApiVersion = packageJson.apiVersion ?? 'v0.6'
+const packageApiVersion = packageJson.apiVersion ?? '0.6'
+const versionParts = packageApiVersion.replace(/^v/i, '').split('.')
+const normalizedVersion = versionParts.slice(0, 2).join('.') || '0.6'
+const defaultApiVersion = `v${normalizedVersion}`
 
 export const useApiConfigStore = defineStore('apiConfig', {
   state: () => ({
