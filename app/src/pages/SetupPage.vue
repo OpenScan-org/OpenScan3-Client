@@ -1,17 +1,19 @@
 <template>
-  <BasePage>
-    <BaseSection
-      title="Device setup"
-      subtitle="Initial configuration of your OpenScan device."
+  <BasePage content-class="col-12 col-md-10 col-lg-8">
+    <div class="q-mb-lg">
+      <div class="text-h5">Device setup</div>
+      <div class="text-body2 text-grey-7">
+        Initial configuration of your OpenScan device.
+      </div>
+    </div>
+    <BaseWizard
+      v-model="activeStepId"
+      :steps="steps"
+      finish-label="Finish setup"
+      next-label="Next"
+      back-label="Back"
+      @finish="handleFinishSetup"
     >
-      <BaseWizard
-        v-model="activeStepId"
-        :steps="steps"
-        finish-label="Finish setup"
-        next-label="Next"
-        back-label="Back"
-        @finish="handleFinishSetup"
-      >
         <template #default="{ step }">
           <div v-if="step.id === 'connection'">
             <div class="text-subtitle1 q-mb-sm">Device configuration</div>
@@ -41,6 +43,44 @@
                 />
               </template>
               </BaseList>
+            </div>
+          </div>
+          <div v-else-if="step.id === 'rotor-direction'">
+            <div class="text-subtitle1 q-mb-sm">Rotor direction</div>
+            <p class="q-mb-md">
+              Use the buttons below to move the rotor slightly up or down and confirm the movement matches the labels.
+            </p>
+            <div class="rotor-controls q-mb-md">
+              <BaseButtonSecondary
+                icon="keyboard_arrow_up"
+                label="Move up"
+                :loading="rotorMoveAction === 'up'"
+                :disable="isRotorControlDisabled"
+                @click="handleRotorMove('up')"
+              />
+              <BaseButtonSecondary
+                icon="keyboard_arrow_down"
+                label="Move down"
+                :loading="rotorMoveAction === 'down'"
+                :disable="isRotorControlDisabled"
+                @click="handleRotorMove('down')"
+              />
+            </div>
+            <div class="text-body2 q-mb-sm">
+              Does the rotor move in the direction shown on the buttons? If yes, click "Next". If not, click "Reverse direction".
+            </div>
+            <div class="rotor-reverse">
+              <BaseButtonPrimary
+                outline
+                icon="swap_vert"
+                label="Reverse direction"
+                :loading="isReversingRotorDirection"
+                :disable="isReverseDisabled"
+                @click="handleReverseRotorDirection"
+              />
+            </div>
+            <div class="text-body2 text-grey-7 q-mt-sm text-center">
+              Current direction: {{ rotorDirectionLabel }}
             </div>
           </div>
           <div v-else-if="step.id === 'hardware'">
@@ -74,7 +114,7 @@
                 />
                 <BaseButtonSecondary
                   icon="flip"
-                  label="Mirror"
+                  label="Mirror vertically"
                   :loading="orientationAction === 'mirror'"
                   :disable="isOrientationUpdating"
                   size="md"
@@ -136,8 +176,7 @@
             </div>
           </div>
         </template>
-      </BaseWizard>
-    </BaseSection>
+    </BaseWizard>
   </BasePage>
 </template>
 
@@ -146,7 +185,6 @@ import { computed, onMounted, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import BasePage from 'components/base/BasePage.vue'
-import BaseSection from 'components/base/BaseSection.vue'
 import BaseWizard from 'components/base/BaseWizard.vue'
 import BaseList from 'components/base/BaseList.vue'
 import BaseListItem from 'components/base/BaseListItem.vue'
@@ -157,11 +195,19 @@ import motorPositionImage from 'src/assets/openscan_motor_position.jpg'
 import { useDeviceStore } from 'src/stores/device'
 import CameraFastPreview from 'components/camera/CameraFastPreview.vue'
 import { useCameraStore } from 'src/stores/camera'
-import { listConfigFiles, setConfigFile, updateCameraNameSettings, type DeviceConfigRequest } from 'src/generated/api'
+import {
+  listConfigFiles,
+  moveMotorByDegree,
+  setConfigFile,
+  updateCameraNameSettings,
+  updateMotorNameSettings,
+  type DeviceConfigRequest
+} from 'src/generated/api'
 import { apiClient } from 'src/services/apiClient'
 
 const steps = [
   { id: 'connection', label: 'Model', caption: 'Select the device model.' },
+  { id: 'rotor-direction', label: 'Rotor Direction', caption: 'Verify motor direction.' },
   { id: 'hardware', label: 'Rotor Position', caption: 'Verify initial motor position.' },
   { id: 'orientation', label: 'Camera Orientation', caption: 'Adjust camera orientation.' },
   { id: 'test-scan', label: 'Finish', caption: '' }
@@ -194,6 +240,34 @@ const isNextDisabled = computed(
     isApplyingConfig.value
 )
 
+const ROTOR_MOTOR_NAME = 'rotor'
+const rotorMoveAction = ref<'up' | 'down' | null>(null)
+const isReversingRotorDirection = ref(false)
+
+const rotorMotor = computed(() => deviceStore.device?.motors?.[ROTOR_MOTOR_NAME] ?? null)
+const rotorDirection = computed<1 | -1 | null>(() => {
+  const value = rotorMotor.value?.settings?.direction
+  return value === 1 || value === -1 ? value : null
+})
+const rotorDirectionLabel = computed(() => {
+  if (rotorDirection.value === 1) return 'Forward (1)'
+  if (rotorDirection.value === -1) return 'Reverse (-1)'
+  return 'Unknown'
+})
+
+const isRotorControlDisabled = computed(
+  () =>
+    rotorMoveAction.value !== null ||
+    isReversingRotorDirection.value ||
+    deviceStore.status !== 'open'
+)
+const isReverseDisabled = computed(
+  () =>
+    isReversingRotorDirection.value ||
+    deviceStore.status !== 'open' ||
+    rotorDirection.value === null
+)
+
 const orientationCamera = computed(() => {
   const options = cameraStore.cameraOptions
   if (!options.length) return null
@@ -218,7 +292,25 @@ async function loadConfigs() {
   try {
     const data = await listConfigFiles<true>({ client: apiClient, throwOnError: true })
     const configs = (data as any)?.configs ?? []
-    configOptions.value = configs as DeviceConfigFile[]
+    const filtered = (configs as DeviceConfigFile[]).filter(
+      (config) => config.filename !== 'device_config.json'
+    )
+
+    filtered.sort((a, b) => {
+      const shieldA = (a.shield ?? '').toLowerCase()
+      const shieldB = (b.shield ?? '').toLowerCase()
+      if (shieldA !== shieldB) return shieldB.localeCompare(shieldA)
+
+      const nameA = (a.name ?? a.filename).toLowerCase()
+      const nameB = (b.name ?? b.filename).toLowerCase()
+      return nameA.localeCompare(nameB)
+    })
+
+    configOptions.value = filtered
+
+    if (selectedConfigPath.value && !filtered.some((c) => c.path === selectedConfigPath.value)) {
+      selectedConfigPath.value = null
+    }
   } catch (error) {
     console.error('Failed to load device configurations', error)
     $q.notify({ type: 'negative', message: 'Failed to load device configurations' })
@@ -255,6 +347,55 @@ async function handleNext(goNext: () => void) {
   goNext()
 }
 
+async function handleRotorMove(direction: 'up' | 'down') {
+  if (rotorMoveAction.value !== null) {
+    return
+  }
+
+  rotorMoveAction.value = direction
+  const degrees = direction === 'up' ? -10 : 10
+
+  try {
+    await deviceStore.ensureConnected()
+    await moveMotorByDegree<true>({
+      client: apiClient,
+      throwOnError: true,
+      path: { motor_name: ROTOR_MOTOR_NAME },
+      body: { degrees }
+    })
+  } catch (error) {
+    console.error('Failed to move rotor motor', error)
+    $q.notify({ type: 'negative', message: 'Failed to move rotor motor' })
+  } finally {
+    rotorMoveAction.value = null
+  }
+}
+
+async function handleReverseRotorDirection() {
+  if (isReversingRotorDirection.value || rotorDirection.value === null) {
+    return
+  }
+
+  const nextDirection = rotorDirection.value === 1 ? -1 : 1
+  isReversingRotorDirection.value = true
+
+  try {
+    await deviceStore.ensureConnected()
+    await updateMotorNameSettings<true>({
+      client: apiClient,
+      throwOnError: true,
+      path: { name: ROTOR_MOTOR_NAME },
+      body: { direction: nextDirection }
+    })
+    await deviceStore.refreshFromRest()
+  } catch (error) {
+    console.error('Failed to reverse rotor direction', error)
+    $q.notify({ type: 'negative', message: 'Failed to reverse rotor direction' })
+  } finally {
+    isReversingRotorDirection.value = false
+  }
+}
+
 const ROTATE_RIGHT_MAP: Record<number, number> = {
   1: 6,
   6: 3,
@@ -271,10 +412,10 @@ const MIRROR_MAP: Record<number, number> = {
   2: 1,
   3: 4,
   4: 3,
-  5: 8,
-  8: 5,
-  6: 7,
-  7: 6
+  5: 6,
+  6: 5,
+  7: 8,
+  8: 7
 }
 
 function getSafeOrientationFlag(): number | null {
@@ -345,6 +486,17 @@ async function handleFinishSetup() {
 .config-list-wrapper {
   max-width: 420px;
   margin: 0 auto;
+}
+
+.rotor-controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.rotor-reverse {
+  display: flex;
+  justify-content: center;
 }
 
 .rotor-image {

@@ -115,7 +115,7 @@ function isDone(stepId: string) {
       :caption="step.caption"
       :done="isDone(step.id)"
     >
-      <div class="q-mt-md">
+      <div class="q-mt-sm">
         <slot
           :step="step"
           :active-id="activeId"
@@ -132,7 +132,7 @@ function isDone(stepId: string) {
         :go-next="handleNext"
         :go-back="handleBack"
       >
-        <div class="row items-center justify-between q-mt-md">
+        <div class="row items-center justify-between q-mt-sm">
           <BaseButtonSecondary
             v-if="showBackButton && !isFirstStep"
             :label="backLabel"
@@ -151,6 +151,37 @@ function isDone(stepId: string) {
 
 <style scoped>
 .wizard-stepper :deep(.q-stepper__tab) {
-  min-width: 100px;
+  min-width: 90px;
+}
+
+.wizard-stepper :deep(.q-stepper__header) {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.wizard-stepper :deep(.q-stepper__header) {
+  padding-bottom: 0;
+}
+
+.wizard-stepper :deep(.q-stepper__tab) {
+  padding: 6px 10px;
+}
+
+.wizard-stepper :deep(.q-stepper__tab--active) {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 8px;
+}
+
+.wizard-stepper :deep(.q-stepper__step-content) {
+  padding-top: 8px;
+}
+
+.wizard-stepper :deep(.q-stepper__header) {
+  border-bottom: 0;
+}
+
+.wizard-stepper :deep(.q-stepper__content) {
+  border-top: 0;
 }
 </style>
