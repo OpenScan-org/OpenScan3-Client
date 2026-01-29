@@ -26,7 +26,7 @@ interface VersionState {
 }
 
 const GITHUB_FIRMWARE_REPO = 'OpenScan-org/OpenScan3'
-const GITHUB_FRONTEND_REPO = 'esto-openscan/OpenScan3-Client'
+const GITHUB_FRONTEND_REPO = 'OpenScan-org/OpenScan3-Client'
 
 function compareVersions(current: string, latest: string): number {
   const normalize = (v: string) => v.replace(/^v/, '').replace(/-.*$/, '').split('.').map(Number)
