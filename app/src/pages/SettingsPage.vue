@@ -2,9 +2,9 @@
   <q-page>
     <div class="q-pa-md">
       <div class="row justify-center q-col-gutter-md">
-        <div class="col-12 col-lg-8">
+        <div class="col-12">
           <div class="row q-col-gutter-md">
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 col-lg-4">
               <BaseSection class="q-mb-lg" title="Frontend Settings">
                 <div class="row q-col-gutter-sm">
                   <div class="col-12 col-md-6">
@@ -48,7 +48,11 @@
               </BaseSection>
             </div>
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 col-lg-4 q-mb-lg">
+              <BaseVersionInfoCard />
+            </div>
+
+            <div class="col-12 col-md-6 col-lg-4">
               <BaseSection class="q-mb-lg" title="Device Settings">
                 <div class="row q-col-gutter-sm items-end">
                   <div class="col-12">
@@ -142,7 +146,7 @@
               </BaseSection>
             </div>
 
-            <div class="col-12 col-md-6">
+            <div class="col-12 col-md-6 col-lg-4">
               <BaseSection class="q-mb-lg" title="Camera Settings">
                 <div class="row q-col-gutter-md">
                   <div class="col-12">
@@ -224,8 +228,8 @@
               </BaseSection>
             </div>
 
-            <div class="col-12 col-md-6">
-              <BaseSection class="q-mb-lg" title="Lights">
+            <div class="col-12 col-md-6 col-lg-4">
+              <BaseSection class="q-mb-lg" title="Light Settings">
                 <div class="row q-col-gutter-md">
                   <div class="col-12" v-if="lightNames.length === 0">
                     <q-banner dense>No lights found.</q-banner>
@@ -260,8 +264,8 @@
               </BaseSection>
             </div>
 
-            <div class="col-12">
-              <BaseSection class="q-mb-lg" title="Motors">
+            <div class="col-12 col-md-6 col-lg-8">
+              <BaseSection class="q-mb-lg" title="Motor Settings">
                 <div class="row q-col-gutter-md">
                   <div class="col-12" v-if="motorNames.length === 0">
                     <q-banner dense>No motors found.</q-banner>
@@ -348,6 +352,7 @@ import { useApiConfigStore } from 'src/stores/apiConfig'
 import { useDeviceStore } from 'src/stores/device'
 import PowerControls from 'src/components/PowerControls.vue'
 import BaseSection from 'components/base/BaseSection.vue'
+import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseSelect from 'components/base/BaseSelect.vue'
