@@ -1,63 +1,66 @@
 <template>
   <div class="col-12">
     <div class="scans-nested q-pa-md">
-      <div class="row items-center justify-between q-mb-sm scans-header">
-        <div class="row items-center">
+      <q-item class="q-mb-sm scans-header" dense>
+        <q-item-section avatar>
           <q-checkbox
-            dense
+            size="sm"
             :model-value="allScansSelected"
             :indeterminate="isPartialSelection"
             :disable="!scans.length"
             @update:model-value="toggleSelectAll"
-            class="q-mr-sm"
           />
+        </q-item-section>
+        <q-item-section>
           <div class="text-subtitle2 text-grey-7">Scans</div>
-        </div>
-        <div class="row items-center q-gutter-xs">
-          <q-btn
-            v-if="selectedScansSet.size > 0"
-            flat
-            round
-            dense
-            color="negative"
-            icon="delete"
-            @click="requestDeleteSelected"
-          >
-            <q-tooltip>Delete {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
-          </q-btn>
-          <q-btn
-            v-if="selectedScansSet.size > 0"
-            flat
-            round
-            dense
-            color="primary"
-            icon="download"
-            @click="requestDownloadSelected"
-          >
-            <q-tooltip>Download {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
-          </q-btn>
-          <q-btn flat round dense icon="more_vert">
-            <q-menu>
-              <q-list dense style="min-width: 150px">
-                <q-item clickable v-close-popup @click="inverse_scan_selection" :disable="!scans.length">
-                  <q-item-section>Inverse selection</q-item-section>
-                </q-item>
-                <q-separator />
-                <q-item clickable v-close-popup @click="requestDeleteErrored" :disable="erroredCount === 0">
-                  <q-item-section :class="erroredCount > 0 ? 'text-negative' : ''">
-                    Delete errored ({{ erroredCount }})
-                  </q-item-section>
-                </q-item>
-                <q-item clickable v-close-popup @click="requestDeleteCancelled" :disable="cancelledCount === 0">
-                  <q-item-section :class="cancelledCount > 0 ? 'text-grey-7' : ''">
-                    Delete cancelled ({{ cancelledCount }})
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
-          </q-btn>
-        </div>
-      </div>
+        </q-item-section>
+        <q-item-section side>
+          <div class="row items-center q-gutter-xs">
+            <q-btn
+              v-if="selectedScansSet.size > 0"
+              flat
+              round
+              dense
+              color="negative"
+              icon="delete"
+              @click="requestDeleteSelected"
+            >
+              <q-tooltip>Delete {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
+            </q-btn>
+            <q-btn
+              v-if="selectedScansSet.size > 0"
+              flat
+              round
+              dense
+              color="primary"
+              icon="download"
+              @click="requestDownloadSelected"
+            >
+              <q-tooltip>Download {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
+            </q-btn>
+            <q-btn flat round dense icon="more_vert">
+              <q-menu>
+                <q-list dense style="min-width: 150px">
+                  <q-item clickable v-close-popup @click="inverse_scan_selection" :disable="!scans.length">
+                    <q-item-section>Inverse selection</q-item-section>
+                  </q-item>
+                  <q-separator />
+                  <q-item clickable v-close-popup @click="requestDeleteErrored" :disable="erroredCount === 0">
+                    <q-item-section :class="erroredCount > 0 ? 'text-negative' : ''">
+                      Delete errored ({{ erroredCount }})
+                    </q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup @click="requestDeleteCancelled" :disable="cancelledCount === 0">
+                    <q-item-section :class="cancelledCount > 0 ? 'text-negative' : ''">
+                      Delete cancelled ({{ cancelledCount }})
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+            </q-btn>
+          </div>
+        </q-item-section>
+      </q-item>
       <q-list separator dense>
         <q-item
           v-for="scan in scans"
@@ -124,9 +127,28 @@
         </q-item-section>
           <q-item-section side class="q-pa-none">
             <div class="row items-center no-wrap q-gutter-xs">
-              <q-btn flat round icon="pause" v-if="scan.status === 'running'" @click.stop="pause_scan(scan.index)" />
-              <q-btn flat round icon="play_arrow" v-if="scan.status === 'paused' || scan.status === 'interrupted'" @click.stop="resume_scan(scan.index)" />
-              <q-btn flat round icon="cancel" v-if="['pending', 'running', 'paused'].includes(scan.status ?? '')" @click.stop="cancel_scan(scan.index)" color="negative" />
+              <q-btn flat round icon="pause" v-if="scan.status === 'running'" @click.stop="pause_scan(scan.index)">
+                <q-tooltip>Pause scan</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                icon="play_arrow"
+                v-if="scan.status === 'paused' || scan.status === 'interrupted'"
+                @click.stop="resume_scan(scan.index)"
+              >
+                <q-tooltip>Resume scan</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                icon="cancel"
+                v-if="['pending', 'running', 'paused'].includes(scan.status ?? '')"
+                @click.stop="cancel_scan(scan.index)"
+                color="negative"
+              >
+                <q-tooltip>Cancel scan</q-tooltip>
+              </q-btn>
               <q-btn
                 flat
                 round
@@ -134,7 +156,9 @@
                 :disable="!(scan.status === 'completed' && scan.settings?.focus_stacks > 1 && scan.stacking_task_status?.status !== 'completed')"
                 :color="scan.status === 'completed' && scan.settings?.focus_stacks > 1 && scan.stacking_task_status?.status !== 'completed' ? 'primary' : 'grey-5'"
                 @click.stop="stack_scan(scan.index)"
-              />
+              >
+                <q-tooltip>Start focus stacking</q-tooltip>
+              </q-btn>
               <q-btn
                 flat
                 round
@@ -142,7 +166,9 @@
                 :color="scan.status === 'completed' ? 'primary' : 'grey-5'"
                 :disable="scan.status !== 'completed'"
                 @click.stop="download_scan(scan.index)"
-              />
+              >
+                <q-tooltip>Download scan</q-tooltip>
+              </q-btn>
               <q-btn
                 flat
                 round
@@ -150,7 +176,9 @@
                 :color="['pending', 'running'].includes(scan.status ?? '') ? 'grey-5' : 'negative'"
                 :disable="['pending', 'running'].includes(scan.status ?? '')"
                 @click.stop="delete_scan(scan.index)"
-              />
+              >
+                <q-tooltip>Delete scan</q-tooltip>
+              </q-btn>
             </div>
           </q-item-section>
         </q-item>

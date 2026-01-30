@@ -2,33 +2,45 @@
     <div :class="detail ? 'col-12' : 'col-6'">
         <q-card class="project-card">
             <q-card-section>
-                <div class="row items-start justify-between">
-                    <div class="row items-center q-gutter-x-sm">
-                        <div class="text-h6">{{ project.name }}</div>
-                        <q-btn flat round dense color="negative" icon="delete" size="sm" @click="confirm_delete">
-                            <q-tooltip>Delete this project</q-tooltip>
-                        </q-btn>
+                <div class="project-header-grid">
+                    <q-img
+                        :src="thumbnailUrl"
+                        class="project-header-thumbnail"
+                        ratio="1"
+                        fit="cover"
+                    />
+                    <div class="project-header-content">
+                        <div class="row items-start justify-between">
+                            <div class="row items-center q-gutter-x-sm">
+                                <div class="text-h6">{{ project.name }}</div>
+                                <q-btn flat round dense color="negative" icon="delete" size="sm" @click="confirm_delete">
+                                    <q-tooltip>Delete this project</q-tooltip>
+                                </q-btn>
+                            </div>
+                            <div class="text-subtitle2 text-grey-7">{{ displayDate }}</div>
+                        </div>
+                        <div v-if="project.description" class="text-body2 text-grey-7 q-mt-sm">
+                            {{ project.description }}
+                        </div>
+                        <div class="row justify-center q-gutter-sm project-header-actions">
+                            <BaseButtonSecondary
+                                disable
+                                unelevated
+                                icon="cloud_upload"
+                                label="process project"
+                                v-if="apiConfigStore.cloudEnabled && !project.uploaded"
+                            >
+                                <q-tooltip>Coming Soon: Upload this project to the cloud</q-tooltip>
+                            </BaseButtonSecondary>
+                            <BaseButtonPrimary unelevated icon="cloud_download" label="Download" @click="confirm_download">
+                                <q-tooltip>Download the project archive</q-tooltip>
+                            </BaseButtonPrimary>
+                            <BaseButtonPrimary color="positive" unelevated icon="add" label="Add Scan" @click="add_scan">
+                                <q-tooltip>Create a new scan in this project</q-tooltip>
+                            </BaseButtonPrimary>
+                        </div>
                     </div>
-                    <div class="text-subtitle2 text-grey-7">{{ displayDate }}</div>
                 </div>
-                <div class="text-body2 text-grey-7 q-mt-sm">{{ project.description || 'No description' }}</div>
-            </q-card-section>
-            <q-card-section class="row justify-center q-gutter-sm">
-                <BaseButtonSecondary
-                    disable
-                    unelevated
-                    icon="cloud_upload"
-                    label="process project"
-                    v-if="apiConfigStore.cloudEnabled && !project.uploaded"
-                >
-                    <q-tooltip>Coming Soon: Upload this project to the cloud</q-tooltip>
-                </BaseButtonSecondary>
-                <BaseButtonPrimary unelevated icon="cloud_download" label="Download" @click="confirm_download">
-                    <q-tooltip>Download the project archive</q-tooltip>
-                </BaseButtonPrimary>
-                <BaseButtonPrimary color="positive" unelevated icon="add" label="Add Scan" @click="add_scan">
-                    <q-tooltip>Create a new scan in this project</q-tooltip>
-                </BaseButtonPrimary>
             </q-card-section>
             <q-separator />
             <ScansList
@@ -50,6 +62,31 @@
         </q-card>
     </div>
 </template>
+
+<style scoped>
+ .project-header-grid {
+     display: grid;
+     grid-template-columns: 128px minmax(0, 1fr);
+     column-gap: 16px;
+     align-items: start;
+ }
+
+ .project-header-thumbnail {
+     width: 128px;
+     height: 128px;
+ }
+
+ .project-header-content {
+     min-height: 128px;
+     display: flex;
+     flex-direction: column;
+     min-width: 0;
+ }
+
+ .project-header-actions {
+     margin-top: auto;
+ }
+</style>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
@@ -150,6 +187,10 @@ const displayDate = computed(() => {
 
     const date = new Date(props.project.created)
     return Number.isNaN(date.getTime()) ? props.project.created : date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+})
+
+const thumbnailUrl = computed(() => {
+    return `${getApiBaseUrl()}projects/${encodeURIComponent(props.project.name)}/thumbnail`
 })
 
 const confirm_delete = () => {
