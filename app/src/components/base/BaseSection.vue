@@ -9,7 +9,7 @@ const props = defineProps<{
 <template>
   <q-card flat bordered>
     <q-card-section class="q-pb-xs">
-      <div class="text-subtitle1">{{ props.title }}</div>
+      <div class="text-h6">{{ props.title }}</div>
       <div v-if="props.subtitle" class="text-caption text-grey-7">
         {{ props.subtitle }}
       </div>
