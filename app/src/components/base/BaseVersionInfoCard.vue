@@ -8,7 +8,7 @@ const versionStore = useVersionStore()
 </script>
 
 <template>
-  <BaseSection title="Version info">
+  <BaseSection title="Version Info">
     <div class="row q-col-gutter-sm">
       <div class="col">
         <div class="text-caption">Frontend</div>
