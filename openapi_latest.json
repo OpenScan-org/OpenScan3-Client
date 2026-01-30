@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenScan3 API v0.6",
-    "version": "0.6"
+    "title": "OpenScan3 API vnext",
+    "version": "next"
   },
   "paths": {
     "/cameras/": {
@@ -1318,6 +1318,49 @@
         }
       }
     },
+    "/projects/{project_name}/thumbnail": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Get Project Thumbnail",
+        "operationId": "get_project_thumbnail",
+        "parameters": [
+          {
+            "name": "project_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/projects/{project_name}/scan": {
       "post": {
         "tags": [
@@ -1590,6 +1633,136 @@
                 "schema": {
                   "$ref": "#/components/schemas/DeleteResponse"
                 }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project_name}/{scan_index}/photo": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Get Scan Photo",
+        "description": "Fetch a stored scan photo either as JSON payload or direct file download.",
+        "operationId": "get_scan_photo",
+        "parameters": [
+          {
+            "name": "project_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Name"
+            }
+          },
+          {
+            "name": "scan_index",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Scan Index"
+            }
+          },
+          {
+            "name": "filename",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Photo filename including extension, e.g. scan01_001.jpg",
+              "title": "Filename"
+            },
+            "description": "Photo filename including extension, e.g. scan01_001.jpg"
+          },
+          {
+            "name": "file_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Return only the raw file instead of JSON payload",
+              "default": false,
+              "title": "File Only"
+            },
+            "description": "Return only the raw file instead of JSON payload"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project_name}/scans/{scan_index}/path": {
+      "get": {
+        "tags": [
+          "projects"
+        ],
+        "summary": "Get Scan Path",
+        "operationId": "get_scan_path",
+        "parameters": [
+          {
+            "name": "project_name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Name"
+            }
+          },
+          {
+            "name": "scan_index",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Scan Index"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -3862,7 +4035,7 @@
               }
             ],
             "title": "Orientation Flag",
-            "description": "Orientation in exif flag format.For imx519 use 8.For Hawkeye in Mini use 5.",
+            "description": "Orientation in exif flag format.For imx519 in Mini use 8.For Hawkeye in Mini use 6.",
             "default": 8
           },
           "preview_resolution": {
@@ -4607,6 +4780,57 @@
         ],
         "title": "PathMethod"
       },
+      "PhotoResponse": {
+        "properties": {
+          "project_name": {
+            "type": "string",
+            "title": "Project Name"
+          },
+          "scan_index": {
+            "type": "integer",
+            "title": "Scan Index"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "content_type": {
+            "type": "string",
+            "title": "Content Type"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "title": "Size Bytes"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "photo_data": {
+            "type": "string",
+            "format": "binary",
+            "title": "Photo Data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_name",
+          "scan_index",
+          "filename",
+          "content_type",
+          "size_bytes",
+          "photo_data"
+        ],
+        "title": "PhotoResponse"
+      },
       "PolarPoint3D": {
         "properties": {
           "theta": {
@@ -4780,6 +5004,21 @@
             "type": "number",
             "title": "Duration",
             "default": 0.0
+          },
+          "total_size_bytes": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total Size Bytes",
+            "description": "Total size of all files belonging to the scan, in bytes.",
+            "default": 0
+          },
+          "photos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Photos",
+            "description": "Relative filenames (with extension) of all photos captured for this scan."
           },
           "task_id": {
             "anyOf": [

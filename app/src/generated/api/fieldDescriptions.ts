@@ -17,7 +17,7 @@ export const fieldDescriptions = {
     "gain": "Analogue Gain from 0 to 32.",
     "jpeg_quality": "JPEG image quality from 0 to 100",
     "manual_focus": "Manual focus position in diopters. This is only applied if autofocus is disabled.",
-    "orientation_flag": "Orientation in exif flag format.For imx519 use 8.For Hawkeye in Mini use 5.",
+    "orientation_flag": "Orientation in exif flag format.For imx519 in Mini use 8.For Hawkeye in Mini use 6.",
     "photo_resolution": "Preview resolution (x,y). Changing resolution can break cropping.",
     "preview_resolution": "Preview resolution (x,y). Changing resolution can break cropping.",
     "saturation": "Image color saturation from 0 to 32",
@@ -66,9 +66,11 @@ export const fieldDescriptions = {
     "camera_settings": "The camera settings used for this scan.",
     "created": "The timestamp when the scan was created.",
     "index": "The sequential index of the scan within the project.",
+    "photos": "Relative filenames (with extension) of all photos captured for this scan.",
     "project_name": "The name of the project this scan belongs to.",
     "settings": "The settings used for this scan.",
-    "status": "The final, persistent status of the scan, mirroring the associated Task status."
+    "status": "The final, persistent status of the scan, mirroring the associated Task status.",
+    "total_size_bytes": "Total size of all files belonging to the scan, in bytes."
   },
   "ScanSetting": {
     "focus_range": "Minimum and maximum focus distance in diopters.",
