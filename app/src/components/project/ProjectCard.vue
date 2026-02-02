@@ -24,13 +24,21 @@
                         </div>
                         <div class="row justify-center q-gutter-sm project-header-actions">
                             <BaseButtonSecondary
-                                disable
                                 unelevated
                                 icon="cloud_upload"
                                 label="process project"
-                                v-if="apiConfigStore.cloudEnabled && !project.uploaded"
+                                v-if="apiConfigStore.cloudEnabled"
+                                :loading="cloudUploadLoading"
+                                :disable="cloudUploadLoading || project.uploaded"
+                                @click="confirm_upload"
                             >
-                                <q-tooltip>Coming Soon: Upload this project to the cloud</q-tooltip>
+                                <q-tooltip>
+                                    {{
+                                        project.uploaded
+                                            ? 'Project is uploaded and will be processed.'
+                                            : 'Upload this project to the cloud'
+                                    }}
+                                </q-tooltip>
                             </BaseButtonSecondary>
                             <BaseButtonPrimary unelevated icon="cloud_download" label="Download" @click="confirm_download">
                                 <q-tooltip>Download the project archive</q-tooltip>
@@ -151,7 +159,7 @@ const handleBulkDeleteByStatus = (data: { project_name: string; scan_indices: nu
                 )
             )
             emit('reload')
-            setSelectedScans((prev) => prev.filter((index) => !data.scan_indices.includes(index)))
+            selectedScans.value = selectedScans.value.filter((index) => !data.scan_indices.includes(index))
         } catch (error) {
             console.error(`Could not delete ${statusLabel} scans.`, error)
         }
@@ -173,8 +181,17 @@ const handleBulkDownloadSelected = (data: { project_name: string; scan_indices: 
 }
 
 const props = defineProps<ProjectProp>()
-const emit = defineEmits(['delete:project', 'upload:project', 'delete:scan', 'pause:scan', 'select:scan'])
+const emit = defineEmits([
+    'reload',
+    'delete:project',
+    'upload:project',
+    'delete:scan',
+    'pause:scan',
+    'select:scan'
+])
 const selectedScans = ref<number[]>([])
+
+const cloudUploadLoading = ref(false)
 
 const setSelectedScans = (value: number[]) => {
     selectedScans.value = value
@@ -217,10 +234,13 @@ const confirm_upload = () => {
         persistent: true
     }).onOk(async () => {
         try {
+            cloudUploadLoading.value = true
             await uploadProjectToCloud({ path: { project_name: props.project.name }, client: apiClient })
             emit('reload')
         } catch (error) {
             console.error('Could not upload project.', error)
+        } finally {
+            cloudUploadLoading.value = false
         }
     })
 }

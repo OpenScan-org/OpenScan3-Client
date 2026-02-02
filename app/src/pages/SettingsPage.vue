@@ -141,6 +141,84 @@
                 </BaseSection>
 
                 <BaseVersionInfoCard />
+
+                <BaseSection title="OpenScanCloud Settings">
+                  <div class="row q-col-gutter-sm">
+                    <div class="col-12">
+                      <q-toggle v-model="cloudToggle" label="Enable cloud" left-label />
+                    </div>
+                  </div>
+
+                  <template v-if="cloudToggle">
+                    <div class="row q-col-gutter-sm" v-if="cloudSettingsLoading">
+                      <div class="col-12">
+                        <q-skeleton type="rect" height="140px" />
+                      </div>
+                    </div>
+
+                    <div class="row q-col-gutter-sm" v-else>
+                      <div class="col-12">
+                        <q-input v-model="cloudForm.token" label="Token" />
+                      </div>
+                      <div class="col-12">
+                        <div class="row items-center q-col-gutter-sm">
+                          <div class="col-auto">
+                            <BaseButtonSecondary
+                              icon="sync"
+                              square
+                              :loading="cloudStatusLoading"
+                              @click="loadCloudStatus"
+                            >
+                              <q-tooltip>Refresh token status.</q-tooltip>
+                            </BaseButtonSecondary>
+                          </div>
+                          <div class="col">
+                            <div class="text-body2">
+                              <span class="text-grey-7">Status:</span>
+                              <span
+                                v-if="tokenStatusView.expandable"
+                                class="q-ml-xs cursor-pointer"
+                                :class="tokenStatusView.isError ? 'text-negative' : 'text-grey-7'"
+                                @click="tokenStatusExpanded = !tokenStatusExpanded"
+                              >
+                                {{ tokenStatusView.summary }}
+                              </span>
+                              <span
+                                v-else
+                                class="q-ml-xs"
+                                :class="tokenStatusView.isError ? 'text-negative' : 'text-grey-7'"
+                              >
+                                {{ tokenStatusView.summary }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div v-if="tokenStatusView.expandable && tokenStatusExpanded" class="q-mt-sm">
+                          <div
+                            v-for="detail in tokenStatusView.details"
+                            :key="detail"
+                            class="text-body2 text-grey-7"
+                          >
+                            {{ detail }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row justify-end q-gutter-sm q-mt-md">
+                      <div class="col-auto">
+                        <BaseButtonPrimary
+                          icon="save"
+                          label="Save"
+                          :disable="!isCloudFormValid || cloudSettingsSaving"
+                          :loading="cloudSettingsSaving"
+                          @click="saveCloudSettings"
+                        />
+                      </div>
+                    </div>
+                  </template>
+                </BaseSection>
               </div>
             </div>
 
@@ -358,17 +436,23 @@ import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseSelect from 'components/base/BaseSelect.vue'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import {
-  listConfigFiles,
-  setConfigFile,
-  saveDeviceConfig,
-  reinitializeHardware,
-  reboot,
-  shutdown,
   getCameraNameSettings,
+  getCloudSettings,
+  getCloudStatus,
+  listConfigFiles,
+  reboot,
+  reinitializeHardware,
+  saveDeviceConfig,
+  setConfigFile,
+  shutdown,
   updateCameraNameSettings,
+  updateCloudSettings,
   updateLightNameSettings,
   updateMotorNameSettings,
   type CameraSettings,
+  type CloudSettings,
+  type CloudSettingsResponse,
+  type CloudStatusResponse,
   type LightConfig,
   type MotorConfig
 } from 'src/generated/api'
@@ -386,6 +470,248 @@ const apiConfigForm = reactive({
   version: apiConfigStore.version,
   developerMode: apiConfigStore.developerMode
 })
+
+const CLOUD_DEFAULTS = {
+  host: 'http://openscanfeedback.dnsuser.de:1334/',
+  user: 'openscan',
+  password: 'free',
+  splitSize: 200_000_000
+} as const
+
+const defaultSplitSize = CLOUD_DEFAULTS.splitSize
+
+const cloudToggle = ref(apiConfigStore.cloudEnabled ?? false)
+const cloudSettingsLoading = ref(false)
+const cloudSettingsSaving = ref(false)
+const cloudSettingsLoaded = ref(false)
+const cloudStatusLoading = ref(false)
+const cloudStatus = ref<CloudStatusResponse | null>(null)
+
+type CloudForm = {
+  host: string
+  user: string
+  password: string
+  token: string
+  split_size: number | null
+}
+
+const cloudForm = reactive<CloudForm>({
+  host: CLOUD_DEFAULTS.host,
+  user: CLOUD_DEFAULTS.user,
+  password: CLOUD_DEFAULTS.password,
+  token: '',
+  split_size: defaultSplitSize
+})
+
+const isCloudFormValid = computed(() => {
+  if (!cloudToggle.value) {
+    return false
+  }
+
+  const hasToken = cloudForm.token.trim().length > 0
+
+  const splitSizeValid =
+    cloudForm.split_size === null ||
+    (Number.isFinite(cloudForm.split_size) && (cloudForm.split_size ?? 0) > 0)
+
+  return hasToken && splitSizeValid
+})
+
+type TokenStatusView = {
+  summary: string
+  details: string[]
+  expandable: boolean
+  isError: boolean
+}
+
+const tokenStatusExpanded = ref(false)
+
+const tokenStatusView = computed<TokenStatusView>(() => {
+  if (!cloudToggle.value) {
+    return {
+      summary: 'Enable cloud to view token status.',
+      details: [],
+      expandable: false,
+      isError: false
+    }
+  }
+
+  if (cloudStatusLoading.value) {
+    return {
+      summary: 'Refreshing token status…',
+      details: [],
+      expandable: false,
+      isError: false
+    }
+  }
+
+  const info = cloudStatus.value?.token_info as Record<string, unknown> | null | undefined
+  if (!info) {
+    const fallback = cloudStatus.value?.message ?? 'Token status unavailable. Refresh to try again.'
+    const details = createCloudStatusDetailsFromMessage(fallback)
+    return {
+      summary: 'ERROR',
+      details,
+      expandable: details.length > 0,
+      isError: true
+    }
+  }
+
+  const infoStatus = getTokenInfoStringField(info, 'status')
+  const normalizedStatus = infoStatus?.toLowerCase() ?? ''
+  const credits =
+    getTokenInfoNumberField(info, 'credits') ?? getTokenInfoNumberField(info, 'credit')
+  const overallStatus = getCloudStatusString(cloudStatus.value?.status)
+  const isOk =
+    normalizedStatus === 'ok' ||
+    normalizedStatus === 'ready' ||
+    normalizedStatus === 'active' ||
+    normalizedStatus === 'valid' ||
+    overallStatus === 'online' ||
+    (!infoStatus && credits !== null)
+
+  const details: string[] = []
+  const message = getTokenInfoStringField(info, 'message')
+  if (message) {
+    details.push(message)
+  }
+
+  const assignedTo = getTokenInfoStringField(info, 'assigned_to')
+  if (assignedTo) {
+    details.push(`Assigned to ${assignedTo}`)
+  }
+
+  const expiresAt = getTokenInfoStringField(info, 'expires_at')
+  if (expiresAt) {
+    const expiresDate = new Date(expiresAt)
+    const label =
+      !Number.isNaN(expiresDate.valueOf()) && expiresDate.getFullYear() > 1970
+        ? expiresDate.toLocaleString()
+        : expiresAt
+    details.push(`Expires: ${label}`)
+  }
+
+  const queueEstimate = formatQueueEstimate(cloudStatus.value?.queue_estimate)
+  if (queueEstimate) {
+    details.push(queueEstimate)
+  }
+
+  if (isOk) {
+    const creditsLabel =
+      typeof credits === 'number' ? `${new Intl.NumberFormat().format(credits)} credits` : null
+    return {
+      summary: ['OK', creditsLabel].filter(Boolean).join(', '),
+      details,
+      expandable: false,
+      isError: false
+    }
+  }
+
+  if (typeof credits === 'number') {
+    details.push(`Credits: ${new Intl.NumberFormat().format(credits)}`)
+  }
+
+  if (details.length === 0) {
+    details.push(cloudStatus.value?.message ?? 'No additional information provided.')
+  }
+
+  return {
+    summary: 'ERROR',
+    details,
+    expandable: true,
+    isError: true
+  }
+})
+
+function getTokenInfoStringField(
+  info: Record<string, unknown> | null | undefined,
+  field: string
+): string | null {
+  if (!info || typeof info !== 'object') {
+    return null
+  }
+
+  const raw = info[field]
+  if (typeof raw !== 'string') {
+    return null
+  }
+
+  const trimmed = raw.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function getTokenInfoNumberField(
+  info: Record<string, unknown> | null | undefined,
+  field: string
+): number | null {
+  if (!info || typeof info !== 'object') {
+    return null
+  }
+
+  const raw = info[field]
+  if (typeof raw === 'number' && Number.isFinite(raw)) {
+    return raw
+  }
+
+  if (typeof raw === 'string') {
+    const parsed = Number(raw)
+    if (Number.isFinite(parsed)) {
+      return parsed
+    }
+  }
+
+  return null
+}
+
+function createCloudStatusDetailsFromMessage(message: string): string[] {
+  const parts = message
+    .split(' | ')
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0)
+
+  const extracted = parts.map((part) => {
+    const idx = part.indexOf(': ')
+    return idx >= 0 ? part.slice(idx + 2).trim() : part
+  })
+
+  return Array.from(new Set(extracted))
+}
+
+function formatQueueEstimate(queueEstimate: Record<string, unknown> | null | undefined): string | null {
+  if (!queueEstimate) {
+    return null
+  }
+
+  const seconds = getTokenInfoNumberField(queueEstimate, 'estimated_time_seconds')
+  if (typeof seconds === 'number') {
+    if (seconds <= 0) {
+      return 'Queue: ready'
+    }
+
+    const minutes = Math.ceil(seconds / 60)
+    if (minutes < 1) {
+      return `Queue: ${seconds}s`
+    }
+    return `Queue: ~${minutes} min`
+  }
+
+  const message = getTokenInfoStringField(queueEstimate, 'message')
+  return message ? `Queue: ${message}` : null
+}
+
+function getCloudStatusString(status: Record<string, unknown> | null | undefined): string | null {
+  if (!status || typeof status !== 'object') {
+    return null
+  }
+
+  const value = status['status']
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed.toLowerCase() : null
+}
 
 type DeviceConfigOption = { label: string; value: string; meta?: DeviceConfigListItem }
 
@@ -462,6 +788,102 @@ const directionOptions = [
   { label: 'Forward (1)', value: 1 },
   { label: 'Reverse (-1)', value: -1 }
 ]
+
+function createEmptyCloudForm(): CloudForm {
+  return {
+    host: CLOUD_DEFAULTS.host,
+    user: CLOUD_DEFAULTS.user,
+    password: CLOUD_DEFAULTS.password,
+    token: '',
+    split_size: defaultSplitSize
+  }
+}
+
+function applyCloudSettingsToForm(settings: Partial<CloudSettings> | null | undefined) {
+  const next = createEmptyCloudForm()
+  if (settings) {
+    next.host = typeof settings.host === 'string' && settings.host.length > 0 ? settings.host : next.host
+    next.token = typeof settings.token === 'string' ? settings.token : ''
+    next.split_size =
+      typeof settings.split_size === 'number' && Number.isFinite(settings.split_size)
+        ? settings.split_size
+        : null
+  }
+
+  Object.assign(cloudForm, next)
+  cloudForm.user = CLOUD_DEFAULTS.user
+  cloudForm.password = CLOUD_DEFAULTS.password
+}
+
+async function loadCloudSettings() {
+  if (cloudSettingsLoading.value) {
+    return
+  }
+
+  cloudSettingsLoading.value = true
+  try {
+    const response = await getCloudSettings({ client: apiClient })
+    const settings = ((response?.data ?? response) as CloudSettingsResponse | undefined)?.settings as
+      | Partial<CloudSettings>
+      | null
+    applyCloudSettingsToForm(settings)
+  } catch (error) {
+    console.error('Cloud settings could not be loaded.', error)
+    applyCloudSettingsToForm(null)
+  } finally {
+    cloudSettingsLoading.value = false
+    cloudSettingsLoaded.value = true
+  }
+}
+
+async function loadCloudStatus() {
+  if (!cloudToggle.value || cloudStatusLoading.value) {
+    return
+  }
+
+  cloudStatusLoading.value = true
+  try {
+    const response = await getCloudStatus({ client: apiClient })
+    const status = ((response?.data ?? response) as CloudStatusResponse | undefined) ?? null
+    cloudStatus.value = status
+  } catch (error) {
+    console.error('Cloud status could not be loaded.', error)
+    cloudStatus.value = null
+  } finally {
+    cloudStatusLoading.value = false
+  }
+}
+
+async function saveCloudSettings() {
+  if (!isCloudFormValid.value) {
+    return
+  }
+
+  cloudSettingsSaving.value = true
+  try {
+    const payload: CloudSettings = {
+      host: cloudForm.host.trim(),
+      user: cloudForm.user.trim(),
+      password: cloudForm.password,
+      token: cloudForm.token.trim()
+    }
+
+    if (cloudForm.split_size !== null) {
+      payload.split_size = cloudForm.split_size
+    }
+
+    await updateCloudSettings({
+      client: apiClient,
+      body: payload
+    })
+
+    apiConfigStore.setConfig({ cloudEnabled: true })
+  } catch (error) {
+    console.error('Cloud settings could not be saved.', error)
+  } finally {
+    cloudSettingsSaving.value = false
+  }
+}
 
 function resetCameraForm() {
   Object.assign(cameraForm, {
@@ -566,10 +988,11 @@ async function loadCameraSettings(name: string) {
   cameraLoading.value = true
   resetCameraForm()
   try {
-    const settings = await getCameraNameSettings({
+    const response = await getCameraNameSettings({
       client: apiClient,
       path: { name }
     })
+    const settings = ((response?.data ?? response) as CameraSettings | undefined) ?? null
 
     Object.assign(cameraForm, {
       shutter: settings?.shutter ?? null,
@@ -686,6 +1109,26 @@ watch(selectedCamera, (name) => {
     resetCameraForm()
   }
 })
+
+watch(
+  cloudToggle,
+  (enabled) => {
+    if (!enabled) {
+      if (apiConfigStore.cloudEnabled) {
+        apiConfigStore.setConfig({ cloudEnabled: false })
+      }
+      cloudStatus.value = null
+      return
+    }
+
+    if (!cloudSettingsLoaded.value) {
+      loadCloudSettings()
+    }
+
+    loadCloudStatus()
+  },
+  { immediate: true }
+)
 
 watch(
   cameraOptions,
