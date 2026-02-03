@@ -85,8 +85,16 @@
               :label="getStackingBadgeLabel(scan)"
             />
           </div>
-          <div v-if="get_scan_photos_info(scan)" class="text-caption text-grey-8">
-            {{ get_scan_photos_info(scan) }}
+          <div class="text-caption text-grey-8">
+            <template v-if="get_scan_photos_info(scan)">
+              {{ get_scan_photos_info(scan) }}
+            </template>
+            <template v-if="get_scan_photos_info(scan) && get_scan_size_label(scan)">
+              <span class="text-grey-5"> • </span>
+            </template>
+            <template v-if="get_scan_size_label(scan)">
+              {{ get_scan_size_label(scan) }}
+            </template>
           </div>
           <div class="text-caption text-grey-8">
             Created: {{ format_date(scan.created) }}<span v-if="scan.duration && scan.duration > 0"> • Duration: {{ format_duration(scan.duration) }}</span>
@@ -203,6 +211,7 @@ import { useRouter } from 'vue-router'
 import { computed, ref } from 'vue'
 import { type Scan } from 'src/generated/api'
 import { getApiBaseUrl } from 'src/services/apiClient'
+import { formatBytes } from 'src/utils/formatBytes'
 import { useTaskStore } from 'src/stores/tasks'
 import { useScanTemplateStore } from 'src/stores/scanTemplate'
 
@@ -365,6 +374,14 @@ const getStackButtonTooltip = (scan: Scan) => {
     return 'This scan cannot be focus stacked because it was captured without focus stack settings'
   }
   return 'Start focus stacking'
+}
+
+const get_scan_size_label = (scan: Scan) => {
+  const label = formatBytes(scan.total_size_bytes, 'mb')
+  if (!label) {
+    return null
+  }
+  return `Size: ${label}`
 }
 
 const createScanFromSettings = (scan: Scan) => {

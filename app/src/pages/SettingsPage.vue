@@ -479,6 +479,7 @@ const CLOUD_DEFAULTS = {
 } as const
 
 const defaultSplitSize = CLOUD_DEFAULTS.splitSize
+const BYTES_PER_GIGABYTE = 1024 ** 3
 
 const cloudToggle = ref(apiConfigStore.cloudEnabled ?? false)
 const cloudSettingsLoading = ref(false)
@@ -596,9 +597,11 @@ const tokenStatusView = computed<TokenStatusView>(() => {
     details.push(queueEstimate)
   }
 
+  const formattedCredits =
+    typeof credits === 'number' ? formatCreditsAsGigabytes(credits) : null
+
   if (isOk) {
-    const creditsLabel =
-      typeof credits === 'number' ? `${new Intl.NumberFormat().format(credits)} credits` : null
+    const creditsLabel = formattedCredits ? `${formattedCredits}` : null
     return {
       summary: ['OK', creditsLabel].filter(Boolean).join(', '),
       details,
@@ -607,8 +610,8 @@ const tokenStatusView = computed<TokenStatusView>(() => {
     }
   }
 
-  if (typeof credits === 'number') {
-    details.push(`Credits: ${new Intl.NumberFormat().format(credits)}`)
+  if (formattedCredits) {
+    details.push(`Credits: ${formattedCredits}`)
   }
 
   if (details.length === 0) {
@@ -697,6 +700,14 @@ function formatQueueEstimate(queueEstimate: Record<string, unknown> | null | und
 
   const message = getTokenInfoStringField(queueEstimate, 'message')
   return message ? `Queue: ${message}` : null
+}
+
+function formatCreditsAsGigabytes(credits: number): string {
+  const gigabytes = credits / BYTES_PER_GIGABYTE
+  return `${new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1
+  }).format(gigabytes)} GB`
 }
 
 function getCloudStatusString(status: Record<string, unknown> | null | undefined): string | null {

@@ -2115,49 +2115,6 @@ export type UploadProjectToCloudResponses = {
 
 export type UploadProjectToCloudResponse = UploadProjectToCloudResponses[keyof UploadProjectToCloudResponses];
 
-export type DownloadProjectFromCloudData = {
-    body?: never;
-    path: {
-        /**
-         * Project Name
-         */
-        project_name: string;
-    };
-    query?: {
-        /**
-         * Token Override
-         */
-        token_override?: string | null;
-        /**
-         * Remote Project
-         */
-        remote_project?: string | null;
-    };
-    url: '/projects/{project_name}/download';
-};
-
-export type DownloadProjectFromCloudErrors = {
-    /**
-     * Not found
-     */
-    404: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type DownloadProjectFromCloudError = DownloadProjectFromCloudErrors[keyof DownloadProjectFromCloudErrors];
-
-export type DownloadProjectFromCloudResponses = {
-    /**
-     * Successful Response
-     */
-    200: Task;
-};
-
-export type DownloadProjectFromCloudResponse = DownloadProjectFromCloudResponses[keyof DownloadProjectFromCloudResponses];
-
 export type DeletePhotosData = {
     /**
      * Photo Filenames
@@ -2545,6 +2502,38 @@ export type DownloadProjectErrors = {
 export type DownloadProjectError = DownloadProjectErrors[keyof DownloadProjectErrors];
 
 export type DownloadProjectResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type DownloadProjectModelData = {
+    body?: never;
+    path: {
+        /**
+         * Project Name
+         */
+        project_name: string;
+    };
+    query?: never;
+    url: '/projects/{project_name}/model/zip';
+};
+
+export type DownloadProjectModelErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DownloadProjectModelError = DownloadProjectModelErrors[keyof DownloadProjectModelErrors];
+
+export type DownloadProjectModelResponses = {
     /**
      * Successful Response
      */
@@ -3569,6 +3558,49 @@ export type GetCloudProjectResponses = {
 };
 
 export type GetCloudProjectResponse = GetCloudProjectResponses[keyof GetCloudProjectResponses];
+
+export type DownloadProjectFromCloudData = {
+    body?: never;
+    path: {
+        /**
+         * Project Name
+         */
+        project_name: string;
+    };
+    query?: {
+        /**
+         * Token Override
+         */
+        token_override?: string | null;
+        /**
+         * Remote Project
+         */
+        remote_project?: string | null;
+    };
+    url: '/cloud/projects/{project_name}/download';
+};
+
+export type DownloadProjectFromCloudErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DownloadProjectFromCloudError = DownloadProjectFromCloudErrors[keyof DownloadProjectFromCloudErrors];
+
+export type DownloadProjectFromCloudResponses = {
+    /**
+     * Successful Response
+     */
+    200: Task;
+};
+
+export type DownloadProjectFromCloudResponse = DownloadProjectFromCloudResponses[keyof DownloadProjectFromCloudResponses];
 
 export type StartFocusStackingData = {
     body?: never;

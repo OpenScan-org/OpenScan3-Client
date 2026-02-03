@@ -67,6 +67,7 @@ import { useCameraStore } from 'src/stores/camera'
 import { useTaskStore } from 'src/stores/tasks'
 import { useScanTemplateStore } from 'src/stores/scanTemplate'
 import { useScanPresetsStore } from 'src/stores/scanPresets'
+import { useCloudResetGuard } from 'src/composables/useCloudResetGuard'
 const route = useRoute()
 const router = useRouter()
 
@@ -75,6 +76,7 @@ const cameraStore = useCameraStore()
 const taskStore = useTaskStore()
 const scanTemplateStore = useScanTemplateStore()
 const scanPresetsStore = useScanPresetsStore()
+const { promptCloudReset } = useCloudResetGuard()
 
 const selectedCameraName = ref<string>('')
 const selectedProject = ref('')
@@ -96,6 +98,9 @@ const presetOptions = computed(() =>
 )
 
 const selectedCamera = computed(() => cameraStore.cameraOptions.find(c => c.value === selectedCameraName.value) || null)
+const selectedProjectEntity = computed(() =>
+  projectsStore.projects.find((project) => project.name === selectedProject.value) ?? null
+)
 
 const activeScanTaskId = computed(() => {
   const tasks = taskStore.taskList
@@ -145,15 +150,7 @@ const onCreateProject = async (data: { name: string; description?: string }) => 
   }
 }
 
-const startScan = async () => {
-  if (!selectedCameraName.value) {
-    return
-  }
-
-  if (!selectedProject.value) {
-    return
-  }
-
+const performStartScan = async () => {
   if (!scanSettingsSectionRef.value) {
     return
   }
@@ -180,6 +177,30 @@ const startScan = async () => {
   } finally {
     scanning.value = false
   }
+}
+
+const startScan = async () => {
+  if (!selectedCameraName.value) {
+    return
+  }
+
+  if (!selectedProject.value) {
+    return
+  }
+
+  if (!scanSettingsSectionRef.value) {
+    return
+  }
+
+  if (selectedProjectEntity.value?.downloaded) {
+    promptCloudReset(selectedProject.value, async () => {
+      await projectsStore.fetchProjects()
+      await performStartScan()
+    })
+    return
+  }
+
+  await performStartScan()
 }
 
 const resetSettingsToDefaults = () => {
