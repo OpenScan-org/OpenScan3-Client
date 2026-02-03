@@ -26,7 +26,7 @@
                             <BaseButtonSecondary
                                 unelevated
                                 icon="cloud_upload"
-                                label="process project"
+                                label="reconstruct"
                                 v-if="apiConfigStore.cloudEnabled"
                                 :loading="cloudUploadLoading"
                                 :disable="cloudUploadLoading || project.uploaded"

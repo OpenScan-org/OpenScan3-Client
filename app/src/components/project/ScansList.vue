@@ -79,7 +79,11 @@
           <div class="row items-center q-gutter-sm">
             <div class="text-body1">Scan #{{ scan.index }}</div>
             <q-badge :color="get_status_color(scan.status)" :label="scan.status ?? 'unknown'" />
-            <q-badge v-if="scan.settings?.focus_stacks > 1" :color="scan.stacking_task_status?.status === 'completed' ? 'green' : 'grey'" :label="scan.stacking_task_status?.status === 'completed' ? 'stacked' : 'stackable'" />
+            <q-badge
+              v-if="scan.settings?.focus_stacks > 1"
+              :color="getStackingBadgeColor(scan)"
+              :label="getStackingBadgeLabel(scan)"
+            />
           </div>
           <div v-if="get_scan_photos_info(scan)" class="text-caption text-grey-8">
             {{ get_scan_photos_info(scan) }}
@@ -99,7 +103,7 @@
               New Scan with this Settings
             </div>
           </div>
-          
+
           <q-slide-transition>
             <div v-show="isExpanded(scan.index)" class="row q-mt-sm q-col-gutter-md">
               <div class="col-12 col-md-6">
@@ -127,7 +131,14 @@
         </q-item-section>
           <q-item-section side class="q-pa-none">
             <div class="row items-center no-wrap q-gutter-xs">
-              <q-btn flat round icon="pause" v-if="scan.status === 'running'" @click.stop="pause_scan(scan.index)">
+              <q-btn
+                flat
+                round
+                icon="pause"
+                color="primary"
+                v-if="scan.status === 'running'"
+                @click.stop="pause_scan(scan.index)"
+              >
                 <q-tooltip>Pause scan</q-tooltip>
               </q-btn>
               <q-btn
@@ -153,11 +164,11 @@
                 flat
                 round
                 icon="layers"
-                :disable="!(scan.status === 'completed' && scan.settings?.focus_stacks > 1 && scan.stacking_task_status?.status !== 'completed')"
-                :color="scan.status === 'completed' && scan.settings?.focus_stacks > 1 && scan.stacking_task_status?.status !== 'completed' ? 'primary' : 'grey-5'"
+                :disable="!canStartStacking(scan)"
+                :color="canStartStacking(scan) ? 'primary' : 'grey-5'"
                 @click.stop="stack_scan(scan.index)"
               >
-                <q-tooltip>Start focus stacking</q-tooltip>
+                <q-tooltip>{{ getStackButtonTooltip(scan) }}</q-tooltip>
               </q-btn>
               <q-btn
                 flat
@@ -211,16 +222,23 @@ const router = useRouter()
 const scans = computed<Scan[]>(() => {
   return props.scans.map((scan) => {
     const taskId = scan.task_id
-    if (!taskId) {
-      return scan
+    const stackingTaskId = scan.stacking_task_status?.task_id
+    const task = taskId ? taskStore.taskById(taskId) : null
+    const stackingTask = stackingTaskId ? taskStore.taskById(stackingTaskId) : null
+
+    const next: Scan = { ...scan }
+    if (task?.status) {
+      next.status = task.status
+    }
+    if (stackingTask?.status) {
+      next.stacking_task_status = {
+        ...(next.stacking_task_status ?? {}),
+        status: stackingTask.status,
+        task_id: stackingTask.id
+      }
     }
 
-    const task = taskStore.taskById(taskId)
-    if (!task?.status) {
-      return scan
-    }
-
-    return { ...scan, status: task.status }
+    return next
   })
 })
 
@@ -293,6 +311,60 @@ const get_status_color = (status?: string) => {
     case 'cancelled': return 'grey'
     default: return 'grey'
   }
+}
+
+type StackingState = 'stackable' | 'stacking' | 'stacked'
+const stackingInProgressStatuses = new Set(['pending', 'running', 'paused', 'interrupted'])
+
+const getStackingState = (scan: Scan): StackingState => {
+  const stackingStatus = scan.stacking_task_status?.status
+  if (stackingStatus === 'completed') {
+    return 'stacked'
+  }
+  if (stackingStatus && stackingInProgressStatuses.has(stackingStatus)) {
+    return 'stacking'
+  }
+  return 'stackable'
+}
+
+const canStartStacking = (scan: Scan) => {
+  return scan.status === 'completed' && scan.settings?.focus_stacks > 1 && getStackingState(scan) === 'stackable'
+}
+
+const getStackingBadgeColor = (scan: Scan) => {
+  const state = getStackingState(scan)
+  if (state === 'stacked') {
+    return 'green'
+  }
+  if (state === 'stacking') {
+    return 'blue'
+  }
+  return 'grey'
+}
+
+const getStackingBadgeLabel = (scan: Scan) => {
+  const state = getStackingState(scan)
+  if (state === 'stacking') {
+    return 'stacking...'
+  }
+  return state
+}
+
+const getStackButtonTooltip = (scan: Scan) => {
+  const state = getStackingState(scan)
+  if (state === 'stacking') {
+    return 'Focus stacking is in progress'
+  }
+  if (state === 'stacked') {
+    return 'Focus stacking already completed'
+  }
+  if (scan.status !== 'completed') {
+    return 'Focus stacking becomes available once the scan is completed'
+  }
+  if (!scan.settings?.focus_stacks || scan.settings.focus_stacks <= 1) {
+    return 'This scan cannot be focus stacked because it was captured without focus stack settings'
+  }
+  return 'Start focus stacking'
 }
 
 const createScanFromSettings = (scan: Scan) => {
