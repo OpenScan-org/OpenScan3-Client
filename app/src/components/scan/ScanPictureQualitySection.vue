@@ -1,36 +1,37 @@
 <template>
   <div class="col-12 col-md-4">
     <div v-if="camera" class="camera-settings">
-      <BaseSection title="Picture Quality">
-        <BaseSliderWithInput
-          v-model="shutterValue"
-          label="Shutter"
-          :slider-min="sliderMinMs"
-          :slider-max="sliderMaxMs"
-          :slider-step="sliderStepMs"
-          :input-min="sliderMinMs"
-          :input-max="sliderMaxMs"
-          :tooltip="cameraSettingDescription('shutter')"
-          @update:model-value="debouncedPersistShutter"
-        />
-
-        <div class="col-12">
+      <BaseSectionGroup>
+        <BaseSection title="Picture Quality">
           <BaseSliderWithInput
-            v-model="jpegQualityValue"
-            label="JPEG Quality"
-            :slider-min="0"
-            :slider-max="100"
-            :slider-step="1"
-            :input-min="0"
-            :input-max="100"
-            :tooltip="cameraSettingDescription('jpeg_quality')"
-            @update:model-value="debouncedPersistJpegQuality"
+            v-model="shutterValue"
+            label="Shutter"
+            :slider-min="sliderMinMs"
+            :slider-max="sliderMaxMs"
+            :slider-step="sliderStepMs"
+            :input-min="sliderMinMs"
+            :input-max="sliderMaxMs"
+            :tooltip="cameraSettingDescription('shutter')"
+            @update:model-value="debouncedPersistShutter"
           />
-        </div>
-      </BaseSection>
 
-      <BaseSection title="Advanced Picture Settings" class="q-mt-sm">
-        <div class="row q-col-gutter-sm">
+          <div class="col-12">
+            <BaseSliderWithInput
+              v-model="jpegQualityValue"
+              label="JPEG Quality"
+              :slider-min="0"
+              :slider-max="100"
+              :slider-step="1"
+              :input-min="0"
+              :input-max="100"
+              :tooltip="cameraSettingDescription('jpeg_quality')"
+              @update:model-value="debouncedPersistJpegQuality"
+            />
+          </div>
+        </BaseSection>
+
+        <BaseSection title="Advanced Picture Settings">
+          <div class="row q-col-gutter-sm">
 
           <div class="col-12">
             <BaseSliderWithInput
@@ -113,8 +114,9 @@
               @update:model-value="debouncedPersistOrientationFlag"
             />
           </div>
-        </div>
-      </BaseSection>
+          </div>
+        </BaseSection>
+      </BaseSectionGroup>
     </div>
   </div>
 </template>
@@ -124,6 +126,7 @@ import { computed, ref, watch } from 'vue';
 import { debounce } from 'quasar';
 
 import BaseSection from 'components/base/BaseSection.vue';
+import BaseSectionGroup from 'components/base/BaseSectionGroup.vue';
 import BaseSliderWithInput from 'components/base/BaseSliderWithInput.vue';
 import { useDeviceStore } from 'src/stores/device';
 import { apiClient } from 'src/services/apiClient';

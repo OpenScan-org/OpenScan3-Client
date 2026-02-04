@@ -240,7 +240,7 @@
                     </q-card>
                   </div>
                 </div>
-              </div>
+              </BaseSectionGroup>
             </div>
 
             <div class="col-12 col-md-6 col-lg-4">
@@ -340,119 +340,121 @@
                   class="non-frontend-settings__content"
                   :class="{ 'non-frontend-settings__content--blurred': deviceStore.hasConnectionIssue }"
                 >
-                  <BaseSection title="Light Settings">
-                  <div class="row q-col-gutter-md">
-                    <div class="col-12" v-if="lightNames.length === 0">
-                      <q-banner dense>No lights found.</q-banner>
-                    </div>
+                  <BaseSectionGroup>
+                    <BaseSection title="Light Settings">
+                      <div class="row q-col-gutter-md">
+                        <div class="col-12" v-if="lightNames.length === 0">
+                          <q-banner dense>No lights found.</q-banner>
+                        </div>
 
-                    <div class="col-12" v-for="lightName in lightNames" :key="lightName">
-                      <q-card flat bordered>
-                        <q-card-section>
-                          <div class="text-subtitle1">{{ lightName }}</div>
-                        </q-card-section>
-                        <q-card-section class="q-pt-none" v-if="lightForms[lightName]">
-                          <div class="row q-col-gutter-sm">
-                            <div class="col-12">
-                              <q-input
-                                v-model="lightForms[lightName].pins"
-                                label="Pins (comma-separated)"
+                        <div class="col-12" v-for="lightName in lightNames" :key="lightName">
+                          <q-card flat bordered>
+                            <q-card-section>
+                              <div class="text-subtitle1">{{ lightName }}</div>
+                            </q-card-section>
+                            <q-card-section class="q-pt-none" v-if="lightForms[lightName]">
+                              <div class="row q-col-gutter-sm">
+                                <div class="col-12">
+                                  <q-input
+                                    v-model="lightForms[lightName].pins"
+                                    label="Pins (comma-separated)"
+                                  />
+                                </div>
+                              </div>
+                            </q-card-section>
+                            <q-card-actions align="right">
+                              <BaseButtonPrimary
+                                icon="save"
+                                label="Save"
+                                :loading="lightSaving[lightName] === true"
+                                @click="saveLightSettings(lightName)"
                               />
-                            </div>
+                            </q-card-actions>
+                          </q-card>
+                        </div>
+                      </div>
+                    </BaseSection>
+
+                    <BaseSection title="Camera Settings">
+                      <div class="row q-col-gutter-md">
+                        <div class="col-12">
+                          <BaseSelect
+                            v-model="selectedCamera"
+                            :options="cameraOptions"
+                            label="Camera"
+                            :loading="cameraOptionsLoading"
+                            emit-value
+                            map-options
+                            behavior="menu"
+                            clearable
+                          />
+                        </div>
+
+                        <div class="col-12" v-if="cameraLoading">
+                          <q-skeleton type="rect" height="150px" />
+                        </div>
+
+                        <template v-else-if="selectedCamera">
+                          <div class="col-12 col-sm-6">
+                            <q-input v-model.number="cameraForm.shutter" type="number" label="Shutter (ms)">
+                              <q-tooltip>{{ cameraSettingDescription('shutter') }}</q-tooltip>
+                            </q-input>
                           </div>
-                        </q-card-section>
-                        <q-card-actions align="right">
+                          <div class="col-12 col-sm-6">
+                            <q-input v-model.number="cameraForm.gain" type="number" label="Analogue Gain">
+                              <q-tooltip>{{ cameraSettingDescription('gain') }}</q-tooltip>
+                            </q-input>
+                          </div>
+                          <div class="col-12 col-sm-6">
+                            <q-input v-model.number="cameraForm.saturation" type="number" label="Saturation">
+                              <q-tooltip>{{ cameraSettingDescription('saturation') }}</q-tooltip>
+                            </q-input>
+                          </div>
+                          <div class="col-12 col-sm-6">
+                            <q-input v-model.number="cameraForm.contrast" type="number" label="Contrast">
+                              <q-tooltip>{{ cameraSettingDescription('contrast') }}</q-tooltip>
+                            </q-input>
+                          </div>
+                          <div class="col-12 col-sm-6">
+                            <q-input v-model.number="cameraForm.awbg_red" type="number" label="AWBG Red">
+                              <q-tooltip>{{ cameraSettingDescription('awbg_red') }}</q-tooltip>
+                            </q-input>
+                          </div>
+                          <div class="col-12 col-sm-6">
+                            <q-input v-model.number="cameraForm.awbg_blue" type="number" label="AWBG Blue">
+                              <q-tooltip>{{ cameraSettingDescription('awbg_blue') }}</q-tooltip>
+                            </q-input>
+                          </div>
+                          <div class="col-12 col-sm-6">
+                            <q-input v-model.number="cameraForm.jpeg_quality" type="number" label="JPEG Quality">
+                              <q-tooltip>{{ cameraSettingDescription('jpeg_quality') }}</q-tooltip>
+                            </q-input>
+                          </div>
+                          <div class="col-12 col-sm-6">
+                            <q-input v-model.number="cameraForm.manual_focus" type="number" label="Manual Focus">
+                              <q-tooltip>{{ cameraSettingDescription('manual_focus') }}</q-tooltip>
+                            </q-input>
+                          </div>
+                          <div class="col-12">
+                            <q-toggle v-model="cameraForm.AF" label="Autofocus">
+                              <q-tooltip>{{ cameraSettingDescription('AF') }}</q-tooltip>
+                            </q-toggle>
+                          </div>
+                        </template>
+                      </div>
+                      <div class="row justify-end q-gutter-sm q-mt-md">
+                        <div class="col-auto">
                           <BaseButtonPrimary
                             icon="save"
                             label="Save"
-                            :loading="lightSaving[lightName] === true"
-                            @click="saveLightSettings(lightName)"
+                            :disable="!selectedCamera"
+                            :loading="cameraSaving"
+                            @click="saveCameraSettings"
                           />
-                        </q-card-actions>
-                      </q-card>
-                    </div>
-                  </div>
-                </BaseSection>
-
-                <BaseSection title="Camera Settings">
-                  <div class="row q-col-gutter-md">
-                    <div class="col-12">
-                      <BaseSelect
-                        v-model="selectedCamera"
-                        :options="cameraOptions"
-                        label="Camera"
-                        :loading="cameraOptionsLoading"
-                        emit-value
-                        map-options
-                        behavior="menu"
-                        clearable
-                      />
-                    </div>
-
-                    <div class="col-12" v-if="cameraLoading">
-                      <q-skeleton type="rect" height="150px" />
-                    </div>
-
-                    <template v-else-if="selectedCamera">
-                      <div class="col-12 col-sm-6">
-                        <q-input v-model.number="cameraForm.shutter" type="number" label="Shutter (ms)">
-                          <q-tooltip>{{ cameraSettingDescription('shutter') }}</q-tooltip>
-                        </q-input>
+                        </div>
                       </div>
-                      <div class="col-12 col-sm-6">
-                        <q-input v-model.number="cameraForm.gain" type="number" label="Analogue Gain">
-                          <q-tooltip>{{ cameraSettingDescription('gain') }}</q-tooltip>
-                        </q-input>
-                      </div>
-                      <div class="col-12 col-sm-6">
-                        <q-input v-model.number="cameraForm.saturation" type="number" label="Saturation">
-                          <q-tooltip>{{ cameraSettingDescription('saturation') }}</q-tooltip>
-                        </q-input>
-                      </div>
-                      <div class="col-12 col-sm-6">
-                        <q-input v-model.number="cameraForm.contrast" type="number" label="Contrast">
-                          <q-tooltip>{{ cameraSettingDescription('contrast') }}</q-tooltip>
-                        </q-input>
-                      </div>
-                      <div class="col-12 col-sm-6">
-                        <q-input v-model.number="cameraForm.awbg_red" type="number" label="AWBG Red">
-                          <q-tooltip>{{ cameraSettingDescription('awbg_red') }}</q-tooltip>
-                        </q-input>
-                      </div>
-                      <div class="col-12 col-sm-6">
-                        <q-input v-model.number="cameraForm.awbg_blue" type="number" label="AWBG Blue">
-                          <q-tooltip>{{ cameraSettingDescription('awbg_blue') }}</q-tooltip>
-                        </q-input>
-                      </div>
-                      <div class="col-12 col-sm-6">
-                        <q-input v-model.number="cameraForm.jpeg_quality" type="number" label="JPEG Quality">
-                          <q-tooltip>{{ cameraSettingDescription('jpeg_quality') }}</q-tooltip>
-                        </q-input>
-                      </div>
-                      <div class="col-12 col-sm-6">
-                        <q-input v-model.number="cameraForm.manual_focus" type="number" label="Manual Focus">
-                          <q-tooltip>{{ cameraSettingDescription('manual_focus') }}</q-tooltip>
-                        </q-input>
-                      </div>
-                      <div class="col-12">
-                        <q-toggle v-model="cameraForm.AF" label="Autofocus">
-                          <q-tooltip>{{ cameraSettingDescription('AF') }}</q-tooltip>
-                        </q-toggle>
-                      </div>
-                    </template>
-                  </div>
-                  <div class="row justify-end q-gutter-sm q-mt-md">
-                    <div class="col-auto">
-                      <BaseButtonPrimary
-                        icon="save"
-                        label="Save"
-                        :disable="!selectedCamera"
-                        :loading="cameraSaving"
-                        @click="saveCameraSettings"
-                      />
-                    </div>
-                  </div>
-                </BaseSection>
+                    </BaseSection>
+                  </BaseSectionGroup>
                 </div>
 
                 <div v-if="deviceStore.hasConnectionIssue" class="non-frontend-settings__overlay">
