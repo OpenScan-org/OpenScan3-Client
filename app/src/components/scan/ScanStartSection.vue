@@ -1,98 +1,100 @@
 <template>
   <q-form @submit.prevent="emit('submit')">
-    <BaseSection title="Start scan" description="Select a project or create a new one and start a scan.">
-      <SelectWithButton
-        v-model="selectedProjectModel"
-        :options="projectOptions"
-        label="Project"
-        new-value-mode="add-unique"
-        emit-value
-        map-options
-        lazy-rules
-        :rules="projectRules"
-        button-icon="add"
-        button-aria-label="Create new project"
-        button-tooltip="Create new project"
-        @button-click="emit('create-project-click')"
-      />
+    <BaseSectionGroup>
+      <BaseSection title="Start scan" description="Select a project or create a new one and start a scan.">
+        <SelectWithButton
+          v-model="selectedProjectModel"
+          :options="projectOptions"
+          label="Project"
+          new-value-mode="add-unique"
+          emit-value
+          map-options
+          lazy-rules
+          :rules="projectRules"
+          button-icon="add"
+          button-aria-label="Create new project"
+          button-tooltip="Create new project"
+          @button-click="emit('create-project-click')"
+        />
 
-      <BaseButtonPrimary
-        :label="`Start scan with ${photoCount} photos`"
-        type="submit"
-        class="full-width q-mt-sm"
-      />
-    </BaseSection>
+        <BaseButtonPrimary
+          :label="`Start scan with ${photoCount} photos`"
+          type="submit"
+          class="full-width q-mt-sm"
+        />
+      </BaseSection>
 
-    <BaseSection title="Use preset" description="Apply saved scan settings or store the current one.">
-      <SelectWithButton
-        v-model="selectedPresetModel"
-        :options="presetSelectOptions"
-        label="Presets"
-        emit-value
-        map-options
-        clearable
-        :disable="!presetSelectOptions.length"
-        placeholder="Select a preset"
-        button-icon="save"
-        button-aria-label="Save preset"
-        :button-tooltip="overwriteTooltip"
-        :button-disable="!selectedPresetModel"
-        :show-primary-button="!!selectedPresetModel"
-        show-secondary-button
-        secondary-button-icon="delete_outline"
-        secondary-button-aria-label="Delete selected preset"
-        :secondary-button-disable="!selectedPresetModel"
-        secondary-button-tooltip="Delete selected preset"
-        @button-click="emit('overwrite-preset')"
-        @secondary-button-click="handleDeletePreset"
-      />
+      <BaseSection title="Use preset" description="Apply saved scan settings or store the current one.">
+        <SelectWithButton
+          v-model="selectedPresetModel"
+          :options="presetSelectOptions"
+          label="Presets"
+          emit-value
+          map-options
+          clearable
+          :disable="!presetSelectOptions.length"
+          placeholder="Select a preset"
+          button-icon="save"
+          button-aria-label="Save preset"
+          :button-tooltip="overwriteTooltip"
+          :button-disable="!selectedPresetModel"
+          :show-primary-button="!!selectedPresetModel"
+          show-secondary-button
+          secondary-button-icon="delete_outline"
+          secondary-button-aria-label="Delete selected preset"
+          :secondary-button-disable="!selectedPresetModel"
+          secondary-button-tooltip="Delete selected preset"
+          @button-click="emit('overwrite-preset')"
+          @secondary-button-click="handleDeletePreset"
+        />
 
-      <div class="row q-gutter-sm q-mt-sm justify-center">
-        <q-btn
-          flat
-          dense
-          color="grey-7"
-          icon="playlist_add"
-          label="Save"
-          @click="emit('create-preset-click')"
+        <div class="row q-gutter-sm q-mt-sm justify-center">
+          <q-btn
+            flat
+            dense
+            color="grey-7"
+            icon="playlist_add"
+            label="Save"
+            @click="emit('create-preset-click')"
+            >
+            <q-tooltip>Save current scan and camera settings as preset</q-tooltip>
+          </q-btn>
+          <q-btn
+            flat
+            dense
+            color="grey-7"
+            icon="restart_alt"
+            label="Reset"
+            @click="showResetConfirm = true"
           >
-          <q-tooltip>Save current scan and camera settings as preset</q-tooltip>
-        </q-btn>
-        <q-btn
-          flat
-          dense
-          color="grey-7"
-          icon="restart_alt"
-          label="Reset"
-          @click="showResetConfirm = true"
-        >
-          <q-tooltip>Reset all scan and camera settings to defaults</q-tooltip>
-        </q-btn>
-      </div>
+            <q-tooltip>Reset all scan and camera settings to defaults</q-tooltip>
+          </q-btn>
+        </div>
 
-      <q-dialog v-model="showResetConfirm">
-        <q-card>
-          <q-card-section class="text-h6">
-            Reset settings?
-          </q-card-section>
-          <q-card-section class="text-body2">
-            This will restore all scan and camera settings to their defaults. Any settings that are not saved as a preset will be lost.
-          </q-card-section>
-          <q-card-actions align="right">
-            <q-btn flat label="Cancel" color="primary" @click="showResetConfirm = false" />
-            <q-btn
-              flat
-              label="Reset"
-              color="negative"
-              @click="
-                showResetConfirm = false;
-                emit('reset-defaults');
-              "
-            />
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
-    </BaseSection>
+        <q-dialog v-model="showResetConfirm">
+          <q-card>
+            <q-card-section class="text-h6">
+              Reset settings?
+            </q-card-section>
+            <q-card-section class="text-body2">
+              This will restore all scan and camera settings to their defaults. Any settings that are not saved as a preset will be lost.
+            </q-card-section>
+            <q-card-actions align="right">
+              <q-btn flat label="Cancel" color="primary" @click="showResetConfirm = false" />
+              <q-btn
+                flat
+                label="Reset"
+                color="negative"
+                @click="
+                  showResetConfirm = false;
+                  emit('reset-defaults');
+                "
+              />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
+      </BaseSection>
+    </BaseSectionGroup>
   </q-form>
 </template>
 
@@ -100,6 +102,7 @@
 import { computed, ref } from 'vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseSection from 'components/base/BaseSection.vue'
+import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
 import SelectWithButton from 'components/common/SelectWithButton.vue'
 
 const projectRules = [(val: string) => (val && val.length > 0) || 'Please select or enter a project']

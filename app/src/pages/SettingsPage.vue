@@ -5,7 +5,7 @@
         <div class="col-12">
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6 col-lg-4">
-              <div class="q-gutter-y-md">
+              <BaseSectionGroup>
                 <BaseSection title="Frontend Settings">
                   <div class="row q-col-gutter-sm">
                     <div class="col-12 col-md-6">
@@ -53,7 +53,8 @@
                     class="non-frontend-settings__content"
                     :class="{ 'non-frontend-settings__content--blurred': deviceStore.hasConnectionIssue }"
                   >
-                    <BaseSection title="Device Settings">
+                    <BaseSectionGroup>
+                      <BaseSection title="Device Settings">
                       <div class="row q-col-gutter-sm items-end">
                         <div class="col-12">
                           <BaseSelect
@@ -224,6 +225,7 @@
                         </div>
                       </template>
                     </BaseSection>
+                  </BaseSectionGroup>
                   </div>
 
                   <div v-if="deviceStore.hasConnectionIssue" class="non-frontend-settings__overlay">
@@ -242,7 +244,7 @@
             </div>
 
             <div class="col-12 col-md-6 col-lg-4">
-              <div class="q-gutter-y-md non-frontend-settings">
+              <BaseSectionGroup class="non-frontend-settings">
                 <div
                   class="non-frontend-settings__content"
                   :class="{ 'non-frontend-settings__content--blurred': deviceStore.hasConnectionIssue }"
@@ -329,11 +331,11 @@
                     </div>
                   </q-card>
                 </div>
-              </div>
+              </BaseSectionGroup>
             </div>
 
             <div class="col-12 col-md-6 col-lg-4">
-              <div class="q-gutter-y-md non-frontend-settings">
+              <BaseSectionGroup class="non-frontend-settings">
                 <div
                   class="non-frontend-settings__content"
                   :class="{ 'non-frontend-settings__content--blurred': deviceStore.hasConnectionIssue }"
@@ -463,7 +465,7 @@
                     </div>
                   </q-card>
                 </div>
-              </div>
+              </BaseSectionGroup>
             </div>
           </div>
         </div>
@@ -481,6 +483,7 @@ import { useApiConfigStore } from 'src/stores/apiConfig'
 import { useDeviceStore } from 'src/stores/device'
 import PowerControls from 'src/components/PowerControls.vue'
 import BaseSection from 'components/base/BaseSection.vue'
+import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
 import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
