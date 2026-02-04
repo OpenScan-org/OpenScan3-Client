@@ -1,7 +1,5 @@
 <template>
   <BasePage>
-    <BaseVersionInfoCard />
-
     <div class="q-mt-md">
       <TextCard title="Developer documentation">
         <p>
@@ -166,7 +164,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import BasePage from 'components/base/BasePage.vue';
-import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue';
 import TextCard from 'components/base/TextCard.vue';
 import BaseLink from 'components/base/BaseLink.vue';
 import { useApiConfigStore } from 'src/stores/apiConfig';

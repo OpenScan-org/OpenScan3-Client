@@ -48,183 +48,206 @@
                   </div>
                 </BaseSection>
 
-                <BaseSection title="Device Settings">
-                  <div class="row q-col-gutter-sm items-end">
-                    <div class="col-12">
-                      <BaseSelect
-                        v-model="selectedConfig"
-                        :options="configOptions"
-                        label="Configuration File"
-                        :loading="configOptionsLoading"
-                        emit-value
-                        map-options
-                        behavior="menu"
-                        clearable
-                      />
-                    </div>
-                    <div class="col-6">
-                      <BaseButtonSecondary
-                        class="full-width"
-                        icon="refresh"
-                        label="Reload"
-                        :loading="configOptionsLoading"
-                        @click="loadDeviceConfigs"
-                      />
-                    </div>
-                    <div class="col-6">
-                      <BaseButtonPrimary
-                        class="full-width"
-                        icon="publish"
-                        label="Apply"
-                        :disable="!selectedConfig"
-                        :loading="configApplying"
-                        @click="applySelectedConfig"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="row q-col-gutter-md q-mt-md">
-                    <div class="col-12">
-                      <q-toggle v-model="detectCameras" label="Detect cameras on reinit" />
-                    </div>
-                    <div class="col-12">
-                      <q-toggle
-                        v-model="saveConfigBeforePowerAction"
-                        label="Save configuration before reboot/shutdown"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="row q-col-gutter-sm q-mt-md">
-                    <div class="col-12 col-sm-6">
-                      <BaseButtonPrimary
-                        class="full-width"
-                        icon="save"
-                        label="Save config"
-                        :loading="hardwareActions.save"
-                        @click="saveCurrentConfig"
-                      />
-                    </div>
-                    <div class="col-12 col-sm-6">
-                      <BaseButtonSecondary
-                        class="full-width"
-                        icon="autorenew"
-                        label="Reinitialize hardware"
-                        :loading="hardwareActions.reinitialize"
-                        @click="handleReinitializeHardware"
-                      />
-                    </div>
-                    <PowerControls
-                      :save-config="saveConfigBeforePowerAction"
-                      v-slot="{ confirmReboot, confirmShutdown, rebooting, shuttingDown }"
-                    >
-                      <div class="col-12 col-sm-6">
-                        <BaseButtonSecondary
-                          class="full-width"
-                          icon="restart_alt"
-                          label="Reboot"
-                          :loading="rebooting"
-                          @click="confirmReboot"
-                        />
+                <div class="non-frontend-settings">
+                  <div
+                    class="non-frontend-settings__content"
+                    :class="{ 'non-frontend-settings__content--blurred': deviceStore.hasConnectionIssue }"
+                  >
+                    <BaseSection title="Device Settings">
+                      <div class="row q-col-gutter-sm items-end">
+                        <div class="col-12">
+                          <BaseSelect
+                            v-model="selectedConfig"
+                            :options="configOptions"
+                            label="Configuration File"
+                            :loading="configOptionsLoading"
+                            emit-value
+                            map-options
+                            behavior="menu"
+                            clearable
+                          />
+                        </div>
+                        <div class="col-6">
+                          <BaseButtonSecondary
+                            class="full-width"
+                            icon="refresh"
+                            label="Reload"
+                            :loading="configOptionsLoading"
+                            @click="loadDeviceConfigs"
+                          />
+                        </div>
+                        <div class="col-6">
+                          <BaseButtonPrimary
+                            class="full-width"
+                            icon="publish"
+                            label="Apply"
+                            :disable="!selectedConfig"
+                            :loading="configApplying"
+                            @click="applySelectedConfig"
+                          />
+                        </div>
                       </div>
-                      <div class="col-12 col-sm-6">
-                        <BaseButtonSecondary
-                          class="full-width"
-                          icon="power_settings_new"
-                          label="Shutdown"
-                          :loading="shuttingDown"
-                          @click="confirmShutdown"
-                        />
+
+                      <div class="row q-col-gutter-md q-mt-md">
+                        <div class="col-12">
+                          <q-toggle v-model="detectCameras" label="Detect cameras on reinit" />
+                        </div>
+                        <div class="col-12">
+                          <q-toggle
+                            v-model="saveConfigBeforePowerAction"
+                            label="Save configuration before reboot/shutdown"
+                          />
+                        </div>
                       </div>
-                    </PowerControls>
-                  </div>
-                </BaseSection>
 
-                <BaseVersionInfoCard />
-
-                <BaseSection title="OpenScanCloud Settings">
-                  <div class="row q-col-gutter-sm">
-                    <div class="col-12">
-                      <q-toggle v-model="cloudToggle" label="Enable cloud" left-label />
-                    </div>
-                  </div>
-
-                  <template v-if="cloudToggle">
-                    <div class="row q-col-gutter-sm" v-if="cloudSettingsLoading">
-                      <div class="col-12">
-                        <q-skeleton type="rect" height="140px" />
-                      </div>
-                    </div>
-
-                    <div class="row q-col-gutter-sm" v-else>
-                      <div class="col-12">
-                        <q-input v-model="cloudForm.token" label="Token" />
-                      </div>
-                      <div class="col-12">
-                        <div class="row items-center q-col-gutter-sm">
-                          <div class="col-auto">
+                      <div class="row q-col-gutter-sm q-mt-md">
+                        <div class="col-12 col-sm-6">
+                          <BaseButtonPrimary
+                            class="full-width"
+                            icon="save"
+                            label="Save config"
+                            :loading="hardwareActions.save"
+                            @click="saveCurrentConfig"
+                          />
+                        </div>
+                        <div class="col-12 col-sm-6">
+                          <BaseButtonSecondary
+                            class="full-width"
+                            icon="autorenew"
+                            label="Reinitialize hardware"
+                            :loading="hardwareActions.reinitialize"
+                            @click="handleReinitializeHardware"
+                          />
+                        </div>
+                        <PowerControls
+                          :save-config="saveConfigBeforePowerAction"
+                          v-slot="{ confirmReboot, confirmShutdown, rebooting, shuttingDown }"
+                        >
+                          <div class="col-12 col-sm-6">
                             <BaseButtonSecondary
-                              icon="sync"
-                              square
-                              :loading="cloudStatusLoading"
-                              @click="loadCloudStatus"
-                            >
-                              <q-tooltip>Refresh token status.</q-tooltip>
-                            </BaseButtonSecondary>
+                              class="full-width"
+                              icon="restart_alt"
+                              label="Reboot"
+                              :loading="rebooting"
+                              @click="confirmReboot"
+                            />
                           </div>
-                          <div class="col">
-                            <div class="text-body2">
-                              <span class="text-grey-7">Status:</span>
-                              <span
-                                v-if="tokenStatusView.expandable"
-                                class="q-ml-xs cursor-pointer"
-                                :class="tokenStatusView.isError ? 'text-negative' : 'text-grey-7'"
-                                @click="tokenStatusExpanded = !tokenStatusExpanded"
+                          <div class="col-12 col-sm-6">
+                            <BaseButtonSecondary
+                              class="full-width"
+                              icon="power_settings_new"
+                              label="Shutdown"
+                              :loading="shuttingDown"
+                              @click="confirmShutdown"
+                            />
+                          </div>
+                        </PowerControls>
+                      </div>
+                    </BaseSection>
+
+                    <BaseVersionInfoCard />
+
+                    <BaseSection title="OpenScanCloud Settings">
+                      <div class="row q-col-gutter-sm">
+                        <div class="col-12">
+                          <q-toggle v-model="cloudToggle" label="Enable cloud" left-label />
+                        </div>
+                      </div>
+
+                      <template v-if="cloudToggle">
+                        <div class="row q-col-gutter-sm" v-if="cloudSettingsLoading">
+                          <div class="col-12">
+                            <q-skeleton type="rect" height="140px" />
+                          </div>
+                        </div>
+
+                        <div class="row q-col-gutter-sm" v-else>
+                          <div class="col-12">
+                            <q-input v-model="cloudForm.token" label="Token" />
+                          </div>
+                          <div class="col-12">
+                            <div class="row items-center q-col-gutter-sm">
+                              <div class="col-auto">
+                                <BaseButtonSecondary
+                                  icon="sync"
+                                  square
+                                  :loading="cloudStatusLoading"
+                                  @click="loadCloudStatus"
+                                >
+                                  <q-tooltip>Refresh token status.</q-tooltip>
+                                </BaseButtonSecondary>
+                              </div>
+                              <div class="col">
+                                <div class="text-body2">
+                                  <span class="text-grey-7">Status:</span>
+                                  <span
+                                    v-if="tokenStatusView.expandable"
+                                    class="q-ml-xs cursor-pointer"
+                                    :class="tokenStatusView.isError ? 'text-negative' : 'text-grey-7'"
+                                    @click="tokenStatusExpanded = !tokenStatusExpanded"
+                                  >
+                                    {{ tokenStatusView.summary }}
+                                  </span>
+                                  <span
+                                    v-else
+                                    class="q-ml-xs"
+                                    :class="tokenStatusView.isError ? 'text-negative' : 'text-grey-7'"
+                                  >
+                                    {{ tokenStatusView.summary }}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div v-if="tokenStatusView.expandable && tokenStatusExpanded" class="q-mt-sm">
+                              <div
+                                v-for="detail in tokenStatusView.details"
+                                :key="detail"
+                                class="text-body2 text-grey-7"
                               >
-                                {{ tokenStatusView.summary }}
-                              </span>
-                              <span
-                                v-else
-                                class="q-ml-xs"
-                                :class="tokenStatusView.isError ? 'text-negative' : 'text-grey-7'"
-                              >
-                                {{ tokenStatusView.summary }}
-                              </span>
+                                {{ detail }}
+                              </div>
                             </div>
                           </div>
                         </div>
 
-                        <div v-if="tokenStatusView.expandable && tokenStatusExpanded" class="q-mt-sm">
-                          <div
-                            v-for="detail in tokenStatusView.details"
-                            :key="detail"
-                            class="text-body2 text-grey-7"
-                          >
-                            {{ detail }}
+                        <div class="row justify-end q-gutter-sm q-mt-md">
+                          <div class="col-auto">
+                            <BaseButtonPrimary
+                              icon="save"
+                              label="Save"
+                              :disable="!isCloudFormValid || cloudSettingsSaving"
+                              :loading="cloudSettingsSaving"
+                              @click="saveCloudSettings"
+                            />
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      </template>
+                    </BaseSection>
+                  </div>
 
-                    <div class="row justify-end q-gutter-sm q-mt-md">
-                      <div class="col-auto">
-                        <BaseButtonPrimary
-                          icon="save"
-                          label="Save"
-                          :disable="!isCloudFormValid || cloudSettingsSaving"
-                          :loading="cloudSettingsSaving"
-                          @click="saveCloudSettings"
-                        />
+                  <div v-if="deviceStore.hasConnectionIssue" class="non-frontend-settings__overlay">
+                    <q-card flat bordered class="q-pa-md">
+                      <div class="q-gutter-y-sm">
+                        <q-skeleton type="text" width="55%" />
+                        <q-skeleton type="rect" height="32px" />
+                        <q-skeleton type="rect" height="32px" />
+                        <q-skeleton type="text" width="45%" />
+                        <q-skeleton type="rect" height="120px" />
                       </div>
-                    </div>
-                  </template>
-                </BaseSection>
+                    </q-card>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div class="col-12 col-md-6 col-lg-4">
-              <div class="q-gutter-y-md">
-                <BaseSection title="Motor Settings">
+              <div class="q-gutter-y-md non-frontend-settings">
+                <div
+                  class="non-frontend-settings__content"
+                  :class="{ 'non-frontend-settings__content--blurred': deviceStore.hasConnectionIssue }"
+                >
+                  <BaseSection title="Motor Settings">
                   <div class="row q-col-gutter-md">
                     <div class="col-12" v-if="motorNames.length === 0">
                       <q-banner dense>No motors found.</q-banner>
@@ -294,12 +317,28 @@
                     </div>
                   </div>
                 </BaseSection>
+                </div>
+
+                <div v-if="deviceStore.hasConnectionIssue" class="non-frontend-settings__overlay">
+                  <q-card flat bordered class="q-pa-md">
+                    <div class="q-gutter-y-sm">
+                      <q-skeleton type="text" width="40%" />
+                      <q-skeleton type="rect" height="90px" />
+                      <q-skeleton type="text" width="55%" />
+                      <q-skeleton type="rect" height="48px" />
+                    </div>
+                  </q-card>
+                </div>
               </div>
             </div>
 
             <div class="col-12 col-md-6 col-lg-4">
-              <div class="q-gutter-y-md">
-                <BaseSection title="Light Settings">
+              <div class="q-gutter-y-md non-frontend-settings">
+                <div
+                  class="non-frontend-settings__content"
+                  :class="{ 'non-frontend-settings__content--blurred': deviceStore.hasConnectionIssue }"
+                >
+                  <BaseSection title="Light Settings">
                   <div class="row q-col-gutter-md">
                     <div class="col-12" v-if="lightNames.length === 0">
                       <q-banner dense>No lights found.</q-banner>
@@ -412,6 +451,18 @@
                     </div>
                   </div>
                 </BaseSection>
+                </div>
+
+                <div v-if="deviceStore.hasConnectionIssue" class="non-frontend-settings__overlay">
+                  <q-card flat bordered class="q-pa-md">
+                    <div class="q-gutter-y-sm">
+                      <q-skeleton type="text" width="45%" />
+                      <q-skeleton type="rect" height="90px" />
+                      <q-skeleton type="text" width="45%" />
+                      <q-skeleton type="rect" height="150px" />
+                    </div>
+                  </q-card>
+                </div>
               </div>
             </div>
           </div>
@@ -1248,5 +1299,27 @@ onMounted(async () => {
 <style scoped>
 .settings-card + .settings-card {
   margin-top: 16px;
+}
+
+.non-frontend-settings {
+  position: relative;
+}
+
+.non-frontend-settings__content--blurred {
+  filter: blur(2px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.non-frontend-settings__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: stretch;
+}
+
+.non-frontend-settings__overlay > .q-card {
+  width: 100%;
 }
 </style>

@@ -24,6 +24,8 @@ const cameraStore = useCameraStore()
 const deviceStore = useDeviceStore()
 const projectsStore = useProjectsStore()
 
+const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
+
 const isMoving = ref(false)
 const isLightBusy = ref(false)
 const isHoming = ref(false)
@@ -250,7 +252,18 @@ onMounted(() => {
 
       <div class="row q-col-gutter-md q-mt-md justify-center items-start">
         <div class="col-12 col-md-6">
-          <RecentProjectsList />
+          <template v-if="showDisconnectedSkeleton">
+            <q-card flat bordered class="q-pa-md">
+              <div class="q-gutter-y-sm">
+                <q-skeleton type="text" width="45%" />
+                <q-skeleton type="rect" height="24px" v-for="index in 3" :key="`recent-${index}`" />
+                <q-skeleton type="text" width="35%" />
+              </div>
+            </q-card>
+          </template>
+          <template v-else>
+            <RecentProjectsList />
+          </template>
         </div>
       </div>
     </div>
