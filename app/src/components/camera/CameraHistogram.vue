@@ -70,6 +70,7 @@ const histogramInfoDialog = ref(false)
 const histogramViewDialog = ref(false)
 const redrawInterval = ref<number | null>(null)
 const histogramImage = ref<HTMLImageElement | null>(null)
+const histogramImageUrl = ref<string | null>(null)
 const imageLoaded = ref(false)
 
 const histogramTheme = computed(() => {
@@ -190,18 +191,29 @@ function scheduleDraw() {
   }
 }
 
+function releaseHistogramImageUrl() {
+  if (histogramImageUrl.value) {
+    URL.revokeObjectURL(histogramImageUrl.value)
+    histogramImageUrl.value = null
+  }
+}
+
 function loadHistogramImage() {
-  const url = cameraStore.photoObjectUrl
-  if (!url) {
-    histogramImage.value = null
-    imageLoaded.value = false
+  releaseHistogramImageUrl()
+  histogramImage.value = null
+  imageLoaded.value = false
+
+  const blob = cameraStore.photoBlob
+  if (!blob) {
     clearHistogram()
     return
   }
 
+  const url = URL.createObjectURL(blob)
+  histogramImageUrl.value = url
+
   const img = new Image()
   img.crossOrigin = 'anonymous'
-  imageLoaded.value = false
 
   img.onload = () => {
     histogramImage.value = img
@@ -211,13 +223,14 @@ function loadHistogramImage() {
 
   img.onerror = () => {
     imageLoaded.value = false
+    releaseHistogramImageUrl()
   }
 
   img.src = url
 }
 
 watch(
-  () => cameraStore.photoObjectUrl,
+  () => cameraStore.photoBlob,
   () => {
     loadHistogramImage()
   },
@@ -255,6 +268,7 @@ onBeforeUnmount(() => {
   if (redrawInterval.value) {
     clearInterval(redrawInterval.value)
   }
+  releaseHistogramImageUrl()
 })
 </script>
 

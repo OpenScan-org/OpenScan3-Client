@@ -22,62 +22,67 @@
                         <div v-if="project.description" class="text-body2 text-grey-7 q-mt-sm">
                             {{ project.description }}
                         </div>
-                        <div class="row items-center q-gutter-sm project-header-actions">
+                        <div
+                            class="project-header-actions"
+                            :class="{ 'project-header-actions--single-column': !projectTotalSizeLabel }"
+                        >
                             <div v-if="projectTotalSizeLabel" class="text-caption text-grey-7 project-total-size">
                                 Total size: {{ projectTotalSizeLabel }}
                             </div>
-                            <template v-if="apiConfigStore.cloudEnabled">
-                                <BaseButtonSecondary
-                                    v-if="!project.uploaded"
+                            <div class="project-action-buttons row items-center q-gutter-sm justify-center">
+                                <template v-if="apiConfigStore.cloudEnabled">
+                                    <BaseButtonSecondary
+                                        v-if="!project.uploaded"
+                                        unelevated
+                                        icon="cloud_upload"
+                                        label="Cloud Reconstruction"
+                                        :loading="cloudUploadLoading"
+                                        :disable="cloudUploadLoading || cloudReconstructionBlocked"
+                                        @click="confirm_upload"
+                                    >
+                                        <q-tooltip>{{ cloudReconstructionTooltip }}</q-tooltip>
+                                    </BaseButtonSecondary>
+                                    <BaseButtonSecondary
+                                        v-else-if="!project.downloaded"
+                                        unelevated
+                                        icon="cloud_sync"
+                                        label="Fetch model"
+                                        :loading="cloudFetchLoading"
+                                        :disable="cloudFetchLoading"
+                                        @click="confirm_fetch_model"
+                                    >
+                                        <q-tooltip>Fetch the reconstructed model from the cloud.</q-tooltip>
+                                    </BaseButtonSecondary>
+                                    <BaseButtonSecondary
+                                        v-else
+                                        unelevated
+                                        icon="download"
+                                        label="model"
+                                        @click="download_model"
+                                    >
+                                        <q-tooltip>Download the reconstructed model archive</q-tooltip>
+                                    </BaseButtonSecondary>
+                                </template>
+                                <BaseButtonPrimary
                                     unelevated
-                                    icon="cloud_upload"
-                                    label="Cloud Reconstruction"
-                                    :loading="cloudUploadLoading"
-                                    :disable="cloudUploadLoading || cloudReconstructionBlocked"
-                                    @click="confirm_upload"
+                                    icon="cloud_download"
+                                    label="Download"
+                                    :disable="projectActionsBlocked"
+                                    @click="confirm_download"
                                 >
-                                    <q-tooltip>{{ cloudReconstructionTooltip }}</q-tooltip>
-                                </BaseButtonSecondary>
-                                <BaseButtonSecondary
-                                    v-else-if="!project.downloaded"
+                                    <q-tooltip>{{ projectActionsTooltip }}</q-tooltip>
+                                </BaseButtonPrimary>
+                                <BaseButtonPrimary
+                                    color="positive"
                                     unelevated
-                                    icon="cloud_sync"
-                                    label="Fetch model"
-                                    :loading="cloudFetchLoading"
-                                    :disable="cloudFetchLoading"
-                                    @click="confirm_fetch_model"
+                                    icon="add"
+                                    label="Add Scan"
+                                    :disable="projectActionsBlocked"
+                                    @click="add_scan"
                                 >
-                                    <q-tooltip>Fetch the reconstructed model from the cloud.</q-tooltip>
-                                </BaseButtonSecondary>
-                                <BaseButtonSecondary
-                                    v-else
-                                    unelevated
-                                    icon="download"
-                                    label="model"
-                                    @click="download_model"
-                                >
-                                    <q-tooltip>Download the reconstructed model archive</q-tooltip>
-                                </BaseButtonSecondary>
-                            </template>
-                            <BaseButtonPrimary
-                                unelevated
-                                icon="cloud_download"
-                                label="Download"
-                                :disable="projectActionsBlocked"
-                                @click="confirm_download"
-                            >
-                                <q-tooltip>{{ projectActionsTooltip }}</q-tooltip>
-                            </BaseButtonPrimary>
-                            <BaseButtonPrimary
-                                color="positive"
-                                unelevated
-                                icon="add"
-                                label="Add Scan"
-                                :disable="projectActionsBlocked"
-                                @click="add_scan"
-                            >
-                                <q-tooltip>{{ addScanTooltip }}</q-tooltip>
-                            </BaseButtonPrimary>
+                                    <q-tooltip>{{ addScanTooltip }}</q-tooltip>
+                                </BaseButtonPrimary>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -127,7 +132,20 @@
 
  .project-header-actions {
      margin-top: auto;
-     flex-wrap: wrap;
+     display: grid;
+     grid-template-columns: auto minmax(0, 1fr);
+     align-items: center;
+     column-gap: 12px;
+     row-gap: 8px;
+     width: 100%;
+ }
+
+ .project-header-actions--single-column {
+     grid-template-columns: minmax(0, 1fr);
+ }
+
+ .project-action-buttons {
+     width: 100%;
  }
 
  .project-total-size {
