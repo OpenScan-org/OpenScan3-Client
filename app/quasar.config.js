@@ -27,6 +27,7 @@ export default configure(function (/* ctx */) {
     boot: [
       'i18n',
       'axios',
+      'dialogDefaults',
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css

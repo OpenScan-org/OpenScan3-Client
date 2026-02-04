@@ -1,5 +1,10 @@
 <template>
-  <q-dialog :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" persistent :max-width="maxWidth">
+  <q-dialog
+    :model-value="modelValue"
+    @update:model-value="$emit('update:modelValue', $event)"
+    :no-backdrop-dismiss="true"
+    :max-width="maxWidth"
+  >
     <q-card :style="cardStyle">
       <q-card-section class="row items-center">
         <span class="q-ml-sm">Create New Project</span>

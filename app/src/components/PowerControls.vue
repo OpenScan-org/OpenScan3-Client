@@ -20,7 +20,7 @@ type PowerControlsProps = {
 }
 
 const props = withDefaults(defineProps<PowerControlsProps>(), {
-  saveConfig: false,
+  saveConfig: true,
   rebootMessage: 'The scanner will restart. Continue?',
   shutdownMessage: 'The scanner will shut down. Continue?'
 })
@@ -30,12 +30,52 @@ const $q = useQuasar()
 const rebooting = ref(false)
 const shuttingDown = ref(false)
 
-async function rebootAction() {
+const SAVE_SETTINGS_OPTION = 'save-settings'
+
+function buildOptionsModel(defaultValue: boolean | undefined) {
+  return (defaultValue ?? true) ? [SAVE_SETTINGS_OPTION] : []
+}
+
+function handlePowerConfirmation(
+  params: {
+    title: string
+    message: string
+    action: (saveConfig: boolean) => Promise<void>
+  }
+) {
+  $q.dialog({
+    class: 'power-controls-dialog',
+    title: params.title,
+    message: params.message,
+    cancel: true,
+    persistent: true,
+    options: {
+      type: 'checkbox',
+      model: buildOptionsModel(props.saveConfig),
+      items: [
+        {
+          label: 'Save settings',
+          value: SAVE_SETTINGS_OPTION
+        }
+      ]
+    }
+  }).onOk((selection) => {
+    const selections = Array.isArray(selection)
+      ? selection
+      : selection
+        ? [selection]
+        : []
+    const shouldSave = selections.includes(SAVE_SETTINGS_OPTION)
+    void params.action(shouldSave)
+  })
+}
+
+async function rebootAction(saveConfig: boolean) {
   rebooting.value = true
   try {
     await rebootDeviceApi({
       client: apiClient,
-      query: { save_config: props.saveConfig ?? false }
+      query: { save_config: saveConfig }
     })
   } catch (error) {
     console.error('Reboot failed.', error)
@@ -45,12 +85,12 @@ async function rebootAction() {
   }
 }
 
-async function shutdownAction() {
+async function shutdownAction(saveConfig: boolean) {
   shuttingDown.value = true
   try {
     await shutdownDeviceApi({
       client: apiClient,
-      query: { save_config: props.saveConfig ?? false }
+      query: { save_config: saveConfig }
     })
   } catch (error) {
     console.error('Shutdown failed.', error)
@@ -61,20 +101,31 @@ async function shutdownAction() {
 }
 
 function confirmReboot() {
-  $q.dialog({
+  handlePowerConfirmation({
     title: 'Confirm reboot',
     message: props.rebootMessage,
-    cancel: true,
-    persistent: true
-  }).onOk(rebootAction)
+    action: rebootAction
+  })
 }
 
 function confirmShutdown() {
-  $q.dialog({
+  handlePowerConfirmation({
     title: 'Confirm shutdown',
     message: props.shutdownMessage,
-    cancel: true,
-    persistent: true
-  }).onOk(shutdownAction)
+    action: shutdownAction
+  })
 }
 </script>
+
+<style>
+.power-controls-dialog .q-dialog__section--options {
+  border-top: 0;
+  border-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.power-controls-dialog .q-separator {
+  display: none;
+}
+</style>
