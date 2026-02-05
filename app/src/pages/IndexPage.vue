@@ -8,6 +8,7 @@ import { useProjectsStore } from 'src/stores/projects'
 import BaseButtonIconPrimary from 'components/base/BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import RecentProjectsList from 'src/components/project/RecentProjectsList.vue'
+import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import { apiClient } from 'src/services/apiClient'
 import {
   toggleLight,
@@ -23,6 +24,8 @@ const $q = useQuasar()
 const cameraStore = useCameraStore()
 const deviceStore = useDeviceStore()
 const projectsStore = useProjectsStore()
+
+const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
 
 const isMoving = ref(false)
 const isLightBusy = ref(false)
@@ -50,41 +53,30 @@ const previewImageStyle = computed<CSSProperties>(() => {
   }
 })
 
+const backgroundPreviewUrl = computed(() => {
+  const cameraName = cameraStore.selectedCamera
+  return cameraName ? cameraStore.getPreviewUrl(cameraName, 30) : null
+})
+
 const previewImageVisible = ref(false)
 const previewImageKey = ref(0)
 
-watch(
-  () => cameraStore.previewUrl,
-  (url) => {
-    if (url) {
-      previewImageVisible.value = false
-      previewImageKey.value += 1
-    } else {
-      previewImageVisible.value = false
-    }
-  },
-  { immediate: true }
-)
-
-watch(
-  () => selectedCamera.value?.settings?.orientation_flag ?? null,
-  (newFlag, oldFlag) => {
-    if (newFlag === oldFlag || !cameraStore.previewUrl) {
-      return
-    }
+watch(backgroundPreviewUrl, (url) => {
+  if (url) {
     previewImageVisible.value = false
     previewImageKey.value += 1
+  } else {
+    previewImageVisible.value = false
   }
-)
+})
 
-function handlePreviewLoad() {
+function handleBackgroundLoad() {
   previewImageVisible.value = true
 }
 
-function handlePreviewError() {
+function handleBackgroundError() {
   previewImageVisible.value = false
 }
-
 const isLightOn = computed(() => {
   const name = firstLightName.value
   return !!(name && deviceStore.lights[name]?.is_on)
@@ -164,16 +156,15 @@ onMounted(() => {
 
 <template>
   <q-page class="dashboard-page">
-    <!-- Blurred background camera preview -->
-    <div v-if="cameraStore.previewUrl" class="camera-background">
+    <div v-if="backgroundPreviewUrl" class="camera-background">
       <img
         :key="previewImageKey"
         class="camera-background__image"
         :class="{ 'camera-background__image--visible': previewImageVisible }"
-        :src="cameraStore.previewUrl"
+        :src="backgroundPreviewUrl"
         :style="previewImageStyle"
-        @load="handlePreviewLoad"
-        @error="handlePreviewError"
+        @load="handleBackgroundLoad"
+        @error="handleBackgroundError"
         alt="Camera preview background"
       />
     </div>
@@ -250,7 +241,18 @@ onMounted(() => {
 
       <div class="row q-col-gutter-md q-mt-md justify-center items-start">
         <div class="col-12 col-md-6">
-          <RecentProjectsList />
+          <template v-if="showDisconnectedSkeleton">
+            <q-card flat bordered class="q-pa-md">
+              <div class="q-gutter-y-sm">
+                <q-skeleton type="text" width="45%" />
+                <q-skeleton type="rect" height="24px" v-for="index in 3" :key="`recent-${index}`" />
+                <q-skeleton type="text" width="35%" />
+              </div>
+            </q-card>
+          </template>
+          <template v-else>
+            <RecentProjectsList />
+          </template>
         </div>
       </div>
     </div>
@@ -277,8 +279,8 @@ onMounted(() => {
   object-fit: cover;
   filter: blur(10px);
   opacity: 0;
-  transition: opacity 800ms ease, transform 1400ms ease;
-  will-change: opacity, transform;
+  transform: translate(-50%, -50%);
+  transition: opacity 600ms ease;
 }
 
 .camera-background__image--visible {

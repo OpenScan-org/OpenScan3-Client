@@ -53,7 +53,8 @@ export const fieldDefaults = {
   "Scan": {
     "current_step": 0,
     "duration": 0,
-    "status": "pending"
+    "status": "pending",
+    "total_size_bytes": 0
   },
   "ScanSetting": {
     "focus_range": [

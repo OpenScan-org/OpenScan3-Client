@@ -1,63 +1,66 @@
 <template>
   <div class="col-12">
     <div class="scans-nested q-pa-md">
-      <div class="row items-center justify-between q-mb-sm scans-header">
-        <div class="row items-center">
+      <q-item class="q-mb-sm scans-header" dense>
+        <q-item-section avatar>
           <q-checkbox
-            dense
+            size="sm"
             :model-value="allScansSelected"
             :indeterminate="isPartialSelection"
             :disable="!scans.length"
             @update:model-value="toggleSelectAll"
-            class="q-mr-sm"
           />
+        </q-item-section>
+        <q-item-section>
           <div class="text-subtitle2 text-grey-7">Scans</div>
-        </div>
-        <div class="row items-center q-gutter-xs">
-          <q-btn
-            v-if="selectedScansSet.size > 0"
-            flat
-            round
-            dense
-            color="negative"
-            icon="delete"
-            @click="requestDeleteSelected"
-          >
-            <q-tooltip>Delete {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
-          </q-btn>
-          <q-btn
-            v-if="selectedScansSet.size > 0"
-            flat
-            round
-            dense
-            color="primary"
-            icon="download"
-            @click="requestDownloadSelected"
-          >
-            <q-tooltip>Download {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
-          </q-btn>
-          <q-btn flat round dense icon="more_vert">
-            <q-menu>
-              <q-list dense style="min-width: 150px">
-                <q-item clickable v-close-popup @click="inverse_scan_selection" :disable="!scans.length">
-                  <q-item-section>Inverse selection</q-item-section>
-                </q-item>
-                <q-separator />
-                <q-item clickable v-close-popup @click="requestDeleteErrored" :disable="erroredCount === 0">
-                  <q-item-section :class="erroredCount > 0 ? 'text-negative' : ''">
-                    Delete errored ({{ erroredCount }})
-                  </q-item-section>
-                </q-item>
-                <q-item clickable v-close-popup @click="requestDeleteCancelled" :disable="cancelledCount === 0">
-                  <q-item-section :class="cancelledCount > 0 ? 'text-grey-7' : ''">
-                    Delete cancelled ({{ cancelledCount }})
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
-          </q-btn>
-        </div>
-      </div>
+        </q-item-section>
+        <q-item-section side>
+          <div class="row items-center q-gutter-xs">
+            <q-btn
+              v-if="selectedScansSet.size > 0"
+              flat
+              round
+              dense
+              color="negative"
+              icon="delete"
+              @click="requestDeleteSelected"
+            >
+              <q-tooltip>Delete {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
+            </q-btn>
+            <q-btn
+              v-if="selectedScansSet.size > 0"
+              flat
+              round
+              dense
+              color="primary"
+              icon="download"
+              @click="requestDownloadSelected"
+            >
+              <q-tooltip>Download {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
+            </q-btn>
+            <q-btn flat round dense icon="more_vert">
+              <q-menu>
+                <q-list dense style="min-width: 150px">
+                  <q-item clickable v-close-popup @click="inverse_scan_selection" :disable="!scans.length">
+                    <q-item-section>Inverse selection</q-item-section>
+                  </q-item>
+                  <q-separator />
+                  <q-item clickable v-close-popup @click="requestDeleteErrored" :disable="erroredCount === 0">
+                    <q-item-section :class="erroredCount > 0 ? 'text-negative' : ''">
+                      Delete errored ({{ erroredCount }})
+                    </q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup @click="requestDeleteCancelled" :disable="cancelledCount === 0">
+                    <q-item-section :class="cancelledCount > 0 ? 'text-negative' : ''">
+                      Delete cancelled ({{ cancelledCount }})
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+            </q-btn>
+          </div>
+        </q-item-section>
+      </q-item>
       <q-list separator dense>
         <q-item
           v-for="scan in scans"
@@ -76,10 +79,22 @@
           <div class="row items-center q-gutter-sm">
             <div class="text-body1">Scan #{{ scan.index }}</div>
             <q-badge :color="get_status_color(scan.status)" :label="scan.status ?? 'unknown'" />
-            <q-badge v-if="scan.settings?.focus_stacks > 1" :color="scan.stacking_task_status?.status === 'completed' ? 'green' : 'grey'" :label="scan.stacking_task_status?.status === 'completed' ? 'stacked' : 'stackable'" />
+            <q-badge
+              v-if="scan.settings?.focus_stacks > 1"
+              :color="getStackingBadgeColor(scan)"
+              :label="getStackingBadgeLabel(scan)"
+            />
           </div>
-          <div v-if="get_scan_photos_info(scan)" class="text-caption text-grey-8">
-            {{ get_scan_photos_info(scan) }}
+          <div class="text-caption text-grey-8">
+            <template v-if="get_scan_photos_info(scan)">
+              {{ get_scan_photos_info(scan) }}
+            </template>
+            <template v-if="get_scan_photos_info(scan) && get_scan_size_label(scan)">
+              <span class="text-grey-5"> • </span>
+            </template>
+            <template v-if="get_scan_size_label(scan)">
+              {{ get_scan_size_label(scan) }}
+            </template>
           </div>
           <div class="text-caption text-grey-8">
             Created: {{ format_date(scan.created) }}<span v-if="scan.duration && scan.duration > 0"> • Duration: {{ format_duration(scan.duration) }}</span>
@@ -96,7 +111,7 @@
               New Scan with this Settings
             </div>
           </div>
-          
+
           <q-slide-transition>
             <div v-show="isExpanded(scan.index)" class="row q-mt-sm q-col-gutter-md">
               <div class="col-12 col-md-6">
@@ -124,17 +139,45 @@
         </q-item-section>
           <q-item-section side class="q-pa-none">
             <div class="row items-center no-wrap q-gutter-xs">
-              <q-btn flat round icon="pause" v-if="scan.status === 'running'" @click.stop="pause_scan(scan.index)" />
-              <q-btn flat round icon="play_arrow" v-if="scan.status === 'paused' || scan.status === 'interrupted'" @click.stop="resume_scan(scan.index)" />
-              <q-btn flat round icon="cancel" v-if="['pending', 'running', 'paused'].includes(scan.status ?? '')" @click.stop="cancel_scan(scan.index)" color="negative" />
+              <q-btn
+                flat
+                round
+                icon="pause"
+                color="primary"
+                v-if="scan.status === 'running'"
+                @click.stop="pause_scan(scan.index)"
+              >
+                <q-tooltip>Pause scan</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                icon="play_arrow"
+                v-if="scan.status === 'paused' || scan.status === 'interrupted'"
+                @click.stop="resume_scan(scan.index)"
+              >
+                <q-tooltip>Resume scan</q-tooltip>
+              </q-btn>
+              <q-btn
+                flat
+                round
+                icon="cancel"
+                v-if="['pending', 'running', 'paused'].includes(scan.status ?? '')"
+                @click.stop="cancel_scan(scan.index)"
+                color="negative"
+              >
+                <q-tooltip>Cancel scan</q-tooltip>
+              </q-btn>
               <q-btn
                 flat
                 round
                 icon="layers"
-                :disable="!(scan.status === 'completed' && scan.settings?.focus_stacks > 1 && scan.stacking_task_status?.status !== 'completed')"
-                :color="scan.status === 'completed' && scan.settings?.focus_stacks > 1 && scan.stacking_task_status?.status !== 'completed' ? 'primary' : 'grey-5'"
+                :disable="!canStartStacking(scan)"
+                :color="canStartStacking(scan) ? 'primary' : 'grey-5'"
                 @click.stop="stack_scan(scan.index)"
-              />
+              >
+                <q-tooltip>{{ getStackButtonTooltip(scan) }}</q-tooltip>
+              </q-btn>
               <q-btn
                 flat
                 round
@@ -142,7 +185,9 @@
                 :color="scan.status === 'completed' ? 'primary' : 'grey-5'"
                 :disable="scan.status !== 'completed'"
                 @click.stop="download_scan(scan.index)"
-              />
+              >
+                <q-tooltip>Download scan</q-tooltip>
+              </q-btn>
               <q-btn
                 flat
                 round
@@ -150,7 +195,9 @@
                 :color="['pending', 'running'].includes(scan.status ?? '') ? 'grey-5' : 'negative'"
                 :disable="['pending', 'running'].includes(scan.status ?? '')"
                 @click.stop="delete_scan(scan.index)"
-              />
+              >
+                <q-tooltip>Delete scan</q-tooltip>
+              </q-btn>
             </div>
           </q-item-section>
         </q-item>
@@ -164,6 +211,7 @@ import { useRouter } from 'vue-router'
 import { computed, ref } from 'vue'
 import { type Scan } from 'src/generated/api'
 import { getApiBaseUrl } from 'src/services/apiClient'
+import { formatBytes } from 'src/utils/formatBytes'
 import { useTaskStore } from 'src/stores/tasks'
 import { useScanTemplateStore } from 'src/stores/scanTemplate'
 
@@ -183,16 +231,23 @@ const router = useRouter()
 const scans = computed<Scan[]>(() => {
   return props.scans.map((scan) => {
     const taskId = scan.task_id
-    if (!taskId) {
-      return scan
+    const stackingTaskId = scan.stacking_task_status?.task_id
+    const task = taskId ? taskStore.taskById(taskId) : null
+    const stackingTask = stackingTaskId ? taskStore.taskById(stackingTaskId) : null
+
+    const next: Scan = { ...scan }
+    if (task?.status) {
+      next.status = task.status
+    }
+    if (stackingTask?.status) {
+      next.stacking_task_status = {
+        ...(next.stacking_task_status ?? {}),
+        status: stackingTask.status,
+        task_id: stackingTask.id
+      }
     }
 
-    const task = taskStore.taskById(taskId)
-    if (!task?.status) {
-      return scan
-    }
-
-    return { ...scan, status: task.status }
+    return next
   })
 })
 
@@ -265,6 +320,68 @@ const get_status_color = (status?: string) => {
     case 'cancelled': return 'grey'
     default: return 'grey'
   }
+}
+
+type StackingState = 'stackable' | 'stacking' | 'stacked'
+const stackingInProgressStatuses = new Set(['pending', 'running', 'paused', 'interrupted'])
+
+const getStackingState = (scan: Scan): StackingState => {
+  const stackingStatus = scan.stacking_task_status?.status
+  if (stackingStatus === 'completed') {
+    return 'stacked'
+  }
+  if (stackingStatus && stackingInProgressStatuses.has(stackingStatus)) {
+    return 'stacking'
+  }
+  return 'stackable'
+}
+
+const canStartStacking = (scan: Scan) => {
+  return scan.status === 'completed' && scan.settings?.focus_stacks > 1 && getStackingState(scan) === 'stackable'
+}
+
+const getStackingBadgeColor = (scan: Scan) => {
+  const state = getStackingState(scan)
+  if (state === 'stacked') {
+    return 'green'
+  }
+  if (state === 'stacking') {
+    return 'blue'
+  }
+  return 'grey'
+}
+
+const getStackingBadgeLabel = (scan: Scan) => {
+  const state = getStackingState(scan)
+  if (state === 'stacking') {
+    return 'stacking...'
+  }
+  return state
+}
+
+const getStackButtonTooltip = (scan: Scan) => {
+  const state = getStackingState(scan)
+  if (state === 'stacking') {
+    return 'Focus stacking is in progress'
+  }
+  if (state === 'stacked') {
+    return 'Focus stacking already completed'
+  }
+  if (scan.status !== 'completed') {
+    return 'Focus stacking becomes available once the scan is completed'
+  }
+  if (!scan.settings?.focus_stacks || scan.settings.focus_stacks <= 1) {
+    return 'This scan cannot be focus stacked because it was captured without focus stack settings'
+  }
+  return 'Start focus stacking'
+}
+
+const get_scan_size_label = (scan: Scan) => {
+  const label = formatBytes(scan.total_size_bytes, 'mb')
+  if (!label) {
+    return null
+  }
+  return `Size: ${label}`
 }
 
 const createScanFromSettings = (scan: Scan) => {

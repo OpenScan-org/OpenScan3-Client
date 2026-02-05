@@ -2,38 +2,97 @@
     <div :class="detail ? 'col-12' : 'col-6'">
         <q-card class="project-card">
             <q-card-section>
-                <div class="row items-start justify-between">
-                    <div class="row items-center q-gutter-x-sm">
-                        <div class="text-h6">{{ project.name }}</div>
-                        <q-btn flat round dense color="negative" icon="delete" size="sm" @click="confirm_delete">
-                            <q-tooltip>Delete this project</q-tooltip>
-                        </q-btn>
+                <div class="project-header-grid" :class="{ 'project-header-grid--no-thumbnail': thumbnailMissing }">
+                    <q-img
+                        :src="thumbnailUrl"
+                        class="project-header-thumbnail"
+                        ratio="1"
+                        fit="cover"
+                        @error="thumbnailMissing = true"
+                        @load="thumbnailMissing = false"
+                    />
+                    <div class="project-header-content">
+                        <div class="row items-start justify-between">
+                            <div class="row items-center q-gutter-x-sm">
+                                <div class="text-h6">{{ project.name }}</div>
+                                <q-btn flat round dense color="negative" icon="delete" size="sm" @click="confirm_delete">
+                                    <q-tooltip>Delete this project</q-tooltip>
+                                </q-btn>
+                            </div>
+                            <div class="text-subtitle2 text-grey-7">{{ displayDate }}</div>
+                        </div>
+                        <div v-if="project.description" class="text-body2 text-grey-7 q-mt-sm">
+                            {{ project.description }}
+                        </div>
+                        <div
+                            class="project-header-actions"
+                            :class="{ 'project-header-actions--single-column': !projectTotalSizeLabel }"
+                        >
+                            <div v-if="projectTotalSizeLabel" class="text-caption text-grey-7 project-total-size">
+                                Total size: {{ projectTotalSizeLabel }}
+                            </div>
+                            <div class="project-action-buttons row items-center q-gutter-sm justify-center">
+                                <template v-if="apiConfigStore.cloudEnabled">
+                                    <BaseButtonSecondary
+                                        v-if="!project.uploaded"
+                                        unelevated
+                                        icon="cloud_upload"
+                                        label="Cloud Reconstruction"
+                                        :loading="cloudUploadLoading"
+                                        :disable="cloudUploadLoading || cloudReconstructionBlocked"
+                                        @click="confirm_upload"
+                                    >
+                                        <q-tooltip>{{ cloudReconstructionTooltip }}</q-tooltip>
+                                    </BaseButtonSecondary>
+                                    <BaseButtonSecondary
+                                        v-else-if="!project.downloaded"
+                                        unelevated
+                                        icon="cloud_sync"
+                                        label="Fetch model"
+                                        :loading="cloudFetchLoading"
+                                        :disable="cloudFetchLoading"
+                                        @click="confirm_fetch_model"
+                                    >
+                                        <q-tooltip>Fetch the reconstructed model from the cloud.</q-tooltip>
+                                    </BaseButtonSecondary>
+                                    <BaseButtonSecondary
+                                        v-else
+                                        unelevated
+                                        icon="download"
+                                        label="model"
+                                        @click="download_model"
+                                    >
+                                        <q-tooltip>Download the reconstructed model archive</q-tooltip>
+                                    </BaseButtonSecondary>
+                                </template>
+                                <BaseButtonPrimary
+                                    unelevated
+                                    icon="cloud_download"
+                                    label="Download"
+                                    :disable="projectDownloadBlocked"
+                                    @click="confirm_download"
+                                >
+                                    <q-tooltip>{{ projectDownloadTooltip }}</q-tooltip>
+                                </BaseButtonPrimary>
+                                <BaseButtonPrimary
+                                    color="positive"
+                                    unelevated
+                                    icon="add"
+                                    label="Add Scan"
+                                    :disable="projectActionsBlocked"
+                                    @click="add_scan"
+                                >
+                                    <q-tooltip>{{ addScanTooltip }}</q-tooltip>
+                                </BaseButtonPrimary>
+                            </div>
+                        </div>
                     </div>
-                    <div class="text-subtitle2 text-grey-7">{{ displayDate }}</div>
                 </div>
-                <div class="text-body2 text-grey-7 q-mt-sm">{{ project.description || 'No description' }}</div>
-            </q-card-section>
-            <q-card-section class="row justify-center q-gutter-sm">
-                <BaseButtonSecondary
-                    disable
-                    unelevated
-                    icon="cloud_upload"
-                    label="process project"
-                    v-if="apiConfigStore.cloudEnabled && !project.uploaded"
-                >
-                    <q-tooltip>Coming Soon: Upload this project to the cloud</q-tooltip>
-                </BaseButtonSecondary>
-                <BaseButtonPrimary unelevated icon="cloud_download" label="Download" @click="confirm_download">
-                    <q-tooltip>Download the project archive</q-tooltip>
-                </BaseButtonPrimary>
-                <BaseButtonPrimary color="positive" unelevated icon="add" label="Add Scan" @click="add_scan">
-                    <q-tooltip>Create a new scan in this project</q-tooltip>
-                </BaseButtonPrimary>
             </q-card-section>
             <q-separator />
             <ScansList
                 v-if="detail"
-                :scans="projectScans"
+                :scans="projectScansNormalized"
                 :project_name="project.name"
                 :selected-scans="selectedScans"
                 @update:selected-scans="setSelectedScans"
@@ -51,13 +110,83 @@
     </div>
 </template>
 
+<style scoped>
+ .project-header-grid {
+     display: grid;
+     grid-template-columns: 128px minmax(0, 1fr);
+     column-gap: 16px;
+     align-items: start;
+ }
+
+ .project-header-grid--no-thumbnail {
+     grid-template-columns: 0 minmax(0, 1fr);
+ }
+
+ .project-header-thumbnail {
+     width: 128px;
+     height: 128px;
+     border-radius: 12px;
+     overflow: hidden;
+ }
+
+ .project-header-grid--no-thumbnail .project-header-thumbnail {
+     width: 0;
+     height: 0;
+     opacity: 0;
+ }
+
+ .project-header-content {
+     min-height: 128px;
+     display: flex;
+     flex-direction: column;
+     min-width: 0;
+ }
+
+ .project-header-actions {
+     margin-top: auto;
+     display: grid;
+     grid-template-columns: auto minmax(0, 1fr);
+     align-items: center;
+     column-gap: 12px;
+     row-gap: 8px;
+     width: 100%;
+ }
+
+ .project-header-actions--single-column {
+     grid-template-columns: minmax(0, 1fr);
+ }
+
+ .project-action-buttons {
+     width: 100%;
+ }
+
+ .project-total-size {
+     font-weight: 500;
+     margin-right: 8px;
+ }
+</style>
+
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { apiClient, getApiBaseUrl } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
-import { deleteProject, uploadProjectToCloud, deleteScan, pauseScan, resumeScan, cancelScan, startFocusStacking, type Project, type Scan } from 'src/generated/api'
+import {
+    deleteProject,
+    uploadProjectToCloud,
+    deleteScan,
+    pauseScan,
+    resumeScan,
+    cancelScan,
+    startFocusStacking,
+    downloadProjectFromCloud,
+    type Project,
+    type Scan
+} from 'src/generated/api'
+import { useCloudResetGuard } from 'src/composables/useCloudResetGuard'
+import { formatBytes } from 'src/utils/formatBytes'
+import { useTaskStore } from 'src/stores/tasks'
 import BaseButtonPrimary from 'src/components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'src/components/base/BaseButtonSecondary.vue'
 import ScansList from './ScansList.vue'
@@ -65,6 +194,7 @@ import ScansList from './ScansList.vue'
 const $q = useQuasar()
 const router = useRouter()
 const apiConfigStore = useApiConfigStore()
+const taskStore = useTaskStore()
 
 interface ProjectProp {
     project: Project
@@ -114,7 +244,7 @@ const handleBulkDeleteByStatus = (data: { project_name: string; scan_indices: nu
                 )
             )
             emit('reload')
-            setSelectedScans((prev) => prev.filter((index) => !data.scan_indices.includes(index)))
+            selectedScans.value = selectedScans.value.filter((index) => !data.scan_indices.includes(index))
         } catch (error) {
             console.error(`Could not delete ${statusLabel} scans.`, error)
         }
@@ -136,8 +266,19 @@ const handleBulkDownloadSelected = (data: { project_name: string; scan_indices: 
 }
 
 const props = defineProps<ProjectProp>()
-const emit = defineEmits(['delete:project', 'upload:project', 'delete:scan', 'pause:scan', 'select:scan'])
+const emit = defineEmits([
+    'reload',
+    'delete:project',
+    'upload:project',
+    'delete:scan',
+    'pause:scan',
+    'select:scan'
+])
 const selectedScans = ref<number[]>([])
+
+const cloudUploadLoading = ref(false)
+const cloudFetchLoading = ref(false)
+const { cloudResetLoading, promptCloudReset } = useCloudResetGuard()
 
 const setSelectedScans = (value: number[]) => {
     selectedScans.value = value
@@ -152,6 +293,67 @@ const displayDate = computed(() => {
     return Number.isNaN(date.getTime()) ? props.project.created : date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 })
 
+const projectScansNormalized = computed<Scan[]>(() => {
+    const scansSource = props.projectScans ?? Object.values(props.project.scans || {})
+    return scansSource
+        .map((scan) => {
+            const next: Scan = { ...scan }
+            const task = scan.task_id ? taskStore.taskById(scan.task_id) : null
+            if (task?.status) {
+                next.status = task.status
+            }
+            return next
+        })
+        .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
+})
+
+const projectHasScans = computed(() => projectScansNormalized.value.length > 0)
+
+const projectTotalSizeLabel = computed(() => {
+    const totalBytes = projectScansNormalized.value.reduce(
+        (sum, scan) => sum + (scan.total_size_bytes ?? 0),
+        0
+    )
+    return totalBytes > 0 ? formatBytes(totalBytes) : null
+})
+
+const thumbnailUrl = computed(() => {
+    return `${getApiBaseUrl()}projects/${encodeURIComponent(props.project.name)}/thumbnail`
+})
+
+const cloudReconstructionBlocked = computed(() => {
+    const inProgressStatuses = new Set(['pending', 'running', 'paused', 'interrupted'])
+    return projectScansNormalized.value.some((scan) => inProgressStatuses.has(scan.status ?? ''))
+})
+
+const cloudReconstructionTooltip = computed(() => {
+    if (cloudReconstructionBlocked.value) {
+        return 'Cloud reconstruction is disabled while a scan is running or paused.'
+    }
+    return 'Upload this project to the cloud.'
+})
+
+const projectActionsBlocked = computed(() => cloudReconstructionBlocked.value)
+
+const projectDownloadBlocked = computed(() => !projectHasScans.value || cloudReconstructionBlocked.value)
+
+const projectDownloadTooltip = computed(() => {
+    if (!projectHasScans.value) {
+        return 'Project download is unavailable until at least one scan exists.'
+    }
+    if (cloudReconstructionBlocked.value) {
+        return 'Project download is disabled while a scan is running or paused.'
+    }
+    return 'Download the project archive'
+})
+
+const addScanTooltip = computed(() => {
+    if (projectActionsBlocked.value) {
+        return 'Adding scans is disabled while a scan is running or paused.'
+    }
+    return 'Create a new scan in this project'
+})
+
 const confirm_delete = () => {
     $q.dialog({
         title: 'Confirm',
@@ -160,6 +362,17 @@ const confirm_delete = () => {
         persistent: true
     }).onOk(async () => {
         try {
+            const activeStatuses = new Set(['pending', 'running', 'paused', 'interrupted'])
+            const activeScans = Object.values(props.project.scans || {}).filter((scan) =>
+                activeStatuses.has(scan.status ?? '')
+            )
+            if (activeScans.length) {
+                await Promise.all(
+                    activeScans.map((scan) =>
+                        cancelScan({ path: { project_name: props.project.name, scan_index: scan.index }, client: apiClient })
+                    )
+                )
+            }
             await deleteProject({ path: { project_name: props.project.name }, client: apiClient })
             emit('reload')
         } catch (error) {
@@ -176,12 +389,27 @@ const confirm_upload = () => {
         persistent: true
     }).onOk(async () => {
         try {
+            cloudUploadLoading.value = true
             await uploadProjectToCloud({ path: { project_name: props.project.name }, client: apiClient })
-            emit('reload')
         } catch (error) {
             console.error('Could not upload project.', error)
+        } finally {
+            cloudUploadLoading.value = false
+            emit('reload')
         }
     })
+}
+
+const confirm_fetch_model = async () => {
+    try {
+        cloudFetchLoading.value = true
+        await downloadProjectFromCloud({ path: { project_name: props.project.name }, client: apiClient })
+    } catch (error) {
+        console.error('Could not fetch model from cloud.', error)
+    } finally {
+        cloudFetchLoading.value = false
+        emit('reload')
+    }
 }
 
 const confirm_download = () => {
@@ -193,7 +421,23 @@ const confirm_download = () => {
     }
 }
 
+const download_model = () => {
+    try {
+        const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(props.project.name)}/model/zip`
+        window.open(downloadUrl, '_blank')
+    } catch (error) {
+        console.error('Could not download project model.', error)
+    }
+}
+
 const add_scan = () => {
+    if (props.project.downloaded) {
+        promptCloudReset(props.project.name, async () => {
+            emit('reload')
+            await router.push({ path: '/scan', query: { project: props.project.name } })
+        })
+        return
+    }
     router.push({ path: '/scan', query: { project: props.project.name } })
 }
 

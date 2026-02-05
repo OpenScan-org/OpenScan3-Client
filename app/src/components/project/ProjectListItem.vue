@@ -16,12 +16,12 @@
     </q-item-section>
     <q-item-section>
       <div class="text-body1">{{ project.name }}</div>
-      <div class="text-caption text-secondary row justify-between items-center">
-        <q-badge color="primary">{{ scanCount }} Scans</q-badge>
+      <div class="text-caption text-grey-7 row justify-between items-center">
+        <q-badge color="primary">{{ scanCountLabel }}</q-badge>
         <span>{{ formattedDate }}</span>
       </div>
-      <div class="text-caption text-grey-6 description-clamp">
-        {{ project.description || 'No description' }}
+      <div v-if="project.description" class="text-caption text-grey-6 description-clamp">
+        {{ project.description }}
       </div>
     </q-item-section>
   </q-item>
@@ -61,6 +61,8 @@ const formattedDate = computed(() => {
 })
 
 const scanCount = computed(() => Object.keys(props.project.scans || {}).length)
+
+const scanCountLabel = computed(() => `${scanCount.value} Scan${scanCount.value === 1 ? '' : 's'}`)
 
 const handleSelect = () => {
   emit('select', props.project.name)

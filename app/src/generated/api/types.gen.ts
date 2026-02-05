@@ -142,7 +142,7 @@ export type CameraSettings = {
     /**
      * Orientation Flag
      *
-     * Orientation in exif flag format.For imx519 use 8.For Hawkeye in Mini use 5.
+     * Orientation in exif flag format.For imx519 in Mini use 8.For Hawkeye in Mini use 6.For imx519 in Classic use 1.
      */
     orientation_flag?: number | null;
     /**
@@ -631,6 +631,42 @@ export type MotorStatusResponse = {
 export type PathMethod = 'fibonacci';
 
 /**
+ * PhotoResponse
+ */
+export type PhotoResponse = {
+    /**
+     * Project Name
+     */
+    project_name: string;
+    /**
+     * Scan Index
+     */
+    scan_index: number;
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Content Type
+     */
+    content_type: string;
+    /**
+     * Size Bytes
+     */
+    size_bytes: number;
+    /**
+     * Metadata
+     */
+    metadata?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Photo Data
+     */
+    photo_data: Blob | File;
+};
+
+/**
  * PolarPoint3D
  */
 export type PolarPoint3d = {
@@ -764,6 +800,18 @@ export type Scan = {
      * Duration
      */
     duration?: number;
+    /**
+     * Total Size Bytes
+     *
+     * Total size of all files belonging to the scan, in bytes.
+     */
+    total_size_bytes?: number;
+    /**
+     * Photos
+     *
+     * Relative filenames (with extension) of all photos captured for this scan.
+     */
+    photos?: Array<string>;
     /**
      * Task Id
      */
@@ -1079,7 +1127,16 @@ export type GetPreviewData = {
          */
         camera_name: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Mode
+         */
+        mode?: string;
+        /**
+         * Fps
+         */
+        fps?: number;
+    };
     url: '/cameras/{camera_name}/preview';
 };
 
@@ -1953,6 +2010,38 @@ export type NewProjectResponses = {
 
 export type NewProjectResponse = NewProjectResponses[keyof NewProjectResponses];
 
+export type GetProjectThumbnailData = {
+    body?: never;
+    path: {
+        /**
+         * Project Name
+         */
+        project_name: string;
+    };
+    query?: never;
+    url: '/projects/{project_name}/thumbnail';
+};
+
+export type GetProjectThumbnailErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetProjectThumbnailError = GetProjectThumbnailErrors[keyof GetProjectThumbnailErrors];
+
+export type GetProjectThumbnailResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
 export type AddScanWithDescriptionData = {
     body: ScanSetting;
     path: {
@@ -2035,49 +2124,6 @@ export type UploadProjectToCloudResponses = {
 
 export type UploadProjectToCloudResponse = UploadProjectToCloudResponses[keyof UploadProjectToCloudResponses];
 
-export type DownloadProjectFromCloudData = {
-    body?: never;
-    path: {
-        /**
-         * Project Name
-         */
-        project_name: string;
-    };
-    query?: {
-        /**
-         * Token Override
-         */
-        token_override?: string | null;
-        /**
-         * Remote Project
-         */
-        remote_project?: string | null;
-    };
-    url: '/projects/{project_name}/download';
-};
-
-export type DownloadProjectFromCloudErrors = {
-    /**
-     * Not found
-     */
-    404: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
-};
-
-export type DownloadProjectFromCloudError = DownloadProjectFromCloudErrors[keyof DownloadProjectFromCloudErrors];
-
-export type DownloadProjectFromCloudResponses = {
-    /**
-     * Successful Response
-     */
-    200: Task;
-};
-
-export type DownloadProjectFromCloudResponse = DownloadProjectFromCloudResponses[keyof DownloadProjectFromCloudResponses];
-
 export type DeletePhotosData = {
     /**
      * Photo Filenames
@@ -2118,6 +2164,93 @@ export type DeletePhotosResponses = {
 };
 
 export type DeletePhotosResponse = DeletePhotosResponses[keyof DeletePhotosResponses];
+
+export type GetScanPhotoData = {
+    body?: never;
+    path: {
+        /**
+         * Project Name
+         */
+        project_name: string;
+        /**
+         * Scan Index
+         */
+        scan_index: number;
+    };
+    query: {
+        /**
+         * Filename
+         *
+         * Photo filename including extension, e.g. scan01_001.jpg
+         */
+        filename: string;
+        /**
+         * File Only
+         *
+         * Return only the raw file instead of JSON payload
+         */
+        file_only?: boolean;
+    };
+    url: '/projects/{project_name}/{scan_index}/photo';
+};
+
+export type GetScanPhotoErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetScanPhotoError = GetScanPhotoErrors[keyof GetScanPhotoErrors];
+
+export type GetScanPhotoResponses = {
+    /**
+     * Successful Response
+     */
+    200: PhotoResponse;
+};
+
+export type GetScanPhotoResponse = GetScanPhotoResponses[keyof GetScanPhotoResponses];
+
+export type GetScanPathData = {
+    body?: never;
+    path: {
+        /**
+         * Project Name
+         */
+        project_name: string;
+        /**
+         * Scan Index
+         */
+        scan_index: number;
+    };
+    query?: never;
+    url: '/projects/{project_name}/scans/{scan_index}/path';
+};
+
+export type GetScanPathErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetScanPathError = GetScanPathErrors[keyof GetScanPathErrors];
+
+export type GetScanPathResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
 
 export type DeleteScanData = {
     body?: never;
@@ -2378,6 +2511,38 @@ export type DownloadProjectErrors = {
 export type DownloadProjectError = DownloadProjectErrors[keyof DownloadProjectErrors];
 
 export type DownloadProjectResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type DownloadProjectModelData = {
+    body?: never;
+    path: {
+        /**
+         * Project Name
+         */
+        project_name: string;
+    };
+    query?: never;
+    url: '/projects/{project_name}/model/zip';
+};
+
+export type DownloadProjectModelErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DownloadProjectModelError = DownloadProjectModelErrors[keyof DownloadProjectModelErrors];
+
+export type DownloadProjectModelResponses = {
     /**
      * Successful Response
      */
@@ -3402,6 +3567,49 @@ export type GetCloudProjectResponses = {
 };
 
 export type GetCloudProjectResponse = GetCloudProjectResponses[keyof GetCloudProjectResponses];
+
+export type DownloadProjectFromCloudData = {
+    body?: never;
+    path: {
+        /**
+         * Project Name
+         */
+        project_name: string;
+    };
+    query?: {
+        /**
+         * Token Override
+         */
+        token_override?: string | null;
+        /**
+         * Remote Project
+         */
+        remote_project?: string | null;
+    };
+    url: '/cloud/projects/{project_name}/download';
+};
+
+export type DownloadProjectFromCloudErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DownloadProjectFromCloudError = DownloadProjectFromCloudErrors[keyof DownloadProjectFromCloudErrors];
+
+export type DownloadProjectFromCloudResponses = {
+    /**
+     * Successful Response
+     */
+    200: Task;
+};
+
+export type DownloadProjectFromCloudResponse = DownloadProjectFromCloudResponses[keyof DownloadProjectFromCloudResponses];
 
 export type StartFocusStackingData = {
     body?: never;

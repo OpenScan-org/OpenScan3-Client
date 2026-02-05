@@ -1,12 +1,12 @@
 <template>
   <div class="row q-col-gutter-sm">
     <div class="col-12 col-md-4">
-      <ScanQualitySection
-        v-model:points="points"
-        :points-tooltip="scanSettingDescription('points')"
-      />
+      <BaseSectionGroup>
+        <ScanQualitySection
+          v-model:points="points"
+          :points-tooltip="scanSettingDescription('points')"
+        />
 
-      <div class="q-mt-sm">
         <ScanAdvancedSection
           v-model:imageFormat="imageFormat"
           :image-formats="imageFormats"
@@ -23,7 +23,7 @@
           :optimize-path-description="scanSettingDescription('optimize_path')"
           :optimization-algorithm-description="scanSettingDescription('optimization_algorithm')"
         />
-      </div>
+      </BaseSectionGroup>
     </div>
 
     <div class="col-12 col-md-4">
@@ -53,6 +53,7 @@
 import { computed, ref, watch } from 'vue'
 import { debounce } from 'quasar'
 
+import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
 import ScanQualitySection from 'components/scan/ScanQualitySection.vue'
 import ScanFocusSection from 'components/scan/ScanFocusSection.vue'
 import ScanAdvancedSection from 'components/scan/ScanAdvancedSection.vue'

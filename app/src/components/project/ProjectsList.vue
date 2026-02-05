@@ -7,66 +7,68 @@
           <q-btn color="primary" unelevated label="New Project" @click="showCreateDialog = true" />
         </div>
         <q-separator class="q-mt-sm q-mb-sm" />
-        <div class="row items-center">
-          <q-checkbox
-            size="sm"
-            class="q-ml-xs"
-            :model-value="allProjectsSelected"
-            :indeterminate="isPartialSelection"
-            :disable="!props.projects.length"
-            @update:model-value="toggleSelectAll"
-          >
-            <q-tooltip>Select all</q-tooltip>
-          </q-checkbox>
+        <q-item dense class="q-pa-none">
+          <q-item-section avatar>
+            <q-checkbox
+              size="sm"
+              :model-value="allProjectsSelected"
+              :indeterminate="isPartialSelection"
+              :disable="!props.projects.length"
+              @update:model-value="toggleSelectAll"
+            >
+              <q-tooltip>Select all</q-tooltip>
+            </q-checkbox>
+          </q-item-section>
+          <q-item-section>
+            <div class="row items-center">
+              <q-space />
 
-          <q-separator vertical class="q-mx-md" v-if="selectedProjectsSet.size > 0" />
+              <div class="row q-gutter-sm">
+                <q-btn flat round dense icon="sort_by_alpha" @click="toggleNameSort" :color="sortBy.field === 'name' ? 'primary' : ''">
+                  <q-icon name="arrow_upward" v-if="sortBy.field === 'name' && sortBy.order === 'asc'" size="xs" class="q-ml-xs" />
+                  <q-icon name="arrow_downward" v-if="sortBy.field === 'name' && sortBy.order === 'desc'" size="xs" class="q-ml-xs" />
+                  <q-tooltip>Sort by name</q-tooltip>
+                </q-btn>
 
-          <q-btn
-            v-if="selectedProjectsSet.size > 0"
-            flat
-            round
-            dense
-            color="negative"
-            icon="delete"
-            @click="confirmDeleteSelected"
-          >
-            <q-tooltip>Delete {{ selectedProjectsSet.size }} selected project(s)</q-tooltip>
-          </q-btn>
+                <q-btn flat round dense icon="schedule" @click="toggleDateSort" :color="sortBy.field === 'date' ? 'primary' : ''">
+                  <q-icon name="arrow_upward" v-if="sortBy.field === 'date' && sortBy.order === 'asc'" size="xs" class="q-ml-xs" />
+                  <q-icon name="arrow_downward" v-if="sortBy.field === 'date' && sortBy.order === 'desc'" size="xs" class="q-ml-xs" />
+                  <q-tooltip>Sort by date</q-tooltip>
+                </q-btn>
+              </div>
 
-          <q-space />
+              <q-space />
 
-          <div class="row q-gutter-sm">
-            <q-btn flat round dense icon="sort_by_alpha" @click="toggleNameSort" :color="sortBy.field === 'name' ? 'primary' : ''">
-              <q-icon name="arrow_upward" v-if="sortBy.field === 'name' && sortBy.order === 'asc'" size="xs" class="q-ml-xs" />
-              <q-icon name="arrow_downward" v-if="sortBy.field === 'name' && sortBy.order === 'desc'" size="xs" class="q-ml-xs" />
-              <q-tooltip>Sort by name</q-tooltip>
-            </q-btn>
+              <q-btn
+                v-if="selectedProjectsSet.size > 0"
+                flat
+                round
+                dense
+                color="negative"
+                icon="delete"
+                @click="confirmDeleteSelected"
+              >
+                <q-tooltip>Delete {{ selectedProjectsSet.size }} selected project(s)</q-tooltip>
+              </q-btn>
 
-            <q-btn flat round dense icon="schedule" @click="toggleDateSort" :color="sortBy.field === 'date' ? 'primary' : ''">
-              <q-icon name="arrow_upward" v-if="sortBy.field === 'date' && sortBy.order === 'asc'" size="xs" class="q-ml-xs" />
-              <q-icon name="arrow_downward" v-if="sortBy.field === 'date' && sortBy.order === 'desc'" size="xs" class="q-ml-xs" />
-              <q-tooltip>Sort by date</q-tooltip>
-            </q-btn>
-          </div>
-
-          <q-space />
-
-          <q-btn flat round dense icon="more_vert" class="q-ml-sm">
-            <q-menu>
-              <q-list dense style="min-width: 150px">
-                <q-item clickable v-close-popup @click="inverse_project_selection" :disable="!props.projects.length">
-                  <q-item-section>Inverse selection</q-item-section>
-                </q-item>
-                <q-separator />
-                <q-item clickable v-close-popup @click="confirmDeleteEmpty" :disable="zeroScanCount === 0">
-                  <q-item-section :class="zeroScanCount > 0 ? 'text-negative' : ''">
-                    Delete empty projects ({{ zeroScanCount }})
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
-          </q-btn>
-        </div>
+              <q-btn flat round dense icon="more_vert" class="q-ml-sm">
+                <q-menu>
+                  <q-list dense style="min-width: 150px">
+                    <q-item clickable v-close-popup @click="inverse_project_selection" :disable="!props.projects.length">
+                      <q-item-section>Inverse selection</q-item-section>
+                    </q-item>
+                    <q-separator />
+                    <q-item clickable v-close-popup @click="confirmDeleteEmpty" :disable="zeroScanCount === 0">
+                      <q-item-section :class="zeroScanCount > 0 ? 'text-negative' : ''">
+                        Delete empty projects ({{ zeroScanCount }})
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
+              </q-btn>
+            </div>
+          </q-item-section>
+        </q-item>
       </q-card-section>
       <q-separator />
       <q-list separator>

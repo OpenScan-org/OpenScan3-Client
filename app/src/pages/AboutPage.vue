@@ -1,28 +1,5 @@
 <template>
   <BasePage>
-    <TextCard title="Version info">
-      <div class="row q-col-gutter-md">
-        <div class="col">
-          <div class="text-caption">Frontend</div>
-          <div>{{ versionStore.frontendVersion }}</div>
-          <div v-if="versionStore.frontendUpdateAvailable" class="text-caption text-positive">
-            Update available: {{ versionStore.latestFrontendVersion }}
-          </div>
-        </div>
-        <div class="col">
-          <div class="text-caption">Firmware</div>
-          <div>{{ versionStore.firmwareVersion ?? 'Loading...' }}</div>
-          <div v-if="versionStore.firmwareUpdateAvailable" class="text-caption text-positive">
-            Update available: {{ versionStore.latestFirmwareVersion }}
-          </div>
-        </div>
-        <div class="col">
-          <div class="text-caption">API version</div>
-          <div>{{ apiConfigStore.version }}</div>
-        </div>
-      </div>
-    </TextCard>
-
     <div class="q-mt-md">
       <TextCard title="Developer documentation">
         <p>
@@ -190,10 +167,8 @@ import BasePage from 'components/base/BasePage.vue';
 import TextCard from 'components/base/TextCard.vue';
 import BaseLink from 'components/base/BaseLink.vue';
 import { useApiConfigStore } from 'src/stores/apiConfig';
-import { useVersionStore } from 'src/stores/version';
 
 const apiConfigStore = useApiConfigStore();
-const versionStore = useVersionStore();
 
 const apiDocsUrl = computed(
   () => apiConfigStore.baseURL.replace(/\/$/, '') + '/docs',

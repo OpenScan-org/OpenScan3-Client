@@ -1,52 +1,85 @@
 <template>
   <q-page>
     <div class="q-pa-md">
-      <div class="row justify-center q-col-gutter-sm">
-        <div class="col-12 col-md-4 col-lg-3">
-          <ScanStartSection
-            :project-options="projectsStore.projectNames"
-            v-model:selected-project="selectedProject"
-            :photo-count="photoCount"
-            :preset-options="presetOptions"
-            v-model:selected-preset-id="selectedPresetId"
-            @create-project-click="showCreateProjectDialog = true"
-            @create-preset-click="openSavePresetDialog"
-            @overwrite-preset="handleOverwritePreset"
-            @delete-preset="handleDeletePreset"
-            @reset-defaults="resetSettingsToDefaults"
-            @submit="startScan"
-          />
+      <template v-if="showDisconnectedSkeleton">
+        <div class="row justify-center q-col-gutter-sm">
+          <div class="col-12 col-md-4 col-lg-3">
+            <q-card flat bordered class="q-pa-md">
+              <div class="q-gutter-y-sm">
+                <q-skeleton type="text" width="50%" />
+                <q-skeleton type="text" width="70%" />
+                <q-skeleton type="rect" height="32px" />
+                <q-skeleton type="rect" height="32px" />
+                <q-skeleton type="rect" height="32px" />
+                <q-skeleton type="text" width="40%" />
+                <q-skeleton type="QBtn" class="q-mt-sm" />
+              </div>
+            </q-card>
+          </div>
+          <div class="col-12 col-md-8 col-lg-9">
+            <q-card flat bordered>
+              <q-skeleton type="rect" height="320px" />
+            </q-card>
+          </div>
         </div>
-        <div class="col-12 col-md-8 col-lg-9">
-          <camera-view
-            :scanning="scanning"
+        <div class="q-mt-md">
+          <q-card flat bordered class="q-pa-md">
+            <div class="q-gutter-y-sm">
+              <q-skeleton type="text" width="30%" />
+              <q-skeleton type="rect" height="24px" v-for="index in 4" :key="index" />
+              <q-skeleton type="text" width="45%" />
+            </div>
+          </q-card>
+        </div>
+      </template>
+      <template v-else>
+        <div class="row justify-center q-col-gutter-sm">
+          <div class="col-12 col-md-4 col-lg-3">
+            <ScanStartSection
+              :project-options="projectsStore.projectNames"
+              v-model:selected-project="selectedProject"
+              :photo-count="photoCount"
+              :preset-options="presetOptions"
+              v-model:selected-preset-id="selectedPresetId"
+              @create-project-click="showCreateProjectDialog = true"
+              @create-preset-click="openSavePresetDialog"
+              @overwrite-preset="handleOverwritePreset"
+              @delete-preset="handleDeletePreset"
+              @reset-defaults="resetSettingsToDefaults"
+              @submit="startScan"
+            />
+          </div>
+          <div class="col-12 col-md-8 col-lg-9">
+            <camera-view
+              :scanning="scanning"
+              :camera="selectedCamera"
+              :camera-options="cameraStore.cameraOptions"
+              v-model:selectedCameraName="selectedCameraName"
+            />
+          </div>
+        </div>
+
+        <div class="q-mt-md">
+          <ScanSettingsSection
+            ref="scanSettingsSectionRef"
+            :camera-name="selectedCameraName"
             :camera="selectedCamera"
             :camera-options="cameraStore.cameraOptions"
             v-model:selectedCameraName="selectedCameraName"
+            @update:photoCount="value => (photoCount = value)"
           />
         </div>
-      </div>
-
-      <div class="q-mt-md">
-        <ScanSettingsSection
-          ref="scanSettingsSectionRef"
-          :camera-name="selectedCameraName"
-          :camera="selectedCamera"
-          :camera-options="cameraStore.cameraOptions"
-          v-model:selectedCameraName="selectedCameraName"
-          @update:photoCount="value => (photoCount = value)"
+        <create-project-dialog
+          v-model="showCreateProjectDialog"
+          @create-project="onCreateProject"
         />
-      </div>
+        <scan-preset-save-dialog
+          v-model="showSavePresetDialog"
+          :initial-name="presetDialogInitialName"
+          @save="handleSavePreset"
+        />
+      </template>
     </div>
-    <create-project-dialog
-      v-model="showCreateProjectDialog"
-      @create-project="onCreateProject"
-    />
-    <scan-preset-save-dialog
-      v-model="showSavePresetDialog"
-      :initial-name="presetDialogInitialName"
-      @save="handleSavePreset"
-    />
   </q-page>
 </template>
 
@@ -67,6 +100,8 @@ import { useCameraStore } from 'src/stores/camera'
 import { useTaskStore } from 'src/stores/tasks'
 import { useScanTemplateStore } from 'src/stores/scanTemplate'
 import { useScanPresetsStore } from 'src/stores/scanPresets'
+import { useCloudResetGuard } from 'src/composables/useCloudResetGuard'
+import { useDeviceStore } from 'src/stores/device'
 const route = useRoute()
 const router = useRouter()
 
@@ -75,6 +110,8 @@ const cameraStore = useCameraStore()
 const taskStore = useTaskStore()
 const scanTemplateStore = useScanTemplateStore()
 const scanPresetsStore = useScanPresetsStore()
+const { promptCloudReset } = useCloudResetGuard()
+const deviceStore = useDeviceStore()
 
 const selectedCameraName = ref<string>('')
 const selectedProject = ref('')
@@ -96,6 +133,10 @@ const presetOptions = computed(() =>
 )
 
 const selectedCamera = computed(() => cameraStore.cameraOptions.find(c => c.value === selectedCameraName.value) || null)
+const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
+const selectedProjectEntity = computed(() =>
+  projectsStore.projects.find((project) => project.name === selectedProject.value) ?? null
+)
 
 const activeScanTaskId = computed(() => {
   const tasks = taskStore.taskList
@@ -145,15 +186,7 @@ const onCreateProject = async (data: { name: string; description?: string }) => 
   }
 }
 
-const startScan = async () => {
-  if (!selectedCameraName.value) {
-    return
-  }
-
-  if (!selectedProject.value) {
-    return
-  }
-
+const performStartScan = async () => {
   if (!scanSettingsSectionRef.value) {
     return
   }
@@ -180,6 +213,30 @@ const startScan = async () => {
   } finally {
     scanning.value = false
   }
+}
+
+const startScan = async () => {
+  if (!selectedCameraName.value) {
+    return
+  }
+
+  if (!selectedProject.value) {
+    return
+  }
+
+  if (!scanSettingsSectionRef.value) {
+    return
+  }
+
+  if (selectedProjectEntity.value?.downloaded) {
+    promptCloudReset(selectedProject.value, async () => {
+      await projectsStore.fetchProjects()
+      await performStartScan()
+    })
+    return
+  }
+
+  await performStartScan()
 }
 
 const resetSettingsToDefaults = () => {
