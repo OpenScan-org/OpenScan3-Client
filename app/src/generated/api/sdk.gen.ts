@@ -50,6 +50,8 @@ export const getCamera = <ThrowOnError extends boolean = false>(options: Options
  *
  * Args:
  * camera_name: The name of the camera to get the preview stream from
+ * mode: Either ``stream`` for the MJPEG stream or ``snapshot`` for a single JPEG frame
+ * fps: Target frames per second for the stream, clamped between 1 and 50 (only used in stream mode)
  *
  * Returns:
  * StreamingResponse: A streaming response containing the preview stream
@@ -1000,6 +1002,14 @@ export const listCloudProjects = <ThrowOnError extends boolean = false>(options?
  * Reset Cloud Project
  *
  * Reset the remote project and clear the local linkage.
+ *
+ * Invokes the cloud backend's `resetProject` action, which removes the
+ * current reconstruction job (queue progress, generated models and downloads)
+ * and frees the remote project name for another upload.
+ * Locally the project is marked as not uploaded anymore, the cached
+ * `cloud_project_name` is cleared, and the `downloaded` flag is reset to
+ * False so a subsequent download reflects the new state. The on-disk files
+ * stay untouched.
  *
  * Args:
  * project_name: The name of the project to reset the remote project for

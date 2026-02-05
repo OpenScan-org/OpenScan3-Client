@@ -142,7 +142,7 @@ export type CameraSettings = {
     /**
      * Orientation Flag
      *
-     * Orientation in exif flag format.For imx519 in Mini use 8.For Hawkeye in Mini use 6.
+     * Orientation in exif flag format.For imx519 in Mini use 8.For Hawkeye in Mini use 6.For imx519 in Classic use 1.
      */
     orientation_flag?: number | null;
     /**
@@ -1127,7 +1127,16 @@ export type GetPreviewData = {
          */
         camera_name: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Mode
+         */
+        mode?: string;
+        /**
+         * Fps
+         */
+        fps?: number;
+    };
     url: '/cameras/{camera_name}/preview';
 };
 

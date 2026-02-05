@@ -17,7 +17,7 @@ export const fieldDescriptions = {
     "gain": "Analogue Gain from 0 to 32.",
     "jpeg_quality": "JPEG image quality from 0 to 100",
     "manual_focus": "Manual focus position in diopters. This is only applied if autofocus is disabled.",
-    "orientation_flag": "Orientation in exif flag format.For imx519 in Mini use 8.For Hawkeye in Mini use 6.",
+    "orientation_flag": "Orientation in exif flag format.For imx519 in Mini use 8.For Hawkeye in Mini use 6.For imx519 in Classic use 1.",
     "photo_resolution": "Preview resolution (x,y). Changing resolution can break cropping.",
     "preview_resolution": "Preview resolution (x,y). Changing resolution can break cropping.",
     "saturation": "Image color saturation from 0 to 32",

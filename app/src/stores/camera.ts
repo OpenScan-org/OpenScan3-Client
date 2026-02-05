@@ -39,12 +39,17 @@ export const useCameraStore = defineStore('camera', {
     })),
     previewUrl: (state) => {
       const baseUrl = getApiBaseUrl();
-      return state.selectedCamera ? `${baseUrl}cameras/${state.selectedCamera}/preview` : null;
+      return state.selectedCamera ? `${baseUrl}cameras/${state.selectedCamera}/preview?mode=stream` : null;
     },
     getPreviewUrl: () => {
-      return (cameraName: string) => {
+      return (cameraName: string, fps?: number) => {
         const baseUrl = getApiBaseUrl();
-        return cameraName ? `${baseUrl}cameras/${cameraName}/preview` : null;
+        if (!cameraName) {
+          return null;
+        }
+
+        const fpsParam = typeof fps === 'number' ? `&fps=${fps}` : '';
+        return `${baseUrl}cameras/${cameraName}/preview?mode=stream${fpsParam}`;
       };
     },
     getPhotoUrl: () => {

@@ -1,5 +1,16 @@
 <template>
-  <q-page>
+  <q-page class="settings-page">
+    <div v-if="backgroundPreviewUrl" class="settings-background">
+      <img
+        :key="backgroundImageKey"
+        class="settings-background__image"
+        :class="{ 'settings-background__image--visible': backgroundImageVisible }"
+        :src="backgroundPreviewUrl"
+        alt="Camera preview background"
+        @load="handleSettingsBackgroundLoad"
+        @error="handleSettingsBackgroundError"
+      />
+    </div>
     <div class="q-pa-md">
       <div class="row justify-center q-col-gutter-md">
         <div class="col-12">
@@ -483,6 +494,7 @@ import { useQuasar } from 'quasar'
 import { apiClient, updateApiClientConfig } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
 import { useDeviceStore } from 'src/stores/device'
+import { useCameraStore } from 'src/stores/camera'
 import PowerControls from 'src/components/PowerControls.vue'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
@@ -516,6 +528,7 @@ import {
 const $q = useQuasar()
 
 const apiConfigStore = useApiConfigStore()
+const cameraStore = useCameraStore()
 
 const scannerAddress = computed(() => apiConfigStore.baseURL.replace(/\/$/, ''))
 
@@ -810,11 +823,39 @@ type CameraOption = { label: string; value: string }
 const deviceStore = useDeviceStore()
 const { cameras, motors, lights, status: deviceStatus } = storeToRefs(deviceStore)
 
+const selectedCamera = ref<string | null>(null)
+
+const selectedSettingsCamera = computed(() => selectedCamera.value ?? cameraStore.selectedCamera)
+
+const backgroundPreviewUrl = computed(() => {
+  const cameraName = selectedSettingsCamera.value ?? cameraStore.selectedCamera
+  return cameraName ? cameraStore.getPreviewUrl(cameraName, 10) : null
+})
+
+const backgroundImageVisible = ref(false)
+const backgroundImageKey = ref(0)
+
+watch(backgroundPreviewUrl, (url) => {
+  if (url) {
+    backgroundImageVisible.value = false
+    backgroundImageKey.value += 1
+  } else {
+    backgroundImageVisible.value = false
+  }
+})
+
+function handleSettingsBackgroundLoad() {
+  backgroundImageVisible.value = true
+}
+
+function handleSettingsBackgroundError() {
+  backgroundImageVisible.value = false
+}
+
 const cameraOptions = computed<CameraOption[]>(() =>
   Object.keys(cameras.value ?? {}).map((name) => ({ label: name, value: name }))
 )
 const cameraOptionsLoading = computed(() => deviceStatus.value !== 'open')
-const selectedCamera = ref<string | null>(null)
 const cameraLoading = ref(false)
 const cameraSaving = ref(false)
 const cameraForm = reactive<{ [K in keyof CameraSettings]?: CameraSettings[K] | null }>({})
@@ -1302,6 +1343,35 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.settings-page {
+  position: relative;
+  overflow: hidden;
+}
+
+.settings-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.settings-background__image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120vmax;
+  height: 120vmax;
+  object-fit: cover;
+  filter: blur(10px);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  transition: opacity 600ms ease;
+}
+
+.settings-background__image--visible {
+  opacity: 0.3;
+}
+
 .settings-card + .settings-card {
   margin-top: 16px;
 }

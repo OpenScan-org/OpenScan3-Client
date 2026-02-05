@@ -1,5 +1,6 @@
 <template>
-  <q-page padding>
+  <q-page padding class="projects-page">
+    <BlurredSnapshotBackground :src="projectBackgroundUrl" alt="Project thumbnail background" />
     <template v-if="showDisconnectedSkeleton">
       <div class="row q-col-gutter-lg">
         <div class="col-12 col-md-4 col-lg-3">
@@ -84,12 +85,13 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
-import { apiClient } from 'src/services/apiClient'
+import { apiClient, getApiBaseUrl } from 'src/services/apiClient'
 import { newProject, type Project, type Scan } from 'src/generated/api'
 import ProjectsList from 'src/components/project/ProjectsList.vue'
 import ProjectCard from 'src/components/project/ProjectCard.vue'
 import { useProjectsStore } from 'src/stores/projects'
 import { useDeviceStore } from 'src/stores/device'
+import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 const $q = useQuasar()
 const projectsStore = useProjectsStore()
 const route = useRoute()
@@ -139,6 +141,12 @@ const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
 
 const selectedProject = computed(() =>
   projectsStore.projects.find((project) => project.name === selectedProjectName.value) ?? null
+)
+
+const projectBackgroundUrl = computed(() =>
+  selectedProject.value
+    ? `${getApiBaseUrl()}projects/${encodeURIComponent(selectedProject.value.name)}/thumbnail`
+    : null
 )
 
 const projectScans = computed<Scan[]>(() => {
@@ -238,3 +246,10 @@ watch(
   }
 )
 </script>
+
+<style scoped>
+.projects-page {
+  position: relative;
+  overflow: hidden;
+}
+</style>
