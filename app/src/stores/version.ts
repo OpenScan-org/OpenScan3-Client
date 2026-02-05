@@ -28,8 +28,13 @@ interface VersionState {
 const GITHUB_FIRMWARE_REPO = 'OpenScan-org/OpenScan3'
 const GITHUB_FRONTEND_REPO = 'OpenScan-org/OpenScan3-Client'
 
+const stripVersionMetadata = (version: string) => version.replace(/[-+].*$/, '')
+
 function compareVersions(current: string, latest: string): number {
-  const normalize = (v: string) => v.replace(/^v/, '').replace(/-.*$/, '').split('.').map(Number)
+  const normalize = (v: string) =>
+    stripVersionMetadata(v.replace(/^v/, ''))
+      .split('.')
+      .map(Number)
   const currentParts = normalize(current)
   const latestParts = normalize(latest)
 
@@ -71,12 +76,12 @@ export const useVersionStore = defineStore('version', {
 
     latestFirmwareVersion(): string | null {
       const tag = this.latestFirmwareRelease?.tag_name
-      return tag ? tag.replace(/-.*$/, '') : null
+      return tag ? stripVersionMetadata(tag) : null
     },
 
     latestFrontendVersion(): string | null {
       const tag = this.latestFrontendRelease?.tag_name
-      return tag ? tag.replace(/-.*$/, '') : null
+      return tag ? stripVersionMetadata(tag) : null
     }
   },
 
