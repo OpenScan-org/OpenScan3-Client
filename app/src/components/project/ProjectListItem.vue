@@ -17,7 +17,7 @@
     <q-item-section>
       <div class="text-body1">{{ project.name }}</div>
       <div class="text-caption text-grey-7 row justify-between items-center">
-        <q-badge color="primary">{{ scanCount }} Scans</q-badge>
+        <q-badge color="primary">{{ scanCountLabel }}</q-badge>
         <span>{{ formattedDate }}</span>
       </div>
       <div v-if="project.description" class="text-caption text-grey-6 description-clamp">
@@ -61,6 +61,8 @@ const formattedDate = computed(() => {
 })
 
 const scanCount = computed(() => Object.keys(props.project.scans || {}).length)
+
+const scanCountLabel = computed(() => `${scanCount.value} Scan${scanCount.value === 1 ? '' : 's'}`)
 
 const handleSelect = () => {
   emit('select', props.project.name)

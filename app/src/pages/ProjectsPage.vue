@@ -74,7 +74,6 @@
             :project-scans="projectScans"
             @reload="loadProjects"
           />
-          <div v-else class="text-secondary">Please choose a project.</div>
         </div>
       </div>
     </template>

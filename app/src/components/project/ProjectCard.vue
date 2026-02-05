@@ -2,12 +2,14 @@
     <div :class="detail ? 'col-12' : 'col-6'">
         <q-card class="project-card">
             <q-card-section>
-                <div class="project-header-grid">
+                <div class="project-header-grid" :class="{ 'project-header-grid--no-thumbnail': thumbnailMissing }">
                     <q-img
                         :src="thumbnailUrl"
                         class="project-header-thumbnail"
                         ratio="1"
                         fit="cover"
+                        @error="thumbnailMissing = true"
+                        @load="thumbnailMissing = false"
                     />
                     <div class="project-header-content">
                         <div class="row items-start justify-between">
@@ -67,10 +69,10 @@
                                     unelevated
                                     icon="cloud_download"
                                     label="Download"
-                                    :disable="projectActionsBlocked"
+                                    :disable="projectDownloadBlocked"
                                     @click="confirm_download"
                                 >
-                                    <q-tooltip>{{ projectActionsTooltip }}</q-tooltip>
+                                    <q-tooltip>{{ projectDownloadTooltip }}</q-tooltip>
                                 </BaseButtonPrimary>
                                 <BaseButtonPrimary
                                     color="positive"
@@ -116,11 +118,21 @@
      align-items: start;
  }
 
+ .project-header-grid--no-thumbnail {
+     grid-template-columns: 0 minmax(0, 1fr);
+ }
+
  .project-header-thumbnail {
      width: 128px;
      height: 128px;
      border-radius: 12px;
      overflow: hidden;
+ }
+
+ .project-header-grid--no-thumbnail .project-header-thumbnail {
+     width: 0;
+     height: 0;
+     opacity: 0;
  }
 
  .project-header-content {
@@ -295,6 +307,8 @@ const projectScansNormalized = computed<Scan[]>(() => {
         .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
 })
 
+const projectHasScans = computed(() => projectScansNormalized.value.length > 0)
+
 const projectTotalSizeLabel = computed(() => {
     const totalBytes = projectScansNormalized.value.reduce(
         (sum, scan) => sum + (scan.total_size_bytes ?? 0),
@@ -321,8 +335,13 @@ const cloudReconstructionTooltip = computed(() => {
 
 const projectActionsBlocked = computed(() => cloudReconstructionBlocked.value)
 
-const projectActionsTooltip = computed(() => {
-    if (projectActionsBlocked.value) {
+const projectDownloadBlocked = computed(() => !projectHasScans.value || cloudReconstructionBlocked.value)
+
+const projectDownloadTooltip = computed(() => {
+    if (!projectHasScans.value) {
+        return 'Project download is unavailable until at least one scan exists.'
+    }
+    if (cloudReconstructionBlocked.value) {
         return 'Project download is disabled while a scan is running or paused.'
     }
     return 'Download the project archive'
