@@ -77,7 +77,7 @@
           >
             <q-tooltip anchor="bottom middle" self="top middle">Download HQ preview</q-tooltip>
           </BaseButtonIconSecondary>
-          <BaseSelect
+          <SelectWithButton
             class="camera-view__toolbar-select"
             v-model="selectedCameraNameModel"
             :options="cameraOptionsList"
@@ -86,6 +86,14 @@
             map-options
             behavior="menu"
             :disable="cameraOptionsList.length === 0"
+            :show-primary-button="true"
+            button-icon="restart_alt"
+            button-size="sm"
+            :button-dense="false"
+            button-aria-label="Restart camera"
+            button-tooltip="Restart camera"
+            :button-disable="restartBusy || !selectedCameraNameModel || props.scanning"
+            @button-click="handleRestartCamera"
           />
         </div>
       </div>
@@ -205,7 +213,7 @@
               >
                 <q-tooltip anchor="bottom middle" self="top middle">Download HQ preview</q-tooltip>
               </BaseButtonIconSecondary>
-              <BaseSelect
+              <SelectWithButton
                 class="camera-view__toolbar-select"
                 v-model="selectedCameraNameModel"
                 :options="cameraOptionsList"
@@ -214,6 +222,14 @@
                 map-options
                 behavior="menu"
                 :disable="cameraOptionsList.length === 0"
+                :show-primary-button="true"
+                button-icon="restart_alt"
+                button-size="sm"
+                :button-dense="false"
+                button-aria-label="Restart camera"
+                button-tooltip="Restart camera"
+                :button-disable="restartBusy || !selectedCameraNameModel || props.scanning"
+                @button-click="handleRestartCamera"
               />
             </div>
           </div>
@@ -256,14 +272,14 @@ import { computed, onBeforeUnmount, ref, unref, watch } from 'vue'
 import BaseButtonIconPrimary from 'components/base/BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
-import BaseSelect from 'components/base/BaseSelect.vue'
+import SelectWithButton from 'components/common/SelectWithButton.vue'
 import CameraFastPreview, { type CameraFastPreviewExposed } from './camera/CameraFastPreview.vue'
 import CameraHeatmapOverlay from './camera/CameraHeatmapOverlay.vue'
 import CameraHistogram from './camera/CameraHistogram.vue'
 import CameraHQPreview, { type CameraHQPreviewExposed } from './camera/CameraHQPreview.vue'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
-import { moveMotorByDegree, moveToPosition } from 'src/generated/api'
+import { moveMotorByDegree, moveToPosition, restartCamera } from 'src/generated/api'
 import { apiClient } from 'src/services/apiClient'
 
 type CameraOption = { label: string; value: string; orientationFlag?: number | null }
@@ -344,6 +360,7 @@ let stackResizeObserver: ResizeObserver | null = null
 const heatmapEnabled = ref(false)
 const motorBusy = ref(false)
 const homeBusy = ref(false)
+const restartBusy = ref(false)
 let hqRefreshTimeout: ReturnType<typeof setTimeout> | null = null
 const fullPreviewDialogVisible = ref(false)
 const fullPreviewImageRef = ref<HTMLImageElement | null>(null)
@@ -392,6 +409,30 @@ function scheduleHqRefresh(delay = 600) {
     hqRefreshTimeout = null
     hqPreviewRef.value?.refreshPhoto()
   }, delay)
+}
+
+async function handleRestartCamera() {
+  if (restartBusy.value) {
+    return
+  }
+
+  const cameraName = selectedCameraNameModel.value
+  if (!cameraName) {
+    return
+  }
+
+  restartBusy.value = true
+  try {
+    await restartCamera({
+      client: apiClient,
+      path: { camera_name: cameraName }
+    })
+    scheduleHqRefresh(1200)
+  } catch (error) {
+    console.error('Failed to restart camera', cameraName, error)
+  } finally {
+    restartBusy.value = false
+  }
 }
 
 async function handleMotorMove(motorName: string, degrees: number) {
@@ -543,7 +584,7 @@ onBeforeUnmount(() => {
 }
 
 .camera-view__toolbar-select {
-  flex: 0 0 150px;
+  flex: 0 0 200px;
   margin-left: auto;
 }
 

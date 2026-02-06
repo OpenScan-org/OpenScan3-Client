@@ -14,12 +14,16 @@ const props = withDefaults(
     outlined?: boolean
     dense?: boolean
     buttonIcon?: string
+    buttonSize?: string
+    buttonDense?: boolean
     buttonType?: 'button' | 'submit' | 'reset'
     buttonAriaLabel?: string
     buttonTooltip?: string
     buttonDisable?: boolean
     showPrimaryButton?: boolean
     secondaryButtonIcon?: string
+    secondaryButtonSize?: string
+    secondaryButtonDense?: boolean
     secondaryButtonType?: 'button' | 'submit' | 'reset'
     secondaryButtonAriaLabel?: string
     secondaryButtonTooltip?: string
@@ -31,11 +35,15 @@ const props = withDefaults(
     outlined: true,
     dense: true,
     buttonIcon: 'add',
+    buttonSize: 'md',
+    buttonDense: true,
     buttonType: 'button',
     buttonTooltip: 'Create new project',
     buttonDisable: false,
     showPrimaryButton: true,
     secondaryButtonIcon: 'delete',
+    secondaryButtonSize: 'md',
+    secondaryButtonDense: true,
     secondaryButtonType: 'button',
     secondaryButtonDisable: false,
     showSecondaryButton: false
@@ -65,7 +73,7 @@ const onSecondaryButtonClick = () => {
 </script>
 
 <template>
-  <div class="row q-col-gutter-sm items-start">
+  <div class="row q-col-gutter-sm items-center">
     <div class="col">
       <BaseSelect
         v-bind="attrs"
@@ -86,8 +94,8 @@ const onSecondaryButtonClick = () => {
         :icon="props.buttonIcon"
         :type="props.buttonType"
         :aria-label="props.buttonAriaLabel"
-        size="md"
-        dense
+        :size="props.buttonSize"
+        :dense="props.buttonDense"
         :disable="props.buttonDisable"
         @click="onButtonClick"
       >
@@ -100,8 +108,8 @@ const onSecondaryButtonClick = () => {
           :icon="props.secondaryButtonIcon"
           :type="props.secondaryButtonType"
           :aria-label="props.secondaryButtonAriaLabel"
-          size="md"
-          dense
+          :size="props.secondaryButtonSize"
+          :dense="props.secondaryButtonDense"
           outline
           :disable="props.secondaryButtonDisable"
           @click="onSecondaryButtonClick"
