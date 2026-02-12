@@ -274,21 +274,46 @@
                         <q-card-section class="q-pt-none" v-if="motorForms[motorName]">
                           <div class="row q-col-gutter-md">
                             <div class="col-12 col-md-6 col-lg-4">
-                              <q-input v-model.number="motorForms[motorName].direction_pin" type="number" label="Direction Pin" />
+                              <q-input
+                                v-model.number="motorForms[motorName].direction_pin"
+                                type="number"
+                                label="Direction Pin"
+                                @update:model-value="() => markMotorFormDirty(motorName)"
+                              />
                             </div>
                             <div class="col-12 col-md-6 col-lg-4">
-                              <q-input v-model.number="motorForms[motorName].enable_pin" type="number" label="Enable Pin" />
+                              <q-input
+                                v-model.number="motorForms[motorName].enable_pin"
+                                type="number"
+                                label="Enable Pin"
+                                @update:model-value="() => markMotorFormDirty(motorName)"
+                              />
                             </div>
                             <div class="col-12 col-md-6 col-lg-4">
-                              <q-input v-model.number="motorForms[motorName].step_pin" type="number" label="Step Pin" />
+                              <q-input
+                                v-model.number="motorForms[motorName].step_pin"
+                                type="number"
+                                label="Step Pin"
+                                @update:model-value="() => markMotorFormDirty(motorName)"
+                              />
                             </div>
                             <div class="col-12 col-md-6 col-lg-4">
-                              <q-input v-model.number="motorForms[motorName].acceleration" type="number" label="Acceleration">
+                              <q-input
+                                v-model.number="motorForms[motorName].acceleration"
+                                type="number"
+                                label="Acceleration"
+                                @update:model-value="() => markMotorFormDirty(motorName)"
+                              >
                                 <q-tooltip>{{ motorConfigDescription('acceleration') }}</q-tooltip>
                               </q-input>
                             </div>
                             <div class="col-12 col-md-6 col-lg-4">
-                              <q-input v-model.number="motorForms[motorName].max_speed" type="number" label="Max Speed">
+                              <q-input
+                                v-model.number="motorForms[motorName].max_speed"
+                                type="number"
+                                label="Max Speed"
+                                @update:model-value="() => markMotorFormDirty(motorName)"
+                              >
                                 <q-tooltip>{{ motorConfigDescription('max_speed') }}</q-tooltip>
                               </q-input>
                             </div>
@@ -299,20 +324,36 @@
                                 label="Direction"
                                 emit-value
                                 map-options
+                                @update:model-value="() => markMotorFormDirty(motorName)"
                               />
                             </div>
                             <div class="col-12 col-md-6 col-lg-4">
-                              <q-input v-model.number="motorForms[motorName].steps_per_rotation" type="number" label="Steps per Rotation">
+                              <q-input
+                                v-model.number="motorForms[motorName].steps_per_rotation"
+                                type="number"
+                                label="Steps per Rotation"
+                                @update:model-value="() => markMotorFormDirty(motorName)"
+                              >
                                 <q-tooltip>{{ motorConfigDescription('steps_per_rotation') }}</q-tooltip>
                               </q-input>
                             </div>
                             <div class="col-12 col-md-6 col-lg-4">
-                              <q-input v-model.number="motorForms[motorName].min_angle" type="number" label="Min Angle">
+                              <q-input
+                                v-model.number="motorForms[motorName].min_angle"
+                                type="number"
+                                label="Min Angle"
+                                @update:model-value="() => markMotorFormDirty(motorName)"
+                              >
                                 <q-tooltip>{{ motorConfigDescription('min_angle') }}</q-tooltip>
                               </q-input>
                             </div>
                             <div class="col-12 col-md-6 col-lg-4">
-                              <q-input v-model.number="motorForms[motorName].max_angle" type="number" label="Max Angle">
+                              <q-input
+                                v-model.number="motorForms[motorName].max_angle"
+                                type="number"
+                                label="Max Angle"
+                                @update:model-value="() => markMotorFormDirty(motorName)"
+                              >
                                 <q-tooltip>{{ motorConfigDescription('max_angle') }}</q-tooltip>
                               </q-input>
                             </div>
@@ -369,6 +410,7 @@
                                   <q-input
                                     v-model="lightForms[lightName].pins"
                                     label="Pins (comma-separated)"
+                                    @update:model-value="() => markLightFormDirty(lightName)"
                                   />
                                 </div>
                               </div>
@@ -867,6 +909,7 @@ const cameraSettingDescription = (field: CameraSettingsField) => getFieldDescrip
 const motorNames = computed(() => Object.keys(motors.value ?? {}))
 const motorForms = reactive<Record<string, MotorForm>>({})
 const motorSaving = reactive<Record<string, boolean>>({})
+const motorFormDirty = reactive<Record<string, boolean>>({})
 
 type MotorConfigField = keyof (typeof fieldDescriptions)['MotorConfig']
 
@@ -875,6 +918,7 @@ const motorConfigDescription = (field: MotorConfigField) => getFieldDescription(
 const lightNames = computed(() => Object.keys(lights.value ?? {}))
 const lightForms = reactive<Record<string, LightForm>>({})
 const lightSaving = reactive<Record<string, boolean>>({})
+const lightFormDirty = reactive<Record<string, boolean>>({})
 
 type MotorForm = {
   direction_pin: number
@@ -1170,6 +1214,7 @@ async function saveMotorSettings(name: string) {
     })
 
     motorForms[name] = mapMotorConfig(updated.data)
+    motorFormDirty[name] = false
   } catch (error) {
     console.error(`Motor "${name}" could not be saved.`, error)
   } finally {
@@ -1203,11 +1248,20 @@ async function saveLightSettings(name: string) {
     })
 
     lightForms[name] = mapLightConfig(updated.data)
+    lightFormDirty[name] = false
   } catch (error) {
     console.error(`Light "${name}" could not be saved.`, error)
   } finally {
     lightSaving[name] = false
   }
+}
+
+function markMotorFormDirty(name: string) {
+  motorFormDirty[name] = true
+}
+
+function markLightFormDirty(name: string) {
+  lightFormDirty[name] = true
 }
 
 watch(selectedCamera, (name) => {
@@ -1262,13 +1316,20 @@ watch(
       if (!names.has(name)) {
         delete motorForms[name]
         delete motorSaving[name]
+        delete motorFormDirty[name]
       }
     })
 
     Object.entries(current).forEach(([name, status]) => {
-      motorForms[name] = mapMotorConfig(status?.settings)
+      const mapped = mapMotorConfig(status?.settings)
+      if (!(name in motorForms) || motorFormDirty[name] !== true) {
+        motorForms[name] = mapped
+      }
       if (!(name in motorSaving)) {
         motorSaving[name] = false
+      }
+      if (!(name in motorFormDirty)) {
+        motorFormDirty[name] = false
       }
     })
   },
@@ -1284,13 +1345,20 @@ watch(
       if (!names.has(name)) {
         delete lightForms[name]
         delete lightSaving[name]
+        delete lightFormDirty[name]
       }
     })
 
     Object.entries(current).forEach(([name, status]) => {
-      lightForms[name] = mapLightConfig(status?.settings)
+      const mapped = mapLightConfig(status?.settings)
+      if (!(name in lightForms) || lightFormDirty[name] !== true) {
+        lightForms[name] = mapped
+      }
       if (!(name in lightSaving)) {
         lightSaving[name] = false
+      }
+      if (!(name in lightFormDirty)) {
+        lightFormDirty[name] = false
       }
     })
   },
