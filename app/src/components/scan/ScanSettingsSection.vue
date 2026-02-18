@@ -12,6 +12,8 @@
           :image-formats="imageFormats"
           v-model:pathMethod="pathMethod"
           :path-methods="pathMethods"
+          :path-method-disabled="pathMethodDisabled"
+          :path-method-disabled-message="pathMethodDisabledMessage"
           v-model:minTheta="minTheta"
           v-model:maxTheta="maxTheta"
           v-model:optimizePath="optimizePath"
@@ -89,6 +91,9 @@ const pathMethods = [
   { label: 'Fibonacci', value: 'fibonacci' },
   { label: 'Spiral', value: 'spiral' }
 ]
+
+const pathMethodDisabled = true
+const pathMethodDisabledMessage = 'Only the Fibonacci scan path is supported right now.'
 
 const imageFormats = ['jpeg', 'dng', 'rgb_array', 'yuv_array']
 

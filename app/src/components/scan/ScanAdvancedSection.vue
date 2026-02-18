@@ -13,15 +13,19 @@
         </q-select>
       </div>
       <div class="col-12">
-        <q-select
-          v-model="pathMethodModel"
-          :options="pathMethods"
-          label="Path Method"
-          dense
-          outlined
-        >
-          <q-tooltip>{{ pathMethodDescription }}</q-tooltip>
-        </q-select>
+        <div class="path-method-tooltip relative-position">
+          <q-select
+            v-model="pathMethodModel"
+            :options="pathMethods"
+            label="Path Method"
+            dense
+            outlined
+            :disable="pathMethodDisabled"
+          />
+          <q-tooltip anchor="bottom middle" self="top middle">
+            {{ pathMethodDisabled ? pathMethodDisabledMessage : pathMethodDescription }}
+          </q-tooltip>
+        </div>
       </div>
       <div class="col-6">
         <q-input
@@ -81,6 +85,8 @@ const props = defineProps<{
   imageFormats: string[]
   pathMethod: PathMethodOption
   pathMethods: PathMethodOption[]
+  pathMethodDisabled?: boolean
+  pathMethodDisabledMessage?: string
   minTheta: number
   maxTheta: number
   optimizePath: boolean
