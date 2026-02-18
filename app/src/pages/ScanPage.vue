@@ -1,5 +1,13 @@
 <template>
-  <q-page>
+  <q-page class="scan-page">
+    <BlurredSnapshotBackground
+      :src="snapshotBackgroundSrc"
+      :blur-px="10"
+      :saturate-percent="100"
+      :transition-ms="1600"
+      :max-opacity="0.3"
+      :orientation-flag="snapshotOrientationFlag"
+    />
     <div class="q-pa-md">
       <template v-if="showDisconnectedSkeleton">
         <div class="row justify-center q-col-gutter-sm">
@@ -91,6 +99,7 @@ import { addScanWithDescription } from 'src/generated/api'
 import generateDashedName from 'src/utils/randomName'
 
 import CameraView from 'components/CameraView.vue'
+import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import ScanStartSection from 'components/scan/ScanStartSection.vue'
 import ScanSettingsSection from 'components/scan/ScanSettingsSection.vue'
 import CreateProjectDialog from 'components/project/CreateProjectDialog.vue'
@@ -133,6 +142,8 @@ const presetOptions = computed(() =>
 )
 
 const selectedCamera = computed(() => cameraStore.cameraOptions.find(c => c.value === selectedCameraName.value) || null)
+const snapshotOrientationFlag = computed(() => selectedCamera.value?.orientationFlag ?? null)
+const snapshotBackgroundSrc = computed(() => cameraStore.photoObjectUrl)
 const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
 const selectedProjectEntity = computed(() =>
   projectsStore.projects.find((project) => project.name === selectedProject.value) ?? null

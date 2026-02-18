@@ -1,16 +1,13 @@
 <template>
   <q-page class="settings-page">
-    <div v-if="backgroundPreviewUrl" class="settings-background">
-      <img
-        :key="backgroundImageKey"
-        class="settings-background__image"
-        :class="{ 'settings-background__image--visible': backgroundImageVisible }"
-        :src="backgroundPreviewUrl"
-        alt="Camera preview background"
-        @load="handleSettingsBackgroundLoad"
-        @error="handleSettingsBackgroundError"
-      />
-    </div>
+    <BlurredSnapshotBackground
+      v-if="backgroundPreviewUrl"
+      :src="backgroundPreviewUrl"
+      :alt="'Camera preview background'"
+      :transition-ms="1200"
+      :max-opacity="0.3"
+      :orientation-flag="selectedCameraOrientationFlag"
+    />
     <div class="q-pa-md">
       <div class="row justify-center q-col-gutter-md">
         <div class="col-12">
@@ -544,6 +541,7 @@ import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseSelect from 'components/base/BaseSelect.vue'
+import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import {
   getCameraNameSettings,
@@ -870,29 +868,17 @@ const selectedCamera = ref<string | null>(null)
 const selectedSettingsCamera = computed(() => selectedCamera.value ?? cameraStore.selectedCamera)
 
 const backgroundPreviewUrl = computed(() => {
-  const cameraName = selectedSettingsCamera.value ?? cameraStore.selectedCamera
+  const cameraName = selectedSettingsCamera.value
   return cameraName ? cameraStore.getPreviewUrl(cameraName, 10) : null
 })
 
-const backgroundImageVisible = ref(false)
-const backgroundImageKey = ref(0)
-
-watch(backgroundPreviewUrl, (url) => {
-  if (url) {
-    backgroundImageVisible.value = false
-    backgroundImageKey.value += 1
-  } else {
-    backgroundImageVisible.value = false
+const selectedCameraOrientationFlag = computed(() => {
+  const cameraName = selectedSettingsCamera.value
+  if (!cameraName) {
+    return null
   }
+  return deviceStore.getCamera(cameraName)?.settings?.orientation_flag ?? null
 })
-
-function handleSettingsBackgroundLoad() {
-  backgroundImageVisible.value = true
-}
-
-function handleSettingsBackgroundError() {
-  backgroundImageVisible.value = false
-}
 
 const cameraOptions = computed<CameraOption[]>(() =>
   Object.keys(cameras.value ?? {}).map((name) => ({ label: name, value: name }))

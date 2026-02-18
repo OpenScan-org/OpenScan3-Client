@@ -80,12 +80,27 @@ export const useCameraStore = defineStore('camera', {
     setSelectedCamera(cameraName: string | null) {
       this.selectedCamera = cameraName;
     },
-    clearPhoto() {
-      if (this.photoObjectUrl) {
-        URL.revokeObjectURL(this.photoObjectUrl);
+    setPhoto(blob: Blob | null, { immediateCleanup = false }: { immediateCleanup?: boolean } = {}) {
+      const previousUrl = this.photoObjectUrl;
+
+      if (!blob) {
+        this.photoBlob = null;
+        this.photoObjectUrl = null;
+      } else {
+        this.photoBlob = blob;
+        this.photoObjectUrl = URL.createObjectURL(blob);
       }
-      this.photoBlob = null;
-      this.photoObjectUrl = null;
+
+      if (previousUrl) {
+        if (immediateCleanup) {
+          URL.revokeObjectURL(previousUrl);
+        } else {
+          window.setTimeout(() => URL.revokeObjectURL(previousUrl), 1000);
+        }
+      }
+    },
+    clearPhoto() {
+      this.setPhoto(null, { immediateCleanup: true });
       this.photoError = null;
     },
     handleCameraSettingsChanged(paths: string[]) {
@@ -126,10 +141,7 @@ export const useCameraStore = defineStore('camera', {
         }
 
         const blob = await response.blob();
-
-        this.clearPhoto();
-        this.photoBlob = blob;
-        this.photoObjectUrl = URL.createObjectURL(blob);
+        this.setPhoto(blob);
       } catch (err) {
         console.error(err);
         this.photoError = 'Photo could not be loaded.';

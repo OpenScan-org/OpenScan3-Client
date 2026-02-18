@@ -23,6 +23,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch, type CSSProperties } from 'vue'
+import { getOrientationTransform } from 'src/utils/orientation'
 
 interface Props {
   src: string | null
@@ -32,6 +33,7 @@ interface Props {
   maxOpacity?: number
   transitionMs?: number
   imageStyle?: CSSProperties
+  orientationFlag?: number | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -56,16 +58,23 @@ const containerStyle = computed(() => ({
   '--blurred-bg-opacity': props.maxOpacity.toString()
 }))
 
+const orientationTransform = computed(() => getOrientationTransform(props.orientationFlag ?? null))
+
 const mergedImageStyle = computed<CSSProperties>(() => {
+  const baseTransform = props.imageStyle?.transform ?? 'translate(-50%, -50%)'
+  const rotation = orientationTransform.value
+  const resolvedTransform = rotation === 'none' ? baseTransform : `${baseTransform} ${rotation}`.trim()
+
   const baseStyle: CSSProperties = {
     width: '120vmax',
     height: '120vmax',
     top: '50%',
     left: '50%',
-    transform: 'translate(-50%, -50%)',
     objectFit: 'cover',
     ...props.imageStyle
   }
+
+  baseStyle.transform = resolvedTransform
 
   const existingFilter = props.imageStyle?.filter ? `${props.imageStyle.filter} ` : ''
   baseStyle.filter = `${existingFilter}blur(${props.blurPx}px) saturate(${props.saturatePercent}%)`.trim()
