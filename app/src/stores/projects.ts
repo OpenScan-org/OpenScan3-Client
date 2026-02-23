@@ -2,6 +2,15 @@ import { defineStore } from 'pinia';
 import { apiClient } from 'src/services/apiClient';
 import { getProjects, newProject, type Project } from 'src/generated/api';
 
+function normalizeProjects(payload: unknown): Project[] {
+  if (!payload || typeof payload !== 'object') {
+    return [];
+  }
+  return Object.values(payload as Record<string, Project | null | undefined>).filter(
+    (project): project is Project => Boolean(project && typeof project.name === 'string')
+  );
+}
+
 export const useProjectsStore = defineStore('projects', {
   state: () => ({
     projects: [] as Project[],
@@ -11,7 +20,9 @@ export const useProjectsStore = defineStore('projects', {
   getters: {
     getProjectByName: (state) => (name: string) =>
       state.projects.find(p => p.name === name),
-    projectNames: (state) => state.projects.map(p => ({ label: p.name, value: p.name })),
+    projectNames: (state) => state.projects
+      .filter((project) => project && project.name)
+      .map((project) => ({ label: project.name, value: project.name })),
     recentProjects: (state) => {
       const sorted = [...state.projects].sort((a, b) => {
         const getLastActivity = (p: Project) => {
@@ -40,7 +51,7 @@ export const useProjectsStore = defineStore('projects', {
       this.error = null;
       try {
         const data = await getProjects({ client: apiClient });
-        this.projects = Object.values(data ?? {});
+        this.projects = normalizeProjects(data);
       } catch (error) {
         this.error = 'Error loading projects';
         console.error(error);

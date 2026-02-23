@@ -100,6 +100,7 @@ const deviceStore = useDeviceStore()
 const getProjectFromRoute = () => (typeof route.query.project === 'string' ? route.query.project : null)
 
 const SORT_STORAGE_KEY = 'openscan.projectSort'
+const SELECTED_PROJECT_STORAGE_KEY = 'openscan.selectedProject'
 
 type SortField = 'name' | 'date'
 type SortOrder = 'asc' | 'desc'
@@ -131,7 +132,28 @@ const writeStoredSort = (value: SortState) => {
   } catch { /* ignore storage errors */ }
 }
 
-const selectedProjectName = ref<string | null>(getProjectFromRoute())
+const readStoredSelectedProject = (): string | null => {
+  try {
+    const value = localStorage.getItem(SELECTED_PROJECT_STORAGE_KEY)
+    return value && value.trim() ? value : null
+  } catch {
+    return null
+  }
+}
+
+const writeStoredSelectedProject = (value: string | null) => {
+  try {
+    if (value && value.trim()) {
+      localStorage.setItem(SELECTED_PROJECT_STORAGE_KEY, value)
+    } else {
+      localStorage.removeItem(SELECTED_PROJECT_STORAGE_KEY)
+    }
+  } catch {
+    // ignore storage errors
+  }
+}
+
+const selectedProjectName = ref<string | null>(getProjectFromRoute() ?? readStoredSelectedProject())
 const sortState = ref<SortState>(readStoredSort())
 const projectsListOpen = ref(false)
 const isMobile = computed(() => $q.screen.lt.md)
@@ -179,6 +201,7 @@ const updateRouteProject = (name: string | null) => {
 const selectProject = (name: string) => {
   selectedProjectName.value = name
   updateRouteProject(name)
+  writeStoredSelectedProject(name)
   if (isMobile.value) {
     projectsListOpen.value = false
   }
@@ -189,6 +212,7 @@ const createProject = async (data: { name: string; description?: string }) => {
     await projectsStore.createProject(data.name, data.description)
     selectedProjectName.value = data.name
     updateRouteProject(data.name)
+    writeStoredSelectedProject(data.name)
   } catch (error) {
     console.error('Could not create project.', error)
   }
@@ -203,6 +227,12 @@ const loadProjects = async () => {
   const routeProject = getProjectFromRoute()
   if (routeProject && projectsStore.projects.some((project) => project.name === routeProject)) {
     selectedProjectName.value = routeProject
+    return
+  }
+
+  const storedSelected = readStoredSelectedProject()
+  if (storedSelected && projectsStore.projects.some((project) => project.name === storedSelected)) {
+    selectedProjectName.value = storedSelected
     return
   }
 
@@ -233,6 +263,10 @@ const handleBulkDeleted = async () => {
 // Setup initial load
 onMounted(() => {
   loadProjects()
+})
+
+watch(selectedProjectName, (value) => {
+  writeStoredSelectedProject(value)
 })
 
 watch(

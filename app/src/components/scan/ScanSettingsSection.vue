@@ -82,6 +82,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:selectedCameraName', value: string): void
   (e: 'update:photoCount', value: number): void
+  (e: 'scan-settings-change', value: ScanSetting): void
 }>()
 
 const deviceStore = useDeviceStore()
@@ -178,6 +179,29 @@ watch(
   { immediate: true }
 )
 
+const emitScanSettingsChange = () => {
+  emit('scan-settings-change', getScanSettings())
+}
+
+watch(
+  [
+    pathMethod,
+    points,
+    imageFormat,
+    minTheta,
+    maxTheta,
+    optimizePath,
+    optimizationAlgorithm,
+    focusStacks,
+    enableFocusStacking,
+    focusRange
+  ],
+  () => {
+    emitScanSettingsChange()
+  },
+  { deep: true, immediate: true }
+)
+
 type ScanSettingField = keyof (typeof fieldDescriptions)['ScanSetting']
 const scanSettingDescription = (field: ScanSettingField) => getFieldDescription('ScanSetting', field)
 type CameraSettingField = keyof (typeof fieldDescriptions)['CameraSettings']
@@ -267,7 +291,7 @@ const resetToDefaults = () => {
   scanPictureQualitySectionRef.value?.resetToDefaults()
 }
 
-const getScanSettings = () => {
+function getScanSettings() {
   const settings: ScanSetting = {
     path_method: pathMethod.value.value as 'fibonacci' | 'spiral',
     points: points.value,
