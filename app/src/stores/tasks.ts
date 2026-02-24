@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { useApiConfigStore, buildWebSocketUrl } from './apiConfig'
 import { apiClient } from 'src/services/apiClient'
 import { cancelTask, getAllTasks, getTaskStatus, pauseTask, resumeTask, type Task } from 'src/generated/api'
+import { filterLatestScanTasks, pickActiveScanTaskId } from 'src/utils/taskUtils'
 
 export type TaskStoreStatus = 'idle' | 'connecting' | 'open' | 'closed' | 'error'
 
@@ -10,11 +11,19 @@ interface TaskEventMessage {
   task?: Task
 }
 
+interface TaskTimingEntry {
+  pausedAt: number | null
+  totalPausedMs: number
+  lastProgressSample: { current: number; timestamp: number } | null
+  stepMsAvg: number | null
+  stepSamples: number
+}
+
 interface TaskStoreState {
   tasks: Task[]
   lastHeartbeat: number | null
   now: number
-  taskTiming: Record<string, { pausedAt: number | null; totalPausedMs: number }>
+  taskTiming: Record<string, TaskTimingEntry>
   status: TaskStoreStatus
   error: string | null
 }
@@ -37,6 +46,8 @@ export const useTaskStore = defineStore('tasks', {
   }),
   getters: {
     taskList: (state) => state.tasks,
+    latestScanTasks: (state) => filterLatestScanTasks(state.tasks),
+    activeScanTaskId: (state) => pickActiveScanTaskId(state.tasks),
     runningTasks: (state) => state.tasks.filter((task) => task.status === 'running'),
     taskById: (state) => (taskId: string) => state.tasks.find((task) => task.id === taskId) ?? null,
     etaSecondsById: (state) => (taskId: string) => {
@@ -56,6 +67,13 @@ export const useTaskStore = defineStore('tasks', {
       const totalPausedMs = timing?.totalPausedMs ?? 0
       const isPaused = task.status === 'paused' || task.status === 'interrupted'
       const effectiveNowMs = isPaused && timing?.pausedAt ? timing.pausedAt : state.now
+
+      const avgStepMs = timing?.stepMsAvg
+      if (avgStepMs && avgStepMs > 0) {
+        const remainingSteps = Math.max(total - current, 0)
+        return Math.ceil((remainingSteps * avgStepMs) / 1000)
+      }
+
       const elapsedSeconds = (effectiveNowMs - startedAtMs - totalPausedMs) / 1000
       if (elapsedSeconds <= 0) {
         return null
@@ -69,9 +87,53 @@ export const useTaskStore = defineStore('tasks', {
   actions: {
     ensureTaskTiming(taskId: string) {
       if (!this.taskTiming[taskId]) {
-        this.taskTiming[taskId] = { pausedAt: null, totalPausedMs: 0 }
+        this.taskTiming[taskId] = {
+          pausedAt: null,
+          totalPausedMs: 0,
+          lastProgressSample: null,
+          stepMsAvg: null,
+          stepSamples: 0
+        }
       }
       return this.taskTiming[taskId]
+    },
+    recordProgressSample(task: Task, nowMs: number) {
+      if (!task.id) {
+        return
+      }
+      const timing = this.ensureTaskTiming(task.id)
+      const current = task.progress?.current
+      if (current === undefined) {
+        timing.lastProgressSample = null
+        timing.stepMsAvg = null
+        timing.stepSamples = 0
+        return
+      }
+
+      const previous = timing.lastProgressSample
+      if (!previous || current <= previous.current) {
+        timing.lastProgressSample = { current, timestamp: nowMs }
+        return
+      }
+
+      const deltaSteps = current - previous.current
+      const deltaMs = nowMs - previous.timestamp
+      if (deltaMs <= 0) {
+        timing.lastProgressSample = { current, timestamp: nowMs }
+        return
+      }
+
+      const stepMs = deltaMs / deltaSteps
+      if (!timing.stepMsAvg) {
+        timing.stepMsAvg = stepMs
+        timing.stepSamples = 1
+      } else {
+        timing.stepSamples += 1
+        const samples = timing.stepSamples
+        timing.stepMsAvg = timing.stepMsAvg + (stepMs - timing.stepMsAvg) / samples
+      }
+
+      timing.lastProgressSample = { current, timestamp: nowMs }
     },
     startClock() {
       if (clockTimer) {
@@ -224,6 +286,7 @@ export const useTaskStore = defineStore('tasks', {
         const nowMs = Date.now()
         for (const task of this.tasks) {
           const timing = this.ensureTaskTiming(task.id)
+          this.recordProgressSample(task, nowMs)
 
           const isPaused = task.status === 'paused' || task.status === 'interrupted'
           if (isPaused) {
@@ -311,6 +374,7 @@ export const useTaskStore = defineStore('tasks', {
       const index = this.tasks.findIndex((existing) => existing.id === task.id)
       if (index === -1) {
         this.tasks = [task, ...this.tasks]
+        this.recordProgressSample(task, nowMs)
         return
       }
 
@@ -322,6 +386,7 @@ export const useTaskStore = defineStore('tasks', {
         run_kwargs: { ...existing.run_kwargs, ...task.run_kwargs }
       }
       this.tasks.splice(index, 1, merged)
+      this.recordProgressSample(merged, nowMs)
     }
   }
 })

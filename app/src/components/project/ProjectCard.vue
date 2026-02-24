@@ -354,6 +354,23 @@ const addScanTooltip = computed(() => {
     return 'Create a new scan in this project'
 })
 
+const findTaskIdForScan = (scanIndex: number) => {
+    const scan = projectScansNormalized.value.find((entry) => entry.index === scanIndex)
+    return scan?.task_id ?? null
+}
+
+const refreshTaskForScan = async (scanIndex: number) => {
+    const taskId = findTaskIdForScan(scanIndex)
+    if (!taskId) {
+        return
+    }
+    try {
+        await taskStore.refreshTask(taskId)
+    } catch (error) {
+        console.warn('Could not refresh task status.', error)
+    }
+}
+
 const confirm_delete = () => {
     $q.dialog({
         title: 'Confirm',
@@ -460,6 +477,7 @@ const handleDeleteScan = async (data: { project_name: string; scan_index: number
 const handlePauseScan = async (data: { project_name: string; scan_index: number }) => {
     try {
         await pauseScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
+        await refreshTaskForScan(data.scan_index)
         emit('reload')
     } catch (error) {
         console.error('Could not pause scan.', error)
@@ -469,6 +487,7 @@ const handlePauseScan = async (data: { project_name: string; scan_index: number 
 const handleResumeScan = async (data: { project_name: string; scan_index: number; camera_name: string }) => {
     try {
         await resumeScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, query: { camera_name: data.camera_name }, client: apiClient })
+        await refreshTaskForScan(data.scan_index)
         emit('reload')
     } catch (error) {
         console.error('Could not resume scan.', error)
@@ -478,6 +497,7 @@ const handleResumeScan = async (data: { project_name: string; scan_index: number
 const handleCancelScan = async (data: { project_name: string; scan_index: number }) => {
     try {
         await cancelScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
+        await refreshTaskForScan(data.scan_index)
         emit('reload')
     } catch (error) {
         console.error('Could not cancel scan.', error)

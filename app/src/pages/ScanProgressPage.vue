@@ -18,38 +18,7 @@ const taskStore = useTaskStore()
 
 const routeTaskId = computed(() => route.params.taskId as string | undefined)
 
-const activeScanTaskId = computed(() => {
-  const tasks = taskStore.taskList
-
-  const running = tasks.find((task) => task.task_type === 'scan_task' && task.status === 'running')
-  if (running?.id) {
-    return running.id
-  }
-
-  const pendingCandidates = tasks
-    .filter((task) => task.task_type === 'scan_task' && task.status === 'pending')
-    .slice()
-    .sort((a, b) => {
-      const aTime = new Date(a.started_at ?? a.created_at ?? 0).getTime()
-      const bTime = new Date(b.started_at ?? b.created_at ?? 0).getTime()
-      return bTime - aTime
-    })
-
-  if (pendingCandidates[0]?.id) {
-    return pendingCandidates[0].id
-  }
-
-  const pausedCandidates = tasks
-    .filter((task) => task.task_type === 'scan_task' && (task.status === 'paused' || task.status === 'interrupted'))
-    .slice()
-    .sort((a, b) => {
-      const aTime = new Date(a.started_at ?? a.created_at ?? 0).getTime()
-      const bTime = new Date(b.started_at ?? b.created_at ?? 0).getTime()
-      return bTime - aTime
-    })
-
-  return pausedCandidates[0]?.id ?? null
-})
+const activeScanTaskId = computed(() => taskStore.activeScanTaskId)
 
 const resolvedTaskId = computed(() => routeTaskId.value ?? activeScanTaskId.value)
 const resolvedTask = computed(() => (resolvedTaskId.value ? taskStore.taskById(resolvedTaskId.value) : null))
