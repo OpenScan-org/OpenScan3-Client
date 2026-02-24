@@ -21,6 +21,7 @@ interface TaskTimingEntry {
 
 interface TaskStoreState {
   tasks: Task[]
+  dismissedTasks: Task[]
   lastHeartbeat: number | null
   now: number
   taskTiming: Record<string, TaskTimingEntry>
@@ -38,6 +39,7 @@ let clockTimer: ReturnType<typeof setInterval> | null = null
 export const useTaskStore = defineStore('tasks', {
   state: (): TaskStoreState => ({
     tasks: [],
+    dismissedTasks: [],
     lastHeartbeat: null,
     now: Date.now(),
     taskTiming: {},
@@ -333,6 +335,24 @@ export const useTaskStore = defineStore('tasks', {
       const task = await cancelTask({ client: apiClient, path: { task_id: taskId } })
       this.applyTaskUpdate(task)
       return task
+    },
+    dismissTask(taskId: string) {
+      const task = this.tasks.find((t) => t.id === taskId)
+      if (task) {
+        this.dismissedTasks.push(task)
+      }
+      this.tasks = this.tasks.filter((t) => t.id !== taskId)
+      delete this.taskTiming[taskId]
+    },
+    restoreTask(taskId: string) {
+      const task = this.dismissedTasks.find((t) => t.id === taskId)
+      if (task) {
+        this.tasks = [task, ...this.tasks]
+        this.dismissedTasks = this.dismissedTasks.filter((t) => t.id !== taskId)
+      }
+    },
+    clearDismissed() {
+      this.dismissedTasks = []
     },
     handleMessage(raw: string) {
       let payload: TaskEventMessage

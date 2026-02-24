@@ -4,7 +4,7 @@
       <q-item class="q-mb-sm scans-header" dense>
         <q-item-section avatar>
           <q-checkbox
-            size="sm"
+            size="xs"
             :model-value="allScansSelected"
             :indeterminate="isPartialSelection"
             :disable="!scans.length"
@@ -69,7 +69,7 @@
         >
           <q-item-section avatar>
             <q-checkbox
-              size="sm"
+              size="xs"
               :model-value="selectedScansSet.has(scan.index)"
               @update:model-value="(checked) => toggle_scan_selection(scan.index, checked)"
               @click.stop

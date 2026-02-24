@@ -48,3 +48,5 @@ const showsExternalIcon = computed(
     props.link?.startsWith('https://')
 );
 </script>
+
+

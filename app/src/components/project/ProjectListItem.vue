@@ -6,9 +6,9 @@
     :class="{ 'bg-blue-2 text-dark': isSelected }"
     @click="handleSelect"
   >
-    <q-item-section avatar>
+    <q-item-section side class="project-list-checkbox">
       <q-checkbox
-        size="sm"
+        size="xs"
         :model-value="bulkSelected"
         @update:model-value="toggleBulk"
         @click.stop
@@ -28,6 +28,11 @@
 </template>
 
 <style scoped>
+.project-list-checkbox {
+  min-width: 32px;
+  padding-right: 4px;
+}
+
 .description-clamp {
   display: -webkit-box;
   -webkit-line-clamp: 2;

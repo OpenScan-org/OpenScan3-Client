@@ -37,7 +37,7 @@
                                         v-if="!project.uploaded"
                                         unelevated
                                         icon="cloud_upload"
-                                        label="Cloud Reconstruction"
+                                        :label="compactButtons ? 'Cloud' : 'Cloud Reconstruction'"
                                         :loading="cloudUploadLoading"
                                         :disable="cloudUploadLoading || cloudReconstructionBlocked"
                                         @click="confirm_upload"
@@ -48,7 +48,7 @@
                                         v-else-if="!project.downloaded"
                                         unelevated
                                         icon="cloud_sync"
-                                        label="Fetch model"
+                                        :label="compactButtons ? 'Fetch' : 'Fetch model'"
                                         :loading="cloudFetchLoading"
                                         :disable="cloudFetchLoading"
                                         @click="confirm_fetch_model"
@@ -59,7 +59,7 @@
                                         v-else
                                         unelevated
                                         icon="download"
-                                        label="model"
+                                        :label="compactButtons ? 'Model' : 'Model'"
                                         @click="download_model"
                                     >
                                         <q-tooltip>Download the reconstructed model archive</q-tooltip>
@@ -78,7 +78,7 @@
                                     color="positive"
                                     unelevated
                                     icon="add"
-                                    label="Add Scan"
+                                    :label="compactButtons ? 'Scan' : 'Add Scan'"
                                     :disable="projectActionsBlocked"
                                     @click="add_scan"
                                 >
@@ -195,6 +195,8 @@ const $q = useQuasar()
 const router = useRouter()
 const apiConfigStore = useApiConfigStore()
 const taskStore = useTaskStore()
+
+const compactButtons = computed(() => $q.screen.width < 1800)
 
 interface ProjectProp {
     project: Project

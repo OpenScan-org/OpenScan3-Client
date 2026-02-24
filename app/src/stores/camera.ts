@@ -3,6 +3,8 @@ import { apiClient, getApiBaseUrl } from 'src/services/apiClient';
 import { getCameras, type Camera } from 'src/generated/api';
 
 const CAMERA_SETTINGS_CHANGE = /^cameras\.([^.\s]+)\.settings(?:\.|$)/;
+const PHOTO_DEBOUNCE_MS = 800;
+let photoDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 function getCameraNamesWithSettingChanges(paths: string[] | null | undefined) {
   const affected = new Set<string>();
@@ -113,11 +115,21 @@ export const useCameraStore = defineStore('camera', {
         const onlyOrientationChange = paths.every((path) => path.includes('.settings.orientation_flag'));
 
         if (!onlyOrientationChange) {
-          void this.fetchPhoto(this.selectedCamera);
+          this.debouncedFetchPhoto(this.selectedCamera);
         }
 
         void this.fetchCameras();
       }
+    },
+    debouncedFetchPhoto(cameraName: string) {
+      this.photoLoading = true;
+      if (photoDebounceTimer) {
+        clearTimeout(photoDebounceTimer);
+      }
+      photoDebounceTimer = setTimeout(() => {
+        photoDebounceTimer = null;
+        void this.fetchPhoto(cameraName);
+      }, PHOTO_DEBOUNCE_MS);
     },
     async fetchPhoto(cameraName?: string | null) {
       const name = cameraName ?? this.selectedCamera;
