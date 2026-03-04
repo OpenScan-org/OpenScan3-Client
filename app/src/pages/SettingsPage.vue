@@ -37,21 +37,19 @@
                         left-label
                       />
                     </div>
-                    <div class="col-12 col-sm-6">
-                      <BaseButtonSecondary
-                        class="full-width"
-                        icon="restart_alt"
-                        label="Reset"
-                        @click="resetApiConfigToWindow"
-                      />
-                    </div>
-                    <div class="col-12 col-sm-6">
-                      <BaseButtonPrimary
-                        class="full-width"
-                        icon="save"
-                        label="Save"
-                        @click="saveApiConfig"
-                      />
+                    <div class="col-12">
+                      <div class="row justify-end q-gutter-sm">
+                        <BaseButtonSecondary
+                          icon="restart_alt"
+                          label="Reset"
+                          @click="resetApiConfigToWindow"
+                        />
+                        <BaseButtonPrimary
+                          icon="save"
+                          label="Save"
+                          @click="saveApiConfig"
+                        />
+                      </div>
                     </div>
                   </div>
                 </BaseSection>
@@ -76,81 +74,35 @@
                             clearable
                           />
                         </div>
-                        <div class="col-6">
-                          <BaseButtonSecondary
-                            class="full-width"
-                            icon="refresh"
-                            label="Reload"
-                            :loading="configOptionsLoading"
-                            @click="loadDeviceConfigs"
-                          />
-                        </div>
-                        <div class="col-6">
-                          <BaseButtonPrimary
-                            class="full-width"
-                            icon="publish"
-                            label="Apply"
-                            :disable="!selectedConfig"
-                            :loading="configApplying"
-                            @click="applySelectedConfig"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="row q-col-gutter-md q-mt-md">
                         <div class="col-12">
-                          <q-toggle v-model="detectCameras" label="Detect cameras on reinit" />
-                        </div>
-                        <div class="col-12">
-                          <q-toggle
-                            v-model="saveConfigBeforePowerAction"
-                            label="Save configuration before reboot/shutdown"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="row q-col-gutter-sm q-mt-md">
-                        <div class="col-12 col-sm-6">
-                          <BaseButtonPrimary
-                            class="full-width"
-                            icon="save"
-                            label="Save config"
-                            :loading="hardwareActions.save"
-                            @click="saveCurrentConfig"
-                          />
-                        </div>
-                        <div class="col-12 col-sm-6">
-                          <BaseButtonSecondary
-                            class="full-width"
-                            icon="autorenew"
-                            label="Reinitialize hardware"
-                            :loading="hardwareActions.reinitialize"
-                            @click="handleReinitializeHardware"
-                          />
-                        </div>
-                        <PowerControls
-                          :save-config="saveConfigBeforePowerAction"
-                          v-slot="{ confirmReboot, confirmShutdown, rebooting, shuttingDown }"
-                        >
-                          <div class="col-12 col-sm-6">
+                          <div class="row justify-end q-gutter-sm">
                             <BaseButtonSecondary
-                              class="full-width"
-                              icon="restart_alt"
-                              label="Reboot"
-                              :loading="rebooting"
-                              @click="confirmReboot"
-                            />
-                          </div>
-                          <div class="col-12 col-sm-6">
+                              icon="refresh"
+                              label="Reload"
+                              :loading="configOptionsLoading"
+                              @click="loadDeviceConfigs"
+                            >
+                              <q-tooltip>Reload available device configurations.</q-tooltip>
+                            </BaseButtonSecondary>
+                            <BaseButtonPrimary
+                              icon="publish"
+                              label="Apply"
+                              :disable="!selectedConfig"
+                              :loading="configApplying"
+                              @click="applySelectedConfig"
+                            >
+                              <q-tooltip>Apply the selected configuration file.</q-tooltip>
+                            </BaseButtonPrimary>
                             <BaseButtonSecondary
-                              class="full-width"
-                              icon="power_settings_new"
-                              label="Shutdown"
-                              :loading="shuttingDown"
-                              @click="confirmShutdown"
-                            />
+                              icon="cached"
+                              label="Reinitialize"
+                              :loading="reinitializeHardwareLoading"
+                              @click="handleReinitializeHardware"
+                            >
+                              <q-tooltip>Reinitialize hardware and detect cameras automatically.</q-tooltip>
+                            </BaseButtonSecondary>
                           </div>
-                        </PowerControls>
+                        </div>
                       </div>
                     </BaseSection>
 
@@ -529,12 +481,10 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useQuasar } from 'quasar'
 import { apiClient, updateApiClientConfig } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
-import PowerControls from 'src/components/PowerControls.vue'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
 import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue'
@@ -548,11 +498,9 @@ import {
   getCloudSettings,
   getCloudStatus,
   listConfigFiles,
-  reboot,
   reinitializeHardware,
   saveDeviceConfig,
   setConfigFile,
-  shutdown,
   updateCameraNameSettings,
   updateCloudSettings,
   updateLightNameSettings,
@@ -564,8 +512,6 @@ import {
   type LightConfig,
   type MotorConfig
 } from 'src/generated/api'
-
-const $q = useQuasar()
 
 const apiConfigStore = useApiConfigStore()
 const cameraStore = useCameraStore()
@@ -850,13 +796,7 @@ const configOptionsLoading = ref(false)
 const selectedConfig = ref<string | null>(null)
 const configApplying = ref(false)
 
-const detectCameras = ref(false)
-const saveConfigBeforePowerAction = ref(false)
-
-const hardwareActions = reactive({
-  save: false,
-  reinitialize: false
-})
+const reinitializeHardwareLoading = ref(false)
 
 type CameraOption = { label: string; value: string }
 
@@ -1016,6 +956,7 @@ async function saveCloudSettings() {
     })
 
     apiConfigStore.setConfig({ cloudEnabled: true })
+    await saveCurrentConfig()
   } catch (error) {
     console.error('Cloud settings could not be saved.', error)
   } finally {
@@ -1165,6 +1106,7 @@ async function saveCameraSettings() {
       path: { name: selectedCamera.value },
       body: payload
     })
+    await saveCurrentConfig()
   } catch (error) {
     console.error('Camera settings could not be saved.', error)
   } finally {
@@ -1201,6 +1143,7 @@ async function saveMotorSettings(name: string) {
 
     motorForms[name] = mapMotorConfig(updated.data)
     motorFormDirty[name] = false
+    await saveCurrentConfig()
   } catch (error) {
     console.error(`Motor "${name}" could not be saved.`, error)
   } finally {
@@ -1235,6 +1178,7 @@ async function saveLightSettings(name: string) {
 
     lightForms[name] = mapLightConfig(updated.data)
     lightFormDirty[name] = false
+    await saveCurrentConfig()
   } catch (error) {
     console.error(`Light "${name}" could not be saved.`, error)
   } finally {
@@ -1367,27 +1311,28 @@ function resetApiConfigToWindow() {
 }
 
 async function saveCurrentConfig() {
-  hardwareActions.save = true
   try {
     await saveDeviceConfig({ client: apiClient })
   } catch (error) {
     console.error('Configuration could not be saved.', error)
-  } finally {
-    hardwareActions.save = false
   }
 }
 
 async function handleReinitializeHardware() {
-  hardwareActions.reinitialize = true
+  if (reinitializeHardwareLoading.value) {
+    return
+  }
+
+  reinitializeHardwareLoading.value = true
   try {
     await reinitializeHardware({
       client: apiClient,
-      query: { detect_cameras: detectCameras.value }
+      query: { detect_cameras: true }
     })
   } catch (error) {
     console.error('Hardware could not be reinitialized.', error)
   } finally {
-    hardwareActions.reinitialize = false
+    reinitializeHardwareLoading.value = false
   }
 }
 
