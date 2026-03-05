@@ -102,6 +102,12 @@ const cropSaving = ref(false)
 const dragMode = ref<DragMode | null>(null)
 const orientationInitialized = ref(false)
 
+function stopPreviewStream() {
+  if (previewImage.value) {
+    previewImage.value.src = ''
+  }
+}
+
 const orientation = computed<PreviewOrientation>(() =>
   previewSettingsStore.getOrientation(props.camera?.value ?? null)
 )
@@ -168,13 +174,27 @@ watch(
 watch(
   () => props.camera?.value,
   () => {
+    stopPreviewStream()
     imageLoaded.value = false
   }
 )
 
 watch(previewUrl, () => {
+  if (!previewUrl.value) {
+    stopPreviewStream()
+  }
   imageLoaded.value = false
 })
+
+watch(
+  () => props.active,
+  (isActive) => {
+    if (!isActive) {
+      imageLoaded.value = false
+      stopPreviewStream()
+    }
+  }
+)
 
 const currentCrop = computed(() => {
   if (dragMode.value) {
@@ -565,6 +585,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
   detachInteractionListeners()
+  stopPreviewStream()
 })
 
 defineExpose<CameraFastPreviewExposed>({
