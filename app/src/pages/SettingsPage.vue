@@ -584,6 +584,15 @@ const cloudForm = reactive<CloudForm>({
   split_size: defaultSplitSize
 })
 
+const hasPersistedCloudToken = () => cloudForm.token.trim().length > 0
+
+function syncCloudEnabledFlag() {
+  const shouldEnable = cloudToggle.value && hasPersistedCloudToken()
+  if (apiConfigStore.cloudEnabled !== shouldEnable) {
+    apiConfigStore.setConfig({ cloudEnabled: shouldEnable })
+  }
+}
+
 const isCloudFormValid = computed(() => {
   if (!cloudToggle.value) {
     return false
@@ -916,6 +925,7 @@ function applyCloudSettingsToForm(settings: Partial<CloudSettings> | null | unde
   Object.assign(cloudForm, next)
   cloudForm.user = CLOUD_DEFAULTS.user
   cloudForm.password = CLOUD_DEFAULTS.password
+  syncCloudEnabledFlag()
 }
 
 async function loadCloudSettings() {
@@ -979,8 +989,14 @@ async function saveCloudSettings() {
       client: apiClient,
       body: payload
     })
-
-    apiConfigStore.setConfig({ cloudEnabled: true })
+    cloudForm.host = payload.host
+    cloudForm.user = payload.user
+    cloudForm.password = payload.password
+    cloudForm.token = payload.token
+    if (payload.split_size !== undefined) {
+      cloudForm.split_size = payload.split_size
+    }
+    syncCloudEnabledFlag()
     await saveCurrentConfig()
   } catch (error) {
     console.error('Cloud settings could not be saved.', error)

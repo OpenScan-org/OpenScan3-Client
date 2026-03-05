@@ -97,6 +97,13 @@ const TASK_TYPE_LABELS: Record<string, string> = {
   cloud_upload_task: 'Cloud Upload',
 }
 
+const CLOUD_UPLOAD_PROGRESS_BYTES_PATTERN = /\(\s*\d+\s*\/\s*\d+\s*bytes\)/gi
+
+function cleanCloudUploadMessage(message: string): string | null {
+  const sanitized = message.replace(CLOUD_UPLOAD_PROGRESS_BYTES_PATTERN, '').replace(/\s{2,}/g, ' ').trim()
+  return sanitized.length > 0 ? sanitized : null
+}
+
 export const getTaskTitle = (task: Task) => {
   const label = task.task_type ? TASK_TYPE_LABELS[task.task_type] : null
 
@@ -125,6 +132,12 @@ export const getTaskSubtitle = (task: Task) => {
   }
 
   if (task.progress?.message) {
+    if (task.task_type === 'cloud_upload_task') {
+      const sanitized = cleanCloudUploadMessage(task.progress.message)
+      if (sanitized) {
+        return sanitized
+      }
+    }
     return task.progress.message
   }
 

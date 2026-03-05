@@ -81,7 +81,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
 import { apiClient, getApiBaseUrl } from 'src/services/apiClient'
@@ -90,12 +90,15 @@ import ProjectsList from 'src/components/project/ProjectsList.vue'
 import ProjectCard from 'src/components/project/ProjectCard.vue'
 import { useProjectsStore } from 'src/stores/projects'
 import { useDeviceStore } from 'src/stores/device'
+import { useTaskStore } from 'src/stores/tasks'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 const $q = useQuasar()
 const projectsStore = useProjectsStore()
 const route = useRoute()
 const router = useRouter()
 const deviceStore = useDeviceStore()
+const taskStore = useTaskStore()
+void taskStore.ensureConnected()
 
 const getProjectFromRoute = () => (typeof route.query.project === 'string' ? route.query.project : null)
 
@@ -260,14 +263,43 @@ const handleBulkDeleted = async () => {
   await loadProjects()
 }
 
+const TASK_RELOAD_DEBOUNCE_MS = 1500
+let pendingProjectsReload: ReturnType<typeof setTimeout> | null = null
+
+const scheduleProjectsReload = () => {
+  if (pendingProjectsReload) {
+    clearTimeout(pendingProjectsReload)
+  }
+
+  pendingProjectsReload = setTimeout(async () => {
+    pendingProjectsReload = null
+    await loadProjects()
+  }, TASK_RELOAD_DEBOUNCE_MS)
+}
+
 // Setup initial load
 onMounted(() => {
   loadProjects()
 })
 
+onBeforeUnmount(() => {
+  if (pendingProjectsReload) {
+    clearTimeout(pendingProjectsReload)
+    pendingProjectsReload = null
+  }
+})
+
 watch(selectedProjectName, (value) => {
   writeStoredSelectedProject(value)
 })
+
+watch(
+  () => taskStore.tasks,
+  () => {
+    scheduleProjectsReload()
+  },
+  { deep: true }
+)
 
 watch(
   () => route.query.project,

@@ -12,18 +12,27 @@
         <q-btn
           flat
           round
-          icon="assignment"
+          class="task-toggle-btn"
+          aria-label="Tasks"
           @click="toggleRightDrawer"
         >
+          <q-icon name="assignment" size="22px" />
           <q-badge
             v-if="runningTaskCount > 0"
-            class="task-indicator-badge"
+            class="task-indicator-badge task-indicator-badge--running"
             color="white"
             text-color="primary"
             outline
-            floating
           >
             {{ runningTaskCount }}
+          </q-badge>
+          <q-badge
+            v-if="pausedTaskCount > 0"
+            class="task-indicator-badge task-indicator-badge--paused"
+            color="orange-5"
+            text-color="white"
+          >
+            {{ pausedTaskCount }}
           </q-badge>
           <q-tooltip>{{ rightDrawerOpen ? 'Hide task panel' : 'Show task panel' }}</q-tooltip>
         </q-btn>
@@ -184,6 +193,7 @@ const showConnectionIssueBanner = computed(
 )
 
 const runningTaskCount = computed(() => taskStore.runningTasks.length)
+const pausedTaskCount = computed(() => taskStore.tasks.filter((task) => task.status === 'paused').length)
 
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value

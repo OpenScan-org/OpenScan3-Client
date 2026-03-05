@@ -43,7 +43,7 @@
       />
 
       <div v-if="hasProgress || displayEta !== null" class="row justify-between text-caption text-grey-7 q-mt-xs">
-        <span v-if="hasProgress">{{ task.progress!.current }} / {{ task.progress!.total }}</span>
+        <span v-if="hasProgress">{{ progressLabel }}</span>
         <span v-if="displayEta !== null" :class="{ 'eta-flash': etaFlashing }">{{ displayEta }}</span>
       </div>
 
@@ -92,8 +92,9 @@ import {
   getTaskProjectName,
   getProjectRoute,
   getTaskStatusColor,
-  getTaskStatusIcon,
+  getTaskStatusIcon
 } from 'src/utils/taskDisplayUtils'
+import { formatBytes } from 'src/utils/formatBytes'
 
 const props = withDefaults(defineProps<{ task: Task; dismissable?: boolean }>(), {
   dismissable: false
@@ -113,6 +114,23 @@ const statusIcon = computed(() => getTaskStatusIcon(props.task.status))
 const hasProgress = computed(() =>
   props.task.progress?.current !== undefined && props.task.progress?.total !== undefined
 )
+
+const progressLabel = computed(() => {
+  if (!hasProgress.value) {
+    return null
+  }
+
+  const current = props.task.progress?.current ?? 0
+  const total = props.task.progress?.total ?? 0
+
+  if (props.task.task_type === 'cloud_upload_task') {
+    const formattedCurrent = formatBytes(current) ?? '0 B'
+    const formattedTotal = formatBytes(total) ?? '0 B'
+    return `${formattedCurrent} / ${formattedTotal}`
+  }
+
+  return `${current} / ${total}`
+})
 
 const progressFraction = computed(() => {
   const current = props.task.progress?.current ?? 0
