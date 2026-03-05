@@ -91,6 +91,7 @@ import ProjectCard from 'src/components/project/ProjectCard.vue'
 import { useProjectsStore } from 'src/stores/projects'
 import { useDeviceStore } from 'src/stores/device'
 import { useTaskStore } from 'src/stores/tasks'
+import { useCloudProjectsStore } from 'src/stores/cloudProjects'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 const $q = useQuasar()
 const projectsStore = useProjectsStore()
@@ -98,6 +99,7 @@ const route = useRoute()
 const router = useRouter()
 const deviceStore = useDeviceStore()
 const taskStore = useTaskStore()
+const cloudProjectsStore = useCloudProjectsStore()
 void taskStore.ensureConnected()
 
 const getProjectFromRoute = () => (typeof route.query.project === 'string' ? route.query.project : null)
@@ -274,12 +276,14 @@ const scheduleProjectsReload = () => {
   pendingProjectsReload = setTimeout(async () => {
     pendingProjectsReload = null
     await loadProjects()
+    void cloudProjectsStore.fetchAll(true)
   }, TASK_RELOAD_DEBOUNCE_MS)
 }
 
 // Setup initial load
 onMounted(() => {
   loadProjects()
+  void cloudProjectsStore.fetchAll(true)
 })
 
 onBeforeUnmount(() => {
@@ -291,6 +295,9 @@ onBeforeUnmount(() => {
 
 watch(selectedProjectName, (value) => {
   writeStoredSelectedProject(value)
+  if (value) {
+    void cloudProjectsStore.ensureProjectStatus(value)
+  }
 })
 
 watch(

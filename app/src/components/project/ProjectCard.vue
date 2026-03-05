@@ -50,10 +50,12 @@
                                         icon="cloud_sync"
                                         :label="compactButtons ? 'Fetch' : 'Fetch model'"
                                         :loading="cloudFetchLoading"
-                                        :disable="cloudFetchLoading"
+                                        :disable="cloudFetchLoading || Boolean(fetchModelDisabledReason)"
                                         @click="confirm_fetch_model"
                                     >
-                                        <q-tooltip>Fetch the reconstructed model from the cloud.</q-tooltip>
+                                        <q-tooltip>
+                                            {{ fetchModelDisabledReason ?? 'Fetch the reconstructed model from the cloud.' }}
+                                        </q-tooltip>
                                     </BaseButtonSecondary>
                                     <BaseButtonSecondary
                                         v-else
@@ -167,7 +169,7 @@
 </style>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { apiClient, getApiBaseUrl } from 'src/services/apiClient'
@@ -187,6 +189,7 @@ import {
 import { useCloudResetGuard } from 'src/composables/useCloudResetGuard'
 import { formatBytes } from 'src/utils/formatBytes'
 import { useTaskStore } from 'src/stores/tasks'
+import { useCloudProjectsStore } from 'src/stores/cloudProjects'
 import BaseButtonPrimary from 'src/components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'src/components/base/BaseButtonSecondary.vue'
 import ScansList from './ScansList.vue'
@@ -195,6 +198,7 @@ const $q = useQuasar()
 const router = useRouter()
 const apiConfigStore = useApiConfigStore()
 const taskStore = useTaskStore()
+const cloudProjectsStore = useCloudProjectsStore()
 
 const compactButtons = computed(() => $q.screen.width < 1800)
 
@@ -356,6 +360,38 @@ const addScanTooltip = computed(() => {
     return 'Create a new scan in this project'
 })
 
+const cloudProjectStatus = computed(() => cloudProjectsStore.statusByProject(props.project.name))
+const cloudRemoteStatusLabel = computed(() => cloudProjectsStore.remoteStatusLabel(props.project.name))
+const cloudModelReady = computed(() => cloudProjectsStore.isModelReady(props.project.name))
+
+const fetchModelDisabledReason = computed(() => {
+    if (!props.project.uploaded) {
+        return 'Upload the project before fetching the model.'
+    }
+
+    if (cloudFetchLoading.value) {
+        return null
+    }
+
+    if (!cloudModelReady.value) {
+        return cloudRemoteStatusLabel.value
+            ? `Cloud processing: ${cloudRemoteStatusLabel.value}`
+            : 'Cloud processing is still running.'
+    }
+
+    return null
+})
+
+watch(
+    () => props.project.name,
+    (name) => {
+        if (name) {
+            void cloudProjectsStore.ensureProjectStatus(name)
+        }
+    },
+    { immediate: true }
+)
+
 const findTaskIdForScan = (scanIndex: number) => {
     const scan = projectScansNormalized.value.find((entry) => entry.index === scanIndex)
     return scan?.task_id ?? null
@@ -420,6 +456,15 @@ const confirm_upload = () => {
 }
 
 const confirm_fetch_model = async () => {
+    if (fetchModelDisabledReason.value) {
+        $q.notify({
+            type: 'warning',
+            message: fetchModelDisabledReason.value
+        })
+        void cloudProjectsStore.ensureProjectStatus(props.project.name, { force: true })
+        return
+    }
+
     try {
         cloudFetchLoading.value = true
         await downloadProjectFromCloud({ path: { project_name: props.project.name }, client: apiClient })

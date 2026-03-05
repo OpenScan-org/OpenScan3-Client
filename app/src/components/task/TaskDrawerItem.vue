@@ -123,7 +123,7 @@ const progressLabel = computed(() => {
   const current = props.task.progress?.current ?? 0
   const total = props.task.progress?.total ?? 0
 
-  if (props.task.task_type === 'cloud_upload_task') {
+  if (props.task.task_type === 'cloud_upload_task' || props.task.task_type === 'cloud_download_task') {
     const formattedCurrent = formatBytes(current) ?? '0 B'
     const formattedTotal = formatBytes(total) ?? '0 B'
     return `${formattedCurrent} / ${formattedTotal}`

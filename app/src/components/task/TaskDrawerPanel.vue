@@ -9,11 +9,31 @@
     </template>
 
     <template v-else>
-      <div v-if="tasks.length === 0" class="text-caption text-grey-7 q-pa-sm">
+      <div v-if="tasks.length === 0 && cloudProjectsList.length === 0" class="text-caption text-grey-7 q-pa-sm">
         No tasks.
       </div>
 
-      <template v-else>
+      <template v-if="cloudProjectsList.length > 0">
+        <q-separator class="q-my-sm" />
+        <q-expansion-item
+          default-opened
+          dense
+          header-class="text-caption text-weight-bold text-grey-7"
+          :label="`OpenScan Cloud (${cloudProjectsList.length})`"
+        >
+          <div class="q-gutter-y-sm q-pa-xs">
+            <CloudProjectCard
+              v-for="project in cloudProjectsList"
+              :key="project.project?.name ?? project.remote_project_name ?? Math.random()"
+              :status="project"
+              dismissable
+              @dismiss="handleDismissCloudProject(project.project?.name)"
+            />
+          </div>
+        </q-expansion-item>
+      </template>
+
+      <template v-if="tasks.length > 0">
         <q-expansion-item
           v-if="activeTasks.length > 0"
           default-opened
@@ -107,17 +127,35 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTaskStore } from 'src/stores/tasks'
+import { useCloudProjectsStore } from 'src/stores/cloudProjects'
 import { isTaskActive, getTaskTitle } from 'src/utils/taskDisplayUtils'
 import type { Task } from 'src/generated/api'
 import TaskDrawerItem from './TaskDrawerItem.vue'
+import CloudProjectCard from './CloudProjectCard.vue'
 
 const taskStore = useTaskStore()
 const { tasks, dismissedTasks, status } = storeToRefs(taskStore)
 
+const cloudProjectsStore = useCloudProjectsStore()
+const cloudProjectsList = computed(() =>
+  Object.values(cloudProjectsStore.visibleEntries).map((entry) => entry.data)
+)
+
+onMounted(() => {
+  void cloudProjectsStore.fetchAll(true)
+})
+
 const isConnected = computed(() => status.value === 'open')
+
+function handleDismissCloudProject(projectName?: string | null) {
+  if (!projectName) {
+    return
+  }
+  cloudProjectsStore.dismiss(projectName)
+}
 
 const sortByTime = (a: Task, b: Task) => {
   const aTime = new Date(a.started_at ?? a.created_at ?? 0).getTime()
