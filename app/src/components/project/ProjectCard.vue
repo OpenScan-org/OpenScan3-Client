@@ -37,7 +37,7 @@
                                         v-if="!project.uploaded"
                                         unelevated
                                         icon="cloud_upload"
-                                        :label="compactButtons ? 'Cloud' : 'Cloud Reconstruction'"
+                                        :label="compactButtons ? 'OpenScanCloud' : 'Cloud Reconstruction'"
                                         :loading="cloudUploadLoading"
                                         :disable="cloudUploadLoading || cloudReconstructionBlocked"
                                         @click="confirm_upload"
@@ -69,7 +69,7 @@
                                 </template>
                                 <BaseButtonPrimary
                                     unelevated
-                                    icon="cloud_download"
+                                    icon="archive"
                                     label="Download"
                                     :disable="projectDownloadBlocked"
                                     @click="confirm_download"

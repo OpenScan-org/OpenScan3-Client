@@ -13,26 +13,6 @@
         No tasks.
       </div>
 
-      <template v-if="cloudProjectsList.length > 0">
-        <q-separator class="q-my-sm" />
-        <q-expansion-item
-          default-opened
-          dense
-          header-class="text-caption text-weight-bold text-grey-7"
-          :label="`OpenScan Cloud (${cloudProjectsList.length})`"
-        >
-          <div class="q-gutter-y-sm q-pa-xs">
-            <CloudProjectCard
-              v-for="project in cloudProjectsList"
-              :key="project.project?.name ?? project.remote_project_name ?? Math.random()"
-              :status="project"
-              dismissable
-              @dismiss="handleDismissCloudProject(project.project?.name)"
-            />
-          </div>
-        </q-expansion-item>
-      </template>
-
       <template v-if="tasks.length > 0">
         <q-expansion-item
           v-if="activeTasks.length > 0"
@@ -80,6 +60,26 @@
               :task="task"
               dismissable
               @dismiss="taskStore.dismissTask(task.id)"
+            />
+          </div>
+        </q-expansion-item>
+      </template>
+
+      <template v-if="cloudProjectsList.length > 0">
+        <q-separator class="q-my-sm" />
+        <q-expansion-item
+          default-opened
+          dense
+          header-class="text-caption text-weight-bold text-grey-7"
+          :label="`OpenScan Cloud (${cloudProjectsList.length})`"
+        >
+          <div class="q-gutter-y-sm q-pa-xs">
+            <CloudProjectCard
+              v-for="project in cloudProjectsList"
+              :key="project.project?.name ?? project.remote_project_name ?? Math.random()"
+              :status="project"
+              dismissable
+              @dismiss="handleDismissCloudProject(project.project?.name)"
             />
           </div>
         </q-expansion-item>
