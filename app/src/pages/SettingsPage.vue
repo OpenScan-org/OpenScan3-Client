@@ -87,19 +87,24 @@
                             <BaseButtonPrimary
                               icon="publish"
                               label="Apply"
-                              :disable="!selectedConfig"
+                              :disable="scanLocked || !selectedConfig"
                               :loading="configApplying"
                               @click="applySelectedConfig"
                             >
-                              <q-tooltip>Apply the selected configuration file.</q-tooltip>
+                              <q-tooltip>
+                                {{ scanLocked ? scanLockedTooltip : 'Apply the selected configuration file.' }}
+                              </q-tooltip>
                             </BaseButtonPrimary>
                             <BaseButtonSecondary
                               icon="cached"
                               label="Reinitialize"
+                              :disable="scanLocked"
                               :loading="reinitializeHardwareLoading"
                               @click="handleReinitializeHardware"
                             >
-                              <q-tooltip>Reinitialize hardware and detect cameras automatically.</q-tooltip>
+                              <q-tooltip>
+                                {{ scanLocked ? scanLockedTooltip : 'Reinitialize hardware and detect cameras automatically.' }}
+                              </q-tooltip>
                             </BaseButtonSecondary>
                           </div>
                         </div>
@@ -312,9 +317,14 @@
                           <BaseButtonPrimary
                             icon="save"
                             label="Save"
+                            :disable="scanLocked"
                             :loading="motorSaving[motorName] === true"
                             @click="saveMotorSettings(motorName)"
-                          />
+                          >
+                            <q-tooltip>
+                              {{ scanLocked ? scanLockedTooltip : 'Save motor configuration.' }}
+                            </q-tooltip>
+                          </BaseButtonPrimary>
                         </q-card-actions>
                       </q-card>
                     </div>
@@ -368,9 +378,14 @@
                               <BaseButtonPrimary
                                 icon="save"
                                 label="Save"
+                                :disable="scanLocked"
                                 :loading="lightSaving[lightName] === true"
                                 @click="saveLightSettings(lightName)"
-                              />
+                              >
+                                <q-tooltip>
+                                  {{ scanLocked ? scanLockedTooltip : 'Save light configuration.' }}
+                                </q-tooltip>
+                              </BaseButtonPrimary>
                             </q-card-actions>
                           </q-card>
                         </div>
@@ -449,10 +464,14 @@
                           <BaseButtonPrimary
                             icon="save"
                             label="Save"
-                            :disable="!selectedCamera"
+                            :disable="scanLocked || !selectedCamera"
                             :loading="cameraSaving"
                             @click="saveCameraSettings"
-                          />
+                          >
+                            <q-tooltip>
+                              {{ scanLocked ? scanLockedTooltip : 'Save camera configuration.' }}
+                            </q-tooltip>
+                          </BaseButtonPrimary>
                         </div>
                       </div>
                     </BaseSection>
@@ -485,6 +504,7 @@ import { apiClient, updateApiClientConfig } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
+import { useTaskStore } from 'src/stores/tasks'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
 import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue'
@@ -515,6 +535,11 @@ import {
 
 const apiConfigStore = useApiConfigStore()
 const cameraStore = useCameraStore()
+const taskStore = useTaskStore()
+void taskStore.ensureConnected()
+const { activeScanTaskId } = storeToRefs(taskStore)
+const scanLocked = computed(() => Boolean(activeScanTaskId.value))
+const scanLockedTooltip = 'Unavailable while a scan is running.'
 
 const scannerAddress = computed(() => apiConfigStore.baseURL.replace(/\/$/, ''))
 

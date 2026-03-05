@@ -5,6 +5,7 @@ import { useQuasar } from 'quasar'
 import { useCameraStore } from 'src/stores/camera'
 import { useDeviceStore } from 'src/stores/device'
 import { useProjectsStore } from 'src/stores/projects'
+import { useTaskStore } from 'src/stores/tasks'
 import BaseButtonIconPrimary from 'components/base/BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import RecentProjectsList from 'src/components/project/RecentProjectsList.vue'
@@ -23,8 +24,11 @@ const $q = useQuasar()
 const cameraStore = useCameraStore()
 const deviceStore = useDeviceStore()
 const projectsStore = useProjectsStore()
+const taskStore = useTaskStore()
 
 const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
+const scanLocked = computed(() => Boolean(taskStore.activeScanTaskId))
+const scanLockedTooltip = 'Unavailable while a scan is running.'
 
 const isMoving = ref(false)
 const isLightBusy = ref(false)
@@ -52,7 +56,7 @@ const isLightOn = computed(() => {
 })
 
 async function handleToggleLight() {
-  if (isLightBusy.value) return
+  if (scanLocked.value || isLightBusy.value) return
   isLightBusy.value = true
   try {
     await deviceStore.ensureConnected()
@@ -72,7 +76,7 @@ async function handleToggleLight() {
 }
 
 async function moveMotor(motorName: string, degrees: number) {
-  if (isMoving.value) return
+  if (scanLocked.value || isMoving.value) return
   isMoving.value = true
   try {
     await deviceStore.ensureConnected()
@@ -93,7 +97,7 @@ async function moveMotor(motorName: string, degrees: number) {
 }
 
 async function moveHome() {
-  if (isHoming.value) return
+  if (scanLocked.value || isHoming.value) return
   isHoming.value = true
   try {
     await deviceStore.ensureConnected()
@@ -120,6 +124,7 @@ onMounted(() => {
   cameraStore.fetchCameras()
   deviceStore.ensureConnected()
   projectsStore.fetchProjects()
+  void taskStore.ensureConnected()
 })
 </script>
 
@@ -145,10 +150,13 @@ onMounted(() => {
                 <BaseButtonIconPrimary
                   :icon="isLightOn ? 'lightbulb' : 'lightbulb_outline'"
                   size="lg"
+                  :disable="scanLocked || isLightBusy"
                   :loading="isLightBusy"
                   @click="handleToggleLight"
                 >
-                  <q-tooltip anchor="bottom middle" self="top middle">Toggle ring light</q-tooltip>
+                  <q-tooltip anchor="bottom middle" self="top middle">
+                    {{ scanLocked ? scanLockedTooltip : 'Toggle ring light' }}
+                  </q-tooltip>
                 </BaseButtonIconPrimary>
 
                 <div class="joystick-grid">
@@ -156,47 +164,62 @@ onMounted(() => {
                     <BaseButtonIconPrimary
                       icon="keyboard_arrow_up"
                       size="lg"
+                      :disable="scanLocked || isMoving"
                       :loading="isMoving"
                       @click="moveMotor(ROTOR_MOTOR, -10)"
                     >
-                      <q-tooltip anchor="bottom middle" self="top middle">Move rotor up</q-tooltip>
+                      <q-tooltip anchor="bottom middle" self="top middle">
+                        {{ scanLocked ? scanLockedTooltip : 'Move rotor up' }}
+                      </q-tooltip>
                     </BaseButtonIconPrimary>
                   </div>
                   <div class="joystick-row">
                     <BaseButtonIconPrimary
                       icon="keyboard_arrow_left"
                       size="lg"
+                      :disable="scanLocked || isMoving"
                       :loading="isMoving"
                       @click="moveMotor(TURNTABLE_MOTOR, -20)"
                     >
-                      <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable left</q-tooltip>
+                      <q-tooltip anchor="bottom middle" self="top middle">
+                        {{ scanLocked ? scanLockedTooltip : 'Rotate turntable left' }}
+                      </q-tooltip>
                     </BaseButtonIconPrimary>
                     <BaseButtonIconSecondary
                       icon="home"
                       size="lg"
+                      :disable="scanLocked || isHoming"
                       :loading="isHoming"
                       :dense="false"
                       @click="moveHome"
                     >
-                      <q-tooltip anchor="bottom middle" self="top middle">Return to home position</q-tooltip>
+                      <q-tooltip anchor="bottom middle" self="top middle">
+                        {{ scanLocked ? scanLockedTooltip : 'Return to home position' }}
+                      </q-tooltip>
                     </BaseButtonIconSecondary>
                     <BaseButtonIconPrimary
                       icon="keyboard_arrow_right"
                       size="lg"
+                      :disable="scanLocked || isMoving"
                       :loading="isMoving"
                       @click="moveMotor(TURNTABLE_MOTOR, 20)"
                     >
-                      <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable right</q-tooltip>
+                      <q-tooltip anchor="bottom middle" self="top middle">
+                        {{ scanLocked ? scanLockedTooltip : 'Rotate turntable right' }}
+                      </q-tooltip>
                     </BaseButtonIconPrimary>
                   </div>
                   <div class="joystick-row">
                     <BaseButtonIconPrimary
                       icon="keyboard_arrow_down"
                       size="lg"
+                      :disable="scanLocked || isMoving"
                       :loading="isMoving"
                       @click="moveMotor(ROTOR_MOTOR, 10)"
                     >
-                      <q-tooltip anchor="bottom middle" self="top middle">Move rotor down</q-tooltip>
+                      <q-tooltip anchor="bottom middle" self="top middle">
+                        {{ scanLocked ? scanLockedTooltip : 'Move rotor down' }}
+                      </q-tooltip>
                     </BaseButtonIconPrimary>
                   </div>
                 </div>
