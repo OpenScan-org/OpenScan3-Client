@@ -333,6 +333,8 @@ const applySettings = (scanSettings: ScanSetting, cameraSettings: CameraSettings
     focusRange.value = { min: scanSettings.focus_range[0], max: scanSettings.focus_range[1] }
   }
 
+  const stackingRequested = typeof focusStacks.value === 'number' && focusStacks.value > 1
+
   // Apply Camera Settings (Focus)
   if (cameraSettings) {
     if (cameraSettings.AF !== undefined && cameraSettings.AF !== null) {
@@ -342,18 +344,18 @@ const applySettings = (scanSettings: ScanSetting, cameraSettings: CameraSettings
       manualFocusValue.value = cameraSettings.manual_focus
     }
 
-    // Determine Focus Mode
-    if (afValue.value) {
-      focusMode.value = 'autofocus'
-    } else if (scanSettings.focus_stacks && scanSettings.focus_stacks > 1) {
-      // If stack count is > 1, prefer stacking mode if AF is off
-      focusMode.value = 'stacking'
-      enableFocusStacking.value = true
-    } else {
-      focusMode.value = 'manual'
-      enableFocusStacking.value = false
-    }
     scanPictureQualitySectionRef.value?.applyCameraSettings(cameraSettings)
+  }
+
+  if (afValue.value) {
+    focusMode.value = 'autofocus'
+    enableFocusStacking.value = false
+  } else if (stackingRequested) {
+    focusMode.value = 'stacking'
+    enableFocusStacking.value = true
+  } else {
+    focusMode.value = 'manual'
+    enableFocusStacking.value = false
   }
 }
 

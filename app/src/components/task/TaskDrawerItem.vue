@@ -195,7 +195,7 @@ const displayEta = computed(() => {
 })
 
 const canPause = computed(() => props.task.status === 'running')
-const canResume = computed(() => props.task.status === 'paused' || props.task.status === 'interrupted')
+const canResume = computed(() => props.task.status === 'paused')
 const canCancel = computed(() =>
   props.task.status === 'running' || props.task.status === 'paused' || props.task.status === 'pending'
 )

@@ -96,7 +96,7 @@ export const pickActiveScanTaskId = (tasks: Task[]): string | null => {
   return (
     findLatestTaskIdByStatus(latestTasks, ['running']) ??
     findLatestTaskIdByStatus(latestTasks, ['pending']) ??
-    findLatestTaskIdByStatus(latestTasks, ['paused', 'interrupted']) ??
+    findLatestTaskIdByStatus(latestTasks, ['paused']) ??
     null
   )
 }
