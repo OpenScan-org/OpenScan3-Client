@@ -231,6 +231,8 @@ const taskStore = useTaskStore()
 const scanTemplateStore = useScanTemplateStore()
 const router = useRouter()
 
+const taskStoreReady = computed(() => taskStore.status === 'open')
+
 const scans = computed<Scan[]>(() => {
   return props.scans.map((scan) => {
     const taskId = scan.task_id
@@ -239,14 +241,26 @@ const scans = computed<Scan[]>(() => {
     const stackingTask = stackingTaskId ? taskStore.taskById(stackingTaskId) : null
 
     const next: Scan = { ...scan }
+
     if (task?.status) {
       next.status = task.status
+    } else if (taskStoreReady.value && taskId && !taskStore.isTaskKnown(taskId)) {
+      const stale = next.status
+      if (stale === 'running' || stale === 'paused' || stale === 'pending') {
+        next.status = 'cancelled'
+      }
     }
+
     if (stackingTask?.status) {
       next.stacking_task_status = {
         ...(next.stacking_task_status ?? {}),
         status: stackingTask.status,
         task_id: stackingTask.id
+      }
+    } else if (taskStoreReady.value && stackingTaskId && !taskStore.isTaskKnown(stackingTaskId)) {
+      const staleStacking = next.stacking_task_status?.status
+      if (staleStacking && stackingInProgressStatuses.has(staleStacking)) {
+        next.stacking_task_status = null
       }
     }
 
@@ -325,14 +339,11 @@ const get_status_color = (status?: string) => {
   }
 }
 
-type StackingState = 'stackable' | 'stacking' | 'stacked' | 'interrupted'
+type StackingState = 'stackable' | 'stacking' | 'stacked'
 const stackingInProgressStatuses = new Set(['pending', 'running', 'paused'])
 
 const getStackingState = (scan: Scan): StackingState => {
   const stackingStatus = scan.stacking_task_status?.status
-  if (stackingStatus === 'interrupted') {
-    return 'interrupted'
-  }
   if (stackingStatus === 'completed') {
     return 'stacked'
   }
@@ -342,22 +353,23 @@ const getStackingState = (scan: Scan): StackingState => {
   return 'stackable'
 }
 
+const scanActiveStatuses = new Set(['running', 'paused', 'pending'])
+
 const canStartStacking = (scan: Scan) => {
-  if (scan.status !== 'completed' || !scan.settings?.focus_stacks || scan.settings.focus_stacks <= 1) {
+  if (!scan.settings?.focus_stacks || scan.settings.focus_stacks <= 1) {
+    return false
+  }
+  if (scanActiveStatuses.has(scan.status ?? '')) {
     return false
   }
 
-  const state = getStackingState(scan)
-  return state === 'stackable' || state === 'interrupted'
+  return getStackingState(scan) === 'stackable'
 }
 
 const getStackingBadgeColor = (scan: Scan) => {
   const state = getStackingState(scan)
   if (state === 'stacked') {
     return 'green'
-  }
-  if (state === 'interrupted') {
-    return 'orange'
   }
   if (state === 'stacking') {
     return 'blue'
@@ -370,9 +382,6 @@ const getStackingBadgeLabel = (scan: Scan) => {
   if (state === 'stacking') {
     return 'stacking...'
   }
-  if (state === 'interrupted') {
-    return 'interrupted'
-  }
   return state
 }
 
@@ -384,11 +393,8 @@ const getStackButtonTooltip = (scan: Scan) => {
   if (state === 'stacked') {
     return 'Focus stacking already completed'
   }
-  if (state === 'interrupted') {
-    return 'Focus stacking was interrupted and can be restarted'
-  }
-  if (scan.status !== 'completed') {
-    return 'Focus stacking becomes available once the scan is completed'
+  if (scanActiveStatuses.has(scan.status ?? '')) {
+    return 'Focus stacking becomes available once the scan is finished'
   }
   if (!scan.settings?.focus_stacks || scan.settings.focus_stacks <= 1) {
     return 'This scan cannot be focus stacked because it was captured without focus stack settings'

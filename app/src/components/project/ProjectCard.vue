@@ -299,6 +299,8 @@ const displayDate = computed(() => {
     return Number.isNaN(date.getTime()) ? props.project.created : date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 })
 
+const taskStoreReady = computed(() => taskStore.status === 'open')
+
 const projectScansNormalized = computed<Scan[]>(() => {
     const scansSource = props.projectScans ?? Object.values(props.project.scans || {})
     return scansSource
@@ -307,6 +309,11 @@ const projectScansNormalized = computed<Scan[]>(() => {
             const task = scan.task_id ? taskStore.taskById(scan.task_id) : null
             if (task?.status) {
                 next.status = task.status
+            } else if (taskStoreReady.value && scan.task_id && !taskStore.isTaskKnown(scan.task_id)) {
+                const stale = next.status
+                if (stale === 'running' || stale === 'paused' || stale === 'pending') {
+                    next.status = 'cancelled'
+                }
             }
             return next
         })
@@ -328,7 +335,7 @@ const thumbnailUrl = computed(() => {
 })
 
 const cloudReconstructionBlocked = computed(() => {
-    const inProgressStatuses = new Set(['pending', 'running', 'paused', 'interrupted'])
+    const inProgressStatuses = new Set(['pending', 'running', 'paused'])
     return projectScansNormalized.value.some((scan) => inProgressStatuses.has(scan.status ?? ''))
 })
 

@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddConfigJsonData, AddConfigJsonErrors, AddConfigJsonResponses, AddScanWithDescriptionData, AddScanWithDescriptionErrors, AddScanWithDescriptionResponses, CancelFocusStackingData, CancelFocusStackingErrors, CancelFocusStackingResponses, CancelScanData, CancelScanErrors, CancelScanResponses, CancelTaskData, CancelTaskErrors, CancelTaskResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CropImageData, CropImageErrors, CropImageResponses, DeletePhotosData, DeletePhotosErrors, DeletePhotosResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteScanData, DeleteScanErrors, DeleteScanResponses, DownloadLogsArchiveData, DownloadLogsArchiveErrors, DownloadLogsArchiveResponses, DownloadProjectData, DownloadProjectErrors, DownloadProjectFromCloudData, DownloadProjectFromCloudErrors, DownloadProjectFromCloudResponses, DownloadProjectModelData, DownloadProjectModelErrors, DownloadProjectModelResponses, DownloadProjectResponses, DownloadScansData, DownloadScansErrors, DownloadScansResponses, GetAllTasksData, GetAllTasksErrors, GetAllTasksResponses, GetCameraData, GetCameraErrors, GetCameraNameSettingsData, GetCameraNameSettingsErrors, GetCameraNameSettingsResponses, GetCameraResponses, GetCamerasData, GetCamerasErrors, GetCamerasResponses, GetCloudProjectData, GetCloudProjectErrors, GetCloudProjectResponses, GetCloudSettingsData, GetCloudSettingsErrors, GetCloudSettingsResponses, GetCloudStatusData, GetCloudStatusErrors, GetCloudStatusResponses, GetDeviceInfoData, GetDeviceInfoErrors, GetDeviceInfoResponses, GetLightData, GetLightErrors, GetLightNameSettingsData, GetLightNameSettingsErrors, GetLightNameSettingsResponses, GetLightResponses, GetLightsData, GetLightsErrors, GetLightsResponses, GetMotorData, GetMotorErrors, GetMotorNameSettingsData, GetMotorNameSettingsErrors, GetMotorNameSettingsResponses, GetMotorResponses, GetMotorsData, GetMotorsErrors, GetMotorsResponses, GetPathData, GetPathErrors, GetPathResponses, GetPhotoData, GetPhotoErrors, GetPhotoResponses, GetPinData, GetPinErrors, GetPinResponses, GetPinsData, GetPinsErrors, GetPinsResponses, GetPreviewData, GetPreviewErrors, GetPreviewResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GetProjectsData, GetProjectsErrors, GetProjectsResponses, GetProjectThumbnailData, GetProjectThumbnailErrors, GetProjectThumbnailResponses, GetScanData, GetScanErrors, GetScanPathData, GetScanPathErrors, GetScanPathResponses, GetScanPhotoData, GetScanPhotoErrors, GetScanPhotoResponses, GetScanResponses, GetScanStatusData, GetScanStatusErrors, GetScanStatusResponses, GetSoftwareInfoData, GetSoftwareInfoErrors, GetSoftwareInfoResponses, GetTaskStatusData, GetTaskStatusErrors, GetTaskStatusResponses, HelloWorldAsyncData, HelloWorldAsyncErrors, HelloWorldAsyncResponses, ListCloudProjectsData, ListCloudProjectsErrors, ListCloudProjectsResponses, ListConfigFilesData, ListConfigFilesErrors, ListConfigFilesResponses, MoveMotorByDegreeData, MoveMotorByDegreeErrors, MoveMotorByDegreeResponses, MoveMotorToAngleData, MoveMotorToAngleErrors, MoveMotorToAngleResponses, MoveMotorToHomePositionData, MoveMotorToHomePositionErrors, MoveMotorToHomePositionResponses, MoveToPositionData, MoveToPositionErrors, MoveToPositionResponses, NewProjectData, NewProjectErrors, NewProjectResponses, PauseFocusStackingData, PauseFocusStackingErrors, PauseFocusStackingResponses, PauseScanData, PauseScanErrors, PauseScanResponses, PauseTaskData, PauseTaskErrors, PauseTaskResponses, RebootData, RebootErrors, RebootResponses, ReinitializeHardwareData, ReinitializeHardwareErrors, ReinitializeHardwareResponses, ReplaceCameraNameSettingsData, ReplaceCameraNameSettingsErrors, ReplaceCameraNameSettingsResponses, ReplaceLightNameSettingsData, ReplaceLightNameSettingsErrors, ReplaceLightNameSettingsResponses, ReplaceMotorNameSettingsData, ReplaceMotorNameSettingsErrors, ReplaceMotorNameSettingsResponses, ResetCloudProjectData, ResetCloudProjectErrors, ResetCloudProjectResponses, RestartApplicationData, RestartApplicationErrors, RestartApplicationResponses, RestartCameraData, RestartCameraErrors, RestartCameraResponses, ResumeFocusStackingData, ResumeFocusStackingErrors, ResumeFocusStackingResponses, ResumeScanData, ResumeScanErrors, ResumeScanResponses, ResumeTaskData, ResumeTaskErrors, ResumeTaskResponses, SaveDeviceConfigData, SaveDeviceConfigErrors, SaveDeviceConfigResponses, SetConfigFileData, SetConfigFileErrors, SetConfigFileResponses, SetPinData, SetPinErrors, SetPinResponses, ShutdownData, ShutdownErrors, ShutdownResponses, StartFocusStackingData, StartFocusStackingErrors, StartFocusStackingResponses, TailLogsData, TailLogsErrors, TailLogsResponses, ToggleLightData, ToggleLightErrors, ToggleLightResponses, TogglePinData, TogglePinErrors, TogglePinResponses, TurnOffLightData, TurnOffLightErrors, TurnOffLightResponses, TurnOnLightData, TurnOnLightErrors, TurnOnLightResponses, UpdateCameraNameSettingsData, UpdateCameraNameSettingsErrors, UpdateCameraNameSettingsResponses, UpdateCloudSettingsData, UpdateCloudSettingsErrors, UpdateCloudSettingsResponses, UpdateLightNameSettingsData, UpdateLightNameSettingsErrors, UpdateLightNameSettingsResponses, UpdateMotorNameSettingsData, UpdateMotorNameSettingsErrors, UpdateMotorNameSettingsResponses, UploadProjectToCloudData, UploadProjectToCloudErrors, UploadProjectToCloudResponses } from './types.gen';
+import type { AddConfigJsonData, AddConfigJsonErrors, AddConfigJsonResponses, AddScanWithDescriptionData, AddScanWithDescriptionErrors, AddScanWithDescriptionResponses, AutoCalibrateAwbData, AutoCalibrateAwbErrors, AutoCalibrateAwbResponses, CancelFocusStackingData, CancelFocusStackingErrors, CancelFocusStackingResponses, CancelScanData, CancelScanErrors, CancelScanResponses, CancelTaskData, CancelTaskErrors, CancelTaskResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CropImageData, CropImageErrors, CropImageResponses, DeletePhotosData, DeletePhotosErrors, DeletePhotosResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteScanData, DeleteScanErrors, DeleteScanResponses, DeleteTaskData, DeleteTaskErrors, DeleteTaskResponses, DownloadLogsArchiveData, DownloadLogsArchiveErrors, DownloadLogsArchiveResponses, DownloadProjectData, DownloadProjectErrors, DownloadProjectFromCloudData, DownloadProjectFromCloudErrors, DownloadProjectFromCloudResponses, DownloadProjectModelData, DownloadProjectModelErrors, DownloadProjectModelResponses, DownloadProjectResponses, DownloadScansData, DownloadScansErrors, DownloadScansResponses, GetAllTasksData, GetAllTasksErrors, GetAllTasksResponses, GetCameraData, GetCameraErrors, GetCameraNameSettingsData, GetCameraNameSettingsErrors, GetCameraNameSettingsResponses, GetCameraResponses, GetCamerasData, GetCamerasErrors, GetCamerasResponses, GetCloudProjectData, GetCloudProjectErrors, GetCloudProjectResponses, GetCloudSettingsData, GetCloudSettingsErrors, GetCloudSettingsResponses, GetCloudStatusData, GetCloudStatusErrors, GetCloudStatusResponses, GetDeviceInfoData, GetDeviceInfoErrors, GetDeviceInfoResponses, GetLightData, GetLightErrors, GetLightNameSettingsData, GetLightNameSettingsErrors, GetLightNameSettingsResponses, GetLightResponses, GetLightsData, GetLightsErrors, GetLightsResponses, GetMotorData, GetMotorErrors, GetMotorNameSettingsData, GetMotorNameSettingsErrors, GetMotorNameSettingsResponses, GetMotorResponses, GetMotorsData, GetMotorsErrors, GetMotorsResponses, GetPathData, GetPathErrors, GetPathResponses, GetPhotoData, GetPhotoErrors, GetPhotoResponses, GetPinData, GetPinErrors, GetPinResponses, GetPinsData, GetPinsErrors, GetPinsResponses, GetPreviewData, GetPreviewErrors, GetPreviewResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GetProjectsData, GetProjectsErrors, GetProjectsResponses, GetProjectThumbnailData, GetProjectThumbnailErrors, GetProjectThumbnailResponses, GetScanData, GetScanErrors, GetScanPathData, GetScanPathErrors, GetScanPathResponses, GetScanPhotoData, GetScanPhotoErrors, GetScanPhotoResponses, GetScanResponses, GetScanStatusData, GetScanStatusErrors, GetScanStatusResponses, GetSoftwareInfoData, GetSoftwareInfoErrors, GetSoftwareInfoResponses, GetTaskStatusData, GetTaskStatusErrors, GetTaskStatusResponses, HelloWorldAsyncData, HelloWorldAsyncErrors, HelloWorldAsyncResponses, ListCloudProjectsData, ListCloudProjectsErrors, ListCloudProjectsResponses, ListConfigFilesData, ListConfigFilesErrors, ListConfigFilesResponses, MotorEndstopCalibrationData, MotorEndstopCalibrationErrors, MotorEndstopCalibrationResponses, MotorMoveHomeData, MotorMoveHomeErrors, MotorMoveHomeResponses, MoveMotorByDegreeData, MoveMotorByDegreeErrors, MoveMotorByDegreeResponses, MoveMotorToAngleData, MoveMotorToAngleErrors, MoveMotorToAngleResponses, MoveToPositionData, MoveToPositionErrors, MoveToPositionResponses, NewProjectData, NewProjectErrors, NewProjectResponses, OverrideMotorAngleData, OverrideMotorAngleErrors, OverrideMotorAngleResponses, PauseFocusStackingData, PauseFocusStackingErrors, PauseFocusStackingResponses, PauseScanData, PauseScanErrors, PauseScanResponses, PauseTaskData, PauseTaskErrors, PauseTaskResponses, RebootData, RebootErrors, RebootResponses, ReinitializeHardwareData, ReinitializeHardwareErrors, ReinitializeHardwareResponses, ReplaceCameraNameSettingsData, ReplaceCameraNameSettingsErrors, ReplaceCameraNameSettingsResponses, ReplaceLightNameSettingsData, ReplaceLightNameSettingsErrors, ReplaceLightNameSettingsResponses, ReplaceMotorNameSettingsData, ReplaceMotorNameSettingsErrors, ReplaceMotorNameSettingsResponses, ResetCloudProjectData, ResetCloudProjectErrors, ResetCloudProjectResponses, RestartApplicationData, RestartApplicationErrors, RestartApplicationResponses, RestartCameraData, RestartCameraErrors, RestartCameraResponses, ResumeFocusStackingData, ResumeFocusStackingErrors, ResumeFocusStackingResponses, ResumeScanData, ResumeScanErrors, ResumeScanResponses, ResumeTaskData, ResumeTaskErrors, ResumeTaskResponses, SaveDeviceConfigData, SaveDeviceConfigErrors, SaveDeviceConfigResponses, SetConfigFileData, SetConfigFileErrors, SetConfigFileResponses, SetPinData, SetPinErrors, SetPinResponses, ShutdownData, ShutdownErrors, ShutdownResponses, StartFocusStackingData, StartFocusStackingErrors, StartFocusStackingResponses, TailLogsData, TailLogsErrors, TailLogsResponses, ToggleLightData, ToggleLightErrors, ToggleLightResponses, TogglePinData, TogglePinErrors, TogglePinResponses, TurnOffLightData, TurnOffLightErrors, TurnOffLightResponses, TurnOnLightData, TurnOnLightErrors, TurnOnLightResponses, UpdateCameraNameSettingsData, UpdateCameraNameSettingsErrors, UpdateCameraNameSettingsResponses, UpdateCloudSettingsData, UpdateCloudSettingsErrors, UpdateCloudSettingsResponses, UpdateLightNameSettingsData, UpdateLightNameSettingsErrors, UpdateLightNameSettingsResponses, UpdateMotorNameSettingsData, UpdateMotorNameSettingsErrors, UpdateMotorNameSettingsResponses, UploadProjectToCloudData, UploadProjectToCloudErrors, UploadProjectToCloudResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -83,6 +83,30 @@ export const getPhoto = <ThrowOnError extends boolean = false>(options: Options<
  * Response: A response containing the status code
  */
 export const restartCamera = <ThrowOnError extends boolean = false>(options: Options<RestartCameraData, ThrowOnError>) => (options.client ?? client).post<RestartCameraResponses, RestartCameraErrors, ThrowOnError>({ url: '/cameras/{camera_name}/restart', ...options });
+
+/**
+ * Run automatic white balance calibration and lock the gains.
+ *
+ * Expose the camera controller's automatic white balance calibration if available.
+ *
+ * Args:
+ * camera_name: Target camera identifier.
+ * params: Optional tuning parameters forwarded to the controller implementation.
+ *
+ * Returns:
+ * AutoCalibrateAwbResponse: Locked gains after the calibration.
+ *
+ * Raises:
+ * HTTPException: When the controller is busy, unsupported, or calibration fails.
+ */
+export const autoCalibrateAwb = <ThrowOnError extends boolean = false>(options: Options<AutoCalibrateAwbData, ThrowOnError>) => (options.client ?? client).post<AutoCalibrateAwbResponses, AutoCalibrateAwbErrors, ThrowOnError>({
+    url: '/cameras/{camera_name}/awb-calibration',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
 
 /**
  * Get Camera Name Settings
@@ -185,9 +209,29 @@ export const moveMotorByDegree = <ThrowOnError extends boolean = false>(options:
 export const moveMotorToAngle = <ThrowOnError extends boolean = false>(options: Options<MoveMotorToAngleData, ThrowOnError>) => (options.client ?? client).put<MoveMotorToAngleResponses, MoveMotorToAngleErrors, ThrowOnError>({ url: '/motors/{motor_name}/angle', ...options });
 
 /**
- * Move Motor To Home Position
+ * Override Motor Angle
  *
- * Move motor to home position
+ * Override the internal motor angle model.
+ *
+ * This endpoint forces the controller's model to a specific angle without moving hardware. The
+ * default of 90° assumes the motor was manually aligned beforehand. Changing this value without
+ * confirming the actual motor position can desynchronize the model from reality and cause motion
+ * issues. The override is rejected while the controller reports a busy state to avoid writing an
+ * inconsistent angle during movements.
+ *
+ * Args:
+ * motor_name: Identifier of the motor whose model should be overwritten.
+ * angle: The new angle to store in the model (defaults to 90°).
+ *
+ * Returns:
+ * MotorStatusResponse: Updated status after overriding the model angle.
+ */
+export const overrideMotorAngle = <ThrowOnError extends boolean = false>(options: Options<OverrideMotorAngleData, ThrowOnError>) => (options.client ?? client).put<OverrideMotorAngleResponses, OverrideMotorAngleErrors, ThrowOnError>({ url: '/motors/{motor_name}/angle-override', ...options });
+
+/**
+ * Motor Endstop Calibration
+ *
+ * Move motor to home through endstop sensing
  *
  * This endpoint moves the motor to the home position using the endstop calibration.
  *
@@ -197,7 +241,22 @@ export const moveMotorToAngle = <ThrowOnError extends boolean = false>(options: 
  * Returns:
  * MotorStatusResponse: A response object containing the status of the motor after the move
  */
-export const moveMotorToHomePosition = <ThrowOnError extends boolean = false>(options: Options<MoveMotorToHomePositionData, ThrowOnError>) => (options.client ?? client).put<MoveMotorToHomePositionResponses, MoveMotorToHomePositionErrors, ThrowOnError>({ url: '/motors/{motor_name}/endstop-calibration', ...options });
+export const motorEndstopCalibration = <ThrowOnError extends boolean = false>(options: Options<MotorEndstopCalibrationData, ThrowOnError>) => (options.client ?? client).put<MotorEndstopCalibrationResponses, MotorEndstopCalibrationErrors, ThrowOnError>({ url: '/motors/{motor_name}/endstop-calibration', ...options });
+
+/**
+ * Motor Move Home
+ *
+ * Move motor to home
+ *
+ * This endpoint moves the motor to the home position uning method depending on config param
+ *
+ * Args:
+ * motor_name: The name of the motor to move to the home position
+ *
+ * Returns:
+ * MotorStatusResponse: A response object containing the status of the motor after the move
+ */
+export const motorMoveHome = <ThrowOnError extends boolean = false>(options: Options<MotorMoveHomeData, ThrowOnError>) => (options.client ?? client).put<MotorMoveHomeResponses, MotorMoveHomeErrors, ThrowOnError>({ url: '/motors/{motor_name}/home', ...options });
 
 /**
  * Get Motor Name Settings
@@ -562,7 +621,8 @@ export const cancelScan = <ThrowOnError extends boolean = false>(options: Option
  * Download a project as a ZIP file stream
  *
  * This endpoint streams the entire project directory as a ZIP file,
- * including all scans, photos, and metadata.
+ * including all scans, photos, and metadata. When ``photos_only`` is true,
+ * only the recorded photo files are included without metadata or subfolders.
  *
  * Args:
  * project_name: Name of the project to download
@@ -822,6 +882,13 @@ export const cancelTask = <ThrowOnError extends boolean = false>(options: Option
  * Task: The task object with its status and details.
  */
 export const getTaskStatus = <ThrowOnError extends boolean = false>(options: Options<GetTaskStatusData, ThrowOnError>) => (options.client ?? client).get<GetTaskStatusResponses, GetTaskStatusErrors, ThrowOnError>({ url: '/tasks/{task_id}', ...options });
+
+/**
+ * Delete a terminal task record
+ *
+ * Remove a terminal task from persistence and memory.
+ */
+export const deleteTask = <ThrowOnError extends boolean = false>(options: Options<DeleteTaskData, ThrowOnError>) => (options.client ?? client).delete<DeleteTaskResponses, DeleteTaskErrors, ThrowOnError>({ url: '/tasks/{task_id}/cleanup', ...options });
 
 /**
  * Pause a Task

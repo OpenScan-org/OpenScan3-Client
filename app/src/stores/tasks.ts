@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { useApiConfigStore, buildWebSocketUrl } from './apiConfig'
 import { apiClient } from 'src/services/apiClient'
-import { cancelTask, getAllTasks, getTaskStatus, pauseTask, resumeTask, type Task } from 'src/generated/api'
+import { cancelTask, deleteTask, getAllTasks, getTaskStatus, pauseTask, resumeTask, type Task } from 'src/generated/api'
 import { filterLatestScanTasks, pickActiveScanTaskId } from 'src/utils/taskUtils'
 
 export type TaskStoreStatus = 'idle' | 'connecting' | 'open' | 'closed' | 'error'
@@ -51,7 +51,13 @@ export const useTaskStore = defineStore('tasks', {
     latestScanTasks: (state) => filterLatestScanTasks(state.tasks),
     activeScanTaskId: (state) => pickActiveScanTaskId(state.tasks),
     runningTasks: (state) => state.tasks.filter((task) => task.status === 'running'),
-    taskById: (state) => (taskId: string) => state.tasks.find((task) => task.id === taskId) ?? null,
+    taskById: (state) => (taskId: string) =>
+      state.tasks.find((task) => task.id === taskId)
+      ?? state.dismissedTasks.find((task) => task.id === taskId)
+      ?? null,
+    isTaskKnown: (state) => (taskId: string) =>
+      state.tasks.some((task) => task.id === taskId)
+      || state.dismissedTasks.some((task) => task.id === taskId),
     etaSecondsById: (state) => (taskId: string) => {
       const task = state.tasks.find((entry) => entry.id === taskId)
       if (!task?.started_at) {
@@ -352,6 +358,16 @@ export const useTaskStore = defineStore('tasks', {
       }
     },
     clearDismissed() {
+      this.dismissedTasks = []
+    },
+    async cleanupTask(taskId: string) {
+      await deleteTask({ client: apiClient, path: { task_id: taskId } })
+      this.dismissedTasks = this.dismissedTasks.filter((t) => t.id !== taskId)
+    },
+    async cleanupAllDismissed() {
+      await Promise.allSettled(
+        this.dismissedTasks.map((t) => deleteTask({ client: apiClient, path: { task_id: t.id } }))
+      )
       this.dismissedTasks = []
     },
     handleMessage(raw: string) {

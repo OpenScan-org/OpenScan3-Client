@@ -95,17 +95,30 @@
           <div class="q-gutter-y-sm q-mt-sm q-px-xs">
             <div v-for="task in dismissedTasks" :key="task.id" class="row items-center justify-between">
               <div class="text-caption text-grey-6">{{ getTaskTitle(task) }}</div>
-              <q-btn
-                flat
-                dense
-                round
-                size="xs"
-                icon="restore"
-                color="grey-6"
-                @click="taskStore.restoreTask(task.id)"
-              >
-                <q-tooltip>Restore task</q-tooltip>
-              </q-btn>
+              <div class="row items-center q-gutter-xs no-wrap">
+                <q-btn
+                  flat
+                  dense
+                  round
+                  size="xs"
+                  icon="restore"
+                  color="grey-6"
+                  @click="taskStore.restoreTask(task.id)"
+                >
+                  <q-tooltip>Restore task</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  dense
+                  round
+                  size="xs"
+                  icon="delete_forever"
+                  color="grey-6"
+                  @click="taskStore.cleanupTask(task.id)"
+                >
+                  <q-tooltip>Cleanup task</q-tooltip>
+                </q-btn>
+              </div>
             </div>
           </div>
           <div class="q-mt-sm q-px-xs">
@@ -114,10 +127,10 @@
               dense
               no-caps
               size="sm"
-              label="Clear all"
-              icon="delete"
+              label="Cleanup all"
+              icon="delete_forever"
               color="grey-6"
-              @click="taskStore.clearDismissed()"
+              @click="taskStore.cleanupAllDismissed()"
             />
           </div>
         </q-expansion-item>
