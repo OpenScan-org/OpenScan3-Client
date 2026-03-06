@@ -1,5 +1,13 @@
 <template>
-  <q-page>
+  <q-page class="scan-page">
+    <BlurredSnapshotBackground
+      :src="snapshotBackgroundSrc"
+      :blur-px="10"
+      :saturate-percent="100"
+      :transition-ms="1600"
+      :max-opacity="0.3"
+      :orientation-flag="snapshotOrientationFlag"
+    />
     <div class="q-pa-md">
       <template v-if="showDisconnectedSkeleton">
         <div class="row justify-center q-col-gutter-sm">
@@ -66,6 +74,7 @@
             :camera="selectedCamera"
             :camera-options="cameraStore.cameraOptions"
             v-model:selectedCameraName="selectedCameraName"
+            @scan-settings-change="handleScanSettingsChange"
             @update:photoCount="value => (photoCount = value)"
           />
         </div>
@@ -84,13 +93,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { apiClient } from 'src/services/apiClient'
-import { addScanWithDescription } from 'src/generated/api'
+import { addScanWithDescription, type ScanSetting } from 'src/generated/api'
 import generateDashedName from 'src/utils/randomName'
 
 import CameraView from 'components/CameraView.vue'
+import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import ScanStartSection from 'components/scan/ScanStartSection.vue'
 import ScanSettingsSection from 'components/scan/ScanSettingsSection.vue'
 import CreateProjectDialog from 'components/project/CreateProjectDialog.vue'
@@ -119,6 +129,10 @@ const photoCount = ref(0)
 const selectedPresetId = ref('')
 const showSavePresetDialog = ref(false)
 const presetDialogInitialName = ref('')
+const lastScanSettings = ref<ScanSetting | null>(null)
+const isRestoringFromHiddenPreset = ref(false)
+const canPersistHiddenPreset = ref(false)
+let hiddenPresetPersistTimeout: ReturnType<typeof setTimeout> | null = null
 
 type ScanSettingsSectionInstance = InstanceType<typeof ScanSettingsSection>
 const scanSettingsSectionRef = ref<ScanSettingsSectionInstance | null>(null)
@@ -126,52 +140,109 @@ const scanSettingsSectionRef = ref<ScanSettingsSectionInstance | null>(null)
 const scanning = ref(false)
 const showCreateProjectDialog = ref(false)
 const presetOptions = computed(() =>
-  scanPresetsStore.presets.map(preset => ({
-    label: preset.name,
-    value: preset.id
-  }))
+  scanPresetsStore.presets
+    .filter(preset => !preset.hidden)
+    .map(preset => ({
+      label: preset.name,
+      value: preset.id
+    }))
 )
 
+const persistHiddenPreset = (force = false) => {
+  if (( !force && !canPersistHiddenPreset.value) || isRestoringFromHiddenPreset.value) {
+    return
+  }
+  if (!scanSettingsSectionRef.value) {
+    return
+  }
+  const scanSettings = lastScanSettings.value ?? scanSettingsSectionRef.value.getScanSettings()
+  if (!scanSettings) {
+    return
+  }
+  scanPresetsStore.saveHiddenPreset({
+    scanSettings,
+    cameraName: selectedCameraName.value,
+    selectedProject: selectedProject.value || null,
+    selectedPresetId: selectedPresetId.value || null
+  })
+}
+
+const scheduleHiddenPresetPersist = () => {
+  if (!canPersistHiddenPreset.value || isRestoringFromHiddenPreset.value) {
+    return
+  }
+  if (hiddenPresetPersistTimeout) {
+    window.clearTimeout(hiddenPresetPersistTimeout)
+  }
+  hiddenPresetPersistTimeout = window.setTimeout(() => {
+    hiddenPresetPersistTimeout = null
+    persistHiddenPreset()
+  }, 200)
+}
+
+const restoreHiddenPreset = async () => {
+  const hiddenPreset = scanPresetsStore.getHiddenPreset()
+  if (!hiddenPreset) {
+    canPersistHiddenPreset.value = true
+    return
+  }
+  isRestoringFromHiddenPreset.value = true
+
+  if (hiddenPreset.selectedProject) {
+    selectedProject.value = hiddenPreset.selectedProject
+  }
+
+  if (hiddenPreset.selectedPresetId) {
+    const found = scanPresetsStore.getPreset(hiddenPreset.selectedPresetId)
+    selectedPresetId.value = found ? hiddenPreset.selectedPresetId : ''
+  }
+
+  if (hiddenPreset.cameraName && cameraStore.cameraOptions.some(c => c.value === hiddenPreset.cameraName)) {
+    selectedCameraName.value = hiddenPreset.cameraName
+  }
+
+  await nextTick()
+  if (scanSettingsSectionRef.value) {
+    scanSettingsSectionRef.value.applySettings(hiddenPreset.scanSettings, null)
+  }
+  lastScanSettings.value = hiddenPreset.scanSettings
+
+  isRestoringFromHiddenPreset.value = false
+  canPersistHiddenPreset.value = true
+}
+
+const handleScanSettingsChange = (settings: ScanSetting) => {
+  lastScanSettings.value = settings
+  scheduleHiddenPresetPersist()
+}
+
 const selectedCamera = computed(() => cameraStore.cameraOptions.find(c => c.value === selectedCameraName.value) || null)
+const snapshotOrientationFlag = computed(() => selectedCamera.value?.orientationFlag ?? null)
+const snapshotBackgroundSrc = computed(() => cameraStore.photoObjectUrl)
 const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
 const selectedProjectEntity = computed(() =>
   projectsStore.projects.find((project) => project.name === selectedProject.value) ?? null
 )
 
-const activeScanTaskId = computed(() => {
-  const tasks = taskStore.taskList
+const activeScanTaskId = computed(() => taskStore.activeScanTaskId)
 
-  const running = tasks.find((task) => task.task_type === 'scan_task' && task.status === 'running')
-  if (running?.id) {
-    return running.id
-  }
-
-  const pendingCandidates = tasks
-    .filter((task) => task.task_type === 'scan_task' && task.status === 'pending')
-    .slice()
-    .sort((a, b) => {
-      const aTime = new Date(a.started_at ?? a.created_at ?? 0).getTime()
-      const bTime = new Date(b.started_at ?? b.created_at ?? 0).getTime()
-      return bTime - aTime
-    })
-
-  if (pendingCandidates[0]?.id) {
-    return pendingCandidates[0].id
-  }
-
-  const pausedCandidates = tasks
-    .filter((task) => task.task_type === 'scan_task' && (task.status === 'paused' || task.status === 'interrupted'))
-    .slice()
-    .sort((a, b) => {
-      const aTime = new Date(a.started_at ?? a.created_at ?? 0).getTime()
-      const bTime = new Date(b.started_at ?? b.created_at ?? 0).getTime()
-      return bTime - aTime
-    })
-
-  return pausedCandidates[0]?.id ?? null
+watch(selectedCameraName, (newVal) => {
+  cameraStore.setSelectedCamera(newVal)
+  scheduleHiddenPresetPersist()
 })
 
-watch(selectedCameraName, (newVal) => cameraStore.setSelectedCamera(newVal))
+watch(selectedProject, () => {
+  scheduleHiddenPresetPersist()
+})
+
+watch(
+  () => scanSettingsSectionRef.value,
+  (instance) => {
+    if (instance) {
+      scheduleHiddenPresetPersist()
+    }
+  }
+)
 
 const generateProjectName = () => {
   selectedProject.value = generateDashedName()
@@ -292,6 +363,7 @@ const handleOverwritePreset = () => {
 }
 
 watch(selectedPresetId, (newId) => {
+  scheduleHiddenPresetPersist()
   if (!newId) {
     return
   }
@@ -299,7 +371,7 @@ watch(selectedPresetId, (newId) => {
   if (!preset || !scanSettingsSectionRef.value) {
     return
   }
-  scanSettingsSectionRef.value.applySettings(preset.scanSettings, preset.cameraSettings)
+  scanSettingsSectionRef.value.applySettings(preset.scanSettings, preset.cameraSettings ?? null)
   if (preset.cameraName && cameraStore.cameraOptions.some(c => c.value === preset.cameraName)) {
     selectedCameraName.value = preset.cameraName
   }
@@ -318,6 +390,12 @@ onMounted(async () => {
 
   selectedCameraName.value = cameraStore.selectedCamera || ''
 
+  await nextTick()
+  await restoreHiddenPreset()
+  if (!canPersistHiddenPreset.value) {
+    canPersistHiddenPreset.value = true
+  }
+
   // Set camera from query parameter if provided and exists
   const cameraFromQuery = route.query.camera as string
   if (cameraFromQuery && cameraStore.cameraOptions.some(c => c.value === cameraFromQuery)) {
@@ -328,7 +406,7 @@ onMounted(async () => {
   const projectFromQuery = route.query.project as string
   if (projectFromQuery && projectsStore.projects.some(p => p.name === projectFromQuery)) {
     selectedProject.value = projectFromQuery
-  } else {
+  } else if (!selectedProject.value) {
     selectedProject.value = ''
   }
 
@@ -340,5 +418,13 @@ onMounted(async () => {
       scanTemplateStore.clearTemplate()
     }
   }
+})
+
+onBeforeUnmount(() => {
+  if (hiddenPresetPersistTimeout) {
+    window.clearTimeout(hiddenPresetPersistTimeout)
+    hiddenPresetPersistTimeout = null
+  }
+  persistHiddenPreset(true)
 })
 </script>

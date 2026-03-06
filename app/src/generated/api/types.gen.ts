@@ -5,6 +5,50 @@ export type ClientOptions = {
 };
 
 /**
+ * AutoCalibrateAwbRequest
+ */
+export type AutoCalibrateAwbRequest = {
+    /**
+     * Warmup Frames
+     *
+     * Number of frames to discard before reading AWB metadata.
+     */
+    warmup_frames?: number;
+    /**
+     * Stable Frames
+     *
+     * Consecutive frames that must meet the stability tolerance.
+     */
+    stable_frames?: number;
+    /**
+     * Eps
+     *
+     * Maximum delta between gain values to consider them stable.
+     */
+    eps?: number;
+    /**
+     * Timeout S
+     *
+     * Maximum time budget for the calibration loop in seconds.
+     */
+    timeout_s?: number;
+};
+
+/**
+ * AutoCalibrateAwbResponse
+ */
+export type AutoCalibrateAwbResponse = {
+    /**
+     * Red Gain
+     */
+    red_gain: number;
+    /**
+     * Blue Gain
+     */
+    blue_gain: number;
+};
+
+/**
  * Body_add_config_json_device_configurations__post
  */
 export type BodyAddConfigJsonDeviceConfigurationsPost = {
@@ -242,13 +286,13 @@ export type CloudSettings = {
      *
      * HTTP basic auth username for the cloud API.
      */
-    user: string;
+    user?: string;
     /**
      * Password
      *
      * HTTP basic auth password for the cloud API.
      */
-    password: string;
+    password?: string;
     /**
      * Token
      *
@@ -260,7 +304,7 @@ export type CloudSettings = {
      *
      * Base URL of the cloud service.
      */
-    host: string;
+    host?: string;
     /**
      * Split Size
      *
@@ -400,9 +444,41 @@ export type DeviceStatusResponse = {
         [key: string]: LightStatusResponse;
     };
     /**
+     * Motors Timeout
+     */
+    motors_timeout: number;
+    startup_mode: ScannerStartupMode;
+    calibrate_mode: ScannerCalibrateMode;
+    /**
      * Initialized
      */
     initialized: boolean;
+};
+
+/**
+ * DiskUsage
+ *
+ * Filesystem usage snapshot for a directory.
+ */
+export type DiskUsage = {
+    /**
+     * Total
+     *
+     * Total bytes available on the filesystem.
+     */
+    total: number;
+    /**
+     * Used
+     *
+     * Bytes currently used (total - free).
+     */
+    used: number;
+    /**
+     * Free
+     *
+     * Free bytes remaining on the filesystem.
+     */
+    free: number;
 };
 
 /**
@@ -459,6 +535,12 @@ export type EndstopConfig = {
      * Debounce time for the button in seconds
      */
     bounce_time?: number | null;
+    /**
+     * Active High
+     *
+     * Useful for normally closed switches
+     */
+    active_high?: boolean | null;
 };
 
 /**
@@ -594,6 +676,12 @@ export type MotorConfig = {
      * Maximum allowed angle for the motor in degrees.
      */
     max_angle?: number;
+    /**
+     * Home Angle
+     *
+     * Angle for home position in degrees.
+     */
+    home_angle?: number;
 };
 
 /**
@@ -881,6 +969,11 @@ export type ScanSetting = {
 };
 
 /**
+ * ScannerCalibrateMode
+ */
+export type ScannerCalibrateMode = 'calibrate_manual' | 'calibrate_on_home' | 'calibrate_on_scan' | 'calibrate_on_wake';
+
+/**
  * ScannerDevice
  */
 export type ScannerDevice = {
@@ -915,20 +1008,73 @@ export type ScannerDevice = {
         [key: string]: Endstop;
     } | null;
     /**
-     * Initialized
+     * Motors Timeout
      */
-    initialized: boolean;
+    motors_timeout?: number;
+    startup_mode?: ScannerStartupMode;
+    calibrate_mode?: ScannerCalibrateMode;
 };
 
 /**
  * ScannerModel
  */
-export type ScannerModel = 'classic' | 'mini';
+export type ScannerModel = 'classic' | 'mini' | 'custom';
 
 /**
  * ScannerShield
  */
-export type ScannerShield = 'greenshield' | 'blackshield';
+export type ScannerShield = 'greenshield' | 'blackshield' | 'custom';
+
+/**
+ * ScannerStartupMode
+ */
+export type ScannerStartupMode = 'startup_idle' | 'startup_enabled';
+
+/**
+ * SoftwareInfoResponse
+ *
+ * Information block served by /next/openscan.
+ */
+export type SoftwareInfoResponse = {
+    /**
+     * Model
+     *
+     * Scanner model identifier, if configured.
+     */
+    model?: string | null;
+    /**
+     * Firmware Version
+     *
+     * Currently running firmware version string.
+     */
+    firmware_version: string;
+    /**
+     * Last Shutdown Was Unclean
+     *
+     * Indicates whether the previous shutdown finished cleanly.
+     */
+    last_shutdown_was_unclean: boolean;
+    /**
+     * Runtime Dir
+     *
+     * Absolute path used for runtime state files.
+     */
+    runtime_dir: string;
+    /**
+     * Disk usage snapshot for the runtime directory filesystem.
+     */
+    runtime_disk?: DiskUsage | null;
+    /**
+     * Disk usage snapshot for the projects directory filesystem.
+     */
+    projects_disk?: DiskUsage | null;
+    /**
+     * Uptime Seconds
+     *
+     * Current system uptime in seconds, if available.
+     */
+    uptime_seconds?: number | null;
+};
 
 /**
  * StackingTaskStatus
@@ -1224,6 +1370,40 @@ export type RestartCameraResponses = {
     200: unknown;
 };
 
+export type AutoCalibrateAwbData = {
+    body?: AutoCalibrateAwbRequest;
+    path: {
+        /**
+         * Camera Name
+         */
+        camera_name: string;
+    };
+    query?: never;
+    url: '/cameras/{camera_name}/awb-calibration';
+};
+
+export type AutoCalibrateAwbErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AutoCalibrateAwbError = AutoCalibrateAwbErrors[keyof AutoCalibrateAwbErrors];
+
+export type AutoCalibrateAwbResponses = {
+    /**
+     * Successful Response
+     */
+    200: AutoCalibrateAwbResponse;
+};
+
+export type AutoCalibrateAwbResponse2 = AutoCalibrateAwbResponses[keyof AutoCalibrateAwbResponses];
+
 export type GetCameraNameSettingsData = {
     body?: never;
     path: {
@@ -1465,7 +1645,48 @@ export type MoveMotorToAngleResponses = {
 
 export type MoveMotorToAngleResponse = MoveMotorToAngleResponses[keyof MoveMotorToAngleResponses];
 
-export type MoveMotorToHomePositionData = {
+export type OverrideMotorAngleData = {
+    body?: never;
+    path: {
+        /**
+         * Motor Name
+         */
+        motor_name: string;
+    };
+    query?: {
+        /**
+         * Angle
+         *
+         * Angle value that will overwrite the controller's internal model. Only change this after verifying the physical motor position because no positional feedback is available.
+         */
+        angle?: number;
+    };
+    url: '/motors/{motor_name}/angle-override';
+};
+
+export type OverrideMotorAngleErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type OverrideMotorAngleError = OverrideMotorAngleErrors[keyof OverrideMotorAngleErrors];
+
+export type OverrideMotorAngleResponses = {
+    /**
+     * Successful Response
+     */
+    200: MotorStatusResponse;
+};
+
+export type OverrideMotorAngleResponse = OverrideMotorAngleResponses[keyof OverrideMotorAngleResponses];
+
+export type MotorEndstopCalibrationData = {
     body?: never;
     path: {
         /**
@@ -1477,7 +1698,7 @@ export type MoveMotorToHomePositionData = {
     url: '/motors/{motor_name}/endstop-calibration';
 };
 
-export type MoveMotorToHomePositionErrors = {
+export type MotorEndstopCalibrationErrors = {
     /**
      * Not found
      */
@@ -1488,16 +1709,50 @@ export type MoveMotorToHomePositionErrors = {
     422: HttpValidationError;
 };
 
-export type MoveMotorToHomePositionError = MoveMotorToHomePositionErrors[keyof MoveMotorToHomePositionErrors];
+export type MotorEndstopCalibrationError = MotorEndstopCalibrationErrors[keyof MotorEndstopCalibrationErrors];
 
-export type MoveMotorToHomePositionResponses = {
+export type MotorEndstopCalibrationResponses = {
     /**
      * Successful Response
      */
     200: MotorStatusResponse;
 };
 
-export type MoveMotorToHomePositionResponse = MoveMotorToHomePositionResponses[keyof MoveMotorToHomePositionResponses];
+export type MotorEndstopCalibrationResponse = MotorEndstopCalibrationResponses[keyof MotorEndstopCalibrationResponses];
+
+export type MotorMoveHomeData = {
+    body?: never;
+    path: {
+        /**
+         * Motor Name
+         */
+        motor_name: string;
+    };
+    query?: never;
+    url: '/motors/{motor_name}/home';
+};
+
+export type MotorMoveHomeErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type MotorMoveHomeError = MotorMoveHomeErrors[keyof MotorMoveHomeErrors];
+
+export type MotorMoveHomeResponses = {
+    /**
+     * Successful Response
+     */
+    200: MotorStatusResponse;
+};
+
+export type MotorMoveHomeResponse = MotorMoveHomeResponses[keyof MotorMoveHomeResponses];
 
 export type GetMotorNameSettingsData = {
     body?: never;
@@ -2493,7 +2748,14 @@ export type DownloadProjectData = {
          */
         project_name: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Photos Only
+         *
+         * If true, stream only photo files without metadata or directory structure.
+         */
+        photos_only?: boolean;
+    };
     url: '/projects/{project_name}/zip';
 };
 
@@ -2736,8 +2998,10 @@ export type GetSoftwareInfoResponses = {
     /**
      * Successful Response
      */
-    200: unknown;
+    200: SoftwareInfoResponse;
 };
+
+export type GetSoftwareInfoResponse = GetSoftwareInfoResponses[keyof GetSoftwareInfoResponses];
 
 export type TailLogsData = {
     body?: never;
@@ -3127,6 +3391,40 @@ export type GetTaskStatusResponses = {
 };
 
 export type GetTaskStatusResponse = GetTaskStatusResponses[keyof GetTaskStatusResponses];
+
+export type DeleteTaskData = {
+    body?: never;
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/tasks/{task_id}/cleanup';
+};
+
+export type DeleteTaskErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteTaskError = DeleteTaskErrors[keyof DeleteTaskErrors];
+
+export type DeleteTaskResponses = {
+    /**
+     * Successful Response
+     */
+    204: void;
+};
+
+export type DeleteTaskResponse = DeleteTaskResponses[keyof DeleteTaskResponses];
 
 export type PauseTaskData = {
     body?: never;

@@ -1,5 +1,5 @@
 <template>
-  <BasePage>
+  <BasePage content-class="col-12 col-md-12 col-lg-8 col-xl-7">
     <div class="q-mt-md">
       <TextCard title="Developer documentation">
         <p>

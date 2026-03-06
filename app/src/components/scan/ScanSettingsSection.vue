@@ -12,6 +12,8 @@
           :image-formats="imageFormats"
           v-model:pathMethod="pathMethod"
           :path-methods="pathMethods"
+          :path-method-disabled="pathMethodDisabled"
+          :path-method-disabled-message="pathMethodDisabledMessage"
           v-model:minTheta="minTheta"
           v-model:maxTheta="maxTheta"
           v-model:optimizePath="optimizePath"
@@ -80,6 +82,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'update:selectedCameraName', value: string): void
   (e: 'update:photoCount', value: number): void
+  (e: 'scan-settings-change', value: ScanSetting): void
 }>()
 
 const deviceStore = useDeviceStore()
@@ -89,6 +92,9 @@ const pathMethods = [
   { label: 'Fibonacci', value: 'fibonacci' },
   { label: 'Spiral', value: 'spiral' }
 ]
+
+const pathMethodDisabled = true
+const pathMethodDisabledMessage = 'Only the Fibonacci scan path is supported right now.'
 
 const imageFormats = ['jpeg', 'dng', 'rgb_array', 'yuv_array']
 
@@ -171,6 +177,29 @@ watch(
     emit('update:photoCount', value)
   },
   { immediate: true }
+)
+
+const emitScanSettingsChange = () => {
+  emit('scan-settings-change', getScanSettings())
+}
+
+watch(
+  [
+    pathMethod,
+    points,
+    imageFormat,
+    minTheta,
+    maxTheta,
+    optimizePath,
+    optimizationAlgorithm,
+    focusStacks,
+    enableFocusStacking,
+    focusRange
+  ],
+  () => {
+    emitScanSettingsChange()
+  },
+  { deep: true, immediate: true }
 )
 
 type ScanSettingField = keyof (typeof fieldDescriptions)['ScanSetting']
@@ -262,7 +291,7 @@ const resetToDefaults = () => {
   scanPictureQualitySectionRef.value?.resetToDefaults()
 }
 
-const getScanSettings = () => {
+function getScanSettings() {
   const settings: ScanSetting = {
     path_method: pathMethod.value.value as 'fibonacci' | 'spiral',
     points: points.value,
@@ -304,6 +333,8 @@ const applySettings = (scanSettings: ScanSetting, cameraSettings: CameraSettings
     focusRange.value = { min: scanSettings.focus_range[0], max: scanSettings.focus_range[1] }
   }
 
+  const stackingRequested = typeof focusStacks.value === 'number' && focusStacks.value > 1
+
   // Apply Camera Settings (Focus)
   if (cameraSettings) {
     if (cameraSettings.AF !== undefined && cameraSettings.AF !== null) {
@@ -313,18 +344,18 @@ const applySettings = (scanSettings: ScanSetting, cameraSettings: CameraSettings
       manualFocusValue.value = cameraSettings.manual_focus
     }
 
-    // Determine Focus Mode
-    if (afValue.value) {
-      focusMode.value = 'autofocus'
-    } else if (scanSettings.focus_stacks && scanSettings.focus_stacks > 1) {
-      // If stack count is > 1, prefer stacking mode if AF is off
-      focusMode.value = 'stacking'
-      enableFocusStacking.value = true
-    } else {
-      focusMode.value = 'manual'
-      enableFocusStacking.value = false
-    }
     scanPictureQualitySectionRef.value?.applyCameraSettings(cameraSettings)
+  }
+
+  if (afValue.value) {
+    focusMode.value = 'autofocus'
+    enableFocusStacking.value = false
+  } else if (stackingRequested) {
+    focusMode.value = 'stacking'
+    enableFocusStacking.value = true
+  } else {
+    focusMode.value = 'manual'
+    enableFocusStacking.value = false
   }
 }
 

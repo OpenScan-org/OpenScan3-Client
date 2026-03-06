@@ -3,6 +3,8 @@ import { apiClient, getApiBaseUrl } from 'src/services/apiClient';
 import { getCameras, type Camera } from 'src/generated/api';
 
 const CAMERA_SETTINGS_CHANGE = /^cameras\.([^.\s]+)\.settings(?:\.|$)/;
+const PHOTO_DEBOUNCE_MS = 800;
+let photoDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 function getCameraNamesWithSettingChanges(paths: string[] | null | undefined) {
   const affected = new Set<string>();
@@ -80,12 +82,27 @@ export const useCameraStore = defineStore('camera', {
     setSelectedCamera(cameraName: string | null) {
       this.selectedCamera = cameraName;
     },
-    clearPhoto() {
-      if (this.photoObjectUrl) {
-        URL.revokeObjectURL(this.photoObjectUrl);
+    setPhoto(blob: Blob | null, { immediateCleanup = false }: { immediateCleanup?: boolean } = {}) {
+      const previousUrl = this.photoObjectUrl;
+
+      if (!blob) {
+        this.photoBlob = null;
+        this.photoObjectUrl = null;
+      } else {
+        this.photoBlob = blob;
+        this.photoObjectUrl = URL.createObjectURL(blob);
       }
-      this.photoBlob = null;
-      this.photoObjectUrl = null;
+
+      if (previousUrl) {
+        if (immediateCleanup) {
+          URL.revokeObjectURL(previousUrl);
+        } else {
+          window.setTimeout(() => URL.revokeObjectURL(previousUrl), 1000);
+        }
+      }
+    },
+    clearPhoto() {
+      this.setPhoto(null, { immediateCleanup: true });
       this.photoError = null;
     },
     handleCameraSettingsChanged(paths: string[]) {
@@ -98,11 +115,21 @@ export const useCameraStore = defineStore('camera', {
         const onlyOrientationChange = paths.every((path) => path.includes('.settings.orientation_flag'));
 
         if (!onlyOrientationChange) {
-          void this.fetchPhoto(this.selectedCamera);
+          this.debouncedFetchPhoto(this.selectedCamera);
         }
 
         void this.fetchCameras();
       }
+    },
+    debouncedFetchPhoto(cameraName: string) {
+      this.photoLoading = true;
+      if (photoDebounceTimer) {
+        clearTimeout(photoDebounceTimer);
+      }
+      photoDebounceTimer = setTimeout(() => {
+        photoDebounceTimer = null;
+        void this.fetchPhoto(cameraName);
+      }, PHOTO_DEBOUNCE_MS);
     },
     async fetchPhoto(cameraName?: string | null) {
       const name = cameraName ?? this.selectedCamera;
@@ -126,10 +153,7 @@ export const useCameraStore = defineStore('camera', {
         }
 
         const blob = await response.blob();
-
-        this.clearPhoto();
-        this.photoBlob = blob;
-        this.photoObjectUrl = URL.createObjectURL(blob);
+        this.setPhoto(blob);
       } catch (err) {
         console.error(err);
         this.photoError = 'Photo could not be loaded.';

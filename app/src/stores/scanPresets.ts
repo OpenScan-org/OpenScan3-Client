@@ -2,13 +2,18 @@ import { defineStore } from 'pinia'
 import { type ScanSetting, type CameraSettings } from 'src/generated/api'
 
 const STORAGE_KEY = 'scanPresets'
+const HIDDEN_PRESET_ID = '__internal_last_scan_settings__'
+const HIDDEN_PRESET_NAME = '__hidden__'
 
 export interface ScanPreset {
   id: string
   name: string
   scanSettings: ScanSetting
-  cameraSettings: CameraSettings
+  cameraSettings?: CameraSettings
   cameraName?: string | null
+  hidden?: boolean
+  selectedProject?: string | null
+  selectedPresetId?: string | null
 }
 
 interface ScanPresetsState {
@@ -58,7 +63,8 @@ export const useScanPresetsStore = defineStore('scanPresets', {
       const preset: ScanPreset = {
         ...payload,
         name: uniqueName,
-        id: generateId()
+        id: generateId(),
+        hidden: false
       }
       this.presets = [...this.presets, preset]
       persist(this.$state)
@@ -89,7 +95,7 @@ export const useScanPresetsStore = defineStore('scanPresets', {
     },
     ensureUniqueName(baseName: string) {
       const trimmed = baseName.trim() || 'Preset'
-      const existingNames = new Set(this.presets.map(preset => preset.name))
+      const existingNames = new Set(this.presets.filter(preset => !preset.hidden).map(preset => preset.name))
       if (!existingNames.has(trimmed)) {
         return trimmed
       }
@@ -100,6 +106,28 @@ export const useScanPresetsStore = defineStore('scanPresets', {
         candidate = `${trimmed} (${index})`
       }
       return candidate
+    },
+    getHiddenPreset() {
+      return this.presets.find(preset => preset.hidden) ?? null
+    },
+    saveHiddenPreset(payload: Omit<ScanPreset, 'id' | 'name' | 'hidden'>) {
+      const hiddenPreset: ScanPreset = {
+        ...payload,
+        id: HIDDEN_PRESET_ID,
+        name: HIDDEN_PRESET_NAME,
+        hidden: true
+      }
+      const index = this.presets.findIndex(preset => preset.id === HIDDEN_PRESET_ID)
+      if (index === -1) {
+        this.presets = [...this.presets, hiddenPreset]
+      } else {
+        this.presets = [
+          ...this.presets.slice(0, index),
+          hiddenPreset,
+          ...this.presets.slice(index + 1)
+        ]
+      }
+      persist(this.$state)
     }
   }
 })

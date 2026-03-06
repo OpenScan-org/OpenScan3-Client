@@ -1,207 +1,210 @@
 <template>
   <div class="col-12">
     <div class="scans-nested q-pa-md">
-      <q-item class="q-mb-sm scans-header" dense>
-        <q-item-section avatar>
-          <q-checkbox
-            size="sm"
-            :model-value="allScansSelected"
-            :indeterminate="isPartialSelection"
-            :disable="!scans.length"
-            @update:model-value="toggleSelectAll"
-          />
-        </q-item-section>
-        <q-item-section>
-          <div class="text-subtitle2 text-grey-7">Scans</div>
-        </q-item-section>
-        <q-item-section side>
-          <div class="row items-center q-gutter-xs">
-            <q-btn
-              v-if="selectedScansSet.size > 0"
-              flat
-              round
-              dense
-              color="negative"
-              icon="delete"
-              @click="requestDeleteSelected"
-            >
-              <q-tooltip>Delete {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
-            </q-btn>
-            <q-btn
-              v-if="selectedScansSet.size > 0"
-              flat
-              round
-              dense
-              color="primary"
-              icon="download"
-              @click="requestDownloadSelected"
-            >
-              <q-tooltip>Download {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
-            </q-btn>
-            <q-btn flat round dense icon="more_vert">
-              <q-menu>
-                <q-list dense style="min-width: 150px">
-                  <q-item clickable v-close-popup @click="inverse_scan_selection" :disable="!scans.length">
-                    <q-item-section>Inverse selection</q-item-section>
-                  </q-item>
-                  <q-separator />
-                  <q-item clickable v-close-popup @click="requestDeleteErrored" :disable="erroredCount === 0">
-                    <q-item-section :class="erroredCount > 0 ? 'text-negative' : ''">
-                      Delete errored ({{ erroredCount }})
-                    </q-item-section>
-                  </q-item>
-                  <q-item clickable v-close-popup @click="requestDeleteCancelled" :disable="cancelledCount === 0">
-                    <q-item-section :class="cancelledCount > 0 ? 'text-negative' : ''">
-                      Delete cancelled ({{ cancelledCount }})
-                    </q-item-section>
-                  </q-item>
-                </q-list>
-              </q-menu>
-            </q-btn>
-          </div>
-        </q-item-section>
-      </q-item>
-      <q-list separator dense>
-        <q-item
-          v-for="scan in scans"
-          :key="scan.index"
-          class="items-start"
-        >
-          <q-item-section avatar>
+      <div class="scans-list-content">
+        <q-item class="q-mb-sm scans-header" dense>
+          <q-item-section avatar class="scans-checkbox-section">
             <q-checkbox
-              size="sm"
-              :model-value="selectedScansSet.has(scan.index)"
-              @update:model-value="(checked) => toggle_scan_selection(scan.index, checked)"
-              @click.stop
+              size="xs"
+              :model-value="allScansSelected"
+              :indeterminate="isPartialSelection"
+              :disable="!scans.length"
+              @update:model-value="toggleSelectAll"
             />
           </q-item-section>
-        <q-item-section>
-          <div class="row items-center q-gutter-sm">
-            <div class="text-body1">Scan #{{ scan.index }}</div>
-            <q-badge :color="get_status_color(scan.status)" :label="scan.status ?? 'unknown'" />
-            <q-badge
-              v-if="scan.settings?.focus_stacks > 1"
-              :color="getStackingBadgeColor(scan)"
-              :label="getStackingBadgeLabel(scan)"
-            />
-          </div>
-          <div class="text-caption text-grey-8">
-            <template v-if="get_scan_photos_info(scan)">
-              {{ get_scan_photos_info(scan) }}
-            </template>
-            <template v-if="get_scan_photos_info(scan) && get_scan_size_label(scan)">
-              <span class="text-grey-5"> • </span>
-            </template>
-            <template v-if="get_scan_size_label(scan)">
-              {{ get_scan_size_label(scan) }}
-            </template>
-          </div>
-          <div class="text-caption text-grey-8">
-            Created: {{ format_date(scan.created) }}<span v-if="scan.duration && scan.duration > 0"> • Duration: {{ format_duration(scan.duration) }}</span>
-          </div>
-          <div class="row items-center q-gutter-x-sm text-caption text-grey-8">
-            <div v-if="scan.camera_name">
-              Camera: {{ scan.camera_name }}
-            </div>
-            <div class="cursor-pointer text-primary" @click.stop="toggleSettings(scan.index)">
-              {{ isExpanded(scan.index) ? 'Hide Settings' : 'Show Settings' }}
-            </div>
-            <div class="text-grey-5">•</div>
-            <div class="cursor-pointer text-primary" @click.stop="createScanFromSettings(scan)">
-              New Scan with this Settings
-            </div>
-          </div>
-
-          <q-slide-transition>
-            <div v-show="isExpanded(scan.index)" class="row q-mt-sm q-col-gutter-md">
-              <div class="col-12 col-md-6">
-                <div class="text-caption text-weight-bold q-mb-xs">Scan Settings</div>
-                <div class="text-caption text-grey-8 bg-grey-2 q-pa-sm rounded-borders" style="white-space: pre-wrap; word-break: break-all;">
-                  <div v-for="(value, key) in scan.settings" :key="key">
-                    <span class="text-weight-medium">{{ key }}:</span> {{ value }}
-                  </div>
-                </div>
-              </div>
-              <div class="col-12 col-md-6" v-if="scan.camera_settings">
-                <div class="text-caption text-weight-bold q-mb-xs">Camera Settings</div>
-                <div class="text-caption text-grey-8 bg-grey-2 q-pa-sm rounded-borders" style="white-space: pre-wrap; word-break: break-all;">
-                  <div v-for="(value, key) in scan.camera_settings" :key="key">
-                    <span class="text-weight-medium">{{ key }}:</span> {{ value }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </q-slide-transition>
-
-          <div v-if="scan.description" :class="'text-caption text-grey-8'">
-            Description: {{ scan.description }}
-          </div>
-        </q-item-section>
-          <q-item-section side class="q-pa-none">
-            <div class="row items-center no-wrap q-gutter-xs">
+          <q-item-section>
+            <div class="text-subtitle2 text-grey-7">Scans</div>
+          </q-item-section>
+          <q-item-section side>
+            <div class="row items-center q-gutter-xs">
               <q-btn
+                v-if="selectedScansSet.size > 0"
                 flat
                 round
-                icon="pause"
-                color="primary"
-                v-if="scan.status === 'running'"
-                @click.stop="pause_scan(scan.index)"
-              >
-                <q-tooltip>Pause scan</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat
-                round
-                icon="play_arrow"
-                v-if="scan.status === 'paused' || scan.status === 'interrupted'"
-                @click.stop="resume_scan(scan.index)"
-              >
-                <q-tooltip>Resume scan</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat
-                round
-                icon="cancel"
-                v-if="['pending', 'running', 'paused'].includes(scan.status ?? '')"
-                @click.stop="cancel_scan(scan.index)"
+                dense
                 color="negative"
-              >
-                <q-tooltip>Cancel scan</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat
-                round
-                icon="layers"
-                :disable="!canStartStacking(scan)"
-                :color="canStartStacking(scan) ? 'primary' : 'grey-5'"
-                @click.stop="stack_scan(scan.index)"
-              >
-                <q-tooltip>{{ getStackButtonTooltip(scan) }}</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat
-                round
-                icon="download"
-                :color="scan.status === 'completed' ? 'primary' : 'grey-5'"
-                :disable="scan.status !== 'completed'"
-                @click.stop="download_scan(scan.index)"
-              >
-                <q-tooltip>Download scan</q-tooltip>
-              </q-btn>
-              <q-btn
-                flat
-                round
                 icon="delete"
-                :color="['pending', 'running'].includes(scan.status ?? '') ? 'grey-5' : 'negative'"
-                :disable="['pending', 'running'].includes(scan.status ?? '')"
-                @click.stop="delete_scan(scan.index)"
+                @click="requestDeleteSelected"
               >
-                <q-tooltip>Delete scan</q-tooltip>
+                <q-tooltip>Delete {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
+              </q-btn>
+              <q-btn
+                v-if="selectedScansSet.size > 0"
+                flat
+                round
+                dense
+                color="primary"
+                icon="download"
+                @click="requestDownloadSelected"
+              >
+                <q-tooltip>Download {{ selectedScansSet.size }} selected scan(s)</q-tooltip>
+              </q-btn>
+              <q-btn flat round dense icon="more_vert">
+                <q-menu>
+                  <q-list dense style="min-width: 150px">
+                    <q-item clickable v-close-popup @click="inverse_scan_selection" :disable="!scans.length">
+                      <q-item-section>Inverse selection</q-item-section>
+                    </q-item>
+                    <q-separator />
+                    <q-item clickable v-close-popup @click="requestDeleteErrored" :disable="erroredCount === 0">
+                      <q-item-section :class="erroredCount > 0 ? 'text-negative' : ''">
+                        Delete errored ({{ erroredCount }})
+                      </q-item-section>
+                    </q-item>
+                    <q-item clickable v-close-popup @click="requestDeleteCancelled" :disable="cancelledCount === 0">
+                      <q-item-section :class="cancelledCount > 0 ? 'text-negative' : ''">
+                        Delete cancelled ({{ cancelledCount }})
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
               </q-btn>
             </div>
           </q-item-section>
         </q-item>
-      </q-list>
+
+        <q-list separator dense class="scans-list">
+          <q-item
+            v-for="scan in scans"
+            :key="scan.index"
+            class="items-start"
+          >
+            <q-item-section avatar class="scans-checkbox-section">
+              <q-checkbox
+                size="xs"
+                :model-value="selectedScansSet.has(scan.index)"
+                @update:model-value="(checked) => toggle_scan_selection(scan.index, checked)"
+                @click.stop
+              />
+            </q-item-section>
+            <q-item-section>
+              <div class="row items-center q-gutter-sm">
+                <div class="text-body1">Scan #{{ scan.index }}</div>
+                <q-badge :color="get_status_color(scan.status)" :label="scan.status ?? 'unknown'" />
+                <q-badge
+                  v-if="scan.settings?.focus_stacks > 1"
+                  :color="getStackingBadgeColor(scan)"
+                  :label="getStackingBadgeLabel(scan)"
+                />
+              </div>
+              <div class="text-caption text-grey-8">
+                <template v-if="get_scan_photos_info(scan)">
+                  {{ get_scan_photos_info(scan) }}
+                </template>
+                <template v-if="get_scan_photos_info(scan) && get_scan_size_label(scan)">
+                  <span class="text-grey-5"> • </span>
+                </template>
+                <template v-if="get_scan_size_label(scan)">
+                  {{ get_scan_size_label(scan) }}
+                </template>
+              </div>
+              <div class="text-caption text-grey-8">
+                Created: {{ format_date(scan.created) }}<span v-if="scan.duration && scan.duration > 0"> • Duration: {{ format_duration(scan.duration) }}</span>
+              </div>
+              <div class="row items-center q-gutter-x-sm text-caption text-grey-8">
+                <div v-if="scan.camera_name">
+                  Camera: {{ scan.camera_name }}
+                </div>
+                <div class="cursor-pointer text-primary" @click.stop="toggleSettings(scan.index)">
+                  {{ isExpanded(scan.index) ? 'Hide Settings' : 'Show Settings' }}
+                </div>
+                <div class="text-grey-5">•</div>
+                <div class="cursor-pointer text-primary" @click.stop="createScanFromSettings(scan)">
+                  New Scan with this Settings
+                </div>
+              </div>
+
+              <q-slide-transition>
+                <div v-show="isExpanded(scan.index)" class="row q-mt-sm q-col-gutter-md">
+                  <div class="col-12 col-md-6">
+                    <div class="text-caption text-weight-bold q-mb-xs">Scan Settings</div>
+                    <div class="text-caption text-grey-8 bg-grey-2 q-pa-sm rounded-borders" style="white-space: pre-wrap; word-break: break-all;">
+                      <div v-for="(value, key) in scan.settings" :key="key">
+                        <span class="text-weight-medium">{{ key }}:</span> {{ value }}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6" v-if="scan.camera_settings">
+                    <div class="text-caption text-weight-bold q-mb-xs">Camera Settings</div>
+                    <div class="text-caption text-grey-8 bg-grey-2 q-pa-sm rounded-borders" style="white-space: pre-wrap; word-break: break-all;">
+                      <div v-for="(value, key) in scan.camera_settings" :key="key">
+                        <span class="text-weight-medium">{{ key }}:</span> {{ value }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </q-slide-transition>
+
+              <div v-if="scan.description" :class="'text-caption text-grey-8'">
+                Description: {{ scan.description }}
+              </div>
+            </q-item-section>
+            <q-item-section side class="q-pa-none">
+              <div class="row items-center no-wrap q-gutter-xs scans-actions-row">
+                <q-btn
+                  flat
+                  round
+                  icon="pause"
+                  color="primary"
+                  v-if="scan.status === 'running'"
+                  @click.stop="pause_scan(scan.index)"
+                >
+                  <q-tooltip>Pause scan</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  icon="play_arrow"
+                  v-if="scan.status === 'paused' || scan.status === 'interrupted'"
+                  @click.stop="resume_scan(scan.index)"
+                >
+                  <q-tooltip>Resume scan</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  icon="cancel"
+                  v-if="['pending', 'running', 'paused'].includes(scan.status ?? '')"
+                  @click.stop="cancel_scan(scan.index)"
+                  color="negative"
+                >
+                  <q-tooltip>Cancel scan</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  icon="layers"
+                  :disable="!canStartStacking(scan)"
+                  :color="canStartStacking(scan) ? 'primary' : 'grey-5'"
+                  @click.stop="stack_scan(scan.index)"
+                >
+                  <q-tooltip>{{ getStackButtonTooltip(scan) }}</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  icon="download"
+                  :color="scan.status === 'completed' ? 'primary' : 'grey-5'"
+                  :disable="scan.status !== 'completed'"
+                  @click.stop="download_scan(scan.index)"
+                >
+                  <q-tooltip>Download scan</q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  round
+                  icon="delete"
+                  :color="['pending', 'running'].includes(scan.status ?? '') ? 'grey-5' : 'negative'"
+                  :disable="['pending', 'running'].includes(scan.status ?? '')"
+                  @click.stop="delete_scan(scan.index)"
+                >
+                  <q-tooltip>Delete scan</q-tooltip>
+                </q-btn>
+              </div>
+            </q-item-section>
+          </q-item>
+        </q-list>
+      </div>
     </div>
   </div>
 </template>
@@ -228,6 +231,8 @@ const taskStore = useTaskStore()
 const scanTemplateStore = useScanTemplateStore()
 const router = useRouter()
 
+const taskStoreReady = computed(() => taskStore.status === 'open')
+
 const scans = computed<Scan[]>(() => {
   return props.scans.map((scan) => {
     const taskId = scan.task_id
@@ -236,14 +241,26 @@ const scans = computed<Scan[]>(() => {
     const stackingTask = stackingTaskId ? taskStore.taskById(stackingTaskId) : null
 
     const next: Scan = { ...scan }
+
     if (task?.status) {
       next.status = task.status
+    } else if (taskStoreReady.value && taskId && !taskStore.isTaskKnown(taskId)) {
+      const stale = next.status
+      if (stale === 'running' || stale === 'paused' || stale === 'pending') {
+        next.status = 'cancelled'
+      }
     }
+
     if (stackingTask?.status) {
       next.stacking_task_status = {
         ...(next.stacking_task_status ?? {}),
         status: stackingTask.status,
         task_id: stackingTask.id
+      }
+    } else if (taskStoreReady.value && stackingTaskId && !taskStore.isTaskKnown(stackingTaskId)) {
+      const staleStacking = next.stacking_task_status?.status
+      if (staleStacking && stackingInProgressStatuses.has(staleStacking)) {
+        next.stacking_task_status = null
       }
     }
 
@@ -323,7 +340,7 @@ const get_status_color = (status?: string) => {
 }
 
 type StackingState = 'stackable' | 'stacking' | 'stacked'
-const stackingInProgressStatuses = new Set(['pending', 'running', 'paused', 'interrupted'])
+const stackingInProgressStatuses = new Set(['pending', 'running', 'paused'])
 
 const getStackingState = (scan: Scan): StackingState => {
   const stackingStatus = scan.stacking_task_status?.status
@@ -336,8 +353,17 @@ const getStackingState = (scan: Scan): StackingState => {
   return 'stackable'
 }
 
+const scanActiveStatuses = new Set(['running', 'paused', 'pending'])
+
 const canStartStacking = (scan: Scan) => {
-  return scan.status === 'completed' && scan.settings?.focus_stacks > 1 && getStackingState(scan) === 'stackable'
+  if (!scan.settings?.focus_stacks || scan.settings.focus_stacks <= 1) {
+    return false
+  }
+  if (scanActiveStatuses.has(scan.status ?? '')) {
+    return false
+  }
+
+  return getStackingState(scan) === 'stackable'
 }
 
 const getStackingBadgeColor = (scan: Scan) => {
@@ -367,8 +393,8 @@ const getStackButtonTooltip = (scan: Scan) => {
   if (state === 'stacked') {
     return 'Focus stacking already completed'
   }
-  if (scan.status !== 'completed') {
-    return 'Focus stacking becomes available once the scan is completed'
+  if (scanActiveStatuses.has(scan.status ?? '')) {
+    return 'Focus stacking becomes available once the scan is finished'
   }
   if (!scan.settings?.focus_stacks || scan.settings.focus_stacks <= 1) {
     return 'This scan cannot be focus stacked because it was captured without focus stack settings'
@@ -488,14 +514,70 @@ const cancel_scan = (index: number) => {
 
 <style scoped>
 .scans-nested {
+  --scans-list-gap: 4px;
   background: #f7f7f8;
   border-left: 3px solid var(--q-primary);
   border-radius: 4px;
+}
+
+.scans-list-content {
+  margin-left: -16px;
+  margin-right: -16px;
+  padding-left: var(--scans-list-gap);
+  padding-right: var(--scans-list-gap);
 }
 
 .scans-header {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+  padding-left: var(--scans-list-gap);
+  padding-right: var(--scans-list-gap);
+}
+
+.scans-header :deep(.q-item__section--avatar) {
+  min-width: 32px;
+  padding-left: var(--scans-list-gap) !important;
+  padding-right: var(--scans-list-gap) !important;
+}
+
+.scans-header :deep(.q-item__section--main) {
+  padding-left: var(--scans-list-gap) !important;
+}
+
+.scans-header :deep(.q-item__section--side) {
+  padding-left: 0 !important;
+  padding-right: var(--scans-list-gap) !important;
+}
+
+.scans-list :deep(.q-item) {
+  padding-left: var(--scans-list-gap);
+  padding-right: var(--scans-list-gap);
+}
+
+.scans-list :deep(.q-item__section--avatar) {
+  min-width: 32px;
+  padding-left: 0 !important;
+  padding-right: var(--scans-list-gap) !important;
+}
+
+.scans-list :deep(.q-item__section--main) {
+  padding-left: var(--scans-list-gap) !important;
+}
+
+.scans-list :deep(.q-item__section--side) {
+  padding-left: 0 !important;
+  padding-right: var(--scans-list-gap) !important;
+}
+
+.scans-actions-row {
+  padding-left: var(--scans-list-gap);
+  padding-right: var(--scans-list-gap);
+}
+
+.scans-checkbox-section {
+  min-width: 32px;
+  padding-left: var(--scans-list-gap) !important;
+  padding-right: var(--scans-list-gap) !important;
 }
 </style>

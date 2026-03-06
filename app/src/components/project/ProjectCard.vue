@@ -37,7 +37,7 @@
                                         v-if="!project.uploaded"
                                         unelevated
                                         icon="cloud_upload"
-                                        label="Cloud Reconstruction"
+                                        :label="compactButtons ? 'OpenScanCloud' : 'Cloud Reconstruction'"
                                         :loading="cloudUploadLoading"
                                         :disable="cloudUploadLoading || cloudReconstructionBlocked"
                                         @click="confirm_upload"
@@ -48,18 +48,20 @@
                                         v-else-if="!project.downloaded"
                                         unelevated
                                         icon="cloud_sync"
-                                        label="Fetch model"
+                                        :label="compactButtons ? 'Fetch' : 'Fetch model'"
                                         :loading="cloudFetchLoading"
-                                        :disable="cloudFetchLoading"
+                                        :disable="cloudFetchLoading || Boolean(fetchModelDisabledReason)"
                                         @click="confirm_fetch_model"
                                     >
-                                        <q-tooltip>Fetch the reconstructed model from the cloud.</q-tooltip>
+                                        <q-tooltip>
+                                            {{ fetchModelDisabledReason ?? 'Fetch the reconstructed model from the cloud.' }}
+                                        </q-tooltip>
                                     </BaseButtonSecondary>
                                     <BaseButtonSecondary
                                         v-else
                                         unelevated
                                         icon="download"
-                                        label="model"
+                                        :label="compactButtons ? 'Model' : 'Model'"
                                         @click="download_model"
                                     >
                                         <q-tooltip>Download the reconstructed model archive</q-tooltip>
@@ -67,7 +69,7 @@
                                 </template>
                                 <BaseButtonPrimary
                                     unelevated
-                                    icon="cloud_download"
+                                    icon="archive"
                                     label="Download"
                                     :disable="projectDownloadBlocked"
                                     @click="confirm_download"
@@ -78,7 +80,7 @@
                                     color="positive"
                                     unelevated
                                     icon="add"
-                                    label="Add Scan"
+                                    :label="compactButtons ? 'Scan' : 'Add Scan'"
                                     :disable="projectActionsBlocked"
                                     @click="add_scan"
                                 >
@@ -167,7 +169,7 @@
 </style>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 import { apiClient, getApiBaseUrl } from 'src/services/apiClient'
@@ -187,6 +189,7 @@ import {
 import { useCloudResetGuard } from 'src/composables/useCloudResetGuard'
 import { formatBytes } from 'src/utils/formatBytes'
 import { useTaskStore } from 'src/stores/tasks'
+import { useCloudProjectsStore } from 'src/stores/cloudProjects'
 import BaseButtonPrimary from 'src/components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'src/components/base/BaseButtonSecondary.vue'
 import ScansList from './ScansList.vue'
@@ -195,6 +198,9 @@ const $q = useQuasar()
 const router = useRouter()
 const apiConfigStore = useApiConfigStore()
 const taskStore = useTaskStore()
+const cloudProjectsStore = useCloudProjectsStore()
+
+const compactButtons = computed(() => $q.screen.width < 1800)
 
 interface ProjectProp {
     project: Project
@@ -293,6 +299,8 @@ const displayDate = computed(() => {
     return Number.isNaN(date.getTime()) ? props.project.created : date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 })
 
+const taskStoreReady = computed(() => taskStore.status === 'open')
+
 const projectScansNormalized = computed<Scan[]>(() => {
     const scansSource = props.projectScans ?? Object.values(props.project.scans || {})
     return scansSource
@@ -301,6 +309,11 @@ const projectScansNormalized = computed<Scan[]>(() => {
             const task = scan.task_id ? taskStore.taskById(scan.task_id) : null
             if (task?.status) {
                 next.status = task.status
+            } else if (taskStoreReady.value && scan.task_id && !taskStore.isTaskKnown(scan.task_id)) {
+                const stale = next.status
+                if (stale === 'running' || stale === 'paused' || stale === 'pending') {
+                    next.status = 'cancelled'
+                }
             }
             return next
         })
@@ -322,7 +335,7 @@ const thumbnailUrl = computed(() => {
 })
 
 const cloudReconstructionBlocked = computed(() => {
-    const inProgressStatuses = new Set(['pending', 'running', 'paused', 'interrupted'])
+    const inProgressStatuses = new Set(['pending', 'running', 'paused'])
     return projectScansNormalized.value.some((scan) => inProgressStatuses.has(scan.status ?? ''))
 })
 
@@ -353,6 +366,55 @@ const addScanTooltip = computed(() => {
     }
     return 'Create a new scan in this project'
 })
+
+const cloudProjectStatus = computed(() => cloudProjectsStore.statusByProject(props.project.name))
+const cloudRemoteStatusLabel = computed(() => cloudProjectsStore.remoteStatusLabel(props.project.name))
+const cloudModelReady = computed(() => cloudProjectsStore.isModelReady(props.project.name))
+
+const fetchModelDisabledReason = computed(() => {
+    if (!props.project.uploaded) {
+        return 'Upload the project before fetching the model.'
+    }
+
+    if (cloudFetchLoading.value) {
+        return null
+    }
+
+    if (!cloudModelReady.value) {
+        return cloudRemoteStatusLabel.value
+            ? `Cloud processing: ${cloudRemoteStatusLabel.value}`
+            : 'Cloud processing is still running.'
+    }
+
+    return null
+})
+
+watch(
+    () => props.project.name,
+    (name) => {
+        if (name) {
+            void cloudProjectsStore.ensureProjectStatus(name)
+        }
+    },
+    { immediate: true }
+)
+
+const findTaskIdForScan = (scanIndex: number) => {
+    const scan = projectScansNormalized.value.find((entry) => entry.index === scanIndex)
+    return scan?.task_id ?? null
+}
+
+const refreshTaskForScan = async (scanIndex: number) => {
+    const taskId = findTaskIdForScan(scanIndex)
+    if (!taskId) {
+        return
+    }
+    try {
+        await taskStore.refreshTask(taskId)
+    } catch (error) {
+        console.warn('Could not refresh task status.', error)
+    }
+}
 
 const confirm_delete = () => {
     $q.dialog({
@@ -401,6 +463,15 @@ const confirm_upload = () => {
 }
 
 const confirm_fetch_model = async () => {
+    if (fetchModelDisabledReason.value) {
+        $q.notify({
+            type: 'warning',
+            message: fetchModelDisabledReason.value
+        })
+        void cloudProjectsStore.ensureProjectStatus(props.project.name, { force: true })
+        return
+    }
+
     try {
         cloudFetchLoading.value = true
         await downloadProjectFromCloud({ path: { project_name: props.project.name }, client: apiClient })
@@ -460,6 +531,7 @@ const handleDeleteScan = async (data: { project_name: string; scan_index: number
 const handlePauseScan = async (data: { project_name: string; scan_index: number }) => {
     try {
         await pauseScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
+        await refreshTaskForScan(data.scan_index)
         emit('reload')
     } catch (error) {
         console.error('Could not pause scan.', error)
@@ -469,6 +541,7 @@ const handlePauseScan = async (data: { project_name: string; scan_index: number 
 const handleResumeScan = async (data: { project_name: string; scan_index: number; camera_name: string }) => {
     try {
         await resumeScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, query: { camera_name: data.camera_name }, client: apiClient })
+        await refreshTaskForScan(data.scan_index)
         emit('reload')
     } catch (error) {
         console.error('Could not resume scan.', error)
@@ -478,6 +551,7 @@ const handleResumeScan = async (data: { project_name: string; scan_index: number
 const handleCancelScan = async (data: { project_name: string; scan_index: number }) => {
     try {
         await cancelScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
+        await refreshTaskForScan(data.scan_index)
         emit('reload')
     } catch (error) {
         console.error('Could not cancel scan.', error)

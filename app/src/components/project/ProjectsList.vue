@@ -1,49 +1,79 @@
 <template>
-  <div class="col-12">
-    <q-card>
-      <q-card-section>
-        <div class="row items-center justify-between q-mb-sm">
-          <div class="text-h5">Projects</div>
-          <q-btn color="primary" unelevated label="New Project" @click="showCreateDialog = true" />
-        </div>
-        <q-separator class="q-mt-sm q-mb-sm" />
-        <q-item dense class="q-pa-none">
-          <q-item-section avatar>
-            <q-checkbox
-              size="sm"
-              :model-value="allProjectsSelected"
-              :indeterminate="isPartialSelection"
-              :disable="!props.projects.length"
-              @update:model-value="toggleSelectAll"
-            >
-              <q-tooltip>Select all</q-tooltip>
-            </q-checkbox>
-          </q-item-section>
-          <q-item-section>
-            <div class="row items-center">
-              <q-space />
+  <div class="col-12 projects-list-container">
+    <BaseSection title="Projects">
+      <template #header-action>
+        <q-btn color="primary" unelevated round dense icon="add" size="sm" @click="showCreateDialog = true">
+          <q-tooltip>New Project</q-tooltip>
+        </q-btn>
+      </template>
+      <template #default>
+        <div class="projects-list-toolbar">
+          <q-item class="projects-toolbar-row q-mb-xs" dense>
+            <q-item-section side class="project-list-checkbox projects-toolbar-checkbox">
+              <q-checkbox
+                size="xs"
+                :model-value="allProjectsSelected"
+                :indeterminate="isPartialSelection"
+                :disable="!props.projects.length"
+                @update:model-value="toggleSelectAll"
+              >
+                <q-tooltip>Select all</q-tooltip>
+              </q-checkbox>
+            </q-item-section>
 
-              <div class="row q-gutter-sm">
-                <q-btn flat round dense icon="sort_by_alpha" @click="toggleNameSort" :color="sortBy.field === 'name' ? 'primary' : ''">
-                  <q-icon name="arrow_upward" v-if="sortBy.field === 'name' && sortBy.order === 'asc'" size="xs" class="q-ml-xs" />
-                  <q-icon name="arrow_downward" v-if="sortBy.field === 'name' && sortBy.order === 'desc'" size="xs" class="q-ml-xs" />
+            <q-item-section class="projects-toolbar-sort">
+              <div class="projects-toolbar-sort-button" :class="{ 'is-active': sortBy.field === 'name' }">
+                <q-btn
+                  flat
+                  round
+                  dense
+                  icon="sort_by_alpha"
+                  size="sm"
+                  @click="toggleNameSort"
+                  :color="sortBy.field === 'name' ? 'primary' : ''"
+                >
                   <q-tooltip>Sort by name</q-tooltip>
                 </q-btn>
-
-                <q-btn flat round dense icon="schedule" @click="toggleDateSort" :color="sortBy.field === 'date' ? 'primary' : ''">
-                  <q-icon name="arrow_upward" v-if="sortBy.field === 'date' && sortBy.order === 'asc'" size="xs" class="q-ml-xs" />
-                  <q-icon name="arrow_downward" v-if="sortBy.field === 'date' && sortBy.order === 'desc'" size="xs" class="q-ml-xs" />
-                  <q-tooltip>Sort by date</q-tooltip>
-                </q-btn>
+                <div class="projects-toolbar-sort-indicator" :class="{ 'is-visible': sortBy.field === 'name' }">
+                  <q-icon
+                    v-if="sortBy.field === 'name'"
+                    :name="sortBy.order === 'asc' ? 'arrow_upward' : 'arrow_downward'"
+                    size="xs"
+                    :color="sortBy.field === 'name' ? 'primary' : 'grey-7'"
+                  />
+                </div>
               </div>
 
-              <q-space />
+              <div class="projects-toolbar-sort-button" :class="{ 'is-active': sortBy.field === 'date' }">
+                <q-btn
+                  flat
+                  round
+                  dense
+                  icon="schedule"
+                  size="sm"
+                  @click="toggleDateSort"
+                  :color="sortBy.field === 'date' ? 'primary' : ''"
+                >
+                  <q-tooltip>Sort by date</q-tooltip>
+                </q-btn>
+                <div class="projects-toolbar-sort-indicator" :class="{ 'is-visible': sortBy.field === 'date' }">
+                  <q-icon
+                    v-if="sortBy.field === 'date'"
+                    :name="sortBy.order === 'asc' ? 'arrow_upward' : 'arrow_downward'"
+                    size="xs"
+                    :color="sortBy.field === 'date' ? 'primary' : 'grey-7'"
+                  />
+                </div>
+              </div>
+            </q-item-section>
 
+            <q-item-section side class="projects-toolbar-actions">
               <q-btn
                 v-if="selectedProjectsSet.size > 0"
                 flat
                 round
                 dense
+                size="xs"
                 color="negative"
                 icon="delete"
                 @click="confirmDeleteSelected"
@@ -51,7 +81,7 @@
                 <q-tooltip>Delete {{ selectedProjectsSet.size }} selected project(s)</q-tooltip>
               </q-btn>
 
-              <q-btn flat round dense icon="more_vert" class="q-ml-sm">
+              <q-btn flat round dense icon="more_vert" size="sm">
                 <q-menu>
                   <q-list dense style="min-width: 150px">
                     <q-item clickable v-close-popup @click="inverse_project_selection" :disable="!props.projects.length">
@@ -66,23 +96,25 @@
                   </q-list>
                 </q-menu>
               </q-btn>
-            </div>
-          </q-item-section>
-        </q-item>
-      </q-card-section>
-      <q-separator />
-      <q-list separator>
-        <ProjectListItem
-          v-for="project in sortedProjects"
-          :key="project.name"
-          :project="project"
-          :is-selected="project.name === selected_project_name"
-          :bulk-selected="selectedProjectsSet.has(project.name)"
-          @select="select_project"
-          @toggle:bulk-select="(checked) => toggle_project_bulk(project.name, checked)"
-        />
-      </q-list>
-    </q-card>
+            </q-item-section>
+          </q-item>
+        </div>
+        <div class="projects-list-edge-to-edge">
+          <q-separator class="q-mb-xs" />
+          <q-list separator dense class="projects-list">
+            <ProjectListItem
+              v-for="project in sortedProjects"
+              :key="project.name"
+              :project="project"
+              :is-selected="project.name === selected_project_name"
+              :bulk-selected="selectedProjectsSet.has(project.name)"
+              @select="select_project"
+              @toggle:bulk-select="(checked) => toggle_project_bulk(project.name, checked)"
+            />
+          </q-list>
+        </div>
+      </template>
+    </BaseSection>
     <CreateProjectDialog
       v-model="showCreateDialog"
       @create-project="create_new_project"
@@ -95,6 +127,7 @@ import { computed, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { deleteProject, type Project } from 'src/generated/api'
 import { apiClient } from 'src/services/apiClient'
+import BaseSection from 'src/components/base/BaseSection.vue'
 import CreateProjectDialog from './CreateProjectDialog.vue'
 import ProjectListItem from './ProjectListItem.vue'
 
@@ -257,3 +290,79 @@ const confirmDeleteSelected = () => {
   })
 }
 </script>
+
+<style scoped>
+.projects-list-container {
+  --project-list-gap: 4px;
+}
+
+
+.projects-list-toolbar,
+.projects-list-edge-to-edge {
+  margin-left: -16px;
+  margin-right: -16px;
+}
+
+.projects-list-toolbar {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.projects-toolbar-row {
+  width: 100%;
+  column-gap: var(--project-list-gap);
+  padding-left: var(--project-list-gap);
+  padding-right: var(--project-list-gap);
+  align-items: center;
+}
+
+.projects-toolbar-checkbox {
+  display: flex;
+  align-items: center;
+  min-width: 32px;
+  padding-right: var(--project-list-gap);
+}
+
+.projects-toolbar-checkbox :deep(.q-checkbox) {
+  margin: 0;
+}
+
+.projects-toolbar-sort {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--project-list-gap);
+}
+
+.projects-toolbar-sort-button {
+  display: flex;
+  align-items: center;
+  column-gap: 2px;
+}
+
+.projects-toolbar-sort-indicator {
+  min-width: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.projects-toolbar-sort-indicator:not(.is-visible) {
+  visibility: hidden;
+}
+
+.projects-toolbar-actions {
+  display: flex;
+  align-items: center;
+  column-gap: var(--project-list-gap);
+}
+
+.projects-list :deep(.q-item) {
+  padding-left: var(--project-list-gap);
+}
+
+.projects-list :deep(.project-list-checkbox) {
+  padding-right: var(--project-list-gap);
+}
+</style>

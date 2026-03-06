@@ -1,16 +1,13 @@
 <template>
   <q-page class="settings-page">
-    <div v-if="backgroundPreviewUrl" class="settings-background">
-      <img
-        :key="backgroundImageKey"
-        class="settings-background__image"
-        :class="{ 'settings-background__image--visible': backgroundImageVisible }"
-        :src="backgroundPreviewUrl"
-        alt="Camera preview background"
-        @load="handleSettingsBackgroundLoad"
-        @error="handleSettingsBackgroundError"
-      />
-    </div>
+    <BlurredSnapshotBackground
+      v-if="backgroundPreviewUrl"
+      :src="backgroundPreviewUrl"
+      :alt="'Camera preview background'"
+      :transition-ms="1200"
+      :max-opacity="0.3"
+      :orientation-flag="selectedCameraOrientationFlag"
+    />
     <div class="q-pa-md">
       <div class="row justify-center q-col-gutter-md">
         <div class="col-12">
@@ -40,21 +37,19 @@
                         left-label
                       />
                     </div>
-                    <div class="col-12 col-sm-6">
-                      <BaseButtonSecondary
-                        class="full-width"
-                        icon="restart_alt"
-                        label="Reset"
-                        @click="resetApiConfigToWindow"
-                      />
-                    </div>
-                    <div class="col-12 col-sm-6">
-                      <BaseButtonPrimary
-                        class="full-width"
-                        icon="save"
-                        label="Save"
-                        @click="saveApiConfig"
-                      />
+                    <div class="col-12">
+                      <div class="row justify-end q-gutter-sm">
+                        <BaseButtonSecondary
+                          icon="restart_alt"
+                          label="Reset"
+                          @click="resetApiConfigToWindow"
+                        />
+                        <BaseButtonPrimary
+                          icon="save"
+                          label="Save"
+                          @click="saveApiConfig"
+                        />
+                      </div>
                     </div>
                   </div>
                 </BaseSection>
@@ -79,81 +74,40 @@
                             clearable
                           />
                         </div>
-                        <div class="col-6">
-                          <BaseButtonSecondary
-                            class="full-width"
-                            icon="refresh"
-                            label="Reload"
-                            :loading="configOptionsLoading"
-                            @click="loadDeviceConfigs"
-                          />
-                        </div>
-                        <div class="col-6">
-                          <BaseButtonPrimary
-                            class="full-width"
-                            icon="publish"
-                            label="Apply"
-                            :disable="!selectedConfig"
-                            :loading="configApplying"
-                            @click="applySelectedConfig"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="row q-col-gutter-md q-mt-md">
                         <div class="col-12">
-                          <q-toggle v-model="detectCameras" label="Detect cameras on reinit" />
-                        </div>
-                        <div class="col-12">
-                          <q-toggle
-                            v-model="saveConfigBeforePowerAction"
-                            label="Save configuration before reboot/shutdown"
-                          />
-                        </div>
-                      </div>
-
-                      <div class="row q-col-gutter-sm q-mt-md">
-                        <div class="col-12 col-sm-6">
-                          <BaseButtonPrimary
-                            class="full-width"
-                            icon="save"
-                            label="Save config"
-                            :loading="hardwareActions.save"
-                            @click="saveCurrentConfig"
-                          />
-                        </div>
-                        <div class="col-12 col-sm-6">
-                          <BaseButtonSecondary
-                            class="full-width"
-                            icon="autorenew"
-                            label="Reinitialize hardware"
-                            :loading="hardwareActions.reinitialize"
-                            @click="handleReinitializeHardware"
-                          />
-                        </div>
-                        <PowerControls
-                          :save-config="saveConfigBeforePowerAction"
-                          v-slot="{ confirmReboot, confirmShutdown, rebooting, shuttingDown }"
-                        >
-                          <div class="col-12 col-sm-6">
+                          <div class="row justify-end q-gutter-sm">
                             <BaseButtonSecondary
-                              class="full-width"
-                              icon="restart_alt"
-                              label="Reboot"
-                              :loading="rebooting"
-                              @click="confirmReboot"
-                            />
-                          </div>
-                          <div class="col-12 col-sm-6">
+                              icon="refresh"
+                              label="Reload"
+                              :loading="configOptionsLoading"
+                              @click="loadDeviceConfigs"
+                            >
+                              <q-tooltip>Reload available device configurations.</q-tooltip>
+                            </BaseButtonSecondary>
+                            <BaseButtonPrimary
+                              icon="publish"
+                              label="Apply"
+                              :disable="scanLocked || !selectedConfig"
+                              :loading="configApplying"
+                              @click="applySelectedConfig"
+                            >
+                              <q-tooltip>
+                                {{ scanLocked ? scanLockedTooltip : 'Apply the selected configuration file.' }}
+                              </q-tooltip>
+                            </BaseButtonPrimary>
                             <BaseButtonSecondary
-                              class="full-width"
-                              icon="power_settings_new"
-                              label="Shutdown"
-                              :loading="shuttingDown"
-                              @click="confirmShutdown"
-                            />
+                              icon="cached"
+                              label="Reinitialize"
+                              :disable="scanLocked"
+                              :loading="reinitializeHardwareLoading"
+                              @click="handleReinitializeHardware"
+                            >
+                              <q-tooltip>
+                                {{ scanLocked ? scanLockedTooltip : 'Reinitialize hardware and detect cameras automatically.' }}
+                              </q-tooltip>
+                            </BaseButtonSecondary>
                           </div>
-                        </PowerControls>
+                        </div>
                       </div>
                     </BaseSection>
 
@@ -363,9 +317,14 @@
                           <BaseButtonPrimary
                             icon="save"
                             label="Save"
+                            :disable="scanLocked"
                             :loading="motorSaving[motorName] === true"
                             @click="saveMotorSettings(motorName)"
-                          />
+                          >
+                            <q-tooltip>
+                              {{ scanLocked ? scanLockedTooltip : 'Save motor configuration.' }}
+                            </q-tooltip>
+                          </BaseButtonPrimary>
                         </q-card-actions>
                       </q-card>
                     </div>
@@ -419,9 +378,14 @@
                               <BaseButtonPrimary
                                 icon="save"
                                 label="Save"
+                                :disable="scanLocked"
                                 :loading="lightSaving[lightName] === true"
                                 @click="saveLightSettings(lightName)"
-                              />
+                              >
+                                <q-tooltip>
+                                  {{ scanLocked ? scanLockedTooltip : 'Save light configuration.' }}
+                                </q-tooltip>
+                              </BaseButtonPrimary>
                             </q-card-actions>
                           </q-card>
                         </div>
@@ -500,10 +464,14 @@
                           <BaseButtonPrimary
                             icon="save"
                             label="Save"
-                            :disable="!selectedCamera"
+                            :disable="scanLocked || !selectedCamera"
                             :loading="cameraSaving"
                             @click="saveCameraSettings"
-                          />
+                          >
+                            <q-tooltip>
+                              {{ scanLocked ? scanLockedTooltip : 'Save camera configuration.' }}
+                            </q-tooltip>
+                          </BaseButtonPrimary>
                         </div>
                       </div>
                     </BaseSection>
@@ -532,29 +500,27 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useQuasar } from 'quasar'
 import { apiClient, updateApiClientConfig } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
-import PowerControls from 'src/components/PowerControls.vue'
+import { useTaskStore } from 'src/stores/tasks'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
 import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseSelect from 'components/base/BaseSelect.vue'
+import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import {
   getCameraNameSettings,
   getCloudSettings,
   getCloudStatus,
   listConfigFiles,
-  reboot,
   reinitializeHardware,
   saveDeviceConfig,
   setConfigFile,
-  shutdown,
   updateCameraNameSettings,
   updateCloudSettings,
   updateLightNameSettings,
@@ -567,10 +533,13 @@ import {
   type MotorConfig
 } from 'src/generated/api'
 
-const $q = useQuasar()
-
 const apiConfigStore = useApiConfigStore()
 const cameraStore = useCameraStore()
+const taskStore = useTaskStore()
+void taskStore.ensureConnected()
+const { activeScanTaskId } = storeToRefs(taskStore)
+const scanLocked = computed(() => Boolean(activeScanTaskId.value))
+const scanLockedTooltip = 'Unavailable while a scan is running.'
 
 const scannerAddress = computed(() => apiConfigStore.baseURL.replace(/\/$/, ''))
 
@@ -614,6 +583,15 @@ const cloudForm = reactive<CloudForm>({
   token: '',
   split_size: defaultSplitSize
 })
+
+const hasPersistedCloudToken = () => cloudForm.token.trim().length > 0
+
+function syncCloudEnabledFlag() {
+  const shouldEnable = cloudToggle.value && hasPersistedCloudToken()
+  if (apiConfigStore.cloudEnabled !== shouldEnable) {
+    apiConfigStore.setConfig({ cloudEnabled: shouldEnable })
+  }
+}
 
 const isCloudFormValid = computed(() => {
   if (!cloudToggle.value) {
@@ -852,13 +830,7 @@ const configOptionsLoading = ref(false)
 const selectedConfig = ref<string | null>(null)
 const configApplying = ref(false)
 
-const detectCameras = ref(false)
-const saveConfigBeforePowerAction = ref(false)
-
-const hardwareActions = reactive({
-  save: false,
-  reinitialize: false
-})
+const reinitializeHardwareLoading = ref(false)
 
 type CameraOption = { label: string; value: string }
 
@@ -870,29 +842,17 @@ const selectedCamera = ref<string | null>(null)
 const selectedSettingsCamera = computed(() => selectedCamera.value ?? cameraStore.selectedCamera)
 
 const backgroundPreviewUrl = computed(() => {
-  const cameraName = selectedSettingsCamera.value ?? cameraStore.selectedCamera
+  const cameraName = selectedSettingsCamera.value
   return cameraName ? cameraStore.getPreviewUrl(cameraName, 10) : null
 })
 
-const backgroundImageVisible = ref(false)
-const backgroundImageKey = ref(0)
-
-watch(backgroundPreviewUrl, (url) => {
-  if (url) {
-    backgroundImageVisible.value = false
-    backgroundImageKey.value += 1
-  } else {
-    backgroundImageVisible.value = false
+const selectedCameraOrientationFlag = computed(() => {
+  const cameraName = selectedSettingsCamera.value
+  if (!cameraName) {
+    return null
   }
+  return deviceStore.getCamera(cameraName)?.settings?.orientation_flag ?? null
 })
-
-function handleSettingsBackgroundLoad() {
-  backgroundImageVisible.value = true
-}
-
-function handleSettingsBackgroundError() {
-  backgroundImageVisible.value = false
-}
 
 const cameraOptions = computed<CameraOption[]>(() =>
   Object.keys(cameras.value ?? {}).map((name) => ({ label: name, value: name }))
@@ -965,6 +925,7 @@ function applyCloudSettingsToForm(settings: Partial<CloudSettings> | null | unde
   Object.assign(cloudForm, next)
   cloudForm.user = CLOUD_DEFAULTS.user
   cloudForm.password = CLOUD_DEFAULTS.password
+  syncCloudEnabledFlag()
 }
 
 async function loadCloudSettings() {
@@ -1028,8 +989,15 @@ async function saveCloudSettings() {
       client: apiClient,
       body: payload
     })
-
-    apiConfigStore.setConfig({ cloudEnabled: true })
+    cloudForm.host = payload.host
+    cloudForm.user = payload.user
+    cloudForm.password = payload.password
+    cloudForm.token = payload.token
+    if (payload.split_size !== undefined) {
+      cloudForm.split_size = payload.split_size
+    }
+    syncCloudEnabledFlag()
+    await saveCurrentConfig()
   } catch (error) {
     console.error('Cloud settings could not be saved.', error)
   } finally {
@@ -1179,6 +1147,7 @@ async function saveCameraSettings() {
       path: { name: selectedCamera.value },
       body: payload
     })
+    await saveCurrentConfig()
   } catch (error) {
     console.error('Camera settings could not be saved.', error)
   } finally {
@@ -1215,6 +1184,7 @@ async function saveMotorSettings(name: string) {
 
     motorForms[name] = mapMotorConfig(updated.data)
     motorFormDirty[name] = false
+    await saveCurrentConfig()
   } catch (error) {
     console.error(`Motor "${name}" could not be saved.`, error)
   } finally {
@@ -1249,6 +1219,7 @@ async function saveLightSettings(name: string) {
 
     lightForms[name] = mapLightConfig(updated.data)
     lightFormDirty[name] = false
+    await saveCurrentConfig()
   } catch (error) {
     console.error(`Light "${name}" could not be saved.`, error)
   } finally {
@@ -1381,27 +1352,28 @@ function resetApiConfigToWindow() {
 }
 
 async function saveCurrentConfig() {
-  hardwareActions.save = true
   try {
     await saveDeviceConfig({ client: apiClient })
   } catch (error) {
     console.error('Configuration could not be saved.', error)
-  } finally {
-    hardwareActions.save = false
   }
 }
 
 async function handleReinitializeHardware() {
-  hardwareActions.reinitialize = true
+  if (reinitializeHardwareLoading.value) {
+    return
+  }
+
+  reinitializeHardwareLoading.value = true
   try {
     await reinitializeHardware({
       client: apiClient,
-      query: { detect_cameras: detectCameras.value }
+      query: { detect_cameras: true }
     })
   } catch (error) {
     console.error('Hardware could not be reinitialized.', error)
   } finally {
-    hardwareActions.reinitialize = false
+    reinitializeHardwareLoading.value = false
   }
 }
 

@@ -9,32 +9,81 @@
 
         <q-space />
 
-        <PowerControls v-slot="{ confirmReboot, confirmShutdown, rebooting, shuttingDown }">
-          <q-btn
-            flat
-            round
-            icon="restart_alt"
-            :loading="rebooting"
-            @click="confirmReboot"
-          />
-          <q-btn
-            flat
-            round
-            icon="power_settings_new"
-            :loading="shuttingDown"
-            @click="confirmShutdown"
-          />
-        </PowerControls>
+        <q-btn
+          flat
+          round
+          class="task-toggle-btn"
+          aria-label="Tasks"
+          @click="toggleRightDrawer"
+        >
+          <q-icon name="assignment" size="22px" />
+          <q-badge
+            v-if="runningTaskCount > 0"
+            class="task-indicator-badge task-indicator-badge--running"
+            color="white"
+            text-color="primary"
+            outline
+          >
+            {{ runningTaskCount }}
+          </q-badge>
+          <q-badge
+            v-if="pausedTaskCount > 0"
+            class="task-indicator-badge task-indicator-badge--paused"
+            color="orange-5"
+            text-color="white"
+          >
+            {{ pausedTaskCount }}
+          </q-badge>
+          <q-tooltip>{{ rightDrawerOpen ? 'Hide task panel' : 'Show task panel' }}</q-tooltip>
+        </q-btn>
 
       </q-toolbar>
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" elevated :width="200">
-      <q-list>
-        <EssentialLink v-for="link in upperLinks" :key="link.title" v-bind="link" />
+      <div class="column full-height">
+        <q-list class="col">
+          <EssentialLink v-for="link in upperLinks" :key="link.title" v-bind="link" />
+          <q-separator />
+          <EssentialLink v-for="link in lowerLinks" :key="link.title" v-bind="link" />
+        </q-list>
+
         <q-separator />
-        <EssentialLink v-for="link in lowerLinks" :key="link.title" v-bind="link" />
-      </q-list>
+
+        <PowerControls v-slot="{ confirmReboot, confirmShutdown, rebooting, shuttingDown }">
+          <div class="q-pa-sm q-gutter-xs row">
+            <q-btn
+              flat
+              dense
+              no-caps
+              stack
+              icon="restart_alt"
+              label="Reboot"
+              :loading="rebooting"
+              class="col"
+              @click="confirmReboot"
+            />
+            <q-btn
+              flat
+              dense
+              no-caps
+              stack
+              icon="power_settings_new"
+              label="Shutdown"
+              :loading="shuttingDown"
+              class="col"
+              @click="confirmShutdown"
+            />
+          </div>
+        </PowerControls>
+      </div>
+    </q-drawer>
+
+    <q-drawer v-model="rightDrawerOpen" side="right" elevated :width="340">
+      <q-toolbar class="tasks-toolbar">
+        <q-toolbar-title class="text-center">Tasks</q-toolbar-title>
+      </q-toolbar>
+      <TaskDrawerPanel />
     </q-drawer>
 
     <q-page-container>
@@ -72,6 +121,7 @@ import { useDeviceStore } from 'src/stores/device';
 import { useTaskStore } from 'src/stores/tasks';
 import { useVersionStore } from 'src/stores/version';
 import PowerControls from 'components/PowerControls.vue';
+import TaskDrawerPanel from 'components/task/TaskDrawerPanel.vue';
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue';
 import BaseBanner from 'components/base/BaseBanner.vue';
 
@@ -124,6 +174,7 @@ const lowerLinks = computed<EssentialLinkProps[]>(() => [
 ])
 
 const leftDrawerOpen = ref(true)
+const rightDrawerOpen = ref(false)
 
 const deviceStore = useDeviceStore()
 void deviceStore.ensureConnected()
@@ -141,8 +192,15 @@ const showConnectionIssueBanner = computed(
   () => deviceStore.hasConnectionIssue && !showSetupBanner.value
 )
 
+const runningTaskCount = computed(() => taskStore.runningTasks.length)
+const pausedTaskCount = computed(() => taskStore.tasks.filter((task) => task.status === 'paused').length)
+
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
+}
+
+function toggleRightDrawer() {
+  rightDrawerOpen.value = !rightDrawerOpen.value
 }
 
 function openSetupPage() {
@@ -162,5 +220,6 @@ function openSettingsPage() {
 .main-logo {
   height: 40px;
 }
+
 
 </style>

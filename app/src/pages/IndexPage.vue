@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, type CSSProperties } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useQuasar } from 'quasar'
 
 import { useCameraStore } from 'src/stores/camera'
 import { useDeviceStore } from 'src/stores/device'
 import { useProjectsStore } from 'src/stores/projects'
+import { useTaskStore } from 'src/stores/tasks'
 import BaseButtonIconPrimary from 'components/base/BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import RecentProjectsList from 'src/components/project/RecentProjectsList.vue'
@@ -18,14 +19,16 @@ import {
   type MoveMotorByDegreeData,
   type MoveToPositionData
 } from 'src/generated/api'
-import { getOrientationTransform } from 'src/utils/orientation'
 
 const $q = useQuasar()
 const cameraStore = useCameraStore()
 const deviceStore = useDeviceStore()
 const projectsStore = useProjectsStore()
+const taskStore = useTaskStore()
 
 const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
+const scanLocked = computed(() => Boolean(taskStore.activeScanTaskId))
+const scanLockedTooltip = 'Unavailable while a scan is running.'
 
 const isMoving = ref(false)
 const isLightBusy = ref(false)
@@ -42,48 +45,18 @@ const selectedCamera = computed(() =>
   cameraStore.cameras.find(camera => camera.name === cameraStore.selectedCamera) ?? null
 )
 
-const previewImageStyle = computed<CSSProperties>(() => {
-  const transform = getOrientationTransform(selectedCamera.value?.settings?.orientation_flag ?? null)
-  const baseTransform = 'translate(-50%, -50%)'
-  const transformValue = transform === 'none' ? baseTransform : `${baseTransform} ${transform}`
-
-  return {
-    transform: transformValue,
-    transformOrigin: 'center center'
-  }
-})
-
 const backgroundPreviewUrl = computed(() => {
   const cameraName = cameraStore.selectedCamera
   return cameraName ? cameraStore.getPreviewUrl(cameraName, 30) : null
 })
-
-const previewImageVisible = ref(false)
-const previewImageKey = ref(0)
-
-watch(backgroundPreviewUrl, (url) => {
-  if (url) {
-    previewImageVisible.value = false
-    previewImageKey.value += 1
-  } else {
-    previewImageVisible.value = false
-  }
-})
-
-function handleBackgroundLoad() {
-  previewImageVisible.value = true
-}
-
-function handleBackgroundError() {
-  previewImageVisible.value = false
-}
+const selectedCameraOrientationFlag = computed(() => selectedCamera.value?.settings?.orientation_flag ?? null)
 const isLightOn = computed(() => {
   const name = firstLightName.value
   return !!(name && deviceStore.lights[name]?.is_on)
 })
 
 async function handleToggleLight() {
-  if (isLightBusy.value) return
+  if (scanLocked.value || isLightBusy.value) return
   isLightBusy.value = true
   try {
     await deviceStore.ensureConnected()
@@ -103,7 +76,7 @@ async function handleToggleLight() {
 }
 
 async function moveMotor(motorName: string, degrees: number) {
-  if (isMoving.value) return
+  if (scanLocked.value || isMoving.value) return
   isMoving.value = true
   try {
     await deviceStore.ensureConnected()
@@ -124,7 +97,7 @@ async function moveMotor(motorName: string, degrees: number) {
 }
 
 async function moveHome() {
-  if (isHoming.value) return
+  if (scanLocked.value || isHoming.value) return
   isHoming.value = true
   try {
     await deviceStore.ensureConnected()
@@ -151,23 +124,22 @@ onMounted(() => {
   cameraStore.fetchCameras()
   deviceStore.ensureConnected()
   projectsStore.fetchProjects()
+  void taskStore.ensureConnected()
 })
 </script>
 
 <template>
   <q-page class="dashboard-page">
-    <div v-if="backgroundPreviewUrl" class="camera-background">
-      <img
-        :key="previewImageKey"
-        class="camera-background__image"
-        :class="{ 'camera-background__image--visible': previewImageVisible }"
-        :src="backgroundPreviewUrl"
-        :style="previewImageStyle"
-        @load="handleBackgroundLoad"
-        @error="handleBackgroundError"
-        alt="Camera preview background"
-      />
-    </div>
+    <BlurredSnapshotBackground
+      v-if="backgroundPreviewUrl"
+      :src="backgroundPreviewUrl"
+      alt="Camera preview background"
+      :blur-px="10"
+      :saturate-percent="100"
+      :max-opacity="0.3"
+      :transition-ms="600"
+      :orientation-flag="selectedCameraOrientationFlag"
+    />
 
     <div class="content-wrapper q-pa-md">
       <div class="row q-col-gutter-md justify-center items-start">
@@ -178,10 +150,13 @@ onMounted(() => {
                 <BaseButtonIconPrimary
                   :icon="isLightOn ? 'lightbulb' : 'lightbulb_outline'"
                   size="lg"
+                  :disable="scanLocked || isLightBusy"
                   :loading="isLightBusy"
                   @click="handleToggleLight"
                 >
-                  <q-tooltip anchor="bottom middle" self="top middle">Toggle ring light</q-tooltip>
+                  <q-tooltip anchor="bottom middle" self="top middle">
+                    {{ scanLocked ? scanLockedTooltip : 'Toggle ring light' }}
+                  </q-tooltip>
                 </BaseButtonIconPrimary>
 
                 <div class="joystick-grid">
@@ -189,47 +164,62 @@ onMounted(() => {
                     <BaseButtonIconPrimary
                       icon="keyboard_arrow_up"
                       size="lg"
+                      :disable="scanLocked || isMoving"
                       :loading="isMoving"
                       @click="moveMotor(ROTOR_MOTOR, -10)"
                     >
-                      <q-tooltip anchor="bottom middle" self="top middle">Move rotor up</q-tooltip>
+                      <q-tooltip anchor="bottom middle" self="top middle">
+                        {{ scanLocked ? scanLockedTooltip : 'Move rotor up' }}
+                      </q-tooltip>
                     </BaseButtonIconPrimary>
                   </div>
                   <div class="joystick-row">
                     <BaseButtonIconPrimary
                       icon="keyboard_arrow_left"
                       size="lg"
+                      :disable="scanLocked || isMoving"
                       :loading="isMoving"
                       @click="moveMotor(TURNTABLE_MOTOR, -20)"
                     >
-                      <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable left</q-tooltip>
+                      <q-tooltip anchor="bottom middle" self="top middle">
+                        {{ scanLocked ? scanLockedTooltip : 'Rotate turntable left' }}
+                      </q-tooltip>
                     </BaseButtonIconPrimary>
                     <BaseButtonIconSecondary
                       icon="home"
                       size="lg"
+                      :disable="scanLocked || isHoming"
                       :loading="isHoming"
                       :dense="false"
                       @click="moveHome"
                     >
-                      <q-tooltip anchor="bottom middle" self="top middle">Return to home position</q-tooltip>
+                      <q-tooltip anchor="bottom middle" self="top middle">
+                        {{ scanLocked ? scanLockedTooltip : 'Return to home position' }}
+                      </q-tooltip>
                     </BaseButtonIconSecondary>
                     <BaseButtonIconPrimary
                       icon="keyboard_arrow_right"
                       size="lg"
+                      :disable="scanLocked || isMoving"
                       :loading="isMoving"
                       @click="moveMotor(TURNTABLE_MOTOR, 20)"
                     >
-                      <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable right</q-tooltip>
+                      <q-tooltip anchor="bottom middle" self="top middle">
+                        {{ scanLocked ? scanLockedTooltip : 'Rotate turntable right' }}
+                      </q-tooltip>
                     </BaseButtonIconPrimary>
                   </div>
                   <div class="joystick-row">
                     <BaseButtonIconPrimary
                       icon="keyboard_arrow_down"
                       size="lg"
+                      :disable="scanLocked || isMoving"
                       :loading="isMoving"
                       @click="moveMotor(ROTOR_MOTOR, 10)"
                     >
-                      <q-tooltip anchor="bottom middle" self="top middle">Move rotor down</q-tooltip>
+                      <q-tooltip anchor="bottom middle" self="top middle">
+                        {{ scanLocked ? scanLockedTooltip : 'Move rotor down' }}
+                      </q-tooltip>
                     </BaseButtonIconPrimary>
                   </div>
                 </div>
@@ -260,33 +250,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.camera-background {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: -1;
-}
-
-.camera-background__image {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 120vmax;
-  height: 120vmax;
-  object-fit: cover;
-  filter: blur(10px);
-  opacity: 0;
-  transform: translate(-50%, -50%);
-  transition: opacity 600ms ease;
-}
-
-.camera-background__image--visible {
-  opacity: 0.3;
-}
-
 .dashboard-page {
   position: relative;
 }
