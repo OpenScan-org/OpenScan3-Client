@@ -65,17 +65,17 @@
         </q-expansion-item>
       </template>
 
-      <template v-if="cloudProjectsList.length > 0">
+      <template v-if="isCloudEnabled && visibleCloudProjects.length > 0">
         <q-separator class="q-my-sm" />
         <q-expansion-item
           default-opened
           dense
           header-class="text-caption text-weight-bold text-grey-7"
-          :label="`OpenScan Cloud (${cloudProjectsList.length})`"
+          :label="`OpenScan Cloud (${visibleCloudProjects.length})`"
         >
           <div class="q-gutter-y-sm q-pa-xs">
             <CloudProjectCard
-              v-for="project in cloudProjectsList"
+              v-for="project in visibleCloudProjects"
               :key="project.project?.name ?? project.remote_project_name ?? Math.random()"
               :status="project"
               dismissable
@@ -144,6 +144,7 @@ import { computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useTaskStore } from 'src/stores/tasks'
 import { useCloudProjectsStore } from 'src/stores/cloudProjects'
+import { useApiConfigStore } from 'src/stores/apiConfig'
 import { isTaskActive, getTaskTitle } from 'src/utils/taskDisplayUtils'
 import type { Task } from 'src/generated/api'
 import TaskDrawerItem from './TaskDrawerItem.vue'
@@ -153,8 +154,13 @@ const taskStore = useTaskStore()
 const { tasks, dismissedTasks, status } = storeToRefs(taskStore)
 
 const cloudProjectsStore = useCloudProjectsStore()
+const apiConfigStore = useApiConfigStore()
+const isCloudEnabled = computed(() => apiConfigStore.cloudEnabled)
 const cloudProjectsList = computed(() =>
   Object.values(cloudProjectsStore.visibleEntries).map((entry) => entry.data)
+)
+const visibleCloudProjects = computed(() =>
+  cloudProjectsList.value.filter((project) => project.project?.uploaded !== false)
 )
 
 onMounted(() => {
