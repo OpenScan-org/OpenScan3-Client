@@ -325,11 +325,14 @@ const get_status_color = (status?: string) => {
   }
 }
 
-type StackingState = 'stackable' | 'stacking' | 'stacked'
-const stackingInProgressStatuses = new Set(['pending', 'running', 'paused', 'interrupted'])
+type StackingState = 'stackable' | 'stacking' | 'stacked' | 'interrupted'
+const stackingInProgressStatuses = new Set(['pending', 'running', 'paused'])
 
 const getStackingState = (scan: Scan): StackingState => {
   const stackingStatus = scan.stacking_task_status?.status
+  if (stackingStatus === 'interrupted') {
+    return 'interrupted'
+  }
   if (stackingStatus === 'completed') {
     return 'stacked'
   }
@@ -340,13 +343,21 @@ const getStackingState = (scan: Scan): StackingState => {
 }
 
 const canStartStacking = (scan: Scan) => {
-  return scan.status === 'completed' && scan.settings?.focus_stacks > 1 && getStackingState(scan) === 'stackable'
+  if (scan.status !== 'completed' || !scan.settings?.focus_stacks || scan.settings.focus_stacks <= 1) {
+    return false
+  }
+
+  const state = getStackingState(scan)
+  return state === 'stackable' || state === 'interrupted'
 }
 
 const getStackingBadgeColor = (scan: Scan) => {
   const state = getStackingState(scan)
   if (state === 'stacked') {
     return 'green'
+  }
+  if (state === 'interrupted') {
+    return 'orange'
   }
   if (state === 'stacking') {
     return 'blue'
@@ -359,6 +370,9 @@ const getStackingBadgeLabel = (scan: Scan) => {
   if (state === 'stacking') {
     return 'stacking...'
   }
+  if (state === 'interrupted') {
+    return 'interrupted'
+  }
   return state
 }
 
@@ -369,6 +383,9 @@ const getStackButtonTooltip = (scan: Scan) => {
   }
   if (state === 'stacked') {
     return 'Focus stacking already completed'
+  }
+  if (state === 'interrupted') {
+    return 'Focus stacking was interrupted and can be restarted'
   }
   if (scan.status !== 'completed') {
     return 'Focus stacking becomes available once the scan is completed'
