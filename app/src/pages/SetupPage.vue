@@ -47,40 +47,62 @@
           </div>
           <div v-else-if="step.id === 'rotor-direction'">
             <div class="text-subtitle1 q-mb-sm">Rotor direction</div>
-            <p class="q-mb-md">
-              Use the buttons below to move the rotor slightly up or down and confirm the movement matches the labels.
-            </p>
-            <div class="rotor-controls q-mb-md">
-              <BaseButtonSecondary
-                icon="keyboard_arrow_up"
-                label="Move up"
-                :loading="rotorMoveAction === 'up'"
-                :disable="isRotorControlDisabled"
-                @click="handleRotorMove('up')"
-              />
-              <BaseButtonSecondary
-                icon="keyboard_arrow_down"
-                label="Move down"
-                :loading="rotorMoveAction === 'down'"
-                :disable="isRotorControlDisabled"
-                @click="handleRotorMove('down')"
-              />
-            </div>
-            <div class="text-body2 q-mb-sm">
-              Does the rotor move in the direction shown on the buttons? If yes, click "Next". If not, click "Reverse direction".
-            </div>
-            <div class="rotor-reverse">
-              <BaseButtonPrimary
-                outline
-                icon="swap_vert"
-                label="Reverse direction"
-                :loading="isReversingRotorDirection"
-                :disable="isReverseDisabled"
-                @click="handleReverseRotorDirection"
-              />
-            </div>
-            <div class="text-body2 text-grey-7 q-mt-sm text-center">
-              Current direction: {{ rotorDirectionLabel }}
+            <div class="rotor-direction-layout">
+              <div class="rotor-direction-panel">
+                <p class="q-mb-md">
+                  Use the buttons below to move the rotor slightly up or down and confirm the movement matches the labels.
+                </p>
+                <div class="rotor-controls q-mb-md">
+                  <BaseButtonSecondary
+                    icon="keyboard_arrow_up"
+                    label="Move up"
+                    :loading="rotorMoveAction === 'up'"
+                    :disable="isRotorControlDisabled"
+                    @click="handleRotorMove('up')"
+                  />
+                  <BaseButtonSecondary
+                    icon="keyboard_arrow_down"
+                    label="Move down"
+                    :loading="rotorMoveAction === 'down'"
+                    :disable="isRotorControlDisabled"
+                    @click="handleRotorMove('down')"
+                  />
+                </div>
+                <div class="text-body2 q-mb-sm">
+                  Does the rotor move in the direction shown on the buttons? If yes, click "Next". If not, click "Reverse direction".
+                </div>
+                <div class="rotor-reverse">
+                  <BaseButtonPrimary
+                    outline
+                    icon="swap_vert"
+                    label="Reverse direction"
+                    :loading="isReversingRotorDirection"
+                    :disable="isReverseDisabled"
+                    @click="handleReverseRotorDirection"
+                  />
+                </div>
+                <div class="text-body2 text-grey-7 q-mt-sm text-center">
+                  Current direction: {{ rotorDirectionLabel }}
+                </div>
+              </div>
+              <div class="rotor-direction-visual">
+                <div v-if="rotorDirectionImageSrc" class="rotor-direction-image-wrapper">
+                  <img
+                    :src="rotorDirectionImageSrc"
+                    :alt="`Rotor direction reference for ${deviceModel ?? 'current device'}`"
+                    class="rotor-direction-image"
+                  />
+                  <div class="text-caption text-grey-7 q-mt-sm text-center">
+                    {{ deviceModel ?? 'Detected model' }}
+                  </div>
+                </div>
+                <div v-else class="rotor-direction-skeleton-wrapper">
+                  <q-skeleton type="rect" class="rotor-direction-skeleton" />
+                  <div class="text-caption text-grey-6 q-mt-sm text-center">
+                    Waiting for device model…
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           <div v-else-if="step.id === 'hardware'">
@@ -192,6 +214,8 @@ import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseSpinner from 'components/base/BaseSpinner.vue'
 import motorPositionImage from 'src/assets/openscan_motor_position.jpg'
+import rotorDirectionClassicImage from 'src/assets/setup-wizard/rotor-direction-classic.jpg'
+import rotorDirectionMiniImage from 'src/assets/setup-wizard/rotor-direction-mini.jpg'
 import { useDeviceStore } from 'src/stores/device'
 import CameraFastPreview from 'components/camera/CameraFastPreview.vue'
 import { useCameraStore } from 'src/stores/camera'
@@ -278,6 +302,14 @@ const orientationCamera = computed(() => {
 
 const orientationAction = ref<'left' | 'right' | 'mirror' | null>(null)
 const isOrientationUpdating = computed(() => orientationAction.value !== null)
+
+const deviceModel = computed(() => deviceStore.device?.model ?? null)
+const rotorDirectionImageSrc = computed(() => {
+  const model = deviceModel.value?.toLowerCase() ?? ''
+  if (model.includes('mini')) return rotorDirectionMiniImage
+  if (!model) return null
+  return rotorDirectionClassicImage
+})
 
 function formatConfigCaption(config: DeviceConfigFile): string {
   const parts: string[] = []
@@ -504,6 +536,48 @@ async function handleFinishSetup() {
   max-width: 100%;
   width: 100%;
   height: auto;
+}
+
+.rotor-direction-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .rotor-direction-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.rotor-direction-panel {
+  flex: 1;
+}
+
+.rotor-direction-visual {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rotor-direction-image-wrapper,
+.rotor-direction-skeleton-wrapper {
+  width: 100%;
+  max-width: 320px;
+}
+
+.rotor-direction-image {
+  display: block;
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.rotor-direction-skeleton {
+  height: 220px;
+  border-radius: 12px;
 }
 
 .orientation-preview-wrapper {
