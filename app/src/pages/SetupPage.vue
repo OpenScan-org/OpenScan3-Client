@@ -133,6 +133,39 @@
                 </div>
               </div>
             </div>
+            <div class="rotor-position-controls q-mb-lg">
+              <div class="text-subtitle2 text-center q-mb-sm">Fine adjustments</div>
+              <div class="rotor-position-controls__row">
+                <BaseButtonSecondary
+                  label="Up 5°"
+                  icon="north"
+                  :loading="rotorFineMoveAction === 'up-5'"
+                  :disable="isRotorControlDisabled"
+                  @click="handleRotorFineMove(-5, 'up-5')"
+                />
+                <BaseButtonSecondary
+                  label="Up 1°"
+                  icon="north"
+                  :loading="rotorFineMoveAction === 'up-1'"
+                  :disable="isRotorControlDisabled"
+                  @click="handleRotorFineMove(-1, 'up-1')"
+                />
+                <BaseButtonSecondary
+                  label="Down 1°"
+                  icon="south"
+                  :loading="rotorFineMoveAction === 'down-1'"
+                  :disable="isRotorControlDisabled"
+                  @click="handleRotorFineMove(1, 'down-1')"
+                />
+                <BaseButtonSecondary
+                  label="Down 5°"
+                  icon="south"
+                  :loading="rotorFineMoveAction === 'down-5'"
+                  :disable="isRotorControlDisabled"
+                  @click="handleRotorFineMove(5, 'down-5')"
+                />
+              </div>
+            </div>
             <p>
               Please Note: In OpenScan3, the coordinate system was changed. The initial rotor position is now 90° instead
               of 0. Likewise the most top position is now 0° and the (unreachable) view from below the turntable is
@@ -215,7 +248,7 @@
             <div class="row items-center no-wrap q-gutter-sm">
               <BaseButtonPrimary
                 :label="isLastStep ? 'Finish setup' : 'Next'"
-                :loading="isApplyingConfig"
+                :loading="nextButtonLoading"
                 :disable="isNextDisabled"
                 @click="handleNext(goNext)"
               />
@@ -266,6 +299,7 @@ import { useCameraStore } from 'src/stores/camera'
 import {
   listConfigFiles,
   moveMotorByDegree,
+  overrideMotorAngle,
   setConfigFile,
   updateCameraNameSettings,
   updateMotorNameSettings,
@@ -302,14 +336,22 @@ const selectedConfigPath = ref<string | null>(null)
 const isApplyingConfig = ref(false)
 
 const isConnectionStep = computed(() => activeStepId.value === 'connection')
+const isHardwareStep = computed(() => activeStepId.value === 'hardware')
+const isOverridingRotorAngle = ref(false)
 const isNextDisabled = computed(
   () =>
-    (isConnectionStep.value && !selectedConfigPath.value) ||
-    isApplyingConfig.value
+    (isConnectionStep.value && (!selectedConfigPath.value || isApplyingConfig.value)) ||
+    (isHardwareStep.value && isOverridingRotorAngle.value)
+)
+const nextButtonLoading = computed(
+  () =>
+    (isConnectionStep.value && isApplyingConfig.value) ||
+    (isHardwareStep.value && isOverridingRotorAngle.value)
 )
 
 const ROTOR_MOTOR_NAME = 'rotor'
 const rotorMoveAction = ref<'up' | 'down' | null>(null)
+const rotorFineMoveAction = ref<string | null>(null)
 const isReversingRotorDirection = ref(false)
 
 const rotorMotor = computed(() => deviceStore.device?.motors?.[ROTOR_MOTOR_NAME] ?? null)
@@ -326,6 +368,7 @@ const rotorDirectionLabel = computed(() => {
 const isRotorControlDisabled = computed(
   () =>
     rotorMoveAction.value !== null ||
+    rotorFineMoveAction.value !== null ||
     isReversingRotorDirection.value ||
     deviceStore.status !== 'open'
 )
@@ -366,6 +409,7 @@ const rotorDirectionHint = computed(() => {
   return 'Moving up should swing the arm farther from the camera to reveal more of the top.'
 })
 const rotorDialogTitle = computed(() => deviceModel.value ?? 'Rotor direction reference')
+const ROTOR_HOME_OVERRIDE_ANGLE = 90
 const rotorPositionImageSrc = computed(() => {
   const model = deviceModel.value?.toLowerCase() ?? ''
   if (model.includes('mini')) return homePositionMiniImage
@@ -448,11 +492,44 @@ async function handleNext(goNext: () => void) {
     return
   }
 
+  if (isHardwareStep.value) {
+    if (isOverridingRotorAngle.value) return
+
+    isOverridingRotorAngle.value = true
+    try {
+      await deviceStore.ensureConnected()
+      await overrideMotorAngle<true>({
+        client: apiClient,
+        throwOnError: true,
+        path: { motor_name: ROTOR_MOTOR_NAME },
+        query: { angle: ROTOR_HOME_OVERRIDE_ANGLE }
+      })
+      await deviceStore.refreshFromRest()
+      goNext()
+    } catch (error) {
+      console.error('Failed to override rotor angle', error)
+      $q.notify({ type: 'negative', message: 'Failed to override rotor angle' })
+    } finally {
+      isOverridingRotorAngle.value = false
+    }
+    return
+  }
+
   goNext()
 }
 
+async function performRotorMove(degrees: number) {
+  await deviceStore.ensureConnected()
+  await moveMotorByDegree<true>({
+    client: apiClient,
+    throwOnError: true,
+    path: { motor_name: ROTOR_MOTOR_NAME },
+    body: { degrees }
+  })
+}
+
 async function handleRotorMove(direction: 'up' | 'down') {
-  if (rotorMoveAction.value !== null) {
+  if (rotorMoveAction.value !== null || rotorFineMoveAction.value !== null) {
     return
   }
 
@@ -460,18 +537,28 @@ async function handleRotorMove(direction: 'up' | 'down') {
   const degrees = direction === 'up' ? -10 : 10
 
   try {
-    await deviceStore.ensureConnected()
-    await moveMotorByDegree<true>({
-      client: apiClient,
-      throwOnError: true,
-      path: { motor_name: ROTOR_MOTOR_NAME },
-      body: { degrees }
-    })
+    await performRotorMove(degrees)
   } catch (error) {
     console.error('Failed to move rotor motor', error)
     $q.notify({ type: 'negative', message: 'Failed to move rotor motor' })
   } finally {
     rotorMoveAction.value = null
+  }
+}
+
+async function handleRotorFineMove(degrees: number, actionKey: string) {
+  if (rotorFineMoveAction.value !== null || rotorMoveAction.value !== null) {
+    return
+  }
+
+  rotorFineMoveAction.value = actionKey
+  try {
+    await performRotorMove(degrees)
+  } catch (error) {
+    console.error('Failed to fine-adjust rotor motor', error)
+    $q.notify({ type: 'negative', message: 'Failed to move rotor motor' })
+  } finally {
+    rotorFineMoveAction.value = null
   }
 }
 
