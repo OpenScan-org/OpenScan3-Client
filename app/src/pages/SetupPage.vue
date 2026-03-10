@@ -50,7 +50,7 @@
             <div class="rotor-direction-layout">
               <div class="rotor-direction-panel">
                 <p class="q-mb-md">
-                  Use the buttons below to move the rotor slightly up or down and confirm the movement matches the labels.
+                  Use the buttons below to move the rotor slightly up or down and confirm the movement matches the picture.
                 </p>
                 <div class="rotor-controls q-mb-md">
                   <BaseButtonSecondary
@@ -69,7 +69,7 @@
                   />
                 </div>
                 <div class="text-body2 q-mb-sm">
-                  Does the rotor move in the direction shown on the buttons? If yes, click "Next". If not, click "Reverse direction".
+                  Does the rotor move in the direction shown? If yes, click "Next". If not, click "Reverse direction".
                 </div>
                 <div class="rotor-reverse">
                   <BaseButtonPrimary
@@ -87,13 +87,20 @@
               </div>
               <div class="rotor-direction-visual">
                 <div v-if="rotorDirectionImageSrc" class="rotor-direction-image-wrapper">
-                  <img
-                    :src="rotorDirectionImageSrc"
-                    :alt="`Rotor direction reference for ${deviceModel ?? 'current device'}`"
-                    class="rotor-direction-image"
-                  />
+                  <button
+                    type="button"
+                    class="rotor-direction-image-button"
+                    @click="rotorImageDialogVisible = true"
+                  >
+                    <img
+                      :src="rotorDirectionImageSrc"
+                      :alt="`Rotor direction reference for ${deviceModel ?? 'current device'}`"
+                      class="rotor-direction-image"
+                    />
+                    <div class="text-caption text-primary q-mt-xs">Tap to enlarge</div>
+                  </button>
                   <div class="text-caption text-grey-7 q-mt-sm text-center">
-                    {{ deviceModel ?? 'Detected model' }}
+                    {{ rotorDirectionHint }}
                   </div>
                 </div>
                 <div v-else class="rotor-direction-skeleton-wrapper">
@@ -108,7 +115,24 @@
           <div v-else-if="step.id === 'hardware'">
             <div class="text-subtitle1 q-mb-sm">Rotor position</div>
             <p>Verify that the initial rotor position is correct as in the picture.</p>
-            <img :src="motorPositionImage" alt="Rotor position" class="q-mb-md rotor-image" />
+            <div class="rotor-position-visual q-mb-md">
+              <div v-if="rotorPositionImageSrc" class="rotor-position-image-wrapper">
+                <img
+                  :src="rotorPositionImageSrc"
+                  :alt="`Rotor position reference for ${deviceModel ?? 'current device'}`"
+                  class="rotor-image"
+                />
+                <div class="text-caption text-grey-7 q-mt-sm text-center">
+                  {{ rotorPositionHint }}
+                </div>
+              </div>
+              <div v-else class="rotor-position-skeleton-wrapper">
+                <q-skeleton type="rect" class="rotor-position-skeleton" />
+                <div class="text-caption text-grey-6 q-mt-sm text-center">
+                  Waiting for device model…
+                </div>
+              </div>
+            </div>
             <p>
               Please Note: In OpenScan3, the coordinate system was changed. The initial rotor position is now 90° instead
               of 0. Likewise the most top position is now 0° and the (unreachable) view from below the turntable is
@@ -199,6 +223,25 @@
           </div>
         </template>
     </BaseWizard>
+    <q-dialog v-model="rotorImageDialogVisible">
+      <q-card class="rotor-image-dialog">
+        <q-card-section class="rotor-image-dialog__header row items-center justify-between">
+          <div class="text-subtitle1">{{ rotorDialogTitle }}</div>
+          <q-btn icon="close" flat round dense @click="rotorImageDialogVisible = false" />
+        </q-card-section>
+        <q-card-section class="rotor-image-dialog__body">
+          <img
+            v-if="rotorDirectionImageSrc"
+            :src="rotorDirectionImageSrc"
+            :alt="`Rotor direction reference for ${deviceModel ?? 'current device'}`"
+            class="rotor-image-dialog__image"
+          />
+          <div class="text-body2 text-grey-7 q-mt-sm text-center">
+            {{ rotorDirectionHint }}
+          </div>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </BasePage>
 </template>
 
@@ -213,7 +256,8 @@ import BaseListItem from 'components/base/BaseListItem.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseSpinner from 'components/base/BaseSpinner.vue'
-import motorPositionImage from 'src/assets/openscan_motor_position.jpg'
+import homePositionClassicImage from 'src/assets/setup-wizard/home-position-classic.jpg'
+import homePositionMiniImage from 'src/assets/setup-wizard/home-position-mini.jpg'
 import rotorDirectionClassicImage from 'src/assets/setup-wizard/rotor-direction-classic.jpg'
 import rotorDirectionMiniImage from 'src/assets/setup-wizard/rotor-direction-mini.jpg'
 import { useDeviceStore } from 'src/stores/device'
@@ -302,6 +346,7 @@ const orientationCamera = computed(() => {
 
 const orientationAction = ref<'left' | 'right' | 'mirror' | null>(null)
 const isOrientationUpdating = computed(() => orientationAction.value !== null)
+const rotorImageDialogVisible = ref(false)
 
 const deviceModel = computed(() => deviceStore.device?.model ?? null)
 const rotorDirectionImageSrc = computed(() => {
@@ -309,6 +354,33 @@ const rotorDirectionImageSrc = computed(() => {
   if (model.includes('mini')) return rotorDirectionMiniImage
   if (!model) return null
   return rotorDirectionClassicImage
+})
+const rotorDirectionHint = computed(() => {
+  const model = deviceModel.value?.toLowerCase() ?? ''
+  if (!model) {
+    return 'Model-specific guidance will appear once the device model is detected.'
+  }
+  if (model.includes('mini')) {
+    return 'Moving up should lift the entire camera unit upwards.'
+  }
+  return 'Moving up should swing the arm farther from the camera to reveal more of the top.'
+})
+const rotorDialogTitle = computed(() => deviceModel.value ?? 'Rotor direction reference')
+const rotorPositionImageSrc = computed(() => {
+  const model = deviceModel.value?.toLowerCase() ?? ''
+  if (model.includes('mini')) return homePositionMiniImage
+  if (!model) return null
+  return homePositionClassicImage
+})
+const rotorPositionHint = computed(() => {
+  const model = deviceModel.value?.toLowerCase() ?? ''
+  if (!model) {
+    return 'Model-specific position guidance will appear once the device model is detected.'
+  }
+  if (model.includes('mini')) {
+    return 'Ensure the camera unit is level while the turntable points forward.'
+  }
+  return 'Ensure the swing arm sits at 90° with the OpenScan Benchy centered on the turntable.'
 })
 
 function formatConfigCaption(config: DeviceConfigFile): string {
@@ -568,6 +640,21 @@ async function handleFinishSetup() {
   max-width: 320px;
 }
 
+.rotor-direction-image-button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  text-align: center;
+}
+
+.rotor-direction-image-button:focus-visible {
+  outline: 2px solid var(--q-primary);
+  outline-offset: 4px;
+}
+
 .rotor-direction-image {
   display: block;
   width: 100%;
@@ -578,6 +665,36 @@ async function handleFinishSetup() {
 .rotor-direction-skeleton {
   height: 220px;
   border-radius: 12px;
+}
+
+.rotor-position-visual {
+  display: flex;
+  justify-content: center;
+}
+
+.rotor-position-image-wrapper,
+.rotor-position-skeleton-wrapper {
+  width: 100%;
+  max-width: 360px;
+}
+
+.rotor-position-skeleton {
+  height: 240px;
+  border-radius: 12px;
+}
+
+.rotor-image-dialog {
+  max-width: min(90vw, 640px);
+}
+
+.rotor-image-dialog__body {
+  text-align: center;
+}
+
+.rotor-image-dialog__image {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
 }
 
 .orientation-preview-wrapper {
