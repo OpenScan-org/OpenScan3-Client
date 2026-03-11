@@ -130,7 +130,7 @@ const upperLinks: EssentialLinkProps[] = [
   },
   {
     title: 'About',
-    icon: 'help',
+    icon: 'help_center',
     link: '/about'
   },
 ];

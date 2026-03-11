@@ -823,7 +823,7 @@ function handleToggleMirror() {
 
 async function handleFinishSetup() {
   await deviceStore.refreshFromRest()
-  void router.push('/scan')
+  void router.push('/')
 }
 
 function navigateTo(path: string) {
