@@ -1,19 +1,33 @@
 <template>
-  <BasePage content-class="col-12 col-md-10 col-lg-8">
-    <div class="q-mb-lg">
-      <div class="text-h5">Device setup</div>
-      <div class="text-body2 text-grey-7">
-        Initial configuration of your OpenScan device.
-      </div>
-    </div>
-    <BaseWizard
-      v-model="activeStepId"
-      :steps="steps"
-      finish-label="Finish setup"
-      next-label="Next"
-      back-label="Back"
-      @finish="handleFinishSetup"
-    >
+  <q-page class="setup-page">
+    <BlurredSnapshotBackground
+      v-if="backgroundPreviewUrl"
+      class="setup-page__background"
+      :src="backgroundPreviewUrl"
+      alt="Camera preview background"
+      :orientation-flag="backgroundOrientationFlag"
+      :blur-px="14"
+      :saturate-percent="110"
+      :max-opacity="0.28"
+      :transition-ms="600"
+    />
+    <div class="setup-page__content q-pa-md">
+      <div class="row justify-center q-col-gutter-md">
+        <div class="col-12 col-md-10 col-lg-8">
+          <div class="q-mb-lg">
+            <div class="text-h5">Device setup</div>
+            <div class="text-body2 text-grey-7">
+              Initial configuration of your OpenScan device.
+            </div>
+          </div>
+          <BaseWizard
+            v-model="activeStepId"
+            :steps="steps"
+            finish-label="Finish setup"
+            next-label="Next"
+            back-label="Back"
+            @finish="handleFinishSetup"
+          >
         <template #default="{ step }">
           <div v-if="step.id === 'connection'">
             <div class="text-subtitle1 q-mb-sm">Device configuration</div>
@@ -168,6 +182,23 @@
               <div class="text-body2 text-center text-grey-7 q-mt-md">
                 Use the buttons to align the rotor with the picture, then click "Next".
               </div>
+              <div
+                v-if="canCalibrateWithEndstop"
+                class="rotor-endstop-calibrate q-mt-md q-pa-md q-mx-auto"
+              >
+                <div class="text-subtitle2 text-center q-mb-sm">Have a working endstop installed?</div>
+                <BaseButtonPrimary
+                  class="rotor-endstop-calibrate__button"
+                  icon="my_location"
+                  label="Calibrate with endstop"
+                  :loading="isEndstopCalibrating"
+                  :disable="isRotorControlDisabled"
+                  @click="handleRotorEndstopCalibration"
+                />
+                <div class="text-caption text-grey-7 q-mt-sm text-center">
+                  Moves the rotor to home using the hardware endstop.
+                </div>
+              </div>
             </div>
             <p>
               Please Note: In OpenScan3, the coordinate system was changed. The initial rotor position is now 90° instead
@@ -235,51 +266,66 @@
             </div>
           </div>
           <div v-else-if="step.id === 'test-scan'">
-            <div class="text-subtitle1 q-mb-sm">Setup complete</div>
-            <p class="text-body1">
-              Your OpenScan device is ready. Choose what you want to do next:
-            </p>
-            <div class="setup-complete-actions q-mt-md">
-              <q-card flat bordered class="setup-complete-card">
-                <q-card-section>
-                  <div class="text-subtitle2">Plan your first project</div>
-                  <div class="text-body2 text-grey-7">
-                    Create a project or jump straight into a scan once you're ready.
-                  </div>
-                </q-card-section>
-                <q-card-actions align="right" class="setup-complete-card__actions">
-                  <q-btn flat label="Projects" icon="folder" color="primary" @click="navigateTo('/projects')" />
-                  <q-btn flat label="Scan" icon="camera" color="primary" @click="navigateTo('/scan')" />
-                </q-card-actions>
-              </q-card>
-              <q-card flat bordered class="setup-complete-card">
-                <q-card-section>
-                  <div class="text-subtitle2">Inspect device settings</div>
-                  <div class="text-body2 text-grey-7">
-                    Review motors, cameras, and firmware settings.
-                  </div>
-                </q-card-section>
-                <q-card-actions align="right">
-                  <q-btn flat label="Settings" icon="settings" color="primary" @click="navigateTo('/settings')" />
-                </q-card-actions>
-              </q-card>
-              <q-card flat bordered class="setup-complete-card">
-                <q-card-section>
-                  <div class="text-subtitle2">Learn more about OpenScan3</div>
-                  <div class="text-body2 text-grey-7">
-                    Visit the About page for information on OpenScan Project and the Firmware.
-                  </div>
-                </q-card-section>
-                <q-card-actions align="right">
-                  <q-btn
-                    flat
-                    label="About"
-                    icon="library_books"
-                    color="primary"
-                    @click="navigateTo('/about')"
-                  />
-                </q-card-actions>
-              </q-card>
+            <div class="setup-finish-section q-pa-lg">
+              <BlurredSnapshotBackground
+                v-if="backgroundPreviewUrl"
+                class="setup-finish-section__background"
+                :src="backgroundPreviewUrl"
+                alt="Camera preview background"
+                :orientation-flag="backgroundOrientationFlag"
+                :blur-px="16"
+                :saturate-percent="115"
+                :max-opacity="0.3"
+                :transition-ms="600"
+              />
+              <div class="setup-finish-section__content">
+                <div class="text-subtitle1 q-mb-sm">Setup complete</div>
+                <p class="text-body1">
+                  Your OpenScan device is ready. Choose what you want to do next:
+                </p>
+                <div class="setup-complete-actions q-mt-md">
+                  <q-card flat bordered class="setup-complete-card">
+                    <q-card-section>
+                      <div class="text-subtitle2">Plan your first project</div>
+                      <div class="text-body2 text-grey-7">
+                        Create a project or jump straight into a scan once you're ready.
+                      </div>
+                    </q-card-section>
+                    <q-card-actions align="right" class="setup-complete-card__actions">
+                      <q-btn flat label="Projects" icon="folder" color="primary" @click="navigateTo('/projects')" />
+                      <q-btn flat label="Scan" icon="camera" color="primary" @click="navigateTo('/scan')" />
+                    </q-card-actions>
+                  </q-card>
+                  <q-card flat bordered class="setup-complete-card">
+                    <q-card-section>
+                      <div class="text-subtitle2">Inspect device settings</div>
+                      <div class="text-body2 text-grey-7">
+                        Review motors, cameras, and firmware settings.
+                      </div>
+                    </q-card-section>
+                    <q-card-actions align="right">
+                      <q-btn flat label="Settings" icon="settings" color="primary" @click="navigateTo('/settings')" />
+                    </q-card-actions>
+                  </q-card>
+                  <q-card flat bordered class="setup-complete-card">
+                    <q-card-section>
+                      <div class="text-subtitle2">Learn more about OpenScan3</div>
+                      <div class="text-body2 text-grey-7">
+                        Visit the About page for information on OpenScan Project and the Firmware.
+                      </div>
+                    </q-card-section>
+                    <q-card-actions align="right">
+                      <q-btn
+                        flat
+                        label="About"
+                        icon="library_books"
+                        color="primary"
+                        @click="navigateTo('/about')"
+                      />
+                    </q-card-actions>
+                  </q-card>
+                </div>
+              </div>
             </div>
           </div>
         </template>
@@ -302,34 +348,36 @@
             </div>
           </div>
         </template>
-    </BaseWizard>
-    <q-dialog v-model="rotorImageDialogVisible">
-      <q-card class="rotor-image-dialog">
-        <q-card-section class="rotor-image-dialog__header row items-center justify-between">
-          <div class="text-subtitle1">{{ rotorDialogTitle }}</div>
-          <q-btn icon="close" flat round dense @click="rotorImageDialogVisible = false" />
-        </q-card-section>
-        <q-card-section class="rotor-image-dialog__body">
-          <img
-            v-if="rotorDirectionImageSrc"
-            :src="rotorDirectionImageSrc"
-            :alt="`Rotor direction reference for ${deviceModel ?? 'current device'}`"
-            class="rotor-image-dialog__image"
-          />
-          <div class="text-body2 text-grey-7 q-mt-sm text-center">
-            {{ rotorDirectionHint }}
-          </div>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-  </BasePage>
+          </BaseWizard>
+          <q-dialog v-model="rotorImageDialogVisible">
+            <q-card class="rotor-image-dialog">
+              <q-card-section class="rotor-image-dialog__header row items-center justify-between">
+                <div class="text-subtitle1">{{ rotorDialogTitle }}</div>
+                <q-btn icon="close" flat round dense @click="rotorImageDialogVisible = false" />
+              </q-card-section>
+              <q-card-section class="rotor-image-dialog__body">
+                <img
+                  v-if="rotorDirectionImageSrc"
+                  :src="rotorDirectionImageSrc"
+                  :alt="`Rotor direction reference for ${deviceModel ?? 'current device'}`"
+                  class="rotor-image-dialog__image"
+                />
+                <div class="text-body2 text-grey-7 q-mt-sm text-center">
+                  {{ rotorDirectionHint }}
+                </div>
+              </q-card-section>
+            </q-card>
+          </q-dialog>
+        </div>
+      </div>
+    </div>
+  </q-page>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
-import BasePage from 'components/base/BasePage.vue'
 import BaseWizard from 'components/base/BaseWizard.vue'
 import BaseList from 'components/base/BaseList.vue'
 import BaseListItem from 'components/base/BaseListItem.vue'
@@ -342,10 +390,12 @@ import rotorDirectionClassicImage from 'src/assets/setup-wizard/rotor-direction-
 import rotorDirectionMiniImage from 'src/assets/setup-wizard/rotor-direction-mini.jpg'
 import { useDeviceStore } from 'src/stores/device'
 import CameraFastPreview from 'components/camera/CameraFastPreview.vue'
+import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import { useCameraStore } from 'src/stores/camera'
 import {
   listConfigFiles,
   moveMotorByDegree,
+  motorEndstopCalibration,
   overrideMotorAngle,
   setConfigFile,
   updateCameraNameSettings,
@@ -400,6 +450,7 @@ const ROTOR_MOTOR_NAME = 'rotor'
 const rotorMoveAction = ref<'up' | 'down' | null>(null)
 const rotorFineMoveAction = ref<string | null>(null)
 const isReversingRotorDirection = ref(false)
+const isEndstopCalibrating = ref(false)
 
 const rotorMotor = computed(() => deviceStore.device?.motors?.[ROTOR_MOTOR_NAME] ?? null)
 const rotorDirection = computed<1 | -1 | null>(() => {
@@ -416,6 +467,7 @@ const isRotorControlDisabled = computed(
   () =>
     rotorMoveAction.value !== null ||
     rotorFineMoveAction.value !== null ||
+    isEndstopCalibrating.value ||
     isReversingRotorDirection.value ||
     deviceStore.status !== 'open'
 )
@@ -472,6 +524,40 @@ const rotorPositionHint = computed(() => {
     return 'Ensure the camera unit is level.'
   }
   return 'Ensure the swing arm sits at 90° to floor.'
+})
+const rotorEndstop = computed(() => {
+  const directEndstop = (rotorMotor.value as unknown as { endstop?: { assigned_motor?: string } | null } | null)?.endstop
+  if (directEndstop && (directEndstop as { assigned_motor?: string }).assigned_motor === ROTOR_MOTOR_NAME) {
+    return directEndstop
+  }
+
+  const endstops = deviceStore.device?.endstops ?? null
+  if (!endstops) return null
+  return Object.values(endstops).find((endstop) => endstop?.settings?.motor_name === ROTOR_MOTOR_NAME) ?? null
+})
+const canCalibrateWithEndstop = computed(() => Boolean(rotorEndstop.value))
+const backgroundCameraName = computed(() => {
+  if (cameraStore.selectedCamera) {
+    return cameraStore.selectedCamera
+  }
+
+  return cameraStore.cameraOptions[0]?.value ?? null
+})
+const backgroundPreviewUrl = computed(() => {
+  if (cameraStore.previewUrl) {
+    return cameraStore.previewUrl
+  }
+
+  const cameraName = backgroundCameraName.value
+  return cameraName ? cameraStore.getPreviewUrl(cameraName, 24) : null
+})
+const backgroundOrientationFlag = computed(() => {
+  const cameraName = backgroundCameraName.value ?? cameraStore.selectedCamera
+  if (!cameraName) {
+    return null
+  }
+
+  return cameraStore.cameras.find((camera) => camera.name === cameraName)?.settings?.orientation_flag ?? null
 })
 
 function formatConfigCaption(config: DeviceConfigFile): string {
@@ -606,6 +692,29 @@ async function handleRotorFineMove(degrees: number, actionKey: string) {
     $q.notify({ type: 'negative', message: 'Failed to move rotor motor' })
   } finally {
     rotorFineMoveAction.value = null
+  }
+}
+
+async function handleRotorEndstopCalibration() {
+  if (!canCalibrateWithEndstop.value || isEndstopCalibrating.value) {
+    return
+  }
+
+  isEndstopCalibrating.value = true
+  try {
+    await deviceStore.ensureConnected()
+    await motorEndstopCalibration<true>({
+      client: apiClient,
+      throwOnError: true,
+      path: { motor_name: ROTOR_MOTOR_NAME }
+    })
+    await deviceStore.refreshFromRest()
+    $q.notify({ type: 'positive', message: 'Rotor calibrated with endstop.' })
+  } catch (error) {
+    console.error('Failed to calibrate rotor via endstop', error)
+    $q.notify({ type: 'negative', message: 'Endstop calibration failed.' })
+  } finally {
+    isEndstopCalibrating.value = false
   }
 }
 
@@ -823,6 +932,16 @@ function navigateTo(path: string) {
   gap: 8px;
 }
 
+.rotor-endstop-calibrate {
+  max-width: 360px;
+  border: 1px dashed var(--q-primary);
+  border-radius: 12px;
+}
+
+.rotor-endstop-calibrate__button {
+  width: 100%;
+}
+
 .rotor-position-skeleton {
   height: 240px;
   border-radius: 12px;
@@ -836,6 +955,39 @@ function navigateTo(path: string) {
 
 .setup-complete-card__actions {
   gap: 4px;
+}
+
+.setup-page {
+  position: relative;
+}
+
+.setup-page__background {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.setup-page__content {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+.setup-finish-section {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.setup-finish-section__background {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.setup-finish-section__content {
+  position: relative;
 }
 
 .rotor-image-dialog {
