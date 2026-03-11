@@ -225,7 +225,15 @@
                     <div class="col-12" v-for="motorName in motorNames" :key="motorName">
                       <q-card flat bordered>
                         <q-card-section>
-                          <div class="text-subtitle1">{{ motorName }}</div>
+                          <div class="row items-center justify-between no-wrap">
+                            <div class="text-subtitle1">{{ motorName }}</div>
+                            <div class="text-caption text-grey-7">
+                              <template v-if="motorAngles[motorName] !== null && motorAngles[motorName] !== undefined">
+                                Angle: {{ formatMotorAngle(motorAngles[motorName]) }}
+                              </template>
+                              <template v-else>Angle unavailable</template>
+                            </div>
+                          </div>
                         </q-card-section>
                         <q-card-section class="q-pt-none" v-if="motorForms[motorName]">
                           <div class="row q-col-gutter-md">
@@ -870,6 +878,12 @@ type CameraSettingsField = keyof (typeof fieldDescriptions)['CameraSettings']
 const cameraSettingDescription = (field: CameraSettingsField) => getFieldDescription('CameraSettings', field)
 
 const motorNames = computed(() => Object.keys(motors.value ?? {}))
+const motorAngles = computed<Record<string, number | null>>(() => {
+  const current = motors.value ?? {}
+  return Object.fromEntries(
+    Object.entries(current).map(([name, status]) => [name, typeof status?.angle === 'number' ? status.angle : null])
+  )
+})
 const motorForms = reactive<Record<string, MotorForm>>({})
 const motorSaving = reactive<Record<string, boolean>>({})
 const motorFormDirty = reactive<Record<string, boolean>>({})
@@ -903,6 +917,10 @@ const directionOptions = [
   { label: 'Forward (1)', value: 1 },
   { label: 'Reverse (-1)', value: -1 }
 ]
+
+function formatMotorAngle(angle: number) {
+  return `${angle.toFixed(1)}°`
+}
 
 function createEmptyCloudForm(): CloudForm {
   return {
