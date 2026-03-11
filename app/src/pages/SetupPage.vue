@@ -1,16 +1,17 @@
 <template>
-  <q-page class="setup-page">
-    <BlurredSnapshotBackground
-      v-if="backgroundPreviewUrl"
-      class="setup-page__background"
-      :src="backgroundPreviewUrl"
-      alt="Camera preview background"
-      :orientation-flag="backgroundOrientationFlag"
-      :blur-px="14"
-      :saturate-percent="110"
-      :max-opacity="0.28"
-      :transition-ms="600"
-    />
+  <BasePage class="setup-page" :center-content="false">
+    <template #background>
+      <BlurredSnapshotBackground
+        v-if="backgroundPreviewUrl"
+        :src="backgroundPreviewUrl"
+        alt="Camera preview background"
+        :orientation-flag="backgroundOrientationFlag"
+        :blur-px="14"
+        :saturate-percent="110"
+        :max-opacity="0.28"
+        :transition-ms="600"
+      />
+    </template>
     <div class="setup-page__content">
       <div class="row justify-center q-col-gutter-md">
         <div class="col-12 col-md-10 col-lg-8">
@@ -367,13 +368,14 @@
         </div>
       </div>
     </div>
-  </q-page>
+  </BasePage>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
+import BasePage from 'components/base/BasePage.vue'
 import BaseWizard from 'components/base/BaseWizard.vue'
 import BaseList from 'components/base/BaseList.vue'
 import BaseListItem from 'components/base/BaseListItem.vue'
@@ -953,23 +955,8 @@ function navigateTo(path: string) {
   gap: 4px;
 }
 
-.setup-page {
-  position: relative;
-  background-color: transparent;
-  padding: 0; /* remove the white band */
-}
-
-.setup-page__background {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
 .setup-page__content {
   position: relative;
-  z-index: 1;
-  min-height: 100vh;
-  padding: 32px 24px 48px;
 }
 
 .setup-finish-section {
