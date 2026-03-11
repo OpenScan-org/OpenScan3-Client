@@ -165,6 +165,9 @@
                   @click="handleRotorFineMove(5, 'down-5')"
                 />
               </div>
+              <div class="text-body2 text-center text-grey-7 q-mt-md">
+                Use the buttons to align the rotor with the picture, then click "Next".
+              </div>
             </div>
             <p>
               Please Note: In OpenScan3, the coordinate system was changed. The initial rotor position is now 90° instead
@@ -422,9 +425,9 @@ const rotorPositionHint = computed(() => {
     return 'Model-specific position guidance will appear once the device model is detected.'
   }
   if (model.includes('mini')) {
-    return 'Ensure the camera unit is level while the turntable points forward.'
+    return 'Ensure the camera unit is level.'
   }
-  return 'Ensure the swing arm sits at 90° with the OpenScan Benchy centered on the turntable.'
+  return 'Ensure the swing arm sits at 90° to floor.'
 })
 
 function formatConfigCaption(config: DeviceConfigFile): string {
@@ -763,6 +766,13 @@ async function handleFinishSetup() {
 .rotor-position-skeleton-wrapper {
   width: 100%;
   max-width: 360px;
+}
+
+.rotor-position-controls__row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .rotor-position-skeleton {
