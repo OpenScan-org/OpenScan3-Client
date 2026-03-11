@@ -87,7 +87,10 @@
     </q-drawer>
 
     <q-page-container>
-      <div class="row justify-center q-ma-md">
+      <div
+        v-if="showSetupBanner || showConnectionIssueBanner"
+        class="row justify-center q-ma-md"
+      >
         <div class="col-12 col-md-5 col-lg-5 q-gutter-y-sm">
           <BaseBanner v-if="showSetupBanner">
             Your OpenScan device is not configured yet.
@@ -96,7 +99,7 @@
             </template>
           </BaseBanner>
           <BaseBanner
-            v-else-if="showConnectionIssueBanner"
+            v-else
             background-class="bg-amber-4"
             text-class="text-black"
           >

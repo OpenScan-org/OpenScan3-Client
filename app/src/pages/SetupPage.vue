@@ -956,6 +956,7 @@ function navigateTo(path: string) {
 .setup-page {
   position: relative;
   background-color: transparent;
+  padding: 0; /* remove the white band */
 }
 
 .setup-page__background {
@@ -968,6 +969,7 @@ function navigateTo(path: string) {
   position: relative;
   z-index: 1;
   min-height: 100vh;
+  padding: 32px 24px 48px;
 }
 
 .setup-finish-section {
