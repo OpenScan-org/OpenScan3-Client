@@ -11,21 +11,17 @@
       :max-opacity="0.28"
       :transition-ms="600"
     />
-    <div class="setup-page__content q-pa-md">
+    <div class="setup-page__content">
       <div class="row justify-center q-col-gutter-md">
         <div class="col-12 col-md-10 col-lg-8">
-          <div class="q-mb-lg">
-            <div class="text-h5">Device setup</div>
-            <div class="text-body2 text-grey-7">
-              Initial configuration of your OpenScan device.
-            </div>
-          </div>
           <BaseWizard
             v-model="activeStepId"
             :steps="steps"
             finish-label="Finish setup"
             next-label="Next"
             back-label="Back"
+            title="Device setup"
+            subtitle="Initial configuration of your OpenScan device."
             @finish="handleFinishSetup"
           >
         <template #default="{ step }">
@@ -959,6 +955,7 @@ function navigateTo(path: string) {
 
 .setup-page {
   position: relative;
+  background-color: transparent;
 }
 
 .setup-page__background {
