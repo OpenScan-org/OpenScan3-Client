@@ -1,13 +1,15 @@
 <template>
-  <q-page class="settings-page">
-    <BlurredSnapshotBackground
-      v-if="backgroundPreviewUrl"
-      :src="backgroundPreviewUrl"
-      :alt="'Camera preview background'"
-      :transition-ms="1200"
-      :max-opacity="0.3"
-      :orientation-flag="selectedCameraOrientationFlag"
-    />
+  <BasePage class="settings-page" :center-content="false">
+    <template #background>
+      <BlurredSnapshotBackground
+        v-if="backgroundPreviewUrl"
+        :src="backgroundPreviewUrl"
+        :alt="'Camera preview background'"
+        :transition-ms="1200"
+        :max-opacity="0.3"
+        :orientation-flag="selectedCameraOrientationFlag"
+      />
+    </template>
     <div class="q-pa-md">
       <div class="row justify-center q-col-gutter-md">
         <div class="col-12">
@@ -494,7 +496,7 @@
         </div>
       </div>
     </div>
-  </q-page>
+  </BasePage>
 </template>
 
 <script setup lang="ts">
@@ -511,6 +513,7 @@ import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseSelect from 'components/base/BaseSelect.vue'
+import BasePage from 'components/base/BasePage.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import {

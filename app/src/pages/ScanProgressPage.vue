@@ -1,5 +1,5 @@
 <template>
-  <q-page class="q-pa-md">
+  <BasePage :center-content="false" padding="24px">
     <template v-if="showDisconnectedSkeleton">
       <div class="row q-col-gutter-md">
         <div class="col-12 col-md-6">
@@ -29,7 +29,7 @@
       <RunningScanProgress v-if="resolvedTask" :task-id="resolvedTask.id as string" :initial-task="resolvedTask" @close="onClose" />
       <RunningScanDetails v-if="resolvedTask" :task-id="resolvedTask.id as string" :initial-task="resolvedTask" />
     </template>
-  </q-page>
+  </BasePage>
 </template>
 
 <script setup lang="ts">
@@ -39,6 +39,7 @@ import RunningScanDetails from 'components/scan/RunningScanDetails.vue'
 import RunningScanProgress from 'components/scan/RunningScanProgress.vue'
 import { useDeviceStore } from 'src/stores/device'
 import { useTaskStore } from 'src/stores/tasks'
+import BasePage from 'components/base/BasePage.vue'
 
 const route = useRoute()
 const router = useRouter()

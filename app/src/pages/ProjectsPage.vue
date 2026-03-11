@@ -1,6 +1,8 @@
 <template>
-  <q-page padding class="projects-page">
-    <BlurredSnapshotBackground :src="projectBackgroundUrl" alt="Project thumbnail background" />
+  <BasePage class="projects-page" :center-content="false">
+    <template #background>
+      <BlurredSnapshotBackground :src="projectBackgroundUrl" alt="Project thumbnail background" />
+    </template>
     <template v-if="showDisconnectedSkeleton">
       <div class="row q-col-gutter-lg">
         <div class="col-12 col-md-4 col-lg-3">
@@ -77,7 +79,7 @@
         </div>
       </div>
     </template>
-  </q-page>
+  </BasePage>
 </template>
 
 <script setup lang="ts">
@@ -92,6 +94,7 @@ import { useProjectsStore } from 'src/stores/projects'
 import { useDeviceStore } from 'src/stores/device'
 import { useTaskStore } from 'src/stores/tasks'
 import { useCloudProjectsStore } from 'src/stores/cloudProjects'
+import BasePage from 'components/base/BasePage.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 const $q = useQuasar()
 const projectsStore = useProjectsStore()
