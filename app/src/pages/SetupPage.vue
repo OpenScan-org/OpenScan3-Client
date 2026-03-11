@@ -235,8 +235,52 @@
             </div>
           </div>
           <div v-else-if="step.id === 'test-scan'">
-            <div class="text-subtitle1 q-mb-sm">Test scan</div>
-            <p>Perform a simple movement to confirm the setup.</p>
+            <div class="text-subtitle1 q-mb-sm">Setup complete</div>
+            <p class="text-body1">
+              Your OpenScan device is ready. Choose what you want to do next:
+            </p>
+            <div class="setup-complete-actions q-mt-md">
+              <q-card flat bordered class="setup-complete-card">
+                <q-card-section>
+                  <div class="text-subtitle2">Plan your first project</div>
+                  <div class="text-body2 text-grey-7">
+                    Create a project or jump straight into a scan once you're ready.
+                  </div>
+                </q-card-section>
+                <q-card-actions align="right" class="setup-complete-card__actions">
+                  <q-btn flat label="Projects" icon="folder" color="primary" @click="navigateTo('/projects')" />
+                  <q-btn flat label="Scan" icon="camera" color="primary" @click="navigateTo('/scan')" />
+                </q-card-actions>
+              </q-card>
+              <q-card flat bordered class="setup-complete-card">
+                <q-card-section>
+                  <div class="text-subtitle2">Inspect device settings</div>
+                  <div class="text-body2 text-grey-7">
+                    Review motors, cameras, and firmware settings.
+                  </div>
+                </q-card-section>
+                <q-card-actions align="right">
+                  <q-btn flat label="Settings" icon="settings" color="primary" @click="navigateTo('/settings')" />
+                </q-card-actions>
+              </q-card>
+              <q-card flat bordered class="setup-complete-card">
+                <q-card-section>
+                  <div class="text-subtitle2">Learn more about OpenScan3</div>
+                  <div class="text-body2 text-grey-7">
+                    Visit the About page for information on OpenScan Project and the Firmware.
+                  </div>
+                </q-card-section>
+                <q-card-actions align="right">
+                  <q-btn
+                    flat
+                    label="About"
+                    icon="library_books"
+                    color="primary"
+                    @click="navigateTo('/about')"
+                  />
+                </q-card-actions>
+              </q-card>
+            </div>
           </div>
         </template>
 
@@ -674,6 +718,10 @@ async function handleFinishSetup() {
   await deviceStore.refreshFromRest()
   void router.push('/scan')
 }
+
+function navigateTo(path: string) {
+  void router.push(path)
+}
 </script>
 
 <style scoped>
@@ -778,6 +826,16 @@ async function handleFinishSetup() {
 .rotor-position-skeleton {
   height: 240px;
   border-radius: 12px;
+}
+
+.setup-complete-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.setup-complete-card__actions {
+  gap: 4px;
 }
 
 .rotor-image-dialog {
