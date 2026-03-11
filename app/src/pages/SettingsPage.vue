@@ -225,13 +225,50 @@
                     <div class="col-12" v-for="motorName in motorNames" :key="motorName">
                       <q-card flat bordered>
                         <q-card-section>
-                          <div class="row items-center justify-between no-wrap">
-                            <div class="text-subtitle1">{{ motorName }}</div>
-                            <div class="text-caption text-grey-7">
-                              <template v-if="motorAngles[motorName] !== null && motorAngles[motorName] !== undefined">
-                                Angle: {{ formatMotorAngle(motorAngles[motorName]) }}
-                              </template>
-                              <template v-else>Angle unavailable</template>
+                          <div class="row items-center justify-between no-wrap motor-card__header">
+                            <div class="column">
+                              <div class="text-subtitle1">{{ motorName }}</div>
+                              <div class="text-caption text-grey-7">
+                                <template v-if="motorAngles[motorName] !== null && motorAngles[motorName] !== undefined">
+                                  Angle: {{ formatMotorAngle(motorAngles[motorName]) }}
+                                </template>
+                                <template v-else>Angle unavailable</template>
+                              </div>
+                            </div>
+                            <div class="motor-card__controls">
+                              <q-btn-group unelevated rounded>
+                                <BaseMotorButtonBar
+                                  :motor-name="motorName"
+                                  :step-degrees="motorStepDegrees(motorName)"
+                                  :negative-icon="motorNegativeIcon(motorName)"
+                                  :positive-icon="motorPositiveIcon(motorName)"
+                                  :negative-tooltip="motorNegativeTooltip(motorName)"
+                                  :positive-tooltip="motorPositiveTooltip(motorName)"
+                                  :show-calibrate="motorShowCalibrate(motorName)"
+                                  :calibrate-tooltip="motorCalibrateTooltip(motorName)"
+                                  :disable="scanLocked || deviceStore.hasConnectionIssue || homeBusy || anyMotorBusy"
+                                  :refresh-after-move="true"
+                                  @busy-change="(busy) => handleMotorBusyChange(motorName, busy)"
+                                  @calibrated="() => handleMotorCalibrated(motorName)"
+                                />
+                                <BaseButtonIconSecondary
+                                  v-if="motorHasHome(motorName)"
+                                  icon="home"
+                                  size="sm"
+                                  :disable="
+                                    scanLocked ||
+                                    deviceStore.hasConnectionIssue ||
+                                    homeBusy ||
+                                    anyMotorBusy
+                                  "
+                                  :loading="homeBusy"
+                                  @click="handleMoveHome(motorName)"
+                                >
+                                  <q-tooltip anchor="bottom middle" self="top middle">
+                                    Return to home position
+                                  </q-tooltip>
+                                </BaseButtonIconSecondary>
+                              </q-btn-group>
                             </div>
                           </div>
                         </q-card-section>
@@ -327,7 +364,7 @@
                           <BaseButtonPrimary
                             icon="save"
                             label="Save"
-                            :disable="scanLocked"
+                            :disable="scanLocked || motorControlBusy[motorName] === true"
                             :loading="motorSaving[motorName] === true"
                             @click="saveMotorSettings(motorName)"
                           >
@@ -371,7 +408,15 @@
                         <div class="col-12" v-for="lightName in lightNames" :key="lightName">
                           <q-card flat bordered>
                             <q-card-section>
-                              <div class="text-subtitle1">{{ lightName }}</div>
+                              <div class="row items-center justify-between no-wrap">
+                                <div class="text-subtitle1">{{ lightName }}</div>
+                                <div class="text-caption text-grey-7">
+                                  <template v-if="lightStatuses[lightName] !== null && lightStatuses[lightName] !== undefined">
+                                    Status: {{ formatLightStatus(lightStatuses[lightName]) }}
+                                  </template>
+                                  <template v-else>Status unavailable</template>
+                                </div>
+                              </div>
                             </q-card-section>
                             <q-card-section class="q-pt-none" v-if="lightForms[lightName]">
                               <div class="row q-col-gutter-sm">
@@ -463,6 +508,23 @@
                             </q-input>
                           </div>
                           <div class="col-12">
+                            <BaseButtonSecondary
+                              icon="auto_awesome"
+                              label="AWB Auto-Lock"
+                              :disable="!selectedCamera || scanLocked"
+                              :loading="cameraAwbCalibrating"
+                              @click="calibrateCameraAwb"
+                            >
+                              <q-tooltip>
+                                {{
+                                  scanLocked
+                                    ? scanLockedTooltip
+                                    : 'Run automatic white balance calibration and lock the gains.'
+                                }}
+                              </q-tooltip>
+                            </BaseButtonSecondary>
+                          </div>
+                          <div class="col-12">
                             <q-toggle v-model="cameraForm.AF" label="Autofocus">
                               <q-tooltip>{{ cameraSettingDescription('AF') }}</q-tooltip>
                             </q-toggle>
@@ -520,10 +582,13 @@ import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
 import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
+import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
+import BaseMotorButtonBar from 'components/base/BaseMotorButtonBar.vue'
 import BaseSelect from 'components/base/BaseSelect.vue'
 import BasePage from 'components/base/BasePage.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
+import { fieldDefaults } from 'src/generated/api/fieldDefaults'
 import {
   getCameraNameSettings,
   getCloudSettings,
@@ -532,10 +597,13 @@ import {
   reinitializeHardware,
   saveDeviceConfig,
   setConfigFile,
+  autoCalibrateAwb,
   updateCameraNameSettings,
   updateCloudSettings,
   updateLightNameSettings,
   updateMotorNameSettings,
+  motorMoveHome,
+  type AutoCalibrateAwbResponse,
   type CameraSettings,
   type CloudSettings,
   type CloudSettingsResponse,
@@ -601,6 +669,32 @@ function syncCloudEnabledFlag() {
   const shouldEnable = cloudToggle.value && hasPersistedCloudToken()
   if (apiConfigStore.cloudEnabled !== shouldEnable) {
     apiConfigStore.setConfig({ cloudEnabled: shouldEnable })
+  }
+}
+
+async function calibrateCameraAwb() {
+  if (!selectedCamera.value || scanLocked.value || cameraAwbCalibrating.value) {
+    return
+  }
+
+  cameraAwbCalibrating.value = true
+  try {
+    const response = await autoCalibrateAwb({
+      client: apiClient,
+      path: { camera_name: selectedCamera.value },
+      body: awbCalibrationDefaults ? { ...awbCalibrationDefaults } : undefined
+    })
+
+    const result = ((response?.data ?? response) as AutoCalibrateAwbResponse | undefined) ?? null
+    if (result) {
+      cameraForm.awbg_red = result.red_gain
+      cameraForm.awbg_blue = result.blue_gain
+    }
+    await saveCurrentConfig()
+  } catch (error) {
+    console.error('Camera AWB calibration failed.', error)
+  } finally {
+    cameraAwbCalibrating.value = false
   }
 }
 
@@ -848,7 +942,12 @@ type CameraOption = { label: string; value: string }
 const deviceStore = useDeviceStore()
 const { cameras, motors, lights, status: deviceStatus } = storeToRefs(deviceStore)
 
+const ROTOR_MOTOR = 'rotor'
+const TURNTABLE_MOTOR = 'turntable'
+
 const selectedCamera = ref<string | null>(null)
+const cameraAwbCalibrating = ref(false)
+const homeBusy = ref(false)
 
 const selectedSettingsCamera = computed(() => selectedCamera.value ?? cameraStore.selectedCamera)
 
@@ -887,12 +986,20 @@ const motorAngles = computed<Record<string, number | null>>(() => {
 const motorForms = reactive<Record<string, MotorForm>>({})
 const motorSaving = reactive<Record<string, boolean>>({})
 const motorFormDirty = reactive<Record<string, boolean>>({})
+const motorControlBusy = reactive<Record<string, boolean>>({})
+const anyMotorBusy = computed(() => Object.values(motorControlBusy).some((busy) => busy))
 
 type MotorConfigField = keyof (typeof fieldDescriptions)['MotorConfig']
 
 const motorConfigDescription = (field: MotorConfigField) => getFieldDescription('MotorConfig', field)
 
 const lightNames = computed(() => Object.keys(lights.value ?? {}))
+const lightStatuses = computed<Record<string, boolean | null>>(() => {
+  const current = lights.value ?? {}
+  return Object.fromEntries(
+    Object.entries(current).map(([name, status]) => [name, typeof status?.is_on === 'boolean' ? status.is_on : null])
+  )
+})
 const lightForms = reactive<Record<string, LightForm>>({})
 const lightSaving = reactive<Record<string, boolean>>({})
 const lightFormDirty = reactive<Record<string, boolean>>({})
@@ -921,6 +1028,99 @@ const directionOptions = [
 function formatMotorAngle(angle: number) {
   return `${angle.toFixed(1)}°`
 }
+
+function motorHasHome(name: string) {
+  return name === ROTOR_MOTOR || name === TURNTABLE_MOTOR
+}
+
+function motorStepDegrees(name: string) {
+  if (name === TURNTABLE_MOTOR) {
+    return 20
+  }
+  if (name === ROTOR_MOTOR) {
+    return 10
+  }
+  return 10
+}
+
+function motorNegativeIcon(name: string) {
+  if (name === ROTOR_MOTOR) {
+    return 'keyboard_arrow_up'
+  }
+  return 'keyboard_arrow_left'
+}
+
+function motorPositiveIcon(name: string) {
+  if (name === ROTOR_MOTOR) {
+    return 'keyboard_arrow_down'
+  }
+  return 'keyboard_arrow_right'
+}
+
+function motorNegativeTooltip(name: string) {
+  if (name === ROTOR_MOTOR) {
+    return 'Move rotor up'
+  }
+  if (name === TURNTABLE_MOTOR) {
+    return 'Rotate turntable left'
+  }
+  return `Move ${name} negatively`
+}
+
+function motorPositiveTooltip(name: string) {
+  if (name === ROTOR_MOTOR) {
+    return 'Move rotor down'
+  }
+  if (name === TURNTABLE_MOTOR) {
+    return 'Rotate turntable right'
+  }
+  return `Move ${name} positively`
+}
+
+function motorShowCalibrate(name: string) {
+  return name === ROTOR_MOTOR
+}
+
+function motorCalibrateTooltip(name: string) {
+  if (name !== ROTOR_MOTOR) {
+    return undefined
+  }
+  return 'Calibrate rotor via endstop to re-establish the home position.'
+}
+
+async function handleMotorCalibrated(name: string) {
+  try {
+    await deviceStore.refreshFromRest()
+  } catch (error) {
+    console.error(`Motor "${name}" calibration refresh failed.`, error)
+  }
+}
+
+async function handleMoveHome(motorName: string) {
+  if (homeBusy.value) {
+    return
+  }
+
+  homeBusy.value = true
+  try {
+    await deviceStore.ensureConnected()
+    await motorMoveHome({
+      client: apiClient,
+      path: { motor_name: motorName }
+    })
+    await deviceStore.refreshFromRest()
+  } catch (error) {
+    console.error(`Failed to move ${motorName} to home position.`, error)
+  } finally {
+    homeBusy.value = false
+  }
+}
+
+function formatLightStatus(isOn: boolean) {
+  return isOn ? 'On' : 'Off'
+}
+
+const awbCalibrationDefaults = fieldDefaults.AutoCalibrateAwbRequest ?? null
 
 function createEmptyCloudForm(): CloudForm {
   return {
@@ -1323,10 +1523,17 @@ watch(
       if (!(name in motorFormDirty)) {
         motorFormDirty[name] = false
       }
+      if (!(name in motorControlBusy)) {
+        motorControlBusy[name] = false
+      }
     })
   },
   { immediate: true, deep: true }
 )
+
+function handleMotorBusyChange(name: string, busy: boolean) {
+  motorControlBusy[name] = busy
+}
 
 watch(
   lights,

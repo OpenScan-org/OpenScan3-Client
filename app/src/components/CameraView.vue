@@ -1,23 +1,3 @@
-async function handleRotorEndstopCalibration() {
-  if (!canCalibrateRotorWithEndstop.value || calibrateBusy.value) {
-    return
-  }
-
-  calibrateBusy.value = true
-  try {
-    await deviceStore.ensureConnected()
-    await motorEndstopCalibration({
-      client: apiClient,
-      path: { motor_name: ROTOR_MOTOR }
-    })
-    await deviceStore.refreshFromRest()
-    scheduleHqRefresh(800)
-  } catch (error) {
-    console.error('Failed to calibrate rotor via endstop', error)
-  } finally {
-    calibrateBusy.value = false
-  }
-}
 <template>
   <q-card class="camera-view-card">
     <div class="camera-view__toolbar">
@@ -25,56 +5,40 @@ async function handleRotorEndstopCalibration() {
         <div class="camera-view__toolbar-left">
           <div class="camera-view__toolbar-motor">
             <q-btn-group unelevated rounded>
-              <BaseButtonIconPrimary
-                icon="keyboard_arrow_left"
-                size="sm"
-                :disable="motorBusy || props.scanning"
-                @click="handleMotorMove(TURNTABLE_MOTOR, -20)"
-              >
-                <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable left</q-tooltip>
-              </BaseButtonIconPrimary>
-              <BaseButtonIconPrimary
-                icon="keyboard_arrow_up"
-                size="sm"
-                :disable="motorBusy || props.scanning"
-                @click="handleMotorMove(ROTOR_MOTOR, -10)"
-              >
-                <q-tooltip anchor="bottom middle" self="top middle">Move rotor up</q-tooltip>
-              </BaseButtonIconPrimary>
-              <BaseButtonIconPrimary
-                icon="keyboard_arrow_down"
-                size="sm"
-                :disable="motorBusy || props.scanning"
-                @click="handleMotorMove(ROTOR_MOTOR, 10)"
-              >
-                <q-tooltip anchor="bottom middle" self="top middle">Move rotor down</q-tooltip>
-              </BaseButtonIconPrimary>
-              <BaseButtonIconPrimary
-                icon="keyboard_arrow_right"
-                size="sm"
-                :disable="motorBusy || props.scanning"
-                @click="handleMotorMove(TURNTABLE_MOTOR, 20)"
-              >
-                <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable right</q-tooltip>
-              </BaseButtonIconPrimary>
+              <BaseMotorButtonBar
+                :motor-name="TURNTABLE_MOTOR"
+                :step-degrees="20"
+                negative-icon="keyboard_arrow_left"
+                positive-icon="keyboard_arrow_right"
+                negative-tooltip="Rotate turntable left"
+                positive-tooltip="Rotate turntable right"
+                :show-calibrate="false"
+                :disable="props.scanning || motorControlsBusy"
+                :refresh-after-move="true"
+                @busy-change="handleTurntableBusyChange"
+                @moved="handleMotorMoved"
+              />
+              <BaseMotorButtonBar
+                :motor-name="ROTOR_MOTOR"
+                :step-degrees="10"
+                negative-icon="keyboard_arrow_up"
+                positive-icon="keyboard_arrow_down"
+                negative-tooltip="Move rotor up"
+                positive-tooltip="Move rotor down"
+                :disable="props.scanning || motorControlsBusy"
+                :refresh-after-move="true"
+                @busy-change="handleRotorBusyChange"
+                @moved="handleMotorMoved"
+                @calibrated="handleRotorCalibrated"
+              />
               <BaseButtonIconSecondary
                 class="camera-view__toolbar-home"
                 icon="home"
                 size="sm"
-                :disable="homeBusy || props.scanning"
+                :disable="homeBusy || props.scanning || motorControlsBusy"
                 @click="handleMoveHome"
               >
                 <q-tooltip anchor="bottom middle" self="top middle">Return to home position</q-tooltip>
-              </BaseButtonIconSecondary>
-              <BaseButtonIconSecondary
-                class="camera-view__toolbar-calibrate"
-                icon="restart_alt"
-                size="sm"
-                :loading="calibrateBusy"
-                :disable="calibrateBusy || props.scanning || !canCalibrateRotorWithEndstop"
-                @click="handleRotorEndstopCalibration"
-              >
-                <q-tooltip anchor="bottom middle" self="top middle">{{ calibrateTooltip }}</q-tooltip>
               </BaseButtonIconSecondary>
             </q-btn-group>
           </div>
@@ -173,56 +137,40 @@ async function handleRotorEndstopCalibration() {
             <div class="camera-view__toolbar-left">
               <div class="camera-view__toolbar-motor">
                 <q-btn-group unelevated rounded>
-                  <BaseButtonIconPrimary
-                    icon="keyboard_arrow_left"
-                    size="sm"
-                    :disable="motorBusy || props.scanning"
-                    @click="handleMotorMove(TURNTABLE_MOTOR, -20)"
-                  >
-                    <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable left</q-tooltip>
-                  </BaseButtonIconPrimary>
-                  <BaseButtonIconPrimary
-                    icon="keyboard_arrow_up"
-                    size="sm"
-                    :disable="motorBusy || props.scanning"
-                    @click="handleMotorMove(ROTOR_MOTOR, -10)"
-                  >
-                    <q-tooltip anchor="bottom middle" self="top middle">Move rotor up</q-tooltip>
-                  </BaseButtonIconPrimary>
-                  <BaseButtonIconPrimary
-                    icon="keyboard_arrow_down"
-                    size="sm"
-                    :disable="motorBusy || props.scanning"
-                    @click="handleMotorMove(ROTOR_MOTOR, 10)"
-                  >
-                    <q-tooltip anchor="bottom middle" self="top middle">Move rotor down</q-tooltip>
-                  </BaseButtonIconPrimary>
-                  <BaseButtonIconPrimary
-                    icon="keyboard_arrow_right"
-                    size="sm"
-                    :disable="motorBusy || props.scanning"
-                    @click="handleMotorMove(TURNTABLE_MOTOR, 20)"
-                  >
-                    <q-tooltip anchor="bottom middle" self="top middle">Rotate turntable right</q-tooltip>
-                  </BaseButtonIconPrimary>
+                  <BaseMotorButtonBar
+                    :motor-name="TURNTABLE_MOTOR"
+                    :step-degrees="20"
+                    negative-icon="keyboard_arrow_left"
+                    positive-icon="keyboard_arrow_right"
+                    negative-tooltip="Rotate turntable left"
+                    positive-tooltip="Rotate turntable right"
+                    :show-calibrate="false"
+                    :disable="props.scanning || motorControlsBusy"
+                    :refresh-after-move="true"
+                    @busy-change="handleTurntableBusyChange"
+                    @moved="handleMotorMoved"
+                  />
+                  <BaseMotorButtonBar
+                    :motor-name="ROTOR_MOTOR"
+                    :step-degrees="10"
+                    negative-icon="keyboard_arrow_up"
+                    positive-icon="keyboard_arrow_down"
+                    negative-tooltip="Move rotor up"
+                    positive-tooltip="Move rotor down"
+                    :disable="props.scanning || motorControlsBusy"
+                    :refresh-after-move="true"
+                    @busy-change="handleRotorBusyChange"
+                    @moved="handleMotorMoved"
+                    @calibrated="handleRotorCalibrated"
+                  />
                   <BaseButtonIconSecondary
                     class="camera-view__toolbar-home"
                     icon="home"
                     size="sm"
-                    :disable="homeBusy || props.scanning"
+                    :disable="homeBusy || props.scanning || motorControlsBusy"
                     @click="handleMoveHome"
                   >
                     <q-tooltip anchor="bottom middle" self="top middle">Return to home position</q-tooltip>
-                  </BaseButtonIconSecondary>
-                  <BaseButtonIconSecondary
-                    class="camera-view__toolbar-calibrate"
-                    icon="precision_manufacturing"
-                    size="sm"
-                    :loading="calibrateBusy"
-                    :disable="calibrateBusy || props.scanning || !canCalibrateRotorWithEndstop"
-                    @click="handleRotorEndstopCalibration"
-                  >
-                    <q-tooltip anchor="bottom middle" self="top middle">{{ calibrateTooltip }}</q-tooltip>
                   </BaseButtonIconSecondary>
                 </q-btn-group>
               </div>
@@ -313,9 +261,9 @@ async function handleRotorEndstopCalibration() {
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, unref, watch } from 'vue'
-import BaseButtonIconPrimary from 'components/base/BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
+import BaseMotorButtonBar from 'components/base/BaseMotorButtonBar.vue'
 import SelectWithButton from 'components/common/SelectWithButton.vue'
 import CameraFastPreview, { type CameraFastPreviewExposed } from './camera/CameraFastPreview.vue'
 import CameraHeatmapOverlay from './camera/CameraHeatmapOverlay.vue'
@@ -323,7 +271,7 @@ import CameraHistogram from './camera/CameraHistogram.vue'
 import CameraHQPreview, { type CameraHQPreviewExposed } from './camera/CameraHQPreview.vue'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
-import { moveMotorByDegree, moveToPosition, restartCamera, motorEndstopCalibration } from 'src/generated/api'
+import { moveToPosition, restartCamera } from 'src/generated/api'
 import { apiClient } from 'src/services/apiClient'
 
 type CameraOption = { label: string; value: string; orientationFlag?: number | null }
@@ -402,9 +350,9 @@ const stackRef = ref<HTMLElement | null>(null)
 const stackHeight = ref<number | null>(null)
 let stackResizeObserver: ResizeObserver | null = null
 const heatmapEnabled = ref(false)
-const motorBusy = ref(false)
 const homeBusy = ref(false)
-const calibrateBusy = ref(false)
+const rotorControlsBusy = ref(false)
+const turntableControlsBusy = ref(false)
 const restartBusy = ref(false)
 let hqRefreshTimeout: ReturnType<typeof setTimeout> | null = null
 const fullPreviewDialogVisible = ref(false)
@@ -413,26 +361,7 @@ const fullPreviewImageLoaded = ref(false)
 
 const ROTOR_MOTOR = 'rotor'
 const TURNTABLE_MOTOR = 'turntable'
-
-const rotorMotor = computed(() => deviceStore.device?.motors?.[ROTOR_MOTOR] ?? null)
-const rotorEndstop = computed(() => {
-  const directEndstop = (rotorMotor.value as { endstop?: { assigned_motor?: string } | null } | null)?.endstop
-  if (directEndstop?.assigned_motor === ROTOR_MOTOR) {
-    return directEndstop
-  }
-
-  const endstops = deviceStore.device?.endstops ?? null
-  if (!endstops) {
-    return null
-  }
-  return Object.values(endstops).find((endstop) => endstop?.settings?.motor_name === ROTOR_MOTOR) ?? null
-})
-const canCalibrateRotorWithEndstop = computed(() => Boolean(rotorEndstop.value))
-const calibrateTooltip = computed(() =>
-  canCalibrateRotorWithEndstop.value
-    ? 'Calibrate rotor via endstop to re-establish the home position.'
-    : 'No rotor endstop configured. Configure one in Setup before running calibration.'
-)
+const motorControlsBusy = computed(() => rotorControlsBusy.value || turntableControlsBusy.value)
 
 const cameraOptionsList = computed<CameraOption[]>(() => props.cameraOptions ?? [])
 const showFastPreview = computed(() => !props.scanning && props.camera !== null)
@@ -500,25 +429,20 @@ async function handleRestartCamera() {
   }
 }
 
-async function handleMotorMove(motorName: string, degrees: number) {
-  if (motorBusy.value) {
-    return
-  }
+function handleMotorMoved() {
+  scheduleHqRefresh()
+}
 
-  motorBusy.value = true
-  try {
-    await deviceStore.ensureConnected()
-    await moveMotorByDegree({
-      client: apiClient,
-      path: { motor_name: motorName },
-      body: { degrees }
-    })
-    scheduleHqRefresh()
-  } catch (error) {
-    console.error('Failed to move motor', motorName, error)
-  } finally {
-    motorBusy.value = false
-  }
+function handleRotorCalibrated() {
+  scheduleHqRefresh(800)
+}
+
+function handleRotorBusyChange(isBusy: boolean) {
+  rotorControlsBusy.value = isBusy
+}
+
+function handleTurntableBusyChange(isBusy: boolean) {
+  turntableControlsBusy.value = isBusy
 }
 
 const hqPreviewImageElement = computed(() => unref(hqPreviewRef.value?.previewImage) ?? null)
