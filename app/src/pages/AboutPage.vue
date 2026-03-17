@@ -21,20 +21,18 @@
         :separator-style="{ width: '0px' }"
       >
         <template #before>
-          <div class="about-tabs-pane">
-            <q-tabs
-              v-model="tab"
-              vertical
-              class="about-tabs"
-            >
-              <q-tab name="about" icon="info" label="About" />
-              <q-tab name="user" icon="school" label="User docs" />
-              <q-tab name="developer" icon="code" label="Developer docs" />
-              <q-tab name="ideas" icon="lightbulb" label="Key ideas" />
-              <q-tab name="community" icon="groups" label="Community" />
-              <q-tab name="privacy" icon="shield" label="Privacy" />
-            </q-tabs>
-          </div>
+          <q-tabs
+            v-model="tab"
+            vertical
+            class="about-tabs"
+          >
+            <q-tab name="about" icon="lightbulb" label="About" />
+            <q-tab name="user" icon="school" label="User docs" />
+            <q-tab name="developer" icon="code" label="Developer docs" />
+            <q-tab name="community" icon="groups" label="Community" />
+            <q-tab name="sponsor" icon="volunteer_activism" label="Sponsor" />
+            <q-tab name="privacy" icon="shield" label="Privacy" />
+          </q-tabs>
         </template>
 
         <template #after>
@@ -49,11 +47,8 @@
               class="about-panels__inner"
             >
               <q-tab-panel name="developer">
-                <TextCard title="Developer documentation">
-                  <p>
-                    This section is intended for developers and advanced users who
-                    are interested in the firmware and internal APIs.
-                  </p>
+                <div class="about-section">
+                  <div class="text-h5 q-mb-md">Developer documentation</div>
                   <p>
                     Firmware and developer documentation is currently in an early
                     alpha / work in progress state and will be improved soon.
@@ -71,7 +66,7 @@
                     <code>{{ apiDocsUrl }}</code>
                     .
                   </p>
-                  <template #links>
+                  <div class="about-links">
                     <BaseLink
                       label="Dev docs on GitHub"
                       icon="code"
@@ -83,16 +78,13 @@
                       icon="api"
                       :href="apiDocsUrl"
                     />
-                  </template>
-                </TextCard>
+                  </div>
+                </div>
               </q-tab-panel>
 
               <q-tab-panel name="user">
-                <TextCard title="User documentation">
-                  <p>
-                    This section contains resources that help you set up and use
-                    your OpenScan hardware.
-                  </p>
+                <div class="about-section">
+                  <div class="text-h5 q-mb-md">User documentation</div>
                   <p>
                     For assembly instructions and general hardware usage, please
                     refer to the hardware documentation.
@@ -101,7 +93,7 @@
                     If you are new to photogrammetry in general, the tutorial videos
                     below walk you through the basic concepts and workflows.
                   </p>
-                  <template #links>
+                  <div class="about-links">
                     <BaseLink
                       label="Hardware documentation"
                       icon="school"
@@ -114,18 +106,13 @@
                       href="https://www.youtube.com/watch?v=P-eySAKDRtk&amp;list=PLUvJLiTvLL5Td5hVcwlButMJxfVBz3btO"
                       outline
                     />
-                  </template>
-                </TextCard>
+                  </div>
+                </div>
               </q-tab-panel>
 
               <q-tab-panel name="about">
-                <TextCard title="About OpenScan">
-                  <p>
-                    Thanks to great community support through Patreon, we are able
-                    to offer a free processing pipeline for your 3D models. With
-                    over ten million processed photos, we are on our way to bringing
-                    3D scanning to the masses.
-                  </p>
+                <div class="about-section">
+                  <div class="text-h5 q-mb-md">About OpenScan</div>
                   <p>
                     OpenScan is an open-source project that focuses on accessible,
                     high-quality 3D scanning based on DIY, photogrammetry-driven
@@ -142,11 +129,13 @@
                     control over your tools, data and workflows without locking you
                     into proprietary ecosystems.
                   </p>
-                </TextCard>
-              </q-tab-panel>
-
-              <q-tab-panel name="ideas">
-                <TextCard title="Key ideas behind OpenScan">
+                  <p>
+                    Thanks to great community support through Patreon, we are able
+                    to offer a free processing pipeline for your 3D models. With
+                    over ten million processed photos, we are on our way to bringing
+                    3D scanning to the masses.
+                  </p>
+                  <div class="text-h5 q-mb-md">Key ideas behind OpenScan</div>
                   <ul class="q-pl-md">
                     <li>
                       Accessible, DIY hardware for photogrammetry-based 3D scanning.
@@ -164,18 +153,19 @@
                       workflows.
                     </li>
                   </ul>
-                </TextCard>
+                </div>
               </q-tab-panel>
 
               <q-tab-panel name="community">
-                <TextCard title="Community and links">
+                <div class="about-section">
+                  <div class="text-h5 q-mb-md">Community and links</div>
                   <p>
                     OpenScan thrives on an active community of makers, developers
                     and 3D enthusiasts. If you want to contribute, get support or
                     simply follow the project, these links are a good starting
                     point:
                   </p>
-                  <template #links>
+                  <div class="about-links">
                     <BaseLink
                       label="OpenScan on GitHub"
                       icon="code"
@@ -194,12 +184,71 @@
                       href="https://openscan.eu"
                       outline
                     />
-                  </template>
-                </TextCard>
+                    <BaseLink
+                      label="OpenScan on Reddit"
+                      icon="chat"
+                      href="https://www.reddit.com/r/OpenScan/"
+                      outline
+                    />
+                  </div>
+                </div>
+              </q-tab-panel>
+
+              <q-tab-panel name="sponsor">
+                <div class="about-section">
+                  <div class="text-h5 q-mb-md">Sponsor OpenScan</div>
+                  <p>
+                    Hey, this is Thomas, the guy behind OpenScan :)
+                  </p>
+                  <p>
+                    I am glad you made it here! I am very happy to be able to share OpenScan with the world. A lot of
+                    passion, but also many hours already went into this project and to be honest, I've never expected to
+                    get so far.
+                  </p>
+                  <p>
+                    Anyway, there is so much more that I would like to do. It is not only about keeping everything
+                    open-source and maintained, there are just so many cool new features and ideas that need to be tried
+                    out :)
+                  </p>
+                  <p>
+                    <strong>
+                      Buying me a coffee once or monthly would not only help me stay awake all night programming, but
+                      would also be a great motivation for all further developments.
+                    </strong>
+                  </p>
+                  <p>
+                    Thank you very much for your support,
+                  </p>
+                  <p>
+                    best greetings from Halle, Germany,
+                  </p>
+                  <p>
+                    Thomas
+                  </p>
+                  <div class="about-links">
+                    <BaseLink
+                      label="Get in touch"
+                      icon="email"
+                      href="mailto:info@openscan.eu?subject=Support OpenScan"
+                    />
+                    <BaseLink
+                      label="Become a Patreon"
+                      icon="volunteer_activism"
+                      href="https://www.patreon.com/OpenScan"
+                    />
+                    <BaseLink
+                      label="Buy me a coffee"
+                      icon="coffee"
+                      href="https://buymeacoffee.com/openscan"
+                      tooltip="Maybe used for beer."
+                    />
+                  </div>
+                </div>
               </q-tab-panel>
 
               <q-tab-panel name="privacy">
-                <TextCard title="Privacy and data">
+                <div class="about-section">
+                  <div class="text-h5 q-mb-md">Privacy and data</div>
                   <p>
                     OpenScan3 is built to run locally on your own devices. Scan
                     acquisition and processing can be performed on your hardware, so
@@ -211,7 +260,7 @@
                     together, as well as updates on future developments, please
                     visit the official website at openscan.eu.
                   </p>
-                </TextCard>
+                </div>
               </q-tab-panel>
             </q-tab-panels>
           </div>
@@ -224,7 +273,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import BasePage from 'components/base/BasePage.vue';
-import TextCard from 'components/base/TextCard.vue';
 import BaseLink from 'components/base/BaseLink.vue';
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue';
 import { useApiConfigStore } from 'src/stores/apiConfig';
@@ -249,7 +297,7 @@ const selectedCameraOrientationFlag = computed(
 );
 
 const tab = ref('developer');
-const splitterModel = ref(28);
+const splitterModel = ref(20);
 
 onMounted(() => {
   if (!cameraStore.cameras.length) {
@@ -260,38 +308,57 @@ onMounted(() => {
 
 <style scoped>
 .about-layout {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.88);
   border-radius: 12px;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
   overflow: hidden;
 }
 
 .about-splitter {
-  min-height: 520px;
-}
-
-.about-tabs-pane {
-  height: 100%;
-  background: rgba(0, 0, 0, 0.04);
+  min-height: 420px;
 }
 
 .about-tabs {
-  width: 210px;
   height: 100%;
-  padding: 12px 0;
+  padding: 8px 0;
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .about-panels {
   height: 100%;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.96);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
 }
 
 .about-panels__inner {
-  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 .about-panels__inner :deep(.q-tab-panel) {
   height: 100%;
   overflow-y: auto;
+  padding: 0;
+}
+
+.about-section {
+  padding: 4px 8px;
+}
+
+.about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.about-tabs :deep(.q-tab) {
+  min-height: 72px;
+}
+
+.about-tabs :deep(.q-tab__content) {
+  gap: 6px;
 }
 </style>
