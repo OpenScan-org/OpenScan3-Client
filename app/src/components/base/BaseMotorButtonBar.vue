@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useQuasar } from 'quasar'
 import { useDeviceStore } from 'src/stores/device'
 import { moveMotorByDegree, motorEndstopCalibration } from 'src/generated/api'
 import { apiClient } from 'src/services/apiClient'
@@ -37,6 +38,7 @@ const emit = defineEmits<{
   (e: 'busy-change', payload: boolean): void
 }>()
 
+const $q = useQuasar()
 const deviceStore = useDeviceStore()
 const moveBusy = ref(false)
 const calibrateBusy = ref(false)
@@ -44,6 +46,7 @@ const calibrateBusy = ref(false)
 const normalizedStep = computed(() => Math.abs(props.stepDegrees))
 
 const motorStatus = computed(() => deviceStore.device?.motors?.[props.motorName] ?? null)
+const motorCalibrated = computed(() => Boolean(motorStatus.value?.calibrated))
 const motorEndstop = computed(() => {
   const directEndstop = (motorStatus.value as { endstop?: { assigned_motor?: string } | null } | null)?.endstop
   if (directEndstop?.assigned_motor === props.motorName) {
@@ -109,13 +112,17 @@ async function handleCalibrate() {
   if (disableCalibrateButton.value) {
     return
   }
-
+  const { proceed, force } = await resolveCalibrationIntent()
+  if (!proceed) {
+    return
+  }
   calibrateBusy.value = true
   try {
     await deviceStore.ensureConnected()
     await motorEndstopCalibration({
       client: apiClient,
-      path: { motor_name: props.motorName }
+      path: { motor_name: props.motorName },
+      query: force ? { force: true } : undefined
     })
     await deviceStore.refreshFromRest()
     emit('calibrated')
@@ -124,6 +131,25 @@ async function handleCalibrate() {
   } finally {
     calibrateBusy.value = false
   }
+}
+
+function resolveCalibrationIntent() {
+  if (!motorCalibrated.value) {
+    return Promise.resolve({ proceed: true, force: false })
+  }
+
+  return new Promise<{ proceed: boolean; force: boolean }>((resolve) => {
+    $q.dialog({
+      title: 'Motor already calibrated',
+      message: `${props.motorName} already reports a completed calibration. Force a new endstop calibration anyway?`,
+      ok: 'Force calibration',
+      cancel: true,
+      persistent: true
+    })
+      .onOk(() => resolve({ proceed: true, force: true }))
+      .onCancel(() => resolve({ proceed: false, force: false }))
+      .onDismiss(() => resolve({ proceed: false, force: false }))
+  })
 }
 </script>
 

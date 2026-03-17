@@ -94,6 +94,26 @@
                 </div>
                 <div class="text-body2 text-grey-7 q-mt-sm text-center">
                   Current direction: {{ rotorDirectionLabel }}
+
+function resolveRotorCalibrateIntent() {
+  if (!rotorCalibrated.value) {
+    return Promise.resolve({ proceed: true, force: false })
+  }
+
+  return new Promise<{ proceed: boolean; force: boolean }>((resolve) => {
+    $q.dialog({
+      title: 'Rotor already calibrated',
+      message:
+        'The rotor reports a completed calibration. Force another endstop calibration anyway?',
+      ok: 'Force calibration',
+      cancel: true,
+      persistent: true
+    })
+      .onOk(() => resolve({ proceed: true, force: true }))
+      .onCancel(() => resolve({ proceed: false, force: false }))
+      .onDismiss(() => resolve({ proceed: false, force: false }))
+  })
+}
                 </div>
               </div>
               <div class="rotor-direction-visual">
@@ -451,6 +471,7 @@ const isReversingRotorDirection = ref(false)
 const isEndstopCalibrating = ref(false)
 
 const rotorMotor = computed(() => deviceStore.device?.motors?.[ROTOR_MOTOR_NAME] ?? null)
+const rotorCalibrated = computed(() => Boolean(rotorMotor.value?.calibrated))
 const rotorDirection = computed<1 | -1 | null>(() => {
   const value = rotorMotor.value?.settings?.direction
   return value === 1 || value === -1 ? value : null
@@ -698,13 +719,18 @@ async function handleRotorEndstopCalibration() {
     return
   }
 
+  const { proceed, force } = await resolveRotorCalibrateIntent()
+  if (!proceed) {
+    return
+  }
   isEndstopCalibrating.value = true
   try {
     await deviceStore.ensureConnected()
     await motorEndstopCalibration<true>({
       client: apiClient,
       throwOnError: true,
-      path: { motor_name: ROTOR_MOTOR_NAME }
+      path: { motor_name: ROTOR_MOTOR_NAME },
+      query: force ? { force: true } : undefined
     })
     await deviceStore.refreshFromRest()
     $q.notify({ type: 'positive', message: 'Rotor calibrated with endstop.' })
