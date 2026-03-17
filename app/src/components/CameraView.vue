@@ -587,7 +587,7 @@ onBeforeUnmount(() => {
   max-width: 100%;
   margin: 0;
   border-radius: 16px;
-  background: #00aa00; /* TODO: debug color, remove later */
+  /* background: #00aa00; */
   overflow: hidden;
 }
 
