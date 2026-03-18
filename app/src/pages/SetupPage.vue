@@ -94,26 +94,6 @@
                 </div>
                 <div class="text-body2 text-grey-7 q-mt-sm text-center">
                   Current direction: {{ rotorDirectionLabel }}
-
-function resolveRotorCalibrateIntent() {
-  if (!rotorCalibrated.value) {
-    return Promise.resolve({ proceed: true, force: false })
-  }
-
-  return new Promise<{ proceed: boolean; force: boolean }>((resolve) => {
-    $q.dialog({
-      title: 'Rotor already calibrated',
-      message:
-        'The rotor reports a completed calibration. Force another endstop calibration anyway?',
-      ok: 'Force calibration',
-      cancel: true,
-      persistent: true
-    })
-      .onOk(() => resolve({ proceed: true, force: true }))
-      .onCancel(() => resolve({ proceed: false, force: false }))
-      .onDismiss(() => resolve({ proceed: false, force: false }))
-  })
-}
                 </div>
               </div>
               <div class="rotor-direction-visual">
@@ -712,6 +692,25 @@ async function handleRotorFineMove(degrees: number, actionKey: string) {
   } finally {
     rotorFineMoveAction.value = null
   }
+}
+
+function resolveRotorCalibrateIntent(): Promise<{ proceed: boolean; force: boolean }> {
+  if (!rotorCalibrated.value) {
+    return Promise.resolve({ proceed: true, force: false })
+  }
+
+  return new Promise((resolve) => {
+    $q.dialog({
+      title: 'Rotor already calibrated',
+      message: 'The rotor reports a completed calibration. Force another endstop calibration anyway?',
+      ok: 'Force calibration',
+      cancel: true,
+      persistent: true
+    })
+      .onOk(() => resolve({ proceed: true, force: true }))
+      .onCancel(() => resolve({ proceed: false, force: false }))
+      .onDismiss(() => resolve({ proceed: false, force: false }))
+  })
 }
 
 async function handleRotorEndstopCalibration() {
