@@ -8,6 +8,7 @@ import { useProjectsStore } from 'src/stores/projects'
 import { useTaskStore } from 'src/stores/tasks'
 import BaseButtonIconPrimary from 'components/base/BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
+import BasePage from 'components/base/BasePage.vue'
 import RecentProjectsList from 'src/components/project/RecentProjectsList.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import { apiClient } from 'src/services/apiClient'
@@ -129,17 +130,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <q-page class="dashboard-page">
-    <BlurredSnapshotBackground
-      v-if="backgroundPreviewUrl"
-      :src="backgroundPreviewUrl"
-      alt="Camera preview background"
-      :blur-px="10"
-      :saturate-percent="100"
-      :max-opacity="0.3"
-      :transition-ms="600"
-      :orientation-flag="selectedCameraOrientationFlag"
-    />
+  <BasePage class="dashboard-page" :center-content="false">
+    <template #background>
+      <BlurredSnapshotBackground
+        v-if="backgroundPreviewUrl"
+        :src="backgroundPreviewUrl"
+        alt="Camera preview background"
+        :blur-px="10"
+        :saturate-percent="100"
+        :max-opacity="0.3"
+        :transition-ms="600"
+        :orientation-flag="selectedCameraOrientationFlag"
+      />
+    </template>
 
     <div class="content-wrapper q-pa-md">
       <div class="row q-col-gutter-md justify-center items-start">
@@ -246,7 +249,7 @@ onMounted(() => {
         </div>
       </div>
     </div>
-  </q-page>
+  </BasePage>
 </template>
 
 <style scoped>

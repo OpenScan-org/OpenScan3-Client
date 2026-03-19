@@ -706,6 +706,10 @@ export type MotorStatusResponse = {
     target_angle: number | null;
     settings: MotorConfig;
     /**
+     * Calibrated
+     */
+    calibrated: boolean;
+    /**
      * Endstop
      */
     endstop: {
@@ -1694,7 +1698,14 @@ export type MotorEndstopCalibrationData = {
          */
         motor_name: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Force
+         *
+         * Force recalibration even if the controller already considers the motor calibrated.
+         */
+        force?: boolean;
+    };
     url: '/motors/{motor_name}/endstop-calibration';
 };
 

@@ -19,13 +19,17 @@ const props = withDefaults(
     nextLabel?: string
     backLabel?: string
     showBackButton?: boolean
+    title?: string
+    subtitle?: string
   }>(),
   {
     vertical: false,
     finishLabel: 'Finish',
     nextLabel: 'Next',
     backLabel: 'Back',
-    showBackButton: true
+    showBackButton: true,
+    title: undefined,
+    subtitle: undefined
   }
 )
 
@@ -98,15 +102,20 @@ function isDone(stepId: string) {
 </script>
 
 <template>
-  <q-stepper
-    v-model="activeId"
-    :vertical="computedVertical"
-    flat
-    bordered
-    animated
-    alternative-labels
-    class="wizard-stepper"
-  >
+  <div class="wizard-wrapper">
+    <div v-if="props.title || props.subtitle" class="wizard-heading q-mb-md">
+      <div v-if="props.title" class="wizard-heading__title">{{ props.title }}</div>
+      <div v-if="props.subtitle" class="wizard-heading__subtitle text-grey-7">{{ props.subtitle }}</div>
+    </div>
+    <q-stepper
+      v-model="activeId"
+      :vertical="computedVertical"
+      flat
+      bordered
+      animated
+      alternative-labels
+      class="wizard-stepper"
+    >
     <q-step
       v-for="step in steps"
       :key="step.id"
@@ -124,32 +133,52 @@ function isDone(stepId: string) {
       </div>
     </q-step>
 
-    <template #navigation>
-      <slot
-        name="navigation"
-        :is-first-step="isFirstStep"
-        :is-last-step="isLastStep"
-        :go-next="handleNext"
-        :go-back="handleBack"
-      >
-        <div class="row items-center justify-between q-mt-sm">
-          <BaseButtonSecondary
-            v-if="showBackButton && !isFirstStep"
-            :label="backLabel"
-            @click="handleBack"
-          />
-          <q-space />
-          <BaseButtonPrimary
-            :label="isLastStep ? finishLabel : nextLabel"
-            @click="handleNext"
-          />
-        </div>
-      </slot>
-    </template>
-  </q-stepper>
+      <template #navigation>
+        <slot
+          name="navigation"
+          :is-first-step="isFirstStep"
+          :is-last-step="isLastStep"
+          :go-next="handleNext"
+          :go-back="handleBack"
+        >
+          <div class="row items-center justify-between q-mt-sm">
+            <BaseButtonSecondary
+              v-if="showBackButton && !isFirstStep"
+              :label="backLabel"
+              @click="handleBack"
+            />
+            <q-space />
+            <BaseButtonPrimary
+              :label="isLastStep ? finishLabel : nextLabel"
+              @click="handleNext"
+            />
+          </div>
+        </slot>
+      </template>
+    </q-stepper>
+  </div>
 </template>
 
 <style scoped>
+.wizard-wrapper {
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 20px;
+  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+}
+
+.wizard-heading {
+  background: transparent;
+}
+
+.wizard-heading__title {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.wizard-heading__subtitle {
+  font-size: 0.95rem;
+}
 .wizard-stepper :deep(.q-stepper__tab) {
   min-width: 90px;
 }

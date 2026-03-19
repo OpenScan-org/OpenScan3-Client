@@ -1,13 +1,15 @@
 <template>
-  <q-page class="scan-page">
-    <BlurredSnapshotBackground
-      :src="snapshotBackgroundSrc"
-      :blur-px="10"
-      :saturate-percent="100"
-      :transition-ms="1600"
-      :max-opacity="0.3"
-      :orientation-flag="snapshotOrientationFlag"
-    />
+  <BasePage class="scan-page" :center-content="false">
+    <template #background>
+      <BlurredSnapshotBackground
+        :src="snapshotBackgroundSrc"
+        :blur-px="10"
+        :saturate-percent="100"
+        :transition-ms="1600"
+        :max-opacity="0.3"
+        :orientation-flag="snapshotOrientationFlag"
+      />
+    </template>
     <div class="q-pa-md">
       <template v-if="showDisconnectedSkeleton">
         <div class="row justify-center q-col-gutter-sm">
@@ -89,7 +91,7 @@
         />
       </template>
     </div>
-  </q-page>
+  </BasePage>
 </template>
 
 <script setup lang="ts">
@@ -100,6 +102,7 @@ import { addScanWithDescription, type ScanSetting } from 'src/generated/api'
 import generateDashedName from 'src/utils/randomName'
 
 import CameraView from 'components/CameraView.vue'
+import BasePage from 'components/base/BasePage.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import ScanStartSection from 'components/scan/ScanStartSection.vue'
 import ScanSettingsSection from 'components/scan/ScanSettingsSection.vue'

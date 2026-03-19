@@ -87,26 +87,6 @@
     </q-drawer>
 
     <q-page-container>
-      <div class="row justify-center q-ma-md">
-        <div class="col-12 col-md-5 col-lg-5 q-gutter-y-sm">
-          <BaseBanner v-if="showSetupBanner">
-            Your OpenScan device is not configured yet.
-            <template #action>
-              <BaseButtonPrimary label="Setup device" @click="openSetupPage" />
-            </template>
-          </BaseBanner>
-          <BaseBanner
-            v-else-if="showConnectionIssueBanner"
-            background-class="bg-amber-4"
-            text-class="text-black"
-          >
-            No connection to your OpenScan device.
-            <template #action>
-              <BaseButtonPrimary label="Check settings" @click="openSettingsPage" />
-            </template>
-          </BaseBanner>
-        </div>
-      </div>
       <router-view />
     </q-page-container>
   </q-layout>
@@ -114,7 +94,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import EssentialLink from 'components/EssentialLink.vue';
 import type { EssentialLinkProps } from 'components/models';
 import { useDeviceStore } from 'src/stores/device';
@@ -122,8 +101,6 @@ import { useTaskStore } from 'src/stores/tasks';
 import { useVersionStore } from 'src/stores/version';
 import PowerControls from 'components/PowerControls.vue';
 import TaskDrawerPanel from 'components/task/TaskDrawerPanel.vue';
-import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue';
-import BaseBanner from 'components/base/BaseBanner.vue';
 
 const upperLinks: EssentialLinkProps[] = [
   {
@@ -153,7 +130,7 @@ const upperLinks: EssentialLinkProps[] = [
   },
   {
     title: 'About',
-    icon: 'help',
+    icon: 'help_center',
     link: '/about'
   },
 ];
@@ -182,16 +159,6 @@ void deviceStore.ensureConnected()
 const taskStore = useTaskStore()
 void taskStore.ensureConnected()
 
-const router = useRouter()
-const route = useRoute()
-
-const showSetupBanner = computed(
-  () => deviceStore.needsSetup && route.path !== '/setup'
-)
-const showConnectionIssueBanner = computed(
-  () => deviceStore.hasConnectionIssue && !showSetupBanner.value
-)
-
 const runningTaskCount = computed(() => taskStore.runningTasks.length)
 const pausedTaskCount = computed(() => taskStore.tasks.filter((task) => task.status === 'paused').length)
 
@@ -203,14 +170,7 @@ function toggleRightDrawer() {
   rightDrawerOpen.value = !rightDrawerOpen.value
 }
 
-function openSetupPage() {
-  void router.push('/setup')
-}
-
-function openSettingsPage() {
-  void router.push('/settings')
-}
- </script>
+</script>
 
 <style scoped>
 .main-toolbar {
