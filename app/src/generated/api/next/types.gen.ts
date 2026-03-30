@@ -52,7 +52,7 @@ export type AutoCalibrateAwbResponse = {
  * Body_add_config_json_device_configurations__post
  */
 export type BodyAddConfigJsonDeviceConfigurationsPost = {
-    config_data: ScannerDevice;
+    config_data: ScannerDeviceConfigInput;
     filename: DeviceConfigRequest;
 };
 
@@ -84,22 +84,6 @@ export type BodyMoveMotorByDegreeMotorsMotorNameAnglePatch = {
      * Degrees
      */
     degrees: number;
-};
-
-/**
- * Camera
- */
-export type Camera = {
-    type: CameraType;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Path
-     */
-    path: string;
-    settings: CameraSettings;
 };
 
 /**
@@ -395,6 +379,25 @@ export type DeviceConfigRequest = {
 };
 
 /**
+ * DeviceConfigResponse
+ */
+export type DeviceConfigResponse = {
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Path
+     */
+    path: string;
+    config: ScannerDeviceConfigOutput;
+};
+
+/**
  * DeviceControlResponse
  */
 export type DeviceControlResponse = {
@@ -482,17 +485,6 @@ export type DiskUsage = {
 };
 
 /**
- * Endstop
- */
-export type Endstop = {
-    /**
-     * Name
-     */
-    name: string;
-    settings: EndstopConfig | null;
-};
-
-/**
  * EndstopConfig
  *
  * Configuration for a motor endstop.
@@ -554,17 +546,6 @@ export type HttpValidationError = {
 };
 
 /**
- * Light
- */
-export type Light = {
-    /**
-     * Name
-     */
-    name: string;
-    settings: LightConfig;
-};
-
-/**
  * LightConfig
  */
 export type LightConfig = {
@@ -601,21 +582,6 @@ export type LightStatusResponse = {
      */
     is_on: boolean;
     settings: LightConfig;
-};
-
-/**
- * Motor
- */
-export type Motor = {
-    /**
-     * Name
-     */
-    name: string;
-    settings: MotorConfig | null;
-    /**
-     * Angle
-     */
-    angle?: number;
 };
 
 /**
@@ -721,6 +687,28 @@ export type MotorStatusResponse = {
  * PathMethod
  */
 export type PathMethod = 'fibonacci';
+
+/**
+ * PersistedCameraConfig
+ */
+export type PersistedCameraConfig = {
+    /**
+     * Type
+     */
+    type: CameraType | string;
+    /**
+     * Path
+     */
+    path: string;
+    settings?: CameraSettings;
+};
+
+/**
+ * PersistedEndstopConfig
+ */
+export type PersistedEndstopConfig = {
+    settings: EndstopConfig;
+};
 
 /**
  * PhotoResponse
@@ -978,56 +966,116 @@ export type ScanSetting = {
 export type ScannerCalibrateMode = 'calibrate_manual' | 'calibrate_on_home' | 'calibrate_on_scan' | 'calibrate_on_wake';
 
 /**
- * ScannerDevice
+ * ScannerDeviceConfig
+ *
+ * Persisted scanner configuration payload stored as JSON.
  */
-export type ScannerDevice = {
+export type ScannerDeviceConfigInput = {
     /**
      * Name
      */
     name: string;
-    model: ScannerModel | null;
-    shield: ScannerShield | null;
+    /**
+     * Model
+     */
+    model?: string | null;
+    /**
+     * Shield
+     */
+    shield?: string | null;
     /**
      * Cameras
      */
-    cameras: {
-        [key: string]: Camera;
+    cameras?: {
+        [key: string]: PersistedCameraConfig;
     };
     /**
      * Motors
      */
-    motors: {
-        [key: string]: Motor;
+    motors?: {
+        [key: string]: MotorConfig;
     };
     /**
      * Lights
      */
-    lights: {
-        [key: string]: Light;
+    lights?: {
+        [key: string]: LightConfig;
     };
     /**
      * Endstops
      */
-    endstops: {
-        [key: string]: Endstop;
+    endstops?: {
+        [key: string]: PersistedEndstopConfig;
     } | null;
     /**
      * Motors Timeout
      */
     motors_timeout?: number;
-    startup_mode?: ScannerStartupMode;
-    calibrate_mode?: ScannerCalibrateMode;
+    /**
+     * Startup Mode
+     */
+    startup_mode?: ScannerStartupMode | string;
+    /**
+     * Calibrate Mode
+     */
+    calibrate_mode?: ScannerCalibrateMode | string;
 };
 
 /**
- * ScannerModel
+ * ScannerDeviceConfig
+ *
+ * Persisted scanner configuration payload stored as JSON.
  */
-export type ScannerModel = 'classic' | 'mini' | 'custom';
-
-/**
- * ScannerShield
- */
-export type ScannerShield = 'greenshield' | 'blackshield' | 'custom';
+export type ScannerDeviceConfigOutput = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Model
+     */
+    model?: string | null;
+    /**
+     * Shield
+     */
+    shield?: string | null;
+    /**
+     * Cameras
+     */
+    cameras?: {
+        [key: string]: PersistedCameraConfig;
+    };
+    /**
+     * Motors
+     */
+    motors?: {
+        [key: string]: MotorConfig;
+    };
+    /**
+     * Lights
+     */
+    lights?: {
+        [key: string]: LightConfig;
+    };
+    /**
+     * Endstops
+     */
+    endstops?: {
+        [key: string]: PersistedEndstopConfig;
+    } | null;
+    /**
+     * Motors Timeout
+     */
+    motors_timeout?: number;
+    /**
+     * Startup Mode
+     */
+    startup_mode?: ScannerStartupMode | string;
+    /**
+     * Calibrate Mode
+     */
+    calibrate_mode?: ScannerCalibrateMode | string;
+};
 
 /**
  * ScannerStartupMode
@@ -3123,34 +3171,28 @@ export type ListConfigFilesResponses = {
     200: unknown;
 };
 
-export type AddConfigJsonData = {
-    body: BodyAddConfigJsonDeviceConfigurationsPost;
+export type GetCurrentConfigData = {
+    body?: never;
     path?: never;
     query?: never;
-    url: '/device/configurations/';
+    url: '/device/configurations/current';
 };
 
-export type AddConfigJsonErrors = {
+export type GetCurrentConfigErrors = {
     /**
      * Not found
      */
     404: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
 };
 
-export type AddConfigJsonError = AddConfigJsonErrors[keyof AddConfigJsonErrors];
-
-export type AddConfigJsonResponses = {
+export type GetCurrentConfigResponses = {
     /**
      * Successful Response
      */
-    200: DeviceControlResponse;
+    200: DeviceConfigResponse;
 };
 
-export type AddConfigJsonResponse = AddConfigJsonResponses[keyof AddConfigJsonResponses];
+export type GetCurrentConfigResponse = GetCurrentConfigResponses[keyof GetCurrentConfigResponses];
 
 export type SaveDeviceConfigData = {
     body?: never;
@@ -3203,6 +3245,69 @@ export type SetConfigFileResponses = {
 };
 
 export type SetConfigFileResponse = SetConfigFileResponses[keyof SetConfigFileResponses];
+
+export type GetConfigFileData = {
+    body?: never;
+    path: {
+        /**
+         * Filename
+         */
+        filename: string;
+    };
+    query?: never;
+    url: '/device/configurations/{filename}';
+};
+
+export type GetConfigFileErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetConfigFileError = GetConfigFileErrors[keyof GetConfigFileErrors];
+
+export type GetConfigFileResponses = {
+    /**
+     * Successful Response
+     */
+    200: DeviceConfigResponse;
+};
+
+export type GetConfigFileResponse = GetConfigFileResponses[keyof GetConfigFileResponses];
+
+export type AddConfigJsonData = {
+    body: BodyAddConfigJsonDeviceConfigurationsPost;
+    path?: never;
+    query?: never;
+    url: '/device/configurations/';
+};
+
+export type AddConfigJsonErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AddConfigJsonError = AddConfigJsonErrors[keyof AddConfigJsonErrors];
+
+export type AddConfigJsonResponses = {
+    /**
+     * Successful Response
+     */
+    200: DeviceControlResponse;
+};
+
+export type AddConfigJsonResponse = AddConfigJsonResponses[keyof AddConfigJsonResponses];
 
 export type ReinitializeHardwareData = {
     body?: never;
@@ -3666,6 +3771,42 @@ export type HelloWorldAsyncResponses = {
 };
 
 export type HelloWorldAsyncResponse = HelloWorldAsyncResponses[keyof HelloWorldAsyncResponses];
+
+export type StartQrScanData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Camera Name
+         *
+         * Name of the camera controller to use
+         */
+        camera_name: string;
+    };
+    url: '/develop/qr-scan';
+};
+
+export type StartQrScanErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type StartQrScanError = StartQrScanErrors[keyof StartQrScanErrors];
+
+export type StartQrScanResponses = {
+    /**
+     * Successful Response
+     */
+    202: Task;
+};
+
+export type StartQrScanResponse = StartQrScanResponses[keyof StartQrScanResponses];
 
 export type GetPathData = {
     body?: never;
