@@ -40,6 +40,10 @@ export const fieldDefaults = {
     "bounce_time": 0.005,
     "pull_up": true
   },
+  "FirmwareSettings": {
+    "enable_cloud": false,
+    "qr_wifi_scan_enabled": true
+  },
   "LightConfig": {
     "pwm_support": false
   },

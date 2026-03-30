@@ -125,6 +125,47 @@
 
                     <BaseVersionInfoCard />
 
+                    <BaseSection v-if="isNextApiTarget" title="Firmware Settings">
+                      <div class="row q-col-gutter-sm" v-if="firmwareSettingsLoading">
+                        <div class="col-12">
+                          <q-skeleton type="rect" height="96px" />
+                        </div>
+                      </div>
+
+                      <div class="row q-col-gutter-sm" v-else>
+                        <div class="col-12">
+                          <q-toggle
+                            v-model="firmwareForm.qr_wifi_scan_enabled"
+                            label="Auto-start QR WiFi scan task when offline"
+                            left-label
+                            :disable="firmwareSettingsSaving"
+                            @update:model-value="(value: boolean) => handleFirmwareSettingChange('qr_wifi_scan_enabled', value)"
+                          />
+                        </div>
+                        <div class="col-12">
+                          <div class="row justify-end q-gutter-sm">
+                            <BaseButtonSecondary
+                              icon="refresh"
+                              label="Reload"
+                              :loading="firmwareSettingsLoading"
+                              @click="loadFirmwareSettings(true)"
+                            />
+                            <BaseButtonPrimary
+                              icon="save"
+                              label="Save"
+                              :loading="firmwareSettingsSaving"
+                              @click="saveFirmwareSettings"
+                            />
+                          </div>
+                        </div>
+                        <div v-if="firmwareSettingsError" class="col-12">
+                          <q-banner dense inline-actions class="bg-negative text-white">
+                            {{ firmwareSettingsError }}
+                          </q-banner>
+                        </div>
+                      </div>
+                    </BaseSection>
+
                     <BaseSection title="OpenScanCloud Settings">
                       <div class="row q-col-gutter-sm">
                         <div class="col-12">
@@ -228,6 +269,11 @@
                 >
                   <BaseSection title="Motor Settings">
                   <div class="row q-col-gutter-md">
+                    <div class="col-12" v-if="isNextApiTarget">
+                      <div class="row justify-end">
+                        <BaseButtonSecondary icon="add" label="Add motor" @click="addMotorDialog = true" />
+                      </div>
+                    </div>
                     <div class="col-12" v-if="motorNames.length === 0">
                       <q-banner dense>No motors found.</q-banner>
                     </div>
@@ -387,6 +433,19 @@
                     </div>
                   </div>
                 </BaseSection>
+
+                <BaseSection v-if="isNextApiTarget" title="Endstop Settings">
+                  <div class="row q-col-gutter-sm">
+                    <div class="col-12">
+                      <q-banner dense>Manage endstops via device configuration.</q-banner>
+                    </div>
+                    <div class="col-12">
+                      <div class="row justify-end">
+                        <BaseButtonSecondary icon="add_task" label="Add endstop" @click="addEndstopDialog = true" />
+                      </div>
+                    </div>
+                  </div>
+                </BaseSection>
                 </div>
 
                 <div v-if="deviceStore.hasConnectionIssue" class="non-frontend-settings__overlay">
@@ -411,6 +470,11 @@
                   <BaseSectionGroup>
                     <BaseSection title="Light Settings">
                       <div class="row q-col-gutter-md">
+                        <div class="col-12" v-if="isNextApiTarget">
+                          <div class="row justify-end">
+                            <BaseButtonSecondary icon="add" label="Add light" @click="addLightDialog = true" />
+                          </div>
+                        </div>
                         <div class="col-12" v-if="lightNames.length === 0">
                           <q-banner dense>No lights found.</q-banner>
                         </div>
@@ -459,6 +523,11 @@
 
                     <BaseSection title="Camera Settings">
                       <div class="row q-col-gutter-md">
+                        <div class="col-12" v-if="isNextApiTarget">
+                          <div class="row justify-end">
+                            <BaseButtonSecondary icon="add_a_photo" label="Add camera" @click="addCameraDialog = true" />
+                          </div>
+                        </div>
                         <div class="col-12">
                           <BaseSelect
                             v-model="selectedCamera"
@@ -577,16 +646,191 @@
       </div>
     </div>
   </BasePage>
+
+  <q-dialog v-model="addMotorDialog" persistent>
+    <q-card style="min-width: 520px">
+      <q-card-section>
+        <div class="text-h6">Add Motor</div>
+      </q-card-section>
+      <q-card-section class="q-pt-none">
+        <div class="row q-col-gutter-sm">
+          <div class="col-12">
+            <q-input v-model="addMotorForm.name" label="Name" autofocus />
+          </div>
+          <div class="col-6">
+            <q-input v-model.number="addMotorForm.direction_pin" type="number" label="Direction Pin" />
+          </div>
+          <div class="col-6">
+            <q-input v-model.number="addMotorForm.enable_pin" type="number" label="Enable Pin" />
+          </div>
+          <div class="col-6">
+            <q-input v-model.number="addMotorForm.step_pin" type="number" label="Step Pin" />
+          </div>
+          <div class="col-6">
+            <q-input
+              v-model.number="addMotorForm.steps_per_rotation"
+              type="number"
+              label="Steps per Rotation"
+            />
+          </div>
+          <div class="col-6">
+            <q-input v-model.number="addMotorForm.acceleration" type="number" label="Acceleration" />
+          </div>
+          <div class="col-6">
+            <q-input v-model.number="addMotorForm.max_speed" type="number" label="Max Speed" />
+          </div>
+          <div class="col-6">
+            <q-select
+              v-model="addMotorForm.direction"
+              :options="directionOptions"
+              label="Direction"
+              emit-value
+              map-options
+            />
+          </div>
+          <div class="col-6">
+            <q-input v-model.number="addMotorForm.min_angle" type="number" label="Min Angle" />
+          </div>
+          <div class="col-6">
+            <q-input v-model.number="addMotorForm.max_angle" type="number" label="Max Angle" />
+          </div>
+          <div class="col-6">
+            <q-input v-model.number="addMotorForm.home_angle" type="number" label="Home Angle" />
+          </div>
+        </div>
+      </q-card-section>
+      <q-card-actions align="right">
+        <BaseButtonSecondary label="Cancel" @click="addMotorDialog = false" />
+        <BaseButtonPrimary
+          label="Add motor"
+          icon="add"
+          :disable="!isAddMotorFormValid"
+          :loading="addMotorSaving"
+          @click="handleAddMotor"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+
+  <q-dialog v-model="addLightDialog" persistent>
+    <q-card style="min-width: 420px">
+      <q-card-section>
+        <div class="text-h6">Add Light</div>
+      </q-card-section>
+      <q-card-section class="q-pt-none">
+        <div class="row q-col-gutter-sm">
+          <div class="col-12">
+            <q-input v-model="addLightForm.name" label="Name" autofocus />
+          </div>
+          <div class="col-12">
+            <q-input v-model="addLightForm.pins" label="Pins (comma-separated)" />
+          </div>
+          <div class="col-12">
+            <q-toggle v-model="addLightForm.pwm_support" label="PWM support" left-label />
+          </div>
+        </div>
+      </q-card-section>
+      <q-card-actions align="right">
+        <BaseButtonSecondary label="Cancel" @click="addLightDialog = false" />
+        <BaseButtonPrimary
+          label="Add light"
+          icon="add"
+          :disable="!isAddLightFormValid"
+          :loading="addLightSaving"
+          @click="handleAddLight"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+
+  <q-dialog v-model="addCameraDialog" persistent>
+    <q-card style="min-width: 420px">
+      <q-card-section>
+        <div class="text-h6">Add Camera</div>
+      </q-card-section>
+      <q-card-section class="q-pt-none">
+        <div class="row q-col-gutter-sm">
+          <div class="col-12">
+            <q-input v-model="addCameraForm.name" label="Name" autofocus />
+          </div>
+          <div class="col-12">
+            <q-input v-model="addCameraForm.type" label="Type (e.g. usb, rpi)" />
+          </div>
+          <div class="col-12">
+            <q-input v-model="addCameraForm.path" label="Path / URL" />
+          </div>
+        </div>
+      </q-card-section>
+      <q-card-actions align="right">
+        <BaseButtonSecondary label="Cancel" @click="addCameraDialog = false" />
+        <BaseButtonPrimary
+          label="Add camera"
+          icon="add"
+          :disable="!isAddCameraFormValid"
+          :loading="addCameraSaving"
+          @click="handleAddCamera"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+
+  <q-dialog v-model="addEndstopDialog" persistent>
+    <q-card style="min-width: 480px">
+      <q-card-section>
+        <div class="text-h6">Add Endstop</div>
+      </q-card-section>
+      <q-card-section class="q-pt-none">
+        <div class="row q-col-gutter-sm">
+          <div class="col-12">
+            <q-input v-model="addEndstopForm.name" label="Name" autofocus />
+          </div>
+          <div class="col-6">
+            <q-input v-model.number="addEndstopForm.pin" type="number" label="Pin" />
+          </div>
+          <div class="col-6">
+            <q-input
+              v-model.number="addEndstopForm.angular_position"
+              type="number"
+              label="Angular Position"
+            />
+          </div>
+          <div class="col-12">
+            <q-input v-model="addEndstopForm.motor_name" label="Motor Name" />
+          </div>
+          <div class="col-6">
+            <q-toggle v-model="addEndstopForm.pull_up" label="Pull-up" left-label />
+          </div>
+          <div class="col-6">
+            <q-toggle v-model="addEndstopForm.active_high" label="Active high" left-label />
+          </div>
+          <div class="col-12">
+            <q-input v-model.number="addEndstopForm.bounce_time" type="number" label="Bounce Time (s)" />
+          </div>
+        </div>
+      </q-card-section>
+      <q-card-actions align="right">
+        <BaseButtonSecondary label="Cancel" @click="addEndstopDialog = false" />
+        <BaseButtonPrimary
+          label="Add endstop"
+          icon="add"
+          :disable="!isAddEndstopFormValid"
+          :loading="addEndstopSaving"
+          @click="handleAddEndstop"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { apiClient, getApiSdk, updateApiClientConfig } from 'src/services/apiClient'
+import { apiClient, getApiSdk, resolveApiTarget, updateApiClientConfig } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
 import { useTaskStore } from 'src/stores/tasks'
+import { useFirmwareSettingsStore } from 'src/stores/firmwareSettings'
 import { versionToApiTarget } from 'src/generated/api/versioned.gen'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
@@ -606,18 +850,26 @@ import type {
   CloudSettings,
   CloudSettingsResponse,
   CloudStatusResponse,
+  DeviceConfigResponse,
+  FirmwareSettings,
   LightConfig,
-  MotorConfig
+  MotorConfig,
+  PersistedCameraConfig,
+  PersistedEndstopConfig,
+  ScannerDeviceConfigInput
 } from 'src/generated/api'
 
 const apiConfigStore = useApiConfigStore()
 const cameraStore = useCameraStore()
 const taskStore = useTaskStore()
+const firmwareSettingsStore = useFirmwareSettingsStore()
 const apiSdk = () => getApiSdk()
 void taskStore.ensureConnected()
 const { activeScanTaskId } = storeToRefs(taskStore)
 const scanLocked = computed(() => Boolean(activeScanTaskId.value))
 const scanLockedTooltip = 'Unavailable while a scan is running.'
+
+const isNextApiTarget = computed(() => resolveApiTarget(apiConfigStore.version) === 'next')
 
 const scannerAddress = computed(() => apiConfigStore.baseURL.replace(/\/$/, ''))
 
@@ -653,6 +905,21 @@ const cloudSettingsLoaded = ref(false)
 const cloudStatusLoading = ref(false)
 const cloudStatus = ref<CloudStatusResponse | null>(null)
 
+type FirmwareForm = {
+  enable_cloud: boolean
+  qr_wifi_scan_enabled: boolean
+}
+
+const firmwareForm = reactive<FirmwareForm>({
+  enable_cloud: cloudToggle.value,
+  qr_wifi_scan_enabled: false
+})
+
+const firmwareSettingsLoading = computed(() => firmwareSettingsStore.loading)
+const firmwareSettingsSaving = computed(() => firmwareSettingsStore.saving)
+const firmwareSettingsError = computed(() => firmwareSettingsStore.error)
+const firmwareSettingsInitialized = ref(false)
+
 type CloudForm = {
   host: string
   user: string
@@ -668,6 +935,53 @@ const cloudForm = reactive<CloudForm>({
   token: '',
   split_size: defaultSplitSize
 })
+
+function applyFirmwareSettingsToForm(settings: Partial<FirmwareSettings> | null | undefined) {
+  const enableCloud = Boolean(settings?.enable_cloud ?? false)
+  const qrEnabled = Boolean(settings?.qr_wifi_scan_enabled ?? false)
+
+  firmwareForm.enable_cloud = enableCloud
+  firmwareForm.qr_wifi_scan_enabled = qrEnabled
+  cloudToggle.value = enableCloud
+}
+
+async function loadFirmwareSettings(force = false) {
+  if (!isNextApiTarget.value) {
+    firmwareSettingsStore.resetState()
+    firmwareSettingsInitialized.value = false
+    return
+  }
+
+  const settings = await firmwareSettingsStore.fetch(force)
+  applyFirmwareSettingsToForm(settings ?? null)
+  firmwareSettingsInitialized.value = true
+}
+
+async function saveFirmwareSettings() {
+  if (!isNextApiTarget.value) {
+    return
+  }
+
+  const payload: FirmwareSettings = {
+    enable_cloud: firmwareForm.enable_cloud,
+    qr_wifi_scan_enabled: firmwareForm.qr_wifi_scan_enabled
+  }
+
+  await firmwareSettingsStore.replace(payload)
+}
+
+async function handleFirmwareSettingChange<K extends keyof FirmwareForm>(key: K, value: FirmwareForm[K]) {
+  if (!isNextApiTarget.value || !firmwareSettingsInitialized.value) {
+    firmwareForm[key] = value
+    return
+  }
+
+  firmwareForm[key] = value
+  await firmwareSettingsStore.updateSetting(
+    key as keyof FirmwareSettings,
+    value as FirmwareSettings[keyof FirmwareSettings]
+  )
+}
 
 const hasPersistedCloudToken = () => cloudForm.token.trim().length > 0
 
@@ -1090,10 +1404,123 @@ type LightForm = {
   pins: string
 }
 
+type AddMotorForm = {
+  name: string
+  direction_pin: number | null
+  enable_pin: number | null
+  step_pin: number | null
+  steps_per_rotation: number | null
+  acceleration: number | null
+  max_speed: number | null
+  direction: 1 | -1
+  min_angle: number | null
+  max_angle: number | null
+  home_angle: number | null
+}
+
+type AddLightForm = {
+  name: string
+  pins: string
+  pwm_support: boolean
+}
+
+type AddCameraForm = {
+  name: string
+  type: string
+  path: string
+}
+
+type AddEndstopForm = {
+  name: string
+  pin: number | null
+  angular_position: number | null
+  motor_name: string
+  pull_up: boolean | null
+  bounce_time: number | null
+  active_high: boolean | null
+}
+
 const directionOptions = [
   { label: 'Forward (1)', value: 1 },
   { label: 'Reverse (-1)', value: -1 }
 ]
+
+const addMotorDialog = ref(false)
+const addLightDialog = ref(false)
+const addCameraDialog = ref(false)
+const addEndstopDialog = ref(false)
+
+const addMotorForm = reactive<AddMotorForm>({
+  name: '',
+  direction_pin: null,
+  enable_pin: null,
+  step_pin: null,
+  steps_per_rotation: null,
+  acceleration: fieldDefaults.MotorConfig?.acceleration ?? null,
+  max_speed: fieldDefaults.MotorConfig?.max_speed ?? null,
+  direction: (fieldDefaults.MotorConfig?.direction ?? 1) as 1 | -1,
+  min_angle: fieldDefaults.MotorConfig?.min_angle ?? null,
+  max_angle: fieldDefaults.MotorConfig?.max_angle ?? null,
+  home_angle: fieldDefaults.MotorConfig?.home_angle ?? null
+})
+
+const addLightForm = reactive<AddLightForm>({
+  name: '',
+  pins: '',
+  pwm_support: fieldDefaults.LightConfig?.pwm_support ?? false
+})
+
+const addCameraForm = reactive<AddCameraForm>({
+  name: '',
+  type: '',
+  path: ''
+})
+
+const addEndstopForm = reactive<AddEndstopForm>({
+  name: '',
+  pin: null,
+  angular_position: null,
+  motor_name: '',
+  pull_up: fieldDefaults.EndstopConfig?.pull_up ?? true,
+  bounce_time: fieldDefaults.EndstopConfig?.bounce_time ?? null,
+  active_high: fieldDefaults.EndstopConfig?.active_high ?? false
+})
+
+const addMotorSaving = ref(false)
+const addLightSaving = ref(false)
+const addCameraSaving = ref(false)
+const addEndstopSaving = ref(false)
+
+const isAddMotorFormValid = computed(() => {
+  return (
+    addMotorForm.name.trim().length > 0 &&
+    addMotorForm.direction_pin !== null &&
+    addMotorForm.enable_pin !== null &&
+    addMotorForm.step_pin !== null &&
+    addMotorForm.steps_per_rotation !== null
+  )
+})
+
+const isAddLightFormValid = computed(() => {
+  return addLightForm.name.trim().length > 0 && addLightForm.pins.trim().length > 0
+})
+
+const isAddCameraFormValid = computed(() => {
+  return (
+    addCameraForm.name.trim().length > 0 &&
+    addCameraForm.type.trim().length > 0 &&
+    addCameraForm.path.trim().length > 0
+  )
+})
+
+const isAddEndstopFormValid = computed(() => {
+  return (
+    addEndstopForm.name.trim().length > 0 &&
+    addEndstopForm.motor_name.trim().length > 0 &&
+    addEndstopForm.pin !== null &&
+    addEndstopForm.angular_position !== null
+  )
+})
 
 function formatMotorAngle(angle: number) {
   return `${angle.toFixed(1)}°`
@@ -1330,6 +1757,228 @@ function mapLightConfig(config: LightConfig | null | undefined): LightForm {
   }
 }
 
+function resetAddMotorForm() {
+  Object.assign(addMotorForm, {
+    name: '',
+    direction_pin: null,
+    enable_pin: null,
+    step_pin: null,
+    steps_per_rotation: null,
+    acceleration: fieldDefaults.MotorConfig?.acceleration ?? null,
+    max_speed: fieldDefaults.MotorConfig?.max_speed ?? null,
+    direction: (fieldDefaults.MotorConfig?.direction ?? 1) as 1 | -1,
+    min_angle: fieldDefaults.MotorConfig?.min_angle ?? null,
+    max_angle: fieldDefaults.MotorConfig?.max_angle ?? null,
+    home_angle: fieldDefaults.MotorConfig?.home_angle ?? null
+  })
+}
+
+function resetAddLightForm() {
+  Object.assign(addLightForm, {
+    name: '',
+    pins: '',
+    pwm_support: fieldDefaults.LightConfig?.pwm_support ?? false
+  })
+}
+
+function resetAddCameraForm() {
+  Object.assign(addCameraForm, {
+    name: '',
+    type: '',
+    path: ''
+  })
+}
+
+function resetAddEndstopForm() {
+  Object.assign(addEndstopForm, {
+    name: '',
+    pin: null,
+    angular_position: null,
+    motor_name: '',
+    pull_up: fieldDefaults.EndstopConfig?.pull_up ?? true,
+    bounce_time: fieldDefaults.EndstopConfig?.bounce_time ?? null,
+    active_high: fieldDefaults.EndstopConfig?.active_high ?? false
+  })
+}
+
+async function fetchCurrentConfig(): Promise<ScannerDeviceConfigInput | null> {
+  if (!isNextApiTarget.value) {
+    return null
+  }
+
+  try {
+    const response = await getApiSdk('next').getCurrentConfig({ client: apiClient })
+    const payload = (response?.data ?? response) as DeviceConfigResponse | null
+    const baseConfig = (payload?.config ?? null) as ScannerDeviceConfigInput | null
+
+    if (!baseConfig) {
+      return null
+    }
+
+    return {
+      ...baseConfig,
+      motors: { ...(baseConfig.motors ?? {}) },
+      lights: { ...(baseConfig.lights ?? {}) },
+      cameras: { ...(baseConfig.cameras ?? {}) },
+      endstops: baseConfig.endstops ? { ...baseConfig.endstops } : {}
+    }
+  } catch (error) {
+    console.error('Current device config could not be loaded.', error)
+    return null
+  }
+}
+
+async function persistConfig(config: ScannerDeviceConfigInput) {
+  return getApiSdk('next').addConfigJson({
+    client: apiClient,
+    body: {
+      config_data: config,
+      filename: { config_file: DEFAULT_CONFIG_FILENAME }
+    }
+  })
+}
+
+async function updateConfigWithMutation(mutator: (config: ScannerDeviceConfigInput) => void) {
+  const current = await fetchCurrentConfig()
+  if (!current) {
+    return false
+  }
+
+  const nextConfig: ScannerDeviceConfigInput = {
+    ...current,
+    motors: { ...(current.motors ?? {}) },
+    lights: { ...(current.lights ?? {}) },
+    cameras: { ...(current.cameras ?? {}) },
+    endstops: current.endstops ? { ...(current.endstops ?? {}) } : {}
+  }
+
+  mutator(nextConfig)
+  await persistConfig(nextConfig)
+  await deviceStore.refreshFromRest()
+  await loadDeviceConfigs()
+  return true
+}
+
+async function handleAddMotor() {
+  if (!isAddMotorFormValid.value || addMotorSaving.value || !isNextApiTarget.value) {
+    return
+  }
+
+  addMotorSaving.value = true
+  try {
+    await updateConfigWithMutation((config) => {
+      const motors = config.motors ?? {}
+      config.motors = motors
+      motors[addMotorForm.name.trim()] = {
+        direction_pin: addMotorForm.direction_pin ?? 0,
+        enable_pin: addMotorForm.enable_pin ?? 0,
+        step_pin: addMotorForm.step_pin ?? 0,
+        steps_per_rotation: addMotorForm.steps_per_rotation ?? 0,
+        acceleration: addMotorForm.acceleration ?? undefined,
+        max_speed: addMotorForm.max_speed ?? undefined,
+        direction: addMotorForm.direction,
+        min_angle: addMotorForm.min_angle ?? undefined,
+        max_angle: addMotorForm.max_angle ?? undefined,
+        home_angle: addMotorForm.home_angle ?? undefined
+      }
+    })
+
+    addMotorDialog.value = false
+    resetAddMotorForm()
+  } catch (error) {
+    console.error('Motor could not be added.', error)
+  } finally {
+    addMotorSaving.value = false
+  }
+}
+
+async function handleAddLight() {
+  if (!isAddLightFormValid.value || addLightSaving.value || !isNextApiTarget.value) {
+    return
+  }
+
+  addLightSaving.value = true
+  try {
+    const pins = addLightForm.pins
+      .split(',')
+      .map((value) => Number(value.trim()))
+      .filter((value) => Number.isFinite(value))
+
+    await updateConfigWithMutation((config) => {
+      const lights = config.lights ?? {}
+      config.lights = lights
+      lights[addLightForm.name.trim()] = {
+        pins,
+        pwm_support: addLightForm.pwm_support
+      }
+    })
+
+    addLightDialog.value = false
+    resetAddLightForm()
+  } catch (error) {
+    console.error('Light could not be added.', error)
+  } finally {
+    addLightSaving.value = false
+  }
+}
+
+async function handleAddCamera() {
+  if (!isAddCameraFormValid.value || addCameraSaving.value || !isNextApiTarget.value) {
+    return
+  }
+
+  addCameraSaving.value = true
+  try {
+    await updateConfigWithMutation((config) => {
+      const cameras = config.cameras ?? {}
+      config.cameras = cameras
+      cameras[addCameraForm.name.trim()] = {
+        type: addCameraForm.type.trim(),
+        path: addCameraForm.path.trim(),
+        settings: {}
+      } as PersistedCameraConfig
+    })
+
+    addCameraDialog.value = false
+    resetAddCameraForm()
+  } catch (error) {
+    console.error('Camera could not be added.', error)
+  } finally {
+    addCameraSaving.value = false
+  }
+}
+
+async function handleAddEndstop() {
+  if (!isAddEndstopFormValid.value || addEndstopSaving.value || !isNextApiTarget.value) {
+    return
+  }
+
+  addEndstopSaving.value = true
+  try {
+    await updateConfigWithMutation((config) => {
+      const endstops = (config.endstops ?? {}) as Record<string, PersistedEndstopConfig>
+      config.endstops = endstops
+      endstops[addEndstopForm.name.trim()] = {
+        settings: {
+          pin: addEndstopForm.pin ?? 0,
+          angular_position: addEndstopForm.angular_position ?? 0,
+          motor_name: addEndstopForm.motor_name.trim(),
+          pull_up: addEndstopForm.pull_up ?? undefined,
+          bounce_time: addEndstopForm.bounce_time ?? undefined,
+          active_high: addEndstopForm.active_high ?? undefined
+        }
+      }
+    })
+
+    addEndstopDialog.value = false
+    resetAddEndstopForm()
+  } catch (error) {
+    console.error('Endstop could not be added.', error)
+  } finally {
+    addEndstopSaving.value = false
+  }
+}
+
 async function loadDeviceConfigs() {
   configOptionsLoading.value = true
   try {
@@ -1532,9 +2181,63 @@ watch(selectedCamera, (name) => {
   }
 })
 
+watch(addMotorDialog, (open) => {
+  if (!open) {
+    resetAddMotorForm()
+  }
+})
+
+watch(addLightDialog, (open) => {
+  if (!open) {
+    resetAddLightForm()
+  }
+})
+
+watch(addCameraDialog, (open) => {
+  if (!open) {
+    resetAddCameraForm()
+  }
+})
+
+watch(addEndstopDialog, (open) => {
+  if (!open) {
+    resetAddEndstopForm()
+  }
+})
+
+watch(
+  () => firmwareSettingsStore.settings,
+  (settings) => {
+    if (!isNextApiTarget.value) {
+      return
+    }
+    applyFirmwareSettingsToForm(settings ?? null)
+    firmwareSettingsInitialized.value = true
+  },
+  { deep: true }
+)
+
+watch(isNextApiTarget, (isNext) => {
+  if (isNext) {
+    void loadFirmwareSettings(true)
+  } else {
+    firmwareSettingsStore.resetState()
+    firmwareSettingsInitialized.value = false
+    firmwareForm.qr_wifi_scan_enabled = false
+    firmwareForm.enable_cloud = cloudToggle.value = apiConfigStore.cloudEnabled ?? false
+  }
+})
+
 watch(
   cloudToggle,
   (enabled) => {
+    if (isNextApiTarget.value) {
+      firmwareForm.enable_cloud = enabled
+      if (firmwareSettingsInitialized.value) {
+        void firmwareSettingsStore.updateSetting('enable_cloud', enabled)
+      }
+    }
+
     if (!enabled) {
       if (apiConfigStore.cloudEnabled) {
         apiConfigStore.setConfig({ cloudEnabled: false })
@@ -1544,10 +2247,10 @@ watch(
     }
 
     if (!cloudSettingsLoaded.value) {
-      loadCloudSettings()
+      void loadCloudSettings()
     }
 
-    loadCloudStatus()
+    void loadCloudStatus()
   },
   { immediate: true }
 )
@@ -1676,6 +2379,9 @@ async function handleReinitializeHardware() {
 onMounted(async () => {
   await loadVersionOptions()
   await loadDeviceConfigs()
+  if (isNextApiTarget.value) {
+    await loadFirmwareSettings()
+  }
 })
 
 watch(

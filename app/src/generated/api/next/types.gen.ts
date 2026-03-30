@@ -536,6 +536,43 @@ export type EndstopConfig = {
 };
 
 /**
+ * FirmwareSettingPatchRequest
+ */
+export type FirmwareSettingPatchRequest = {
+    /**
+     * Value
+     */
+    value: unknown;
+};
+
+/**
+ * FirmwareSettings
+ *
+ * Global firmware behaviour toggles.
+ *
+ * Attributes:
+ * qr_wifi_scan_enabled: When True the firmware automatically starts the
+ * QR WiFi scan task on startup if no usable network connection is
+ * detected.
+ * enable_cloud: When True the firmware enables cloud-facing features and
+ * UX affordances.
+ */
+export type FirmwareSettings = {
+    /**
+     * Qr Wifi Scan Enabled
+     *
+     * Automatically scan for WiFi QR codes on startup when no WiFi or Ethernet connection is active.
+     */
+    qr_wifi_scan_enabled?: boolean;
+    /**
+     * Enable Cloud
+     *
+     * Enable integrations with OpenScan Cloud services.
+     */
+    enable_cloud?: boolean;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -2189,6 +2226,92 @@ export type ReplaceLightNameSettingsResponses = {
 };
 
 export type ReplaceLightNameSettingsResponse = ReplaceLightNameSettingsResponses[keyof ReplaceLightNameSettingsResponses];
+
+export type GetSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/firmware/settings';
+};
+
+export type GetSettingsErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+};
+
+export type GetSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: FirmwareSettings;
+};
+
+export type GetSettingsResponse = GetSettingsResponses[keyof GetSettingsResponses];
+
+export type ReplaceSettingsData = {
+    body: FirmwareSettings;
+    path?: never;
+    query?: never;
+    url: '/firmware/settings';
+};
+
+export type ReplaceSettingsErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ReplaceSettingsError = ReplaceSettingsErrors[keyof ReplaceSettingsErrors];
+
+export type ReplaceSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: FirmwareSettings;
+};
+
+export type ReplaceSettingsResponse = ReplaceSettingsResponses[keyof ReplaceSettingsResponses];
+
+export type UpdateSettingData = {
+    body: FirmwareSettingPatchRequest;
+    path: {
+        /**
+         * Key
+         */
+        key: string;
+    };
+    query?: never;
+    url: '/firmware/settings/{key}';
+};
+
+export type UpdateSettingErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateSettingError = UpdateSettingErrors[keyof UpdateSettingErrors];
+
+export type UpdateSettingResponses = {
+    /**
+     * Successful Response
+     */
+    200: FirmwareSettings;
+};
+
+export type UpdateSettingResponse = UpdateSettingResponses[keyof UpdateSettingResponses];
 
 export type GetProjectsData = {
     body?: never;
