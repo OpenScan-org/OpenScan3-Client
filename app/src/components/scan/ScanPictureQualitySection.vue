@@ -129,9 +129,8 @@ import BaseSection from 'components/base/BaseSection.vue';
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue';
 import BaseSliderWithInput from 'components/base/BaseSliderWithInput.vue';
 import { useDeviceStore } from 'src/stores/device';
-import { apiClient } from 'src/services/apiClient';
+import { apiClient, getApiSdk } from 'src/services/apiClient';
 import {
-  updateCameraNameSettings,
   type CameraSettings as CameraSettingsModel,
 } from 'src/generated/api';
 import {
@@ -167,6 +166,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const deviceStore = useDeviceStore();
+const apiSdk = () => getApiSdk();
 void deviceStore.ensureConnected();
 
 type CameraSettingsField = keyof (typeof fieldDescriptions)['CameraSettings'];
@@ -298,7 +298,7 @@ async function persistShutter(value: number) {
   }
 
   try {
-    await updateCameraNameSettings({
+    await apiSdk().updateCameraNameSettings({
       client: apiClient,
       path: { name: props.camera.value },
       body: { shutter: value },
@@ -318,7 +318,7 @@ async function persistSaturation(value: number) {
   }
 
   try {
-    await updateCameraNameSettings({
+    await apiSdk().updateCameraNameSettings({
       client: apiClient,
       path: { name: props.camera.value },
       body: { saturation: value },
@@ -338,7 +338,7 @@ async function persistContrast(value: number) {
   }
 
   try {
-    await updateCameraNameSettings({
+    await apiSdk().updateCameraNameSettings({
       client: apiClient,
       path: { name: props.camera.value },
       body: { contrast: value },
@@ -358,7 +358,7 @@ async function persistGain(value: number) {
   }
 
   try {
-    await updateCameraNameSettings({
+    await apiSdk().updateCameraNameSettings({
       client: apiClient,
       path: { name: props.camera.value },
       body: { gain: value },
@@ -378,7 +378,7 @@ async function persistJpegQuality(value: number) {
   }
 
   try {
-    await updateCameraNameSettings({
+    await apiSdk().updateCameraNameSettings({
       client: apiClient,
       path: { name: props.camera.value },
       body: { jpeg_quality: value },
@@ -398,7 +398,7 @@ async function persistAwbgRed(value: number) {
   }
 
   try {
-    await updateCameraNameSettings({
+    await apiSdk().updateCameraNameSettings({
       client: apiClient,
       path: { name: props.camera.value },
       body: { awbg_red: value },
@@ -418,7 +418,7 @@ async function persistAwbgBlue(value: number) {
   }
 
   try {
-    await updateCameraNameSettings({
+    await apiSdk().updateCameraNameSettings({
       client: apiClient,
       path: { name: props.camera.value },
       body: { awbg_blue: value },
@@ -438,7 +438,7 @@ async function persistOrientationFlag(value: number) {
   }
 
   try {
-    await updateCameraNameSettings({
+    await apiSdk().updateCameraNameSettings({
       client: apiClient,
       path: { name: props.camera.value },
       body: { orientation_flag: value },

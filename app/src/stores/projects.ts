@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import { apiClient } from 'src/services/apiClient';
-import { getProjects, newProject, type Project } from 'src/generated/api';
+import { apiClient, getApiSdk } from 'src/services/apiClient';
+import { type Project } from 'src/generated/api';
 
 function normalizeProjects(payload: unknown): Project[] {
   if (!payload || typeof payload !== 'object') {
@@ -50,7 +50,7 @@ export const useProjectsStore = defineStore('projects', {
       this.loading = true;
       this.error = null;
       try {
-        const data = await getProjects({ client: apiClient });
+        const data = await getApiSdk().getProjects({ client: apiClient });
         this.projects = normalizeProjects(data);
       } catch (error) {
         this.error = 'Error loading projects';
@@ -61,7 +61,7 @@ export const useProjectsStore = defineStore('projects', {
     },
     async createProject(name: string, description?: string) {
       try {
-        const newProj = await newProject({
+        const newProj = await getApiSdk().newProject({
           path: { project_name: name },
           query: { project_description: description || '' },
           client: apiClient

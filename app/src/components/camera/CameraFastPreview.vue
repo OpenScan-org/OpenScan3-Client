@@ -56,8 +56,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useCameraStore } from 'src/stores/camera'
 import { useDeviceStore } from 'src/stores/device'
-import { apiClient } from 'src/services/apiClient'
-import { updateCameraNameSettings } from 'src/generated/api'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
 import { usePreviewSettingsStore, type PreviewOrientation } from 'src/stores/previewSettings'
 import { getOrientationRotation, getOrientationTransform } from 'src/utils/orientation'
 
@@ -85,6 +84,7 @@ const props = withDefaults(defineProps<FastPreviewProps>(), {
 const previewSettingsStore = usePreviewSettingsStore()
 const cameraStore = useCameraStore()
 const deviceStore = useDeviceStore()
+const apiSdk = () => getApiSdk()
 void deviceStore.ensureConnected()
 
 const previewImage = ref<HTMLImageElement | null>(null)
@@ -501,7 +501,7 @@ async function persistCrop(widthPercent: number, heightPercent: number) {
 
   cropSaving.value = true
   try {
-    await updateCameraNameSettings({
+    await apiSdk().updateCameraNameSettings({
       client: apiClient,
       path: { name: props.camera.value },
       body: {

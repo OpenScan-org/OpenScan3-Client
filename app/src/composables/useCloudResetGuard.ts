@@ -1,13 +1,13 @@
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { apiClient, getApiBaseUrl } from 'src/services/apiClient'
-import { resetCloudProject } from 'src/generated/api'
+import { apiClient, getApiBaseUrl, getApiSdk } from 'src/services/apiClient'
 
 export type CloudResetCallback = () => void | Promise<void>
 
 export function useCloudResetGuard() {
   const $q = useQuasar()
   const cloudResetLoading = ref(false)
+  const apiSdk = () => getApiSdk()
 
   const promptCloudReset = (projectName: string, onAfterReset: CloudResetCallback) => {
     const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(projectName)}/model/zip`
@@ -23,7 +23,7 @@ export function useCloudResetGuard() {
     }).onOk(async () => {
       try {
         cloudResetLoading.value = true
-        await resetCloudProject({ path: { project_name: projectName }, client: apiClient })
+        await apiSdk().resetCloudProject({ path: { project_name: projectName }, client: apiClient })
         await onAfterReset()
       } catch (error) {
         console.error('Could not reset cloud project.', error)

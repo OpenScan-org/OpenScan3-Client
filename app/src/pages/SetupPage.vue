@@ -391,16 +391,9 @@ import CameraFastPreview from 'components/camera/CameraFastPreview.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import { useCameraStore } from 'src/stores/camera'
 import {
-  listConfigFiles,
-  moveMotorByDegree,
-  motorEndstopCalibration,
-  overrideMotorAngle,
-  setConfigFile,
-  updateCameraNameSettings,
-  updateMotorNameSettings,
   type DeviceConfigRequest
 } from 'src/generated/api'
-import { apiClient } from 'src/services/apiClient'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
 
 const steps = [
   { id: 'connection', label: 'Model', caption: 'Select the device model.' },
@@ -415,6 +408,7 @@ const activeStepId = ref(steps[0].id)
 const deviceStore = useDeviceStore()
 const cameraStore = useCameraStore()
 const router = useRouter()
+const apiSdk = () => getApiSdk()
 
 interface DeviceConfigFile {
   filename: string
@@ -570,7 +564,7 @@ function formatConfigCaption(config: DeviceConfigFile): string {
 async function loadConfigs() {
   loadingConfigs.value = true
   try {
-    const data = await listConfigFiles<true>({ client: apiClient, throwOnError: true })
+    const data = await apiSdk().listConfigFiles<true>({ client: apiClient, throwOnError: true })
     const configs = (data as any)?.configs ?? []
     const filtered = (configs as DeviceConfigFile[]).filter(
       (config) => config.filename !== 'device_config.json'
@@ -613,7 +607,7 @@ async function handleNext(goNext: () => void) {
       const body: DeviceConfigRequest = {
         config_file: selectedConfigPath.value
       }
-      await setConfigFile<true>({ client: apiClient, throwOnError: true, body })
+      await apiSdk().setConfigFile<true>({ client: apiClient, throwOnError: true, body })
       goNext()
     } catch (error) {
       console.error('Failed to apply device configuration', error)
@@ -630,7 +624,7 @@ async function handleNext(goNext: () => void) {
     isOverridingRotorAngle.value = true
     try {
       await deviceStore.ensureConnected()
-      await overrideMotorAngle<true>({
+      await apiSdk().overrideMotorAngle<true>({
         client: apiClient,
         throwOnError: true,
         path: { motor_name: ROTOR_MOTOR_NAME },
@@ -652,7 +646,7 @@ async function handleNext(goNext: () => void) {
 
 async function performRotorMove(degrees: number) {
   await deviceStore.ensureConnected()
-  await moveMotorByDegree<true>({
+  await apiSdk().moveMotorByDegree<true>({
     client: apiClient,
     throwOnError: true,
     path: { motor_name: ROTOR_MOTOR_NAME },
@@ -725,7 +719,7 @@ async function handleRotorEndstopCalibration() {
   isEndstopCalibrating.value = true
   try {
     await deviceStore.ensureConnected()
-    await motorEndstopCalibration<true>({
+    await apiSdk().motorEndstopCalibration<true>({
       client: apiClient,
       throwOnError: true,
       path: { motor_name: ROTOR_MOTOR_NAME },
@@ -751,7 +745,7 @@ async function handleReverseRotorDirection() {
 
   try {
     await deviceStore.ensureConnected()
-    await updateMotorNameSettings<true>({
+    await apiSdk().updateMotorNameSettings<true>({
       client: apiClient,
       throwOnError: true,
       path: { name: ROTOR_MOTOR_NAME },
@@ -801,7 +795,7 @@ async function applyOrientationFlag(nextFlag: number) {
 
   try {
     // Mark orientation update as in progress; specific action is set by caller
-    await updateCameraNameSettings({
+    await apiSdk().updateCameraNameSettings({
       client: apiClient,
       path: { name: orientationCamera.value.value },
       body: { orientation_flag: nextFlag }

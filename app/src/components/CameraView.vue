@@ -271,8 +271,7 @@ import CameraHistogram from './camera/CameraHistogram.vue'
 import CameraHQPreview, { type CameraHQPreviewExposed } from './camera/CameraHQPreview.vue'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
-import { moveToPosition, restartCamera } from 'src/generated/api'
-import { apiClient } from 'src/services/apiClient'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
 
 type CameraOption = { label: string; value: string; orientationFlag?: number | null }
 
@@ -309,7 +308,7 @@ async function handleMoveHome() {
   homeBusy.value = true
   try {
     await deviceStore.ensureConnected()
-    await moveToPosition({
+    await apiSdk().moveToPosition({
       client: apiClient,
       body: {
         theta: 90,
@@ -343,6 +342,7 @@ const emit = defineEmits<{
 
 const deviceStore = useDeviceStore()
 const cameraStore = useCameraStore()
+const apiSdk = () => getApiSdk()
 
 const fastPreviewRef = ref<CameraFastPreviewExposed | null>(null)
 const hqPreviewRef = ref<CameraHQPreviewExposed | null>(null)
@@ -417,7 +417,7 @@ async function handleRestartCamera() {
 
   restartBusy.value = true
   try {
-    await restartCamera({
+    await apiSdk().restartCamera({
       client: apiClient,
       path: { camera_name: cameraName }
     })

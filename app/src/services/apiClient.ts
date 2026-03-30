@@ -69,8 +69,7 @@ export const apiClient = new Proxy({} as ApiClient, {
 export function updateApiClientConfig() {
   for (const target of apiTargets) {
     apiClients[target].setConfig({
-      baseUrl: apiConfigStore.baseURL,
-      responseStyle: 'data'
+      baseURL: apiConfigStore.baseURL
     })
   }
 }

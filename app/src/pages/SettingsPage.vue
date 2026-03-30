@@ -572,7 +572,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { apiClient, updateApiClientConfig } from 'src/services/apiClient'
+import { apiClient, getApiSdk, updateApiClientConfig } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
@@ -589,32 +589,20 @@ import BasePage from 'components/base/BasePage.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import { fieldDefaults } from 'src/generated/api/fieldDefaults'
-import {
-  getCameraNameSettings,
-  getCloudSettings,
-  getCloudStatus,
-  listConfigFiles,
-  reinitializeHardware,
-  saveDeviceConfig,
-  setConfigFile,
-  autoCalibrateAwb,
-  updateCameraNameSettings,
-  updateCloudSettings,
-  updateLightNameSettings,
-  updateMotorNameSettings,
-  motorMoveHome,
-  type AutoCalibrateAwbResponse,
-  type CameraSettings,
-  type CloudSettings,
-  type CloudSettingsResponse,
-  type CloudStatusResponse,
-  type LightConfig,
-  type MotorConfig
+import type {
+  AutoCalibrateAwbResponse,
+  CameraSettings,
+  CloudSettings,
+  CloudSettingsResponse,
+  CloudStatusResponse,
+  LightConfig,
+  MotorConfig
 } from 'src/generated/api'
 
 const apiConfigStore = useApiConfigStore()
 const cameraStore = useCameraStore()
 const taskStore = useTaskStore()
+const apiSdk = () => getApiSdk()
 void taskStore.ensureConnected()
 const { activeScanTaskId } = storeToRefs(taskStore)
 const scanLocked = computed(() => Boolean(activeScanTaskId.value))
@@ -680,7 +668,7 @@ async function calibrateCameraAwb() {
 
   cameraAwbCalibrating.value = true
   try {
-    const response = await autoCalibrateAwb({
+    const response = await apiSdk().autoCalibrateAwb({
       client: apiClient,
       path: { camera_name: selectedCamera.value },
       body: awbCalibrationDefaults ? { ...awbCalibrationDefaults } : undefined
@@ -1105,7 +1093,7 @@ async function handleMoveHome(motorName: string) {
   homeBusy.value = true
   try {
     await deviceStore.ensureConnected()
-    await motorMoveHome({
+    await apiSdk().motorMoveHome({
       client: apiClient,
       path: { motor_name: motorName }
     })
@@ -1157,7 +1145,7 @@ async function loadCloudSettings() {
 
   cloudSettingsLoading.value = true
   try {
-    const response = await getCloudSettings({ client: apiClient })
+    const response = await apiSdk().getCloudSettings({ client: apiClient })
     const settings = ((response?.data ?? response) as CloudSettingsResponse | undefined)?.settings as
       | Partial<CloudSettings>
       | null
@@ -1178,7 +1166,7 @@ async function loadCloudStatus() {
 
   cloudStatusLoading.value = true
   try {
-    const response = await getCloudStatus({ client: apiClient })
+    const response = await apiSdk().getCloudStatus({ client: apiClient })
     const status = ((response?.data ?? response) as CloudStatusResponse | undefined) ?? null
     cloudStatus.value = status
   } catch (error) {
@@ -1207,7 +1195,7 @@ async function saveCloudSettings() {
       payload.split_size = cloudForm.split_size
     }
 
-    await updateCloudSettings({
+    await apiSdk().updateCloudSettings({
       client: apiClient,
       body: payload
     })
@@ -1264,10 +1252,8 @@ function mapLightConfig(config: LightConfig | null | undefined): LightForm {
 async function loadDeviceConfigs() {
   configOptionsLoading.value = true
   try {
-    const response = (await listConfigFiles({ client: apiClient })) as unknown as {
-      status?: string
-      configs?: DeviceConfigListItem[]
-    }
+    const response = await apiSdk().listConfigFiles({ client: apiClient })
+    const payload = (response?.data ?? response) as { status?: string; configs?: DeviceConfigListItem[] }
 
     const isDefaultConfig = (item: DeviceConfigListItem) => {
       const filenameMatches = item.filename === DEFAULT_CONFIG_FILENAME
@@ -1275,7 +1261,7 @@ async function loadDeviceConfigs() {
       return filenameMatches || pathMatches
     }
 
-    const options = (response?.configs ?? []).map((item) => {
+    const options = (payload?.configs ?? []).map((item) => {
       const optionLabelBase = item.name ?? item.filename
       const optionLabel = isDefaultConfig(item) ? `${optionLabelBase} (current)` : optionLabelBase
 
@@ -1315,7 +1301,7 @@ async function applySelectedConfig() {
 
   configApplying.value = true
   try {
-    await setConfigFile({
+    await apiSdk().setConfigFile({
       client: apiClient,
       body: { config_file: selectedConfig.value }
     })
@@ -1330,7 +1316,7 @@ async function loadCameraSettings(name: string) {
   cameraLoading.value = true
   resetCameraForm()
   try {
-    const response = await getCameraNameSettings({
+    const response = await apiSdk().getCameraNameSettings({
       client: apiClient,
       path: { name }
     })
@@ -1364,7 +1350,7 @@ async function saveCameraSettings() {
     const payloadEntries = Object.entries(cameraForm).filter(([, value]) => value !== undefined)
     const payload = Object.fromEntries(payloadEntries)
 
-    await updateCameraNameSettings({
+    await apiSdk().updateCameraNameSettings({
       client: apiClient,
       path: { name: selectedCamera.value },
       body: payload
@@ -1398,7 +1384,7 @@ async function saveMotorSettings(name: string) {
     if (form.min_angle !== null) payload.min_angle = form.min_angle
     if (form.max_angle !== null) payload.max_angle = form.max_angle
 
-    const updated = await updateMotorNameSettings({
+    const updated = await apiSdk().updateMotorNameSettings({
       client: apiClient,
       path: { name },
       body: payload
@@ -1433,7 +1419,7 @@ async function saveLightSettings(name: string) {
       pins: pinsArray
     }
 
-    const updated = await updateLightNameSettings({
+    const updated = await apiSdk().updateLightNameSettings({
       client: apiClient,
       path: { name },
       body: payload
@@ -1582,7 +1568,7 @@ function resetApiConfigToWindow() {
 
 async function saveCurrentConfig() {
   try {
-    await saveDeviceConfig({ client: apiClient })
+    await apiSdk().saveDeviceConfig({ client: apiClient })
   } catch (error) {
     console.error('Configuration could not be saved.', error)
   }
@@ -1595,7 +1581,7 @@ async function handleReinitializeHardware() {
 
   reinitializeHardwareLoading.value = true
   try {
-    await reinitializeHardware({
+    await apiSdk().reinitializeHardware({
       client: apiClient,
       query: { detect_cameras: true }
     })

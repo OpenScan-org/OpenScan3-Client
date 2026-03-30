@@ -10,8 +10,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { apiClient } from 'src/services/apiClient'
-import { reboot as rebootDeviceApi, shutdown as shutdownDeviceApi } from 'src/generated/api'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
 
 type PowerControlsProps = {
   saveConfig?: boolean
@@ -26,6 +25,7 @@ const props = withDefaults(defineProps<PowerControlsProps>(), {
 })
 
 const $q = useQuasar()
+const apiSdk = () => getApiSdk()
 
 const rebooting = ref(false)
 const shuttingDown = ref(false)
@@ -73,7 +73,7 @@ function handlePowerConfirmation(
 async function rebootAction(saveConfig: boolean) {
   rebooting.value = true
   try {
-    await rebootDeviceApi({
+    await apiSdk().reboot({
       client: apiClient,
       query: { save_config: saveConfig }
     })
@@ -88,7 +88,7 @@ async function rebootAction(saveConfig: boolean) {
 async function shutdownAction(saveConfig: boolean) {
   shuttingDown.value = true
   try {
-    await shutdownDeviceApi({
+    await apiSdk().shutdown({
       client: apiClient,
       query: { save_config: saveConfig }
     })

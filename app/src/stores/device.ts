@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { useApiConfigStore, buildWebSocketUrl } from './apiConfig'
-import { apiClient } from 'src/services/apiClient'
-import { getDeviceInfo, type DeviceStatusResponse } from 'src/generated/api'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
+import { type DeviceStatusResponse } from 'src/generated/api'
 import { useCameraStore } from './camera'
 
 export type DeviceStoreStatus = 'idle' | 'connecting' | 'open' | 'closed' | 'error'
@@ -184,7 +184,8 @@ export const useDeviceStore = defineStore('device', {
     },
     async refreshFromRest() {
       try {
-        const snapshot = await getDeviceInfo<true>({ client: apiClient, throwOnError: true })
+        const snapshotResponse = await getApiSdk().getDeviceInfo<true>({ client: apiClient, throwOnError: true })
+        const snapshot = (snapshotResponse as { data?: DeviceStatusResponse } | DeviceStatusResponse)?.['data'] ?? snapshotResponse
         this.device = snapshot ?? null
         this.lastChanged = null
         this.needsSetup = false

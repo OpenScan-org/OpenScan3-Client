@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import { apiClient, getApiBaseUrl } from 'src/services/apiClient';
-import { getCameras, type Camera } from 'src/generated/api';
+import { apiClient, getApiBaseUrl, getApiSdk } from 'src/services/apiClient';
+import { type Camera } from 'src/generated/api';
 
 const CAMERA_SETTINGS_CHANGE = /^cameras\.([^.\s]+)\.settings(?:\.|$)/;
 const PHOTO_DEBOUNCE_MS = 800;
@@ -66,8 +66,9 @@ export const useCameraStore = defineStore('camera', {
       this.loading = true;
       this.error = null;
       try {
-        const data = await getCameras({ client: apiClient });
-        this.cameras = Object.values(data ?? {});
+        const response = await getApiSdk().getCameras({ client: apiClient });
+        const data = (response as { data?: Record<string, Camera> } | Record<string, Camera>)?.['data'] ?? response;
+        this.cameras = Object.values((data ?? {}) as Record<string, Camera>);
         // Set selectedCamera to first if not set
         if (!this.selectedCamera && this.cameras.length > 0) {
           this.selectedCamera = this.cameras[0].name;

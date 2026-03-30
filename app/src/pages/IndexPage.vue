@@ -11,11 +11,8 @@ import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue
 import BasePage from 'components/base/BasePage.vue'
 import RecentProjectsList from 'src/components/project/RecentProjectsList.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
-import { apiClient } from 'src/services/apiClient'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
 import {
-  toggleLight,
-  moveMotorByDegree,
-  moveToPosition,
   type ToggleLightData,
   type MoveMotorByDegreeData,
   type MoveToPositionData
@@ -26,6 +23,7 @@ const cameraStore = useCameraStore()
 const deviceStore = useDeviceStore()
 const projectsStore = useProjectsStore()
 const taskStore = useTaskStore()
+const apiSdk = () => getApiSdk()
 
 const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
 const scanLocked = computed(() => Boolean(taskStore.activeScanTaskId))
@@ -67,7 +65,7 @@ async function handleToggleLight() {
       url: '/lights/{light_name}/toggle'
     }
 
-    await toggleLight({ client: apiClient, ...payload })
+    await apiSdk().toggleLight({ client: apiClient, ...payload })
   } catch (error) {
     console.error('Failed to toggle light', error)
     $q.notify({ type: 'negative', message: 'Failed to toggle light' })
@@ -88,7 +86,7 @@ async function moveMotor(motorName: string, degrees: number) {
       url: '/motors/{motor_name}/angle'
     }
 
-    await moveMotorByDegree({ client: apiClient, ...payload })
+    await apiSdk().moveMotorByDegree({ client: apiClient, ...payload })
   } catch (error) {
     console.error('Failed to move motor', motorName, error)
     $q.notify({ type: 'negative', message: 'Failed to move motor' })
@@ -112,7 +110,7 @@ async function moveHome() {
       url: '/develop/scanner-position'
     }
 
-    await moveToPosition({ client: apiClient, ...payload })
+    await apiSdk().moveToPosition({ client: apiClient, ...payload })
   } catch (error) {
     console.error('Failed to move to home position', error)
     $q.notify({ type: 'negative', message: 'Failed to move to home position' })
