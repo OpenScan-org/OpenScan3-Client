@@ -30,7 +30,17 @@
                       />
                     </div>
                     <div class="col-6 col-md-3">
-                      <q-input v-model="apiConfigForm.version" label="Version" />
+                      <q-select
+                        v-model="apiConfigForm.version"
+                        :options="apiVersionSelectOptions"
+                        :loading="versionOptionsLoading"
+                        label="Version"
+                        emit-value
+                        map-options
+                        dropdown-icon="arrow_drop_down"
+                        :popup-content-class="'api-version-select-menu'"
+                        class="api-version-select"
+                      />
                     </div>
                     <div class="col-12">
                       <q-toggle
@@ -577,6 +587,7 @@ import { useApiConfigStore } from 'src/stores/apiConfig'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
 import { useTaskStore } from 'src/stores/tasks'
+import { versionToApiTarget } from 'src/generated/api/versioned.gen'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
 import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue'
@@ -617,6 +628,12 @@ const apiConfigForm = reactive({
   version: apiConfigStore.version,
   developerMode: apiConfigStore.developerMode
 })
+
+const versionOptions = ref<string[]>([])
+const versionOptionsLoading = ref(false)
+const apiVersionSelectOptions = computed(() =>
+  versionOptions.value.map((version) => ({ label: version, value: version }))
+)
 
 const CLOUD_DEFAULTS = {
   host: 'http://openscanfeedback.dnsuser.de:1334/',
@@ -709,6 +726,70 @@ type TokenStatusView = {
 }
 
 const tokenStatusExpanded = ref(false)
+
+function normalizeApiVersion(version: string | null | undefined) {
+  const raw = (version ?? '').trim()
+  if (!raw) return ''
+  if (/^v(latest|next)$/i.test(raw)) {
+    return raw.toLowerCase().replace(/^v/, '')
+  }
+  const prefixed = raw.startsWith('v') ? raw : `v${raw}`
+  return prefixed.replace(/_/g, '.')
+}
+
+function collectSupportedVersions() {
+  return Object.keys(versionToApiTarget)
+}
+
+function sortVersions(values: string[]) {
+  const special = ['latest', 'next']
+  const specials = values
+    .map((v) => v.toLowerCase())
+    .filter((v) => special.includes(v))
+  const numeric = values
+    .map((v) => (v.toLowerCase().startsWith('v') ? v.slice(1) : v))
+    .filter((v) => !special.includes(v.toLowerCase()))
+    .sort((a, b) => {
+      const aNum = Number(a.replace(/^v/i, ''))
+      const bNum = Number(b.replace(/^v/i, ''))
+      return bNum - aNum
+    })
+  return [...new Set([...specials, ...numeric])]
+}
+
+async function loadVersionOptions() {
+  versionOptionsLoading.value = true
+  const supported = new Set<string>(collectSupportedVersions())
+
+  try {
+    const baseHost = `${apiConfigForm.schema}://${apiConfigForm.host}${
+      apiConfigForm.developerMode && apiConfigForm.port ? `:${apiConfigForm.port}` : ''
+    }`
+    const response = await fetch(`${baseHost}/api/versions`)
+    if (response.ok) {
+      const payload = (await response.json()) as { versions?: string[]; latest?: string }
+      payload.versions?.forEach((v) => {
+        const normalized = normalizeApiVersion(v)
+        if (normalized && collectSupportedVersions().includes(normalized)) {
+          supported.add(normalized)
+        }
+      })
+      const normalizedLatest = normalizeApiVersion(payload.latest)
+      if (normalizedLatest && collectSupportedVersions().includes(normalizedLatest)) {
+        supported.add(normalizedLatest)
+      }
+    }
+  } catch (error) {
+    console.warn('Could not load versions from backend.', error)
+  } finally {
+    const current = normalizeApiVersion(apiConfigForm.version)
+    if (current) {
+      supported.add(current)
+    }
+    versionOptions.value = sortVersions(Array.from(supported))
+    versionOptionsLoading.value = false
+  }
+}
 
 const tokenStatusView = computed<TokenStatusView>(() => {
   if (!cloudToggle.value) {
@@ -1593,8 +1674,16 @@ async function handleReinitializeHardware() {
 }
 
 onMounted(async () => {
+  await loadVersionOptions()
   await loadDeviceConfigs()
 })
+
+watch(
+  () => [apiConfigForm.schema, apiConfigForm.host, apiConfigForm.port, apiConfigForm.developerMode],
+  () => {
+    void loadVersionOptions()
+  }
+)
 </script>
 
 <style scoped>
