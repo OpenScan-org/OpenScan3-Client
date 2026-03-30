@@ -639,6 +639,7 @@ const CLOUD_DEFAULTS = {
 
 const defaultSplitSize = CLOUD_DEFAULTS.splitSize
 const BYTES_PER_GIGABYTE = 1024 ** 3
+const CLOUD_TOKEN_PATTERN = /^[a-zA-Z0-9]{32}$/
 
 const cloudToggle = ref(apiConfigStore.cloudEnabled ?? false)
 const cloudSettingsLoading = ref(false)
@@ -698,18 +699,18 @@ async function calibrateCameraAwb() {
   }
 }
 
+const isCloudTokenValid = computed(() => CLOUD_TOKEN_PATTERN.test(cloudForm.token.trim()))
+
 const isCloudFormValid = computed(() => {
   if (!cloudToggle.value) {
     return false
   }
 
-  const hasToken = cloudForm.token.trim().length > 0
-
   const splitSizeValid =
     cloudForm.split_size === null ||
     (Number.isFinite(cloudForm.split_size) && (cloudForm.split_size ?? 0) > 0)
 
-  return hasToken && splitSizeValid
+  return isCloudTokenValid.value && splitSizeValid
 })
 
 type TokenStatusView = {
