@@ -1079,7 +1079,8 @@ async function loadVersionOptions() {
     const baseHost = `${apiConfigForm.schema}://${apiConfigForm.host}${
       apiConfigForm.developerMode && apiConfigForm.port ? `:${apiConfigForm.port}` : ''
     }`
-    const response = await fetch(`${baseHost}/api/versions`)
+    const versionsPath = apiConfigForm.developerMode ? '/versions' : '/api/versions'
+    const response = await fetch(`${baseHost}${versionsPath}`)
     if (response.ok) {
       const payload = (await response.json()) as { versions?: string[]; latest?: string }
       payload.versions?.forEach((v) => {

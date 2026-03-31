@@ -18,7 +18,7 @@ export const useApiConfigStore = defineStore('apiConfig', {
   getters: {
     baseURL: (state) => {
       const portSegment = state.developerMode && state.port ? `:${state.port}` : ''
-      const pathSegment = state.developerMode ? `/${state.version}/` : `/api/${state.version}/`
+      const pathSegment = state.developerMode ? `/${state.version}` : `/api/${state.version}`
 
       return `${state.schema}://${state.host}${portSegment}${pathSegment}`
     }
