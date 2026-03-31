@@ -6,6 +6,25 @@ const versionParts = packageApiVersion.replace(/^v/i, '').split('.')
 const normalizedVersion = versionParts.slice(0, 2).join('.') || '0.6'
 const defaultApiVersion = `v${normalizedVersion}`
 
+function normalizeVersionPathSegment(version: string): string {
+  const raw = version.trim().toLowerCase()
+
+  if (raw === 'latest' || raw === 'next') {
+    return raw
+  }
+
+  if (raw === 'vlatest' || raw === 'vnext') {
+    return raw.slice(1)
+  }
+
+  const numericMatch = raw.match(/^v?(\d+)\.(\d+)/)
+  if (numericMatch) {
+    return `v${numericMatch[1]}.${numericMatch[2]}`
+  }
+
+  return version.trim()
+}
+
 export const useApiConfigStore = defineStore('apiConfig', {
   state: () => ({
     schema: (window.location.protocol === 'https:' ? 'https' : 'http') as 'http' | 'https',
@@ -18,7 +37,8 @@ export const useApiConfigStore = defineStore('apiConfig', {
   getters: {
     baseURL: (state) => {
       const portSegment = state.developerMode && state.port ? `:${state.port}` : ''
-      const pathSegment = state.developerMode ? `/${state.version}` : `/api/${state.version}`
+      const versionSegment = normalizeVersionPathSegment(state.version)
+      const pathSegment = state.developerMode ? `/${versionSegment}` : `/api/${versionSegment}`
 
       return `${state.schema}://${state.host}${portSegment}${pathSegment}`
     }
