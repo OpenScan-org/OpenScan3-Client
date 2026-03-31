@@ -269,11 +269,6 @@
                 >
                   <BaseSection title="Motor Settings">
                   <div class="row q-col-gutter-md">
-                    <div class="col-12" v-if="isNextApiTarget">
-                      <div class="row justify-end">
-                        <BaseButtonSecondary icon="add" label="Add motor" @click="addMotorDialog = true" />
-                      </div>
-                    </div>
                     <div class="col-12" v-if="motorNames.length === 0">
                       <q-banner dense>No motors found.</q-banner>
                     </div>
@@ -432,17 +427,110 @@
                       </q-card>
                     </div>
                   </div>
+                  <div class="row q-mt-md settings-section-actions" v-if="isNextApiTarget">
+                    <div class="col-auto">
+                      <BaseButtonSecondary icon="add" label="Add motor" @click="addMotorDialog = true" />
+                    </div>
+                  </div>
                 </BaseSection>
 
                 <BaseSection v-if="isNextApiTarget" title="Endstop Settings">
-                  <div class="row q-col-gutter-sm">
-                    <div class="col-12">
-                      <q-banner dense>Manage endstops via device configuration.</q-banner>
+                  <div class="row q-col-gutter-md">
+                    <div class="col-12" v-if="endstopRows.length === 0">
+                      <q-banner dense>No endstops found.</q-banner>
                     </div>
-                    <div class="col-12">
-                      <div class="row justify-end">
-                        <BaseButtonSecondary icon="add_task" label="Add endstop" @click="addEndstopDialog = true" />
-                      </div>
+                    <div class="col-12" v-for="endstop in endstopRows" :key="endstop.name">
+                      <q-card flat bordered>
+                        <q-card-section>
+                          <div class="row items-center justify-between no-wrap">
+                            <div class="text-subtitle1">{{ endstop.name }}</div>
+                            <div class="text-caption text-grey-7" v-if="endstop.is_pressed !== null">
+                              Pressed: {{ formatBooleanSetting(endstop.is_pressed) }}
+                            </div>
+                          </div>
+                        </q-card-section>
+                        <q-card-section class="q-pt-none" v-if="endstopForms[endstop.name]">
+                          <div class="row q-col-gutter-sm">
+                            <div class="col-12 col-sm-6">
+                              <q-input
+                                v-model="endstopForms[endstop.name].motor_name"
+                                label="Motor Name"
+                                @update:model-value="() => markEndstopFormDirty(endstop.name)"
+                              >
+                                <q-tooltip>{{ endstopConfigDescription('motor_name') }}</q-tooltip>
+                              </q-input>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                              <q-input
+                                v-model.number="endstopForms[endstop.name].pin"
+                                label="Pin"
+                                type="number"
+                                @update:model-value="() => markEndstopFormDirty(endstop.name)"
+                              >
+                                <q-tooltip>{{ endstopConfigDescription('pin') }}</q-tooltip>
+                              </q-input>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                              <q-input
+                                v-model.number="endstopForms[endstop.name].angular_position"
+                                label="Angular Position"
+                                type="number"
+                                @update:model-value="() => markEndstopFormDirty(endstop.name)"
+                              >
+                                <q-tooltip>{{ endstopConfigDescription('angular_position') }}</q-tooltip>
+                              </q-input>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                              <q-input
+                                v-model.number="endstopForms[endstop.name].bounce_time"
+                                label="Bounce Time (s)"
+                                type="number"
+                                @update:model-value="() => markEndstopFormDirty(endstop.name)"
+                              >
+                                <q-tooltip>{{ endstopConfigDescription('bounce_time') }}</q-tooltip>
+                              </q-input>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                              <q-toggle
+                                v-model="endstopForms[endstop.name].pull_up"
+                                label="Pull-up"
+                                left-label
+                                @update:model-value="() => markEndstopFormDirty(endstop.name)"
+                              >
+                                <q-tooltip>{{ endstopConfigDescription('pull_up') }}</q-tooltip>
+                              </q-toggle>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                              <q-toggle
+                                v-model="endstopForms[endstop.name].active_high"
+                                label="Active high"
+                                left-label
+                                @update:model-value="() => markEndstopFormDirty(endstop.name)"
+                              >
+                                <q-tooltip>{{ endstopConfigDescription('active_high') }}</q-tooltip>
+                              </q-toggle>
+                            </div>
+                          </div>
+                        </q-card-section>
+                        <q-card-actions align="right">
+                          <BaseButtonPrimary
+                            icon="save"
+                            label="Save"
+                            :disable="scanLocked || Boolean(endstopFormError(endstop.name))"
+                            :loading="endstopSaving[endstop.name] === true"
+                            @click="saveEndstopSettings(endstop.name)"
+                          >
+                            <q-tooltip>
+                              {{ scanLocked ? scanLockedTooltip : endstopFormError(endstop.name) ?? 'Save endstop configuration.' }}
+                            </q-tooltip>
+                          </BaseButtonPrimary>
+                        </q-card-actions>
+                      </q-card>
+                    </div>
+                  </div>
+                  <div class="row q-mt-md settings-section-actions">
+                    <div class="col-auto">
+                      <BaseButtonSecondary icon="add_task" label="Add endstop" @click="addEndstopDialog = true" />
                     </div>
                   </div>
                 </BaseSection>
@@ -470,15 +558,10 @@
                   <BaseSectionGroup>
                     <BaseSection title="Light Settings">
                       <div class="row q-col-gutter-md">
-                        <div class="col-12" v-if="isNextApiTarget">
-                          <div class="row justify-end">
-                            <BaseButtonSecondary icon="add" label="Add light" @click="addLightDialog = true" />
-                          </div>
-                        </div>
                         <div class="col-12" v-if="lightNames.length === 0">
                           <q-banner dense>No lights found.</q-banner>
                         </div>
-
+                        
                         <div class="col-12" v-for="lightName in lightNames" :key="lightName">
                           <q-card flat bordered>
                             <q-card-section>
@@ -521,15 +604,15 @@
                           </q-card>
                         </div>
                       </div>
+                      <div class="row q-mt-md settings-section-actions" v-if="isNextApiTarget">
+                        <div class="col-auto">
+                          <BaseButtonSecondary icon="add" label="Add light" @click="addLightDialog = true" />
+                        </div>
+                      </div>
                     </BaseSection>
 
                     <BaseSection title="Camera Settings">
                       <div class="row q-col-gutter-md">
-                        <div class="col-12" v-if="isNextApiTarget">
-                          <div class="row justify-end">
-                            <BaseButtonSecondary icon="add_a_photo" label="Add camera" @click="addCameraDialog = true" />
-                          </div>
-                        </div>
                         <div class="col-12">
                           <BaseSelect
                             v-model="selectedCamera"
@@ -612,7 +695,10 @@
                           </div>
                         </template>
                       </div>
-                      <div class="row justify-end q-gutter-sm q-mt-md">
+                      <div class="row items-center justify-between q-gutter-sm q-mt-md settings-section-actions">
+                        <div class="col-auto" v-if="isNextApiTarget">
+                          <BaseButtonSecondary icon="add_a_photo" label="Add camera" @click="addCameraDialog = true" />
+                        </div>
                         <div class="col-auto">
                           <BaseButtonPrimary
                             icon="save"
@@ -1426,6 +1512,8 @@ const anyMotorBusy = computed(() => Object.values(motorControlBusy).some((busy) 
 type MotorConfigField = keyof (typeof fieldDescriptions)['MotorConfig']
 
 const motorConfigDescription = (field: MotorConfigField) => getFieldDescription('MotorConfig', field)
+type EndstopConfigField = keyof (typeof fieldDescriptions)['EndstopConfig']
+const endstopConfigDescription = (field: EndstopConfigField) => getFieldDescription('EndstopConfig', field)
 
 const lightNames = computed(() => Object.keys(lights.value ?? {}))
 const lightStatuses = computed<Record<string, boolean | null>>(() => {
@@ -1437,6 +1525,68 @@ const lightStatuses = computed<Record<string, boolean | null>>(() => {
 const lightForms = reactive<Record<string, LightForm>>({})
 const lightSaving = reactive<Record<string, boolean>>({})
 const lightFormDirty = reactive<Record<string, boolean>>({})
+
+type EndstopRow = {
+  name: string
+  motor_name: string | null
+  pin: number | null
+  angular_position: number | null
+  pull_up: boolean | null
+  active_high: boolean | null
+  bounce_time: number | null
+  is_pressed: boolean | null
+}
+
+type EndstopForm = {
+  motor_name: string
+  pin: number | null
+  angular_position: number | null
+  pull_up: boolean
+  active_high: boolean
+  bounce_time: number | null
+}
+
+const endstopRows = computed<EndstopRow[]>(() => {
+  const deviceEndstops = deviceStore.device?.endstops
+  if (deviceEndstops && Object.keys(deviceEndstops).length > 0) {
+    return Object.entries(deviceEndstops).map(([name, endstop]) => {
+      const settings = endstop?.settings
+      return {
+        name,
+        motor_name: settings?.motor_name ?? null,
+        pin: settings?.pin ?? null,
+        angular_position: settings?.angular_position ?? null,
+        pull_up: settings?.pull_up ?? null,
+        active_high: settings?.active_high ?? null,
+        bounce_time: settings?.bounce_time ?? null,
+        is_pressed: null
+      }
+    })
+  }
+
+  return Object.entries(motors.value ?? {})
+    .map(([motorName, motor]) => {
+      const directEndstop = (motor as { endstop?: { assigned_motor?: string; position?: number; pin?: number; is_pressed?: boolean } | null } | null)?.endstop
+      if (!directEndstop) {
+        return null
+      }
+
+      return {
+        name: motorName,
+        motor_name: directEndstop.assigned_motor ?? motorName,
+        pin: typeof directEndstop.pin === 'number' ? directEndstop.pin : null,
+        angular_position: typeof directEndstop.position === 'number' ? directEndstop.position : null,
+        pull_up: null,
+        active_high: null,
+        bounce_time: null,
+        is_pressed: typeof directEndstop.is_pressed === 'boolean' ? directEndstop.is_pressed : null
+      }
+    })
+    .filter((row): row is EndstopRow => row !== null)
+})
+const endstopForms = reactive<Record<string, EndstopForm>>({})
+const endstopSaving = reactive<Record<string, boolean>>({})
+const endstopFormDirty = reactive<Record<string, boolean>>({})
 
 type MotorForm = {
   direction_pin: number
@@ -1696,6 +1846,13 @@ function formatLightStatus(isOn: boolean) {
   return isOn ? 'On' : 'Off'
 }
 
+function formatBooleanSetting(value: boolean | null | undefined) {
+  if (typeof value !== 'boolean') {
+    return 'n/a'
+  }
+  return value ? 'Yes' : 'No'
+}
+
 const awbCalibrationDefaults = fieldDefaults.AutoCalibrateAwbRequest ?? null
 
 function createEmptyCloudForm(): CloudForm {
@@ -1836,12 +1993,41 @@ function mapLightConfig(config: LightConfig | null | undefined): LightForm {
   }
 }
 
+function mapEndstopRowToForm(row: EndstopRow): EndstopForm {
+  return {
+    motor_name: row.motor_name ?? '',
+    pin: row.pin ?? null,
+    angular_position: row.angular_position ?? null,
+    pull_up: row.pull_up ?? (fieldDefaults.EndstopConfig?.pull_up ?? true),
+    active_high: row.active_high ?? (fieldDefaults.EndstopConfig?.active_high ?? false),
+    bounce_time: row.bounce_time ?? fieldDefaults.EndstopConfig?.bounce_time ?? null
+  }
+}
+
 const lightPinError = (name: string) => {
   const form = lightForms[name]
   if (!form) {
     return null
   }
   return validatePins(form.pins).error
+}
+
+const endstopFormError = (name: string) => {
+  const form = endstopForms[name]
+  if (!form) {
+    return 'Endstop form not initialized.'
+  }
+
+  if (!form.motor_name.trim().length) {
+    return 'Motor name is required.'
+  }
+  if (form.pin === null) {
+    return 'Pin is required.'
+  }
+  if (form.angular_position === null) {
+    return 'Angular position is required.'
+  }
+  return null
 }
 
 function resetAddMotorForm() {
@@ -2343,12 +2529,53 @@ async function saveLightSettings(name: string) {
   }
 }
 
+async function saveEndstopSettings(name: string) {
+  const form = endstopForms[name]
+  if (!form || !isNextApiTarget.value) {
+    return
+  }
+
+  const validationError = endstopFormError(name)
+  if (validationError) {
+    return
+  }
+
+  endstopSaving[name] = true
+  try {
+    await updateConfigWithMutation((config) => {
+      const endstops = (config.endstops ?? {}) as Record<string, PersistedEndstopConfig>
+      config.endstops = endstops
+      delete endstops[name]
+      endstops[name] = {
+        settings: {
+          pin: form.pin ?? 0,
+          angular_position: form.angular_position ?? 0,
+          motor_name: form.motor_name.trim(),
+          pull_up: form.pull_up,
+          bounce_time: form.bounce_time ?? undefined,
+          active_high: form.active_high
+        }
+      }
+    })
+
+    endstopFormDirty[name] = false
+  } catch (error) {
+    console.error(`Endstop "${name}" could not be saved.`, error)
+  } finally {
+    endstopSaving[name] = false
+  }
+}
+
 function markMotorFormDirty(name: string) {
   motorFormDirty[name] = true
 }
 
 function markLightFormDirty(name: string) {
   lightFormDirty[name] = true
+}
+
+function markEndstopFormDirty(name: string) {
+  endstopFormDirty[name] = true
 }
 
 watch(selectedCamera, (name) => {
@@ -2513,6 +2740,35 @@ watch(
   { immediate: true, deep: true }
 )
 
+watch(
+  endstopRows,
+  (rows) => {
+    const names = new Set(rows.map((row) => row.name))
+
+    Object.keys(endstopForms).forEach((name) => {
+      if (!names.has(name)) {
+        delete endstopForms[name]
+        delete endstopSaving[name]
+        delete endstopFormDirty[name]
+      }
+    })
+
+    rows.forEach((row) => {
+      const mapped = mapEndstopRowToForm(row)
+      if (!(row.name in endstopForms) || endstopFormDirty[row.name] !== true) {
+        endstopForms[row.name] = mapped
+      }
+      if (!(row.name in endstopSaving)) {
+        endstopSaving[row.name] = false
+      }
+      if (!(row.name in endstopFormDirty)) {
+        endstopFormDirty[row.name] = false
+      }
+    })
+  },
+  { immediate: true, deep: true }
+)
+
 async function saveApiConfig() {
   apiConfigStore.setConfig(apiConfigForm)
   updateApiClientConfig()
@@ -2624,5 +2880,9 @@ watch(
 
 .non-frontend-settings__overlay > .q-card {
   width: 100%;
+}
+
+.settings-section-actions {
+  min-height: 40px;
 }
 </style>

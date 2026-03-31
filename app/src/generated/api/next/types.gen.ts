@@ -423,11 +423,11 @@ export type DeviceStatusResponse = {
     /**
      * Model
      */
-    model: string;
+    model?: string | null;
     /**
      * Shield
      */
-    shield: string;
+    shield?: string | null;
     /**
      * Cameras
      */
@@ -533,6 +533,40 @@ export type EndstopConfig = {
      * Useful for normally closed switches
      */
     active_high?: boolean | null;
+};
+
+/**
+ * EndstopStatusResponse
+ */
+export type EndstopStatusResponse = {
+    /**
+     * Assigned Motor
+     */
+    assigned_motor: string;
+    /**
+     * Position
+     */
+    position: number;
+    /**
+     * Pin
+     */
+    pin: number;
+    /**
+     * Is Pressed
+     */
+    is_pressed: boolean;
+    /**
+     * Pull Up
+     */
+    pull_up?: boolean | null;
+    /**
+     * Active High
+     */
+    active_high?: boolean | null;
+    /**
+     * Bounce Time
+     */
+    bounce_time?: number | null;
 };
 
 /**
@@ -712,12 +746,7 @@ export type MotorStatusResponse = {
      * Calibrated
      */
     calibrated: boolean;
-    /**
-     * Endstop
-     */
-    endstop: {
-        [key: string]: unknown;
-    } | null;
+    endstop: EndstopStatusResponse | null;
 };
 
 /**
