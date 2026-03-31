@@ -182,7 +182,11 @@
 
                         <div class="row q-col-gutter-sm" v-else>
                           <div class="col-12">
-                            <q-input v-model="cloudForm.token" label="Token" />
+                            <q-input
+                              v-model="cloudForm.token"
+                              label="Token"
+                              @update:model-value="handleCloudTokenInput"
+                            />
                           </div>
                           <div class="col-12">
                             <div class="row items-center q-col-gutter-sm">
@@ -190,10 +194,11 @@
                                 <BaseButtonSecondary
                                   icon="sync"
                                   square
+                                  :disable="!canRefreshCloudStatus"
                                   :loading="cloudStatusLoading"
                                   @click="loadCloudStatus"
                                 >
-                                  <q-tooltip>Refresh token status.</q-tooltip>
+                                  <q-tooltip>{{ cloudStatusRefreshHint }}</q-tooltip>
                                 </BaseButtonSecondary>
                               </div>
                               <div class="col">
@@ -235,7 +240,7 @@
                             <BaseButtonPrimary
                               icon="save"
                               label="Save"
-                              :disable="!isCloudFormValid || cloudSettingsSaving"
+                              :disable="!canSaveCloudSettings || cloudSettingsSaving"
                               :loading="cloudSettingsSaving"
                               @click="saveCloudSettings"
                             />
@@ -997,6 +1002,8 @@ const cloudSettingsSaving = ref(false)
 const cloudSettingsLoaded = ref(false)
 const cloudStatusLoading = ref(false)
 const cloudStatus = ref<CloudStatusResponse | null>(null)
+const cloudHasPersistedToken = ref(false)
+const cloudTokenDirty = ref(false)
 
 type FirmwareForm = {
   enable_cloud: boolean
@@ -1076,7 +1083,7 @@ async function handleFirmwareSettingChange<K extends keyof FirmwareForm>(key: K,
   )
 }
 
-const hasPersistedCloudToken = () => cloudForm.token.trim().length > 0
+const hasPersistedCloudToken = () => cloudHasPersistedToken.value
 
 function syncCloudEnabledFlag() {
   const shouldEnable = cloudToggle.value && hasPersistedCloudToken()
@@ -1113,16 +1120,56 @@ async function calibrateCameraAwb() {
 
 const isCloudTokenValid = computed(() => CLOUD_TOKEN_PATTERN.test(cloudForm.token.trim()))
 
-const isCloudFormValid = computed(() => {
+const isCloudSplitSizeValid = computed(() => {
   if (!cloudToggle.value) {
     return false
   }
 
-  const splitSizeValid =
+  return (
     cloudForm.split_size === null ||
     (Number.isFinite(cloudForm.split_size) && (cloudForm.split_size ?? 0) > 0)
+  )
+})
 
-  return isCloudTokenValid.value && splitSizeValid
+const canSaveCloudSettings = computed(() => {
+  if (!isCloudSplitSizeValid.value) {
+    return false
+  }
+
+  if (cloudTokenDirty.value) {
+    return isCloudTokenValid.value
+  }
+
+  return cloudHasPersistedToken.value
+})
+
+const canRefreshCloudStatus = computed(() => {
+  if (!cloudToggle.value) {
+    return false
+  }
+
+  if (cloudSettingsSaving.value || cloudStatusLoading.value) {
+    return false
+  }
+
+  if (!cloudHasPersistedToken.value) {
+    return false
+  }
+
+  return !cloudTokenDirty.value
+})
+
+const cloudStatusRefreshHint = computed(() => {
+  if (!cloudToggle.value) {
+    return 'Enable cloud first.'
+  }
+  if (!cloudHasPersistedToken.value) {
+    return 'Save a token first.'
+  }
+  if (cloudTokenDirty.value) {
+    return 'Save token changes first.'
+  }
+  return 'Refresh token status.'
 })
 
 type TokenStatusView = {
@@ -1212,6 +1259,24 @@ const tokenStatusView = computed<TokenStatusView>(() => {
   if (cloudStatusLoading.value) {
     return {
       summary: 'Refreshing token status…',
+      details: [],
+      expandable: false,
+      isError: false
+    }
+  }
+
+  if (!cloudHasPersistedToken.value) {
+    return {
+      summary: 'Save a token first to view status.',
+      details: [],
+      expandable: false,
+      isError: false
+    }
+  }
+
+  if (cloudTokenDirty.value) {
+    return {
+      summary: 'Unsaved token changes. Save first.',
       details: [],
       expandable: false,
       isError: false
@@ -1865,6 +1930,14 @@ function createEmptyCloudForm(): CloudForm {
   }
 }
 
+function maskCloudToken(token: string): string {
+  const trimmed = token.trim()
+  if (!trimmed.length) {
+    return ''
+  }
+  return '*'.repeat(Math.max(trimmed.length, 8))
+}
+
 function applyCloudSettingsToForm(settings: Partial<CloudSettings> | null | undefined) {
   const next = createEmptyCloudForm()
   if (settings) {
@@ -1879,7 +1952,17 @@ function applyCloudSettingsToForm(settings: Partial<CloudSettings> | null | unde
   Object.assign(cloudForm, next)
   cloudForm.user = CLOUD_DEFAULTS.user
   cloudForm.password = CLOUD_DEFAULTS.password
+  cloudHasPersistedToken.value = next.token.trim().length > 0
+  cloudTokenDirty.value = false
+  cloudStatus.value = null
+  tokenStatusExpanded.value = false
   syncCloudEnabledFlag()
+}
+
+function handleCloudTokenInput() {
+  cloudTokenDirty.value = true
+  cloudStatus.value = null
+  tokenStatusExpanded.value = false
 }
 
 async function loadCloudSettings() {
@@ -1901,10 +1984,14 @@ async function loadCloudSettings() {
     cloudSettingsLoading.value = false
     cloudSettingsLoaded.value = true
   }
+
+  if (canRefreshCloudStatus.value) {
+    void loadCloudStatus()
+  }
 }
 
 async function loadCloudStatus() {
-  if (!cloudToggle.value || cloudStatusLoading.value) {
+  if (!canRefreshCloudStatus.value) {
     return
   }
 
@@ -1922,7 +2009,7 @@ async function loadCloudStatus() {
 }
 
 async function saveCloudSettings() {
-  if (!isCloudFormValid.value) {
+  if (!canSaveCloudSettings.value) {
     return
   }
 
@@ -1939,19 +2026,33 @@ async function saveCloudSettings() {
       payload.split_size = cloudForm.split_size
     }
 
-    await apiSdk().updateCloudSettings({
+    const response = await apiSdk().updateCloudSettings({
       client: apiClient,
       body: payload
     })
-    cloudForm.host = payload.host
-    cloudForm.user = payload.user
-    cloudForm.password = payload.password
-    cloudForm.token = payload.token
-    if (payload.split_size !== undefined) {
-      cloudForm.split_size = payload.split_size
+    const persistedSettings = ((response?.data ?? response) as CloudSettingsResponse | undefined)?.settings as
+      | Partial<CloudSettings>
+      | null
+      | undefined
+
+    if (persistedSettings) {
+      applyCloudSettingsToForm(persistedSettings)
+    } else {
+      cloudForm.host = payload.host
+      cloudForm.user = payload.user
+      cloudForm.password = payload.password
+      cloudForm.token = maskCloudToken(payload.token)
+      if (payload.split_size !== undefined) {
+        cloudForm.split_size = payload.split_size
+      }
+      cloudHasPersistedToken.value = payload.token.trim().length > 0
+      cloudTokenDirty.value = false
+      cloudStatus.value = null
+      tokenStatusExpanded.value = false
     }
     syncCloudEnabledFlag()
     await saveCurrentConfig()
+    await loadCloudStatus()
   } catch (error) {
     console.error('Cloud settings could not be saved.', error)
   } finally {
@@ -2655,7 +2756,9 @@ watch(
       void loadCloudSettings()
     }
 
-    void loadCloudStatus()
+    if (canRefreshCloudStatus.value) {
+      void loadCloudStatus()
+    }
   },
   { immediate: true }
 )
