@@ -564,8 +564,13 @@ function formatConfigCaption(config: DeviceConfigFile): string {
 async function loadConfigs() {
   loadingConfigs.value = true
   try {
-    const data = await apiSdk().listConfigFiles<true>({ client: apiClient, throwOnError: true })
-    const configs = (data as any)?.configs ?? []
+    const response = await apiSdk().listConfigFiles<true>({ client: apiClient, throwOnError: true })
+    const payload = ((response as any)?.data ?? response) as { configs?: DeviceConfigFile[] } | DeviceConfigFile[] | null
+    const configs = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.configs)
+        ? payload.configs
+        : []
     const filtered = (configs as DeviceConfigFile[]).filter(
       (config) => config.filename !== 'device_config.json'
     )

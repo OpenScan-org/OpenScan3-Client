@@ -53,11 +53,16 @@ const activeScanTaskId = computed(() => taskStore.activeScanTaskId)
 const resolvedTaskId = computed(() => routeTaskId.value ?? activeScanTaskId.value)
 const resolvedTask = computed(() => (resolvedTaskId.value ? taskStore.taskById(resolvedTaskId.value) : null))
 const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
+const isValidTaskId = (taskId: string | null | undefined) =>
+  typeof taskId === 'string' &&
+  taskId.trim().length > 0 &&
+  taskId !== 'undefined' &&
+  taskId !== 'null'
 
 const ensureTask = async () => {
   await taskStore.ensureConnected()
 
-  if (!routeTaskId.value) {
+  if (!isValidTaskId(routeTaskId.value)) {
     if (activeScanTaskId.value) {
       await router.replace(`/scan/progress/${activeScanTaskId.value}`)
       return

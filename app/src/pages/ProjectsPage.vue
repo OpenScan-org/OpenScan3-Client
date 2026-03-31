@@ -183,7 +183,7 @@ const projectScans = computed<Scan[]>(() => {
     return []
   }
 
-  return Object.values(selectedProject.value.scans).sort((a, b) => a.index - b.index)
+  return Object.values(selectedProject.value.scans ?? {}).sort((a, b) => a.index - b.index)
 })
 
 const updateRouteProject = (name: string | null) => {

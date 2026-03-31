@@ -95,6 +95,16 @@ export const useTaskStore = defineStore('tasks', {
     }
   },
   actions: {
+    normalizeTaskId(taskId: string | null | undefined): string | null {
+      if (typeof taskId !== 'string') {
+        return null
+      }
+      const normalized = taskId.trim()
+      if (!normalized || normalized === 'undefined' || normalized === 'null') {
+        return null
+      }
+      return normalized
+    },
     ensureTaskTiming(taskId: string) {
       if (!this.taskTiming[taskId]) {
         this.taskTiming[taskId] = {
@@ -319,32 +329,52 @@ export const useTaskStore = defineStore('tasks', {
       }
     },
     async refreshTask(taskId: string) {
-      const taskResponse = await apiSdk().getTaskStatus({ client: apiClient, path: { task_id: taskId } })
+      const normalizedTaskId = this.normalizeTaskId(taskId)
+      if (!normalizedTaskId) {
+        return null
+      }
+      const taskResponse = await apiSdk().getTaskStatus({ client: apiClient, path: { task_id: normalizedTaskId } })
       const task = (taskResponse?.data ?? taskResponse) as Task
       this.applyTaskUpdate(task)
       return task
     },
     async ensureTaskLoaded(taskId: string) {
-      const existing = this.tasks.find((task) => task.id === taskId)
+      const normalizedTaskId = this.normalizeTaskId(taskId)
+      if (!normalizedTaskId) {
+        return null
+      }
+      const existing = this.tasks.find((task) => task.id === normalizedTaskId)
       if (existing) {
         return existing
       }
-      return await this.refreshTask(taskId)
+      return await this.refreshTask(normalizedTaskId)
     },
     async pause(taskId: string) {
-      const taskResponse = await apiSdk().pauseTask({ client: apiClient, path: { task_id: taskId } })
+      const normalizedTaskId = this.normalizeTaskId(taskId)
+      if (!normalizedTaskId) {
+        return null
+      }
+      const taskResponse = await apiSdk().pauseTask({ client: apiClient, path: { task_id: normalizedTaskId } })
       const task = (taskResponse?.data ?? taskResponse) as Task
       this.applyTaskUpdate(task)
       return task
     },
     async resume(taskId: string) {
-      const taskResponse = await apiSdk().resumeTask({ client: apiClient, path: { task_id: taskId } })
+      const normalizedTaskId = this.normalizeTaskId(taskId)
+      if (!normalizedTaskId) {
+        return null
+      }
+      const taskResponse = await apiSdk().resumeTask({ client: apiClient, path: { task_id: normalizedTaskId } })
       const task = (taskResponse?.data ?? taskResponse) as Task
       this.applyTaskUpdate(task)
       return task
     },
     async cancel(taskId: string) {
-      const taskResponse = await apiSdk().cancelTask({ client: apiClient, path: { task_id: taskId } })
+      const normalizedTaskId = this.normalizeTaskId(taskId)
+      if (!normalizedTaskId) {
+        return null
+      }
+      const taskResponse = await apiSdk().cancelTask({ client: apiClient, path: { task_id: normalizedTaskId } })
       const task = (taskResponse?.data ?? taskResponse) as Task
       this.applyTaskUpdate(task)
       return task
