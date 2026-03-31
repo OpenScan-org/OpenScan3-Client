@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { apiClient, getApiBaseUrl, getApiSdk } from 'src/services/apiClient'
+import { apiClient, buildApiUrl, getApiSdk } from 'src/services/apiClient'
 
 export type CloudResetCallback = () => void | Promise<void>
 
@@ -10,7 +10,7 @@ export function useCloudResetGuard() {
   const apiSdk = () => getApiSdk()
 
   const promptCloudReset = (projectName: string, onAfterReset: CloudResetCallback) => {
-    const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(projectName)}/model/zip`
+    const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(projectName)}/model/zip`)
     $q.dialog({
       title: 'Existing model',
       message:

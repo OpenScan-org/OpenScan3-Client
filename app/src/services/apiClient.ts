@@ -79,3 +79,9 @@ updateApiClientConfig()
 export function getApiBaseUrl() {
   return apiConfigStore.baseURL
 }
+
+export function buildApiUrl(path: string) {
+  const baseUrl = apiConfigStore.baseURL.endsWith('/') ? apiConfigStore.baseURL : `${apiConfigStore.baseURL}/`
+  const normalizedPath = path.replace(/^\/+/, '')
+  return new URL(normalizedPath, baseUrl).toString()
+}

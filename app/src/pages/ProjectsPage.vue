@@ -86,7 +86,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
-import { getApiBaseUrl } from 'src/services/apiClient'
+import { buildApiUrl } from 'src/services/apiClient'
 import { type Project, type Scan } from 'src/generated/api'
 import ProjectsList from 'src/components/project/ProjectsList.vue'
 import ProjectCard from 'src/components/project/ProjectCard.vue'
@@ -174,7 +174,7 @@ const selectedProject = computed(() =>
 
 const projectBackgroundUrl = computed(() =>
   selectedProject.value
-    ? `${getApiBaseUrl()}projects/${encodeURIComponent(selectedProject.value.name)}/thumbnail`
+    ? buildApiUrl(`projects/${encodeURIComponent(selectedProject.value.name)}/thumbnail`)
     : null
 )
 

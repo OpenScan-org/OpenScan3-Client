@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { apiClient, getApiBaseUrl, getApiSdk } from 'src/services/apiClient';
+import { apiClient, buildApiUrl, getApiSdk } from 'src/services/apiClient';
 import { type Camera } from 'src/generated/api';
 
 const CAMERA_SETTINGS_CHANGE = /^cameras\.([^.\s]+)\.settings(?:\.|$)/;
@@ -40,24 +40,21 @@ export const useCameraStore = defineStore('camera', {
       orientationFlag: camera.settings?.orientation_flag ?? null
     })),
     previewUrl: (state) => {
-      const baseUrl = getApiBaseUrl();
-      return state.selectedCamera ? `${baseUrl}cameras/${state.selectedCamera}/preview?mode=stream` : null;
+      return state.selectedCamera ? buildApiUrl(`cameras/${state.selectedCamera}/preview?mode=stream`) : null;
     },
     getPreviewUrl: () => {
       return (cameraName: string, fps?: number) => {
-        const baseUrl = getApiBaseUrl();
         if (!cameraName) {
           return null;
         }
 
         const fpsParam = typeof fps === 'number' ? `&fps=${fps}` : '';
-        return `${baseUrl}cameras/${cameraName}/preview?mode=stream${fpsParam}`;
+        return buildApiUrl(`cameras/${cameraName}/preview?mode=stream${fpsParam}`);
       };
     },
     getPhotoUrl: () => {
       return (cameraName: string) => {
-        const baseUrl = getApiBaseUrl();
-        return cameraName ? `${baseUrl}cameras/${cameraName}/photo` : null;
+        return cameraName ? buildApiUrl(`cameras/${cameraName}/photo`) : null;
       };
     },
   },

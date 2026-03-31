@@ -172,7 +172,7 @@
 import { computed, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
-import { apiClient, getApiBaseUrl, getApiSdk } from 'src/services/apiClient'
+import { apiClient, buildApiUrl, getApiSdk } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
 import {
     type Project,
@@ -257,7 +257,7 @@ const handleBulkDownloadSelected = (data: { project_name: string; scan_indices: 
     try {
         const params = new URLSearchParams()
         data.scan_indices.forEach((index) => params.append('scan_indices', index.toString()))
-        const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(data.project_name)}/scans/zip?${params.toString()}`
+        const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(data.project_name)}/scans/zip?${params.toString()}`)
         window.open(downloadUrl, '_blank')
     } catch (error) {
         console.error('Could not download selected scans.', error)
@@ -324,7 +324,7 @@ const projectTotalSizeLabel = computed(() => {
 })
 
 const thumbnailUrl = computed(() => {
-    return `${getApiBaseUrl()}projects/${encodeURIComponent(props.project.name)}/thumbnail`
+    return buildApiUrl(`projects/${encodeURIComponent(props.project.name)}/thumbnail`)
 })
 
 const cloudReconstructionBlocked = computed(() => {
@@ -478,7 +478,7 @@ const confirm_fetch_model = async () => {
 
 const confirm_download = () => {
     try {
-        const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(props.project.name)}/zip`
+        const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(props.project.name)}/zip`)
         window.open(downloadUrl, '_blank')
     } catch (error) {
         console.error('Could not download project.', error)
@@ -487,7 +487,7 @@ const confirm_download = () => {
 
 const download_model = () => {
     try {
-        const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(props.project.name)}/model/zip`
+        const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(props.project.name)}/model/zip`)
         window.open(downloadUrl, '_blank')
     } catch (error) {
         console.error('Could not download project model.', error)
