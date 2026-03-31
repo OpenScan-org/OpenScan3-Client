@@ -498,6 +498,8 @@
                                   <q-input
                                     v-model="lightForms[lightName].pins"
                                     label="Pins (comma-separated)"
+                                    :error="Boolean(lightPinError(lightName))"
+                                    :error-message="lightPinError(lightName) ?? ''"
                                     @update:model-value="() => markLightFormDirty(lightName)"
                                   />
                                 </div>
@@ -507,7 +509,7 @@
                               <BaseButtonPrimary
                                 icon="save"
                                 label="Save"
-                                :disable="scanLocked"
+                                :disable="scanLocked || Boolean(lightPinError(lightName))"
                                 :loading="lightSaving[lightName] === true"
                                 @click="saveLightSettings(lightName)"
                               >
@@ -723,7 +725,12 @@
             <q-input v-model="addLightForm.name" label="Name" autofocus />
           </div>
           <div class="col-12">
-            <q-input v-model="addLightForm.pins" label="Pins (comma-separated)" />
+            <q-input
+              v-model="addLightForm.pins"
+              label="Pins (comma-separated)"
+              :error="Boolean(addLightPinsError)"
+              :error-message="addLightPinsError ?? ''"
+            />
           </div>
           <div class="col-12">
             <q-toggle v-model="addLightForm.pwm_support" label="PWM support" left-label />
@@ -1313,12 +1320,54 @@ type DeviceConfigListItem = {
   shield: string | null
 }
 
-const DEFAULT_CONFIG_FILENAME = 'device_config.json'
+const DEFAULT_CONFIG_FILENAME = 'frontend_config.json'
+const FRONTEND_CONFIG_LABEL = 'modified in frontend'
+const FRONTEND_CONFIG_PATH = `settings/device/${DEFAULT_CONFIG_FILENAME}`
+const CONFIG_LABEL_PRIORITY = [
+  'openscan.eu mini',
+  'openscan.eu classic',
+  'mini v2.1',
+  'custom device by miciomax',
+  'unknown device'
+] as const
+
+const LAST_KNOWN_CONFIG_STORAGE_KEY = 'device:lastKnownConfig'
+
+const normalizeConfigIdentifier = (value: string | null | undefined) => {
+  if (!value) {
+    return null
+  }
+  return value.replace(/^\/+/, '').trim().toLowerCase()
+}
+
+const DEFAULT_CONFIG_IDENTIFIER = normalizeConfigIdentifier(DEFAULT_CONFIG_FILENAME) ?? ''
+
+const isDefaultConfigItem = (item: DeviceConfigListItem) => {
+  if (!DEFAULT_CONFIG_IDENTIFIER) {
+    return false
+  }
+  const normalizedFilename = normalizeConfigIdentifier(item.filename)
+  const normalizedPath = normalizeConfigIdentifier(item.path)
+  return (
+    normalizedFilename === DEFAULT_CONFIG_IDENTIFIER ||
+    (normalizedPath ? normalizedPath.endsWith(DEFAULT_CONFIG_IDENTIFIER) : false)
+  )
+}
 
 const configOptions = ref<DeviceConfigOption[]>([])
 const configOptionsLoading = ref(false)
 const selectedConfig = ref<string | null>(null)
 const configApplying = ref(false)
+const lastKnownConfigFile = ref<string | null>(localStorage.getItem(LAST_KNOWN_CONFIG_STORAGE_KEY))
+
+const setLastKnownConfig = (value: string | null) => {
+  lastKnownConfigFile.value = value
+  if (value) {
+    localStorage.setItem(LAST_KNOWN_CONFIG_STORAGE_KEY, value)
+  } else {
+    localStorage.removeItem(LAST_KNOWN_CONFIG_STORAGE_KEY)
+  }
+}
 
 const reinitializeHardwareLoading = ref(false)
 
@@ -1502,8 +1551,37 @@ const isAddMotorFormValid = computed(() => {
   )
 })
 
+type PinValidationResult = { pins: number[]; error: string | null }
+
+const validatePins = (raw: string): PinValidationResult => {
+  const trimmed = raw.trim()
+  if (!trimmed.length) {
+    return { pins: [], error: 'Please enter at least one pin.' }
+  }
+
+  const segments = raw
+    .split(',')
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0)
+
+  if (!segments.length) {
+    return { pins: [], error: 'Please enter at least one pin.' }
+  }
+
+  const invalidSegment = segments.find((value) => !/^[-+]?\d+$/.test(value))
+  if (invalidSegment) {
+    return { pins: [], error: 'Pins must be integers separated by commas.' }
+  }
+
+  const pins = segments.map((value) => Number(value))
+  return { pins, error: null }
+}
+
+const addLightPinsValidation = computed(() => validatePins(addLightForm.pins))
+const addLightPinsError = computed(() => addLightPinsValidation.value.error)
+
 const isAddLightFormValid = computed(() => {
-  return addLightForm.name.trim().length > 0 && addLightForm.pins.trim().length > 0
+  return addLightForm.name.trim().length > 0 && addLightPinsValidation.value.error === null
 })
 
 const isAddCameraFormValid = computed(() => {
@@ -1758,6 +1836,14 @@ function mapLightConfig(config: LightConfig | null | undefined): LightForm {
   }
 }
 
+const lightPinError = (name: string) => {
+  const form = lightForms[name]
+  if (!form) {
+    return null
+  }
+  return validatePins(form.pins).error
+}
+
 function resetAddMotorForm() {
   Object.assign(addMotorForm, {
     name: '',
@@ -1833,7 +1919,12 @@ async function persistConfig(config: ScannerDeviceConfigInput) {
   return getApiSdk('next').addConfigJson({
     client: apiClient,
     body: {
-      config_data: config,
+      config_data: {
+        ...config,
+        name: FRONTEND_CONFIG_LABEL,
+        model: 'custom',
+        shield: 'custom'
+      },
       filename: { config_file: DEFAULT_CONFIG_FILENAME }
     }
   })
@@ -1855,6 +1946,11 @@ async function updateConfigWithMutation(mutator: (config: ScannerDeviceConfigInp
 
   mutator(nextConfig)
   await persistConfig(nextConfig)
+  await apiSdk().setConfigFile({
+    client: apiClient,
+    body: { config_file: DEFAULT_CONFIG_FILENAME }
+  })
+  setLastKnownConfig(FRONTEND_CONFIG_PATH)
   await deviceStore.refreshFromRest()
   await loadDeviceConfigs()
   return true
@@ -1900,10 +1996,11 @@ async function handleAddLight() {
 
   addLightSaving.value = true
   try {
-    const pins = addLightForm.pins
-      .split(',')
-      .map((value) => Number(value.trim()))
-      .filter((value) => Number.isFinite(value))
+    const validation = addLightPinsValidation.value
+    if (validation.error) {
+      return
+    }
+    const pins = validation.pins
 
     await updateConfigWithMutation((config) => {
       const lights = config.lights ?? {}
@@ -1983,39 +2080,119 @@ async function handleAddEndstop() {
 async function loadDeviceConfigs() {
   configOptionsLoading.value = true
   try {
-    const response = await apiSdk().listConfigFiles({ client: apiClient })
-    const payload = (response?.data ?? response) as { status?: string; configs?: DeviceConfigListItem[] }
+    const listPromise = apiSdk().listConfigFiles({ client: apiClient })
+    const statusPromise = deviceStore
+      .refreshFromRest()
+      .then(() => deviceStore.device?.config_file ?? null)
+      .catch((error) => {
+        console.warn('Could not refresh device status for config info.', error)
+        return null
+      })
+    const nextCurrentConfigPromise = isNextApiTarget.value
+      ? getApiSdk('next')
+          .getCurrentConfig({ client: apiClient })
+          .then((response) => ((response?.data ?? response) as DeviceConfigResponse | null) ?? null)
+          .catch((error) => {
+            console.warn('Could not load current config from next API.', error)
+            return null
+          })
+      : Promise.resolve<DeviceConfigResponse | null>(null)
 
-    const isDefaultConfig = (item: DeviceConfigListItem) => {
-      const filenameMatches = item.filename === DEFAULT_CONFIG_FILENAME
-      const pathMatches = item.path?.includes(`/${DEFAULT_CONFIG_FILENAME}`) ?? false
-      return filenameMatches || pathMatches
+    const [listResponse, statusConfigFile, nextCurrentConfig] = await Promise.all([
+      listPromise,
+      statusPromise,
+      nextCurrentConfigPromise
+    ])
+
+    const payload = (listResponse?.data ?? listResponse) as { status?: string; configs?: DeviceConfigListItem[] }
+    const currentConfigFile =
+      nextCurrentConfig?.path ?? nextCurrentConfig?.filename ?? (typeof statusConfigFile === 'string' ? statusConfigFile : null)
+
+    if (currentConfigFile) {
+      setLastKnownConfig(currentConfigFile)
     }
 
-    const options = (payload?.configs ?? []).map((item) => {
-      const optionLabelBase = item.name ?? item.filename
-      const optionLabel = isDefaultConfig(item) ? `${optionLabelBase} (current)` : optionLabelBase
+    const getBaseLabel = (item: DeviceConfigListItem) => {
+      if (isDefaultConfigItem(item)) {
+        return FRONTEND_CONFIG_LABEL
+      }
+      const trimmedName = item.name?.trim()
+      return trimmedName && trimmedName.length > 0 ? trimmedName : item.filename
+    }
+
+    const getPriority = (baseLabel: string, isCurrent: boolean) => {
+      if (isCurrent) {
+        return 0
+      }
+
+      const index = CONFIG_LABEL_PRIORITY.findIndex((label) => label === baseLabel.toLowerCase())
+      return index >= 0 ? index + 1 : CONFIG_LABEL_PRIORITY.length + 1
+    }
+
+    const normalizedCurrentConfig = normalizeConfigIdentifier(currentConfigFile ?? lastKnownConfigFile.value)
+
+    const isSameAsCurrent = (value: string | null | undefined) => {
+      if (!normalizedCurrentConfig) {
+        return false
+      }
+      const normalized = normalizeConfigIdentifier(value)
+      return normalized !== null && normalized === normalizedCurrentConfig
+    }
+
+    type PreparedConfigOption = DeviceConfigOption & { baseLabel: string; priority: number }
+    const preparedOptions: PreparedConfigOption[] = (payload?.configs ?? []).map((item) => {
+      const isCurrent = isSameAsCurrent(item.path) || isSameAsCurrent(item.filename)
+      const baseLabel = getBaseLabel(item)
+      const optionLabel = isCurrent ? `${baseLabel} (current)` : baseLabel
 
       return {
         label: optionLabel,
         value: item.filename,
-        meta: item
+        meta: item,
+        baseLabel,
+        priority: getPriority(baseLabel, isCurrent)
       }
     })
+
+    preparedOptions.sort((a, b) => {
+      if (a.priority !== b.priority) {
+        return a.priority - b.priority
+      }
+      return a.baseLabel.localeCompare(b.baseLabel, undefined, { sensitivity: 'base' })
+    })
+
+    const options: DeviceConfigOption[] = preparedOptions.map(({ label, value, meta }) => ({
+      label,
+      value,
+      meta
+    }))
 
     configOptions.value = options
 
-    const defaultOption = options.find((option) => {
-      if (!option.meta) {
-        return option.value === DEFAULT_CONFIG_FILENAME
+    const currentOption = options.find((option) => {
+      if (!normalizedCurrentConfig) {
+        return false
       }
-
-      return (
-        option.meta.filename === DEFAULT_CONFIG_FILENAME ||
-        option.meta.path?.includes(`/${DEFAULT_CONFIG_FILENAME}`)
-      )
+      const filenameMatches = isSameAsCurrent(option.meta?.filename)
+      const pathMatches = isSameAsCurrent(option.meta?.path)
+      return filenameMatches || pathMatches
     })
-    selectedConfig.value = defaultOption?.value ?? options[0]?.value ?? null
+
+    if (currentOption) {
+      selectedConfig.value = currentOption.value
+    } else {
+      const defaultOption = options.find((option) => {
+        if (!option.meta) {
+          return option.value === DEFAULT_CONFIG_FILENAME
+        }
+
+        return (
+          option.meta.filename === DEFAULT_CONFIG_FILENAME ||
+          option.meta.path?.includes(`/${DEFAULT_CONFIG_FILENAME}`)
+        )
+      })
+      selectedConfig.value = defaultOption?.value ?? options[0]?.value ?? null
+    }
   } catch (error) {
     configOptions.value = []
     selectedConfig.value = null
@@ -2036,6 +2213,7 @@ async function applySelectedConfig() {
       client: apiClient,
       body: { config_file: selectedConfig.value }
     })
+    setLastKnownConfig(selectedConfig.value)
   } catch (error) {
     console.error('Configuration could not be applied.', error)
   } finally {
@@ -2139,12 +2317,11 @@ async function saveLightSettings(name: string) {
 
   lightSaving[name] = true
   try {
-    const pinsArray = form.pins
-      .split(',')
-      .map((value) => value.trim())
-      .filter((value) => value.length > 0)
-      .map((value) => Number(value))
-      .filter((value) => !Number.isNaN(value))
+    const validation = validatePins(form.pins)
+    if (validation.error) {
+      return
+    }
+    const pinsArray = validation.pins
 
     const payload: Record<string, unknown> = {
       pins: pinsArray

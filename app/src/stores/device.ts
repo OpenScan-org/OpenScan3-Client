@@ -192,12 +192,17 @@ export const useDeviceStore = defineStore('device', {
         return snapshot
       } catch (error) {
         const err = error as {
-          detail?: { message?: string }
-          response?: { data?: { detail?: { message?: string } } }
+          detail?: unknown
+          response?: { data?: { detail?: unknown } }
         }
-        const message = err?.detail?.message ?? err?.response?.data?.detail?.message
+        const rawDetail = err?.detail ?? err?.response?.data?.detail
+        const message = typeof rawDetail === 'string'
+          ? rawDetail
+          : typeof rawDetail === 'object' && rawDetail !== null && 'message' in rawDetail
+            ? (rawDetail as { message?: string }).message
+            : undefined
 
-        if (message === 'Device configuration is not loaded.') {
+        if (message && message.includes('Device configuration is not loaded.')) {
           this.device = null
           this.lastChanged = null
           this.needsSetup = true
