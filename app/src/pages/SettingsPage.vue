@@ -1014,6 +1014,7 @@ const cloudSettingsDeleting = ref(false)
 const cloudSettingsLoaded = ref(false)
 const cloudStatusLoading = ref(false)
 const cloudStatus = ref<CloudStatusResponse | null>(null)
+const cloudStatusChecked = ref(false)
 const cloudHasPersistedToken = ref(false)
 const cloudTokenDirty = ref(false)
 
@@ -1289,6 +1290,15 @@ const tokenStatusView = computed<TokenStatusView>(() => {
   if (cloudTokenDirty.value) {
     return {
       summary: 'Unsaved token changes. Save first.',
+      details: [],
+      expandable: false,
+      isError: false
+    }
+  }
+
+  if (!cloudStatusChecked.value) {
+    return {
+      summary: 'Status not checked yet. Click refresh.',
       details: [],
       expandable: false,
       isError: false
@@ -1967,6 +1977,7 @@ function applyCloudSettingsToForm(settings: Partial<CloudSettings> | null | unde
   cloudHasPersistedToken.value = next.token.trim().length > 0
   cloudTokenDirty.value = false
   cloudStatus.value = null
+  cloudStatusChecked.value = false
   tokenStatusExpanded.value = false
   syncCloudEnabledFlag()
 }
@@ -1974,6 +1985,7 @@ function applyCloudSettingsToForm(settings: Partial<CloudSettings> | null | unde
 function handleCloudTokenInput() {
   cloudTokenDirty.value = true
   cloudStatus.value = null
+  cloudStatusChecked.value = false
   tokenStatusExpanded.value = false
 }
 
@@ -1996,10 +2008,6 @@ async function loadCloudSettings() {
     cloudSettingsLoading.value = false
     cloudSettingsLoaded.value = true
   }
-
-  if (canRefreshCloudStatus.value) {
-    void loadCloudStatus()
-  }
 }
 
 async function loadCloudStatus() {
@@ -2012,9 +2020,11 @@ async function loadCloudStatus() {
     const response = await apiSdk().getCloudStatus({ client: apiClient })
     const status = ((response?.data ?? response) as CloudStatusResponse | undefined) ?? null
     cloudStatus.value = status
+    cloudStatusChecked.value = true
   } catch (error) {
     console.error('Cloud status could not be loaded.', error)
     cloudStatus.value = null
+    cloudStatusChecked.value = true
   } finally {
     cloudStatusLoading.value = false
   }
@@ -2060,11 +2070,11 @@ async function saveCloudSettings() {
       cloudHasPersistedToken.value = payload.token.trim().length > 0
       cloudTokenDirty.value = false
       cloudStatus.value = null
+      cloudStatusChecked.value = false
       tokenStatusExpanded.value = false
     }
     syncCloudEnabledFlag()
     await saveCurrentConfig()
-    await loadCloudStatus()
   } catch (error) {
     console.error('Cloud settings could not be saved.', error)
   } finally {
@@ -2790,15 +2800,12 @@ watch(
         apiConfigStore.setConfig({ cloudEnabled: false })
       }
       cloudStatus.value = null
+      cloudStatusChecked.value = false
       return
     }
 
     if (!cloudSettingsLoaded.value) {
       void loadCloudSettings()
-    }
-
-    if (canRefreshCloudStatus.value) {
-      void loadCloudStatus()
     }
   },
   { immediate: true }
