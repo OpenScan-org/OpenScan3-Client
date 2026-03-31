@@ -4021,6 +4021,29 @@ export type GetCloudStatusResponses = {
 
 export type GetCloudStatusResponse = GetCloudStatusResponses[keyof GetCloudStatusResponses];
 
+export type DeleteCloudSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/cloud/settings';
+};
+
+export type DeleteCloudSettingsErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+};
+
+export type DeleteCloudSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: CloudSettingsResponse;
+};
+
+export type DeleteCloudSettingsResponse = DeleteCloudSettingsResponses[keyof DeleteCloudSettingsResponses];
+
 export type GetCloudSettingsData = {
     body?: never;
     path?: never;

@@ -236,11 +236,22 @@
                         </div>
 
                         <div class="row justify-end q-gutter-sm q-mt-md">
+                          <div class="col-auto" v-if="isNextApiTarget">
+                            <BaseButtonSecondary
+                              icon="delete_sweep"
+                              label="Reset"
+                              :disable="cloudSettingsSaving || cloudSettingsDeleting"
+                              :loading="cloudSettingsDeleting"
+                              @click="deleteCloudSettings"
+                            >
+                              <q-tooltip>Delete persisted cloud settings and disable cloud features.</q-tooltip>
+                            </BaseButtonSecondary>
+                          </div>
                           <div class="col-auto">
                             <BaseButtonPrimary
                               icon="save"
                               label="Save"
-                              :disable="!canSaveCloudSettings || cloudSettingsSaving"
+                              :disable="!canSaveCloudSettings || cloudSettingsSaving || cloudSettingsDeleting"
                               :loading="cloudSettingsSaving"
                               @click="saveCloudSettings"
                             />
@@ -999,6 +1010,7 @@ const CLOUD_TOKEN_PATTERN = /^[a-zA-Z0-9]{32}$/
 const cloudToggle = ref(apiConfigStore.cloudEnabled ?? false)
 const cloudSettingsLoading = ref(false)
 const cloudSettingsSaving = ref(false)
+const cloudSettingsDeleting = ref(false)
 const cloudSettingsLoaded = ref(false)
 const cloudStatusLoading = ref(false)
 const cloudStatus = ref<CloudStatusResponse | null>(null)
@@ -2057,6 +2069,35 @@ async function saveCloudSettings() {
     console.error('Cloud settings could not be saved.', error)
   } finally {
     cloudSettingsSaving.value = false
+  }
+}
+
+async function deleteCloudSettings() {
+  if (!isNextApiTarget.value || cloudSettingsDeleting.value) {
+    return
+  }
+
+  cloudSettingsDeleting.value = true
+  try {
+    const deleteFn = (apiSdk() as { deleteCloudSettings?: (options?: { client?: unknown }) => Promise<unknown> })
+      .deleteCloudSettings
+
+    if (!deleteFn) {
+      console.warn('deleteCloudSettings endpoint is not available on the selected API version.')
+      return
+    }
+
+    await deleteFn({ client: apiClient })
+    applyCloudSettingsToForm(null)
+    cloudToggle.value = false
+    firmwareForm.enable_cloud = false
+    syncCloudEnabledFlag()
+    await saveCurrentConfig()
+    await loadFirmwareSettings(true)
+  } catch (error) {
+    console.error('Cloud settings could not be deleted.', error)
+  } finally {
+    cloudSettingsDeleting.value = false
   }
 }
 
