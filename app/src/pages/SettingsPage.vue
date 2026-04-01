@@ -713,7 +713,17 @@
                       </div>
                       <div class="row items-center justify-between q-gutter-sm q-mt-md settings-section-actions">
                         <div class="col-auto" v-if="isNextApiTarget">
-                          <BaseButtonSecondary icon="add_a_photo" label="Add camera" @click="addCameraDialog = true" />
+                          <BaseButtonSecondary
+                            icon="photo_camera"
+                            label="Detect cameras"
+                            :disable="scanLocked"
+                            :loading="reinitializeHardwareLoading"
+                            @click="handleReinitializeHardware"
+                          >
+                            <q-tooltip>
+                              {{ scanLocked ? scanLockedTooltip : 'Reinitialize hardware and detect cameras automatically.' }}
+                            </q-tooltip>
+                          </BaseButtonSecondary>
                         </div>
                         <div class="col-auto">
                           <BaseButtonPrimary
