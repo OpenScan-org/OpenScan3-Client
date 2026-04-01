@@ -978,7 +978,7 @@ const { activeScanTaskId } = storeToRefs(taskStore)
 const scanLocked = computed(() => Boolean(activeScanTaskId.value))
 const scanLockedTooltip = 'Unavailable while a scan is running.'
 
-const NEXT_COMPATIBLE_API_TARGETS = new Set(['next', 'v0_9'])
+const NEXT_COMPATIBLE_API_TARGETS = new Set(['latest', 'next', 'v0_9'])
 const isNextApiTarget = computed(() => NEXT_COMPATIBLE_API_TARGETS.has(resolveApiTarget(apiConfigStore.version)))
 
 const scannerAddress = computed(() => apiConfigStore.baseURL.replace(/\/$/, ''))
