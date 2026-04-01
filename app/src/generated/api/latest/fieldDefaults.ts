@@ -40,11 +40,12 @@ export const fieldDefaults = {
     "bounce_time": 0.005,
     "pull_up": true
   },
+  "FirmwareSettings": {
+    "enable_cloud": false,
+    "qr_wifi_scan_enabled": true
+  },
   "LightConfig": {
     "pwm_support": false
-  },
-  "Motor": {
-    "angle": 90
   },
   "MotorConfig": {
     "acceleration": 20000,
@@ -67,7 +68,12 @@ export const fieldDefaults = {
     "status": "pending",
     "total_size_bytes": 0
   },
-  "ScannerDevice": {
+  "ScannerDeviceConfig-Input": {
+    "calibrate_mode": "calibrate_manual",
+    "motors_timeout": 0,
+    "startup_mode": "startup_enabled"
+  },
+  "ScannerDeviceConfig-Output": {
     "calibrate_mode": "calibrate_manual",
     "motors_timeout": 0,
     "startup_mode": "startup_enabled"

@@ -4,11 +4,13 @@
 import * as sdk_latest from './latest';
 import * as sdk_next from './next';
 import * as sdk_v0_8 from './v0_8';
+import * as sdk_v0_9 from './v0_9';
 import { createClient as createClient_latest } from './latest/client';
 import { createClient as createClient_next } from './next/client';
 import { createClient as createClient_v0_8 } from './v0_8/client';
+import { createClient as createClient_v0_9 } from './v0_9/client';
 
-export const apiTargets = ["latest","next","v0_8"] as const;
+export const apiTargets = ["latest","next","v0_8","v0_9"] as const;
 
 export type ApiTarget = (typeof apiTargets)[number];
 
@@ -16,12 +18,14 @@ export const versionToApiTarget = {
   'latest': 'latest',
   'next': 'next',
   'v0.8': 'v0_8',
+  'v0.9': 'v0_9',
 } as const satisfies Record<string, ApiTarget>;
 
 export const apiSdkByTarget = {
   latest: sdk_latest,
   next: sdk_next,
   v0_8: sdk_v0_8,
+  v0_9: sdk_v0_9,
 } as const;
 
 export type ApiSdk = (typeof apiSdkByTarget)[ApiTarget];
@@ -30,6 +34,7 @@ export const createApiClients = () => ({
   latest: createClient_latest(),
   next: createClient_next(),
   v0_8: createClient_v0_8(),
+  v0_9: createClient_v0_9(),
 }) as const;
 
 export type ApiClient = ReturnType<typeof createApiClients>[ApiTarget];

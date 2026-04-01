@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddConfigJsonData, AddConfigJsonErrors, AddConfigJsonResponses, AddScanWithDescriptionData, AddScanWithDescriptionErrors, AddScanWithDescriptionResponses, AutoCalibrateAwbData, AutoCalibrateAwbErrors, AutoCalibrateAwbResponses, CancelFocusStackingData, CancelFocusStackingErrors, CancelFocusStackingResponses, CancelScanData, CancelScanErrors, CancelScanResponses, CancelTaskData, CancelTaskErrors, CancelTaskResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CropImageData, CropImageErrors, CropImageResponses, DeletePhotosData, DeletePhotosErrors, DeletePhotosResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteScanData, DeleteScanErrors, DeleteScanResponses, DeleteTaskData, DeleteTaskErrors, DeleteTaskResponses, DownloadLogsArchiveData, DownloadLogsArchiveErrors, DownloadLogsArchiveResponses, DownloadProjectData, DownloadProjectErrors, DownloadProjectFromCloudData, DownloadProjectFromCloudErrors, DownloadProjectFromCloudResponses, DownloadProjectModelData, DownloadProjectModelErrors, DownloadProjectModelResponses, DownloadProjectResponses, DownloadScansData, DownloadScansErrors, DownloadScansResponses, GetAllTasksData, GetAllTasksErrors, GetAllTasksResponses, GetCameraData, GetCameraErrors, GetCameraNameSettingsData, GetCameraNameSettingsErrors, GetCameraNameSettingsResponses, GetCameraResponses, GetCamerasData, GetCamerasErrors, GetCamerasResponses, GetCloudProjectData, GetCloudProjectErrors, GetCloudProjectResponses, GetCloudSettingsData, GetCloudSettingsErrors, GetCloudSettingsResponses, GetCloudStatusData, GetCloudStatusErrors, GetCloudStatusResponses, GetDeviceInfoData, GetDeviceInfoErrors, GetDeviceInfoResponses, GetLightData, GetLightErrors, GetLightNameSettingsData, GetLightNameSettingsErrors, GetLightNameSettingsResponses, GetLightResponses, GetLightsData, GetLightsErrors, GetLightsResponses, GetMotorData, GetMotorErrors, GetMotorNameSettingsData, GetMotorNameSettingsErrors, GetMotorNameSettingsResponses, GetMotorResponses, GetMotorsData, GetMotorsErrors, GetMotorsResponses, GetPathData, GetPathErrors, GetPathResponses, GetPhotoData, GetPhotoErrors, GetPhotoResponses, GetPinData, GetPinErrors, GetPinResponses, GetPinsData, GetPinsErrors, GetPinsResponses, GetPreviewData, GetPreviewErrors, GetPreviewResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GetProjectsData, GetProjectsErrors, GetProjectsResponses, GetProjectThumbnailData, GetProjectThumbnailErrors, GetProjectThumbnailResponses, GetScanData, GetScanErrors, GetScanPathData, GetScanPathErrors, GetScanPathResponses, GetScanPhotoData, GetScanPhotoErrors, GetScanPhotoResponses, GetScanResponses, GetScanStatusData, GetScanStatusErrors, GetScanStatusResponses, GetSoftwareInfoData, GetSoftwareInfoErrors, GetSoftwareInfoResponses, GetTaskStatusData, GetTaskStatusErrors, GetTaskStatusResponses, HelloWorldAsyncData, HelloWorldAsyncErrors, HelloWorldAsyncResponses, ListCloudProjectsData, ListCloudProjectsErrors, ListCloudProjectsResponses, ListConfigFilesData, ListConfigFilesErrors, ListConfigFilesResponses, MotorEndstopCalibrationData, MotorEndstopCalibrationErrors, MotorEndstopCalibrationResponses, MotorMoveHomeData, MotorMoveHomeErrors, MotorMoveHomeResponses, MoveMotorByDegreeData, MoveMotorByDegreeErrors, MoveMotorByDegreeResponses, MoveMotorToAngleData, MoveMotorToAngleErrors, MoveMotorToAngleResponses, MoveToPositionData, MoveToPositionErrors, MoveToPositionResponses, NewProjectData, NewProjectErrors, NewProjectResponses, OverrideMotorAngleData, OverrideMotorAngleErrors, OverrideMotorAngleResponses, PauseFocusStackingData, PauseFocusStackingErrors, PauseFocusStackingResponses, PauseScanData, PauseScanErrors, PauseScanResponses, PauseTaskData, PauseTaskErrors, PauseTaskResponses, RebootData, RebootErrors, RebootResponses, ReinitializeHardwareData, ReinitializeHardwareErrors, ReinitializeHardwareResponses, ReplaceCameraNameSettingsData, ReplaceCameraNameSettingsErrors, ReplaceCameraNameSettingsResponses, ReplaceLightNameSettingsData, ReplaceLightNameSettingsErrors, ReplaceLightNameSettingsResponses, ReplaceMotorNameSettingsData, ReplaceMotorNameSettingsErrors, ReplaceMotorNameSettingsResponses, ResetCloudProjectData, ResetCloudProjectErrors, ResetCloudProjectResponses, RestartApplicationData, RestartApplicationErrors, RestartApplicationResponses, RestartCameraData, RestartCameraErrors, RestartCameraResponses, ResumeFocusStackingData, ResumeFocusStackingErrors, ResumeFocusStackingResponses, ResumeScanData, ResumeScanErrors, ResumeScanResponses, ResumeTaskData, ResumeTaskErrors, ResumeTaskResponses, SaveDeviceConfigData, SaveDeviceConfigErrors, SaveDeviceConfigResponses, SetConfigFileData, SetConfigFileErrors, SetConfigFileResponses, SetPinData, SetPinErrors, SetPinResponses, ShutdownData, ShutdownErrors, ShutdownResponses, StartFocusStackingData, StartFocusStackingErrors, StartFocusStackingResponses, TailLogsData, TailLogsErrors, TailLogsResponses, ToggleLightData, ToggleLightErrors, ToggleLightResponses, TogglePinData, TogglePinErrors, TogglePinResponses, TurnOffLightData, TurnOffLightErrors, TurnOffLightResponses, TurnOnLightData, TurnOnLightErrors, TurnOnLightResponses, UpdateCameraNameSettingsData, UpdateCameraNameSettingsErrors, UpdateCameraNameSettingsResponses, UpdateCloudSettingsData, UpdateCloudSettingsErrors, UpdateCloudSettingsResponses, UpdateLightNameSettingsData, UpdateLightNameSettingsErrors, UpdateLightNameSettingsResponses, UpdateMotorNameSettingsData, UpdateMotorNameSettingsErrors, UpdateMotorNameSettingsResponses, UploadProjectToCloudData, UploadProjectToCloudErrors, UploadProjectToCloudResponses } from './types.gen';
+import type { AddConfigJsonData, AddConfigJsonErrors, AddConfigJsonResponses, AddScanWithDescriptionData, AddScanWithDescriptionErrors, AddScanWithDescriptionResponses, AutoCalibrateAwbData, AutoCalibrateAwbErrors, AutoCalibrateAwbResponses, CancelFocusStackingData, CancelFocusStackingErrors, CancelFocusStackingResponses, CancelScanData, CancelScanErrors, CancelScanResponses, CancelTaskData, CancelTaskErrors, CancelTaskResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CropImageData, CropImageErrors, CropImageResponses, DeleteCloudSettingsData, DeleteCloudSettingsErrors, DeleteCloudSettingsResponses, DeletePhotosData, DeletePhotosErrors, DeletePhotosResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteScanData, DeleteScanErrors, DeleteScanResponses, DeleteTaskData, DeleteTaskErrors, DeleteTaskResponses, DownloadLogsArchiveData, DownloadLogsArchiveErrors, DownloadLogsArchiveResponses, DownloadProjectData, DownloadProjectErrors, DownloadProjectFromCloudData, DownloadProjectFromCloudErrors, DownloadProjectFromCloudResponses, DownloadProjectModelData, DownloadProjectModelErrors, DownloadProjectModelResponses, DownloadProjectResponses, DownloadScansData, DownloadScansErrors, DownloadScansResponses, GetAllTasksData, GetAllTasksErrors, GetAllTasksResponses, GetCameraData, GetCameraErrors, GetCameraNameSettingsData, GetCameraNameSettingsErrors, GetCameraNameSettingsResponses, GetCameraReportData, GetCameraReportErrors, GetCameraReportResponses, GetCameraResponses, GetCamerasData, GetCamerasErrors, GetCamerasResponses, GetCloudProjectData, GetCloudProjectErrors, GetCloudProjectResponses, GetCloudSettingsData, GetCloudSettingsErrors, GetCloudSettingsResponses, GetCloudStatusData, GetCloudStatusErrors, GetCloudStatusResponses, GetConfigFileData, GetConfigFileErrors, GetConfigFileResponses, GetCurrentConfigData, GetCurrentConfigErrors, GetCurrentConfigResponses, GetDeviceInfoData, GetDeviceInfoErrors, GetDeviceInfoResponses, GetLightData, GetLightErrors, GetLightNameSettingsData, GetLightNameSettingsErrors, GetLightNameSettingsResponses, GetLightResponses, GetLightsData, GetLightsErrors, GetLightsResponses, GetMotorData, GetMotorErrors, GetMotorNameSettingsData, GetMotorNameSettingsErrors, GetMotorNameSettingsResponses, GetMotorResponses, GetMotorsData, GetMotorsErrors, GetMotorsResponses, GetPathData, GetPathErrors, GetPathResponses, GetPhotoData, GetPhotoErrors, GetPhotoPayloadData, GetPhotoPayloadErrors, GetPhotoPayloadResponses, GetPhotoResponses, GetPinData, GetPinErrors, GetPinResponses, GetPinsData, GetPinsErrors, GetPinsResponses, GetPreviewData, GetPreviewErrors, GetPreviewResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GetProjectsData, GetProjectsErrors, GetProjectsResponses, GetProjectThumbnailData, GetProjectThumbnailErrors, GetProjectThumbnailResponses, GetScanData, GetScanErrors, GetScanPathData, GetScanPathErrors, GetScanPathResponses, GetScanPhotoData, GetScanPhotoErrors, GetScanPhotoResponses, GetScanResponses, GetScanStatusData, GetScanStatusErrors, GetScanStatusResponses, GetSettingsData, GetSettingsErrors, GetSettingsResponses, GetSoftwareInfoData, GetSoftwareInfoErrors, GetSoftwareInfoResponses, GetTaskStatusData, GetTaskStatusErrors, GetTaskStatusResponses, HelloWorldAsyncData, HelloWorldAsyncErrors, HelloWorldAsyncResponses, ListCloudProjectsData, ListCloudProjectsErrors, ListCloudProjectsResponses, ListConfigFilesData, ListConfigFilesErrors, ListConfigFilesResponses, MotorEndstopCalibrationData, MotorEndstopCalibrationErrors, MotorEndstopCalibrationResponses, MotorMoveHomeData, MotorMoveHomeErrors, MotorMoveHomeResponses, MoveMotorByDegreeData, MoveMotorByDegreeErrors, MoveMotorByDegreeResponses, MoveMotorToAngleData, MoveMotorToAngleErrors, MoveMotorToAngleResponses, MoveToPositionData, MoveToPositionErrors, MoveToPositionResponses, NewProjectData, NewProjectErrors, NewProjectResponses, OverrideMotorAngleData, OverrideMotorAngleErrors, OverrideMotorAngleResponses, PauseFocusStackingData, PauseFocusStackingErrors, PauseFocusStackingResponses, PauseScanData, PauseScanErrors, PauseScanResponses, PauseTaskData, PauseTaskErrors, PauseTaskResponses, RebootData, RebootErrors, RebootResponses, ReinitializeHardwareData, ReinitializeHardwareErrors, ReinitializeHardwareResponses, ReplaceCameraNameSettingsData, ReplaceCameraNameSettingsErrors, ReplaceCameraNameSettingsResponses, ReplaceLightNameSettingsData, ReplaceLightNameSettingsErrors, ReplaceLightNameSettingsResponses, ReplaceMotorNameSettingsData, ReplaceMotorNameSettingsErrors, ReplaceMotorNameSettingsResponses, ReplaceSettingsData, ReplaceSettingsErrors, ReplaceSettingsResponses, ResetCloudProjectData, ResetCloudProjectErrors, ResetCloudProjectResponses, RestartApplicationData, RestartApplicationErrors, RestartApplicationResponses, RestartCameraData, RestartCameraErrors, RestartCameraResponses, ResumeFocusStackingData, ResumeFocusStackingErrors, ResumeFocusStackingResponses, ResumeScanData, ResumeScanErrors, ResumeScanResponses, ResumeTaskData, ResumeTaskErrors, ResumeTaskResponses, SaveDeviceConfigData, SaveDeviceConfigErrors, SaveDeviceConfigResponses, SetConfigFileData, SetConfigFileErrors, SetConfigFileResponses, SetPinData, SetPinErrors, SetPinResponses, ShutdownData, ShutdownErrors, ShutdownResponses, StartFocusStackingData, StartFocusStackingErrors, StartFocusStackingResponses, StartQrScanData, StartQrScanErrors, StartQrScanResponses, TailLogsData, TailLogsErrors, TailLogsResponses, ToggleLightData, ToggleLightErrors, ToggleLightResponses, TogglePinData, TogglePinErrors, TogglePinResponses, TurnOffLightData, TurnOffLightErrors, TurnOffLightResponses, TurnOnLightData, TurnOnLightErrors, TurnOnLightResponses, UpdateCameraNameSettingsData, UpdateCameraNameSettingsErrors, UpdateCameraNameSettingsResponses, UpdateCloudSettingsData, UpdateCloudSettingsErrors, UpdateCloudSettingsResponses, UpdateLightNameSettingsData, UpdateLightNameSettingsErrors, UpdateLightNameSettingsResponses, UpdateMotorNameSettingsData, UpdateMotorNameSettingsErrors, UpdateMotorNameSettingsResponses, UpdateSettingData, UpdateSettingErrors, UpdateSettingResponses, UploadProjectToCloudData, UploadProjectToCloudErrors, UploadProjectToCloudResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -84,6 +84,15 @@ export const getPreview = <ThrowOnError extends boolean = false>(options: Option
 export const getPhoto = <ThrowOnError extends boolean = false>(options: Options<GetPhotoData, ThrowOnError>) => (options.client ?? client).get<GetPhotoResponses, GetPhotoErrors, ThrowOnError>({
     responseType: 'json',
     url: '/cameras/{camera_name}/photo',
+    ...options
+});
+
+/**
+ * Get Photo Payload
+ */
+export const getPhotoPayload = <ThrowOnError extends boolean = false>(options: Options<GetPhotoPayloadData, ThrowOnError>) => (options.client ?? client).get<GetPhotoPayloadResponses, GetPhotoPayloadErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/cameras/{camera_name}/photo/payload/{payload_id}',
     ...options
 });
 
@@ -481,6 +490,47 @@ export const updateLightNameSettings = <ThrowOnError extends boolean = false>(op
 export const replaceLightNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceLightNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceLightNameSettingsResponses, ReplaceLightNameSettingsErrors, ThrowOnError>({
     responseType: 'json',
     url: '/lights/{name}/settings',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Settings
+ *
+ * Return persisted firmware settings.
+ */
+export const getSettings = <ThrowOnError extends boolean = false>(options?: Options<GetSettingsData, ThrowOnError>) => (options?.client ?? client).get<GetSettingsResponses, GetSettingsErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/firmware/settings',
+    ...options
+});
+
+/**
+ * Replace Settings
+ *
+ * Replace the entire firmware settings payload.
+ */
+export const replaceSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceSettingsResponses, ReplaceSettingsErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/firmware/settings',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Update Setting
+ *
+ * Update a single firmware settings key.
+ */
+export const updateSetting = <ThrowOnError extends boolean = false>(options: Options<UpdateSettingData, ThrowOnError>) => (options.client ?? client).patch<UpdateSettingResponses, UpdateSettingErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/firmware/settings/{key}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -947,28 +997,14 @@ export const listConfigFiles = <ThrowOnError extends boolean = false>(options?: 
 });
 
 /**
- * Add Config Json
+ * Get Current Config
  *
- * Add a device configuration from a JSON object
- *
- * This endpoint accepts a JSON object with the device configuration,
- * validates it and saves it to a file.
- *
- * Args:
- * config_data: The device configuration to add
- * filename: The filename to save the configuration as
- *
- * Returns:
- * dict: A dictionary containing the status of the operation
+ * Return the currently active device configuration file.
  */
-export const addConfigJson = <ThrowOnError extends boolean = false>(options: Options<AddConfigJsonData, ThrowOnError>) => (options.client ?? client).post<AddConfigJsonResponses, AddConfigJsonErrors, ThrowOnError>({
+export const getCurrentConfig = <ThrowOnError extends boolean = false>(options?: Options<GetCurrentConfigData, ThrowOnError>) => (options?.client ?? client).get<GetCurrentConfigResponses, GetCurrentConfigErrors, ThrowOnError>({
     responseType: 'json',
-    url: '/device/configurations/',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
+    url: '/device/configurations/current',
+    ...options
 });
 
 /**
@@ -1001,6 +1037,42 @@ export const saveDeviceConfig = <ThrowOnError extends boolean = false>(options?:
 export const setConfigFile = <ThrowOnError extends boolean = false>(options: Options<SetConfigFileData, ThrowOnError>) => (options.client ?? client).put<SetConfigFileResponses, SetConfigFileErrors, ThrowOnError>({
     responseType: 'json',
     url: '/device/configurations/current',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Config File
+ *
+ * Return a specific configuration JSON file by filename.
+ */
+export const getConfigFile = <ThrowOnError extends boolean = false>(options: Options<GetConfigFileData, ThrowOnError>) => (options.client ?? client).get<GetConfigFileResponses, GetConfigFileErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/device/configurations/{filename}',
+    ...options
+});
+
+/**
+ * Add Config Json
+ *
+ * Add a device configuration from a JSON object
+ *
+ * This endpoint accepts a JSON object with the device configuration,
+ * validates it and saves it to a file.
+ *
+ * Args:
+ * config_data: The device configuration to add
+ * filename: The filename to save the configuration as
+ *
+ * Returns:
+ * dict: A dictionary containing the status of the operation
+ */
+export const addConfigJson = <ThrowOnError extends boolean = false>(options: Options<AddConfigJsonData, ThrowOnError>) => (options.client ?? client).post<AddConfigJsonResponses, AddConfigJsonErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/device/configurations/',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1222,6 +1294,17 @@ export const restartApplication = <ThrowOnError extends boolean = false>(options
 });
 
 /**
+ * Get Camera Report
+ *
+ * Run the camera diagnostics script and return a bundled report.
+ */
+export const getCameraReport = <ThrowOnError extends boolean = false>(options?: Options<GetCameraReportData, ThrowOnError>) => (options?.client ?? client).get<GetCameraReportResponses, GetCameraReportErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/develop/camera-report',
+    ...options
+});
+
+/**
  * Run crop task and return visualization image
  *
  * Run the crop task and return the visualization image with bounding boxes.
@@ -1247,6 +1330,27 @@ export const helloWorldAsync = <ThrowOnError extends boolean = false>(options: O
 });
 
 /**
+ * Start Qr Scan
+ *
+ * Start a background task that scans for WiFi QR codes via the camera.
+ *
+ * The task runs indefinitely, capturing frames and looking for QR codes.
+ * When it finds an Android/iOS WiFi share QR code it connects to the
+ * network via nmcli and completes.  Cancel the task to stop scanning.
+ *
+ * Args:
+ * camera_name: Name of the camera controller to use for captures.
+ *
+ * Returns:
+ * Task: The created task model (poll via /tasks/{id} for progress).
+ */
+export const startQrScan = <ThrowOnError extends boolean = false>(options: Options<StartQrScanData, ThrowOnError>) => (options.client ?? client).post<StartQrScanResponses, StartQrScanErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/develop/qr-scan',
+    ...options
+});
+
+/**
  * Get Path
  *
  * Get a list of coordinates by path method and number of points
@@ -1268,6 +1372,17 @@ export const getPath = <ThrowOnError extends boolean = false>(options: Options<G
 export const getCloudStatus = <ThrowOnError extends boolean = false>(options?: Options<GetCloudStatusData, ThrowOnError>) => (options?.client ?? client).get<GetCloudStatusResponses, GetCloudStatusErrors, ThrowOnError>({
     responseType: 'json',
     url: '/cloud/status',
+    ...options
+});
+
+/**
+ * Delete Cloud Settings
+ *
+ * Delete persisted cloud settings and disable cloud features.
+ */
+export const deleteCloudSettings = <ThrowOnError extends boolean = false>(options?: Options<DeleteCloudSettingsData, ThrowOnError>) => (options?.client ?? client).delete<DeleteCloudSettingsResponses, DeleteCloudSettingsErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/cloud/settings',
     ...options
 });
 

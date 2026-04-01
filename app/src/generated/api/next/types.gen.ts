@@ -3895,6 +3895,38 @@ export type RestartApplicationResponses = {
 
 export type RestartApplicationResponse = RestartApplicationResponses[keyof RestartApplicationResponses];
 
+export type GetCameraReportData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Format
+         */
+        format?: 'json' | 'text';
+    };
+    url: '/develop/camera-report';
+};
+
+export type GetCameraReportErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetCameraReportError = GetCameraReportErrors[keyof GetCameraReportErrors];
+
+export type GetCameraReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
 export type CropImageData = {
     body?: never;
     path?: never;

@@ -49,6 +49,10 @@ export const fieldDescriptions = {
     "pin": "GPIO pin number used for the endstop",
     "pull_up": "Whether to use a pull-up resistor"
   },
+  "FirmwareSettings": {
+    "enable_cloud": "Enable integrations with OpenScan Cloud services.",
+    "qr_wifi_scan_enabled": "Automatically scan for WiFi QR codes on startup when no WiFi or Ethernet connection is active."
+  },
   "LightConfig": {
     "pin": "Single GPIO pin controlling the light output.",
     "pins": "Multiple GPIO pins driving grouped light outputs.",

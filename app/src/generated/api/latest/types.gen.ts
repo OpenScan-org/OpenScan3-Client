@@ -52,7 +52,7 @@ export type AutoCalibrateAwbResponse = {
  * Body_add_config_json_device_configurations__post
  */
 export type BodyAddConfigJsonDeviceConfigurationsPost = {
-    config_data: ScannerDevice;
+    config_data: ScannerDeviceConfigInput;
     filename: DeviceConfigRequest;
 };
 
@@ -84,22 +84,6 @@ export type BodyMoveMotorByDegreeMotorsMotorNameAnglePatch = {
      * Degrees
      */
     degrees: number;
-};
-
-/**
- * Camera
- */
-export type Camera = {
-    type: CameraType;
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Path
-     */
-    path: string;
-    settings: CameraSettings;
 };
 
 /**
@@ -395,6 +379,25 @@ export type DeviceConfigRequest = {
 };
 
 /**
+ * DeviceConfigResponse
+ */
+export type DeviceConfigResponse = {
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Path
+     */
+    path: string;
+    config: ScannerDeviceConfigOutput;
+};
+
+/**
  * DeviceControlResponse
  */
 export type DeviceControlResponse = {
@@ -420,11 +423,11 @@ export type DeviceStatusResponse = {
     /**
      * Model
      */
-    model: string;
+    model?: string | null;
     /**
      * Shield
      */
-    shield: string;
+    shield?: string | null;
     /**
      * Cameras
      */
@@ -482,17 +485,6 @@ export type DiskUsage = {
 };
 
 /**
- * Endstop
- */
-export type Endstop = {
-    /**
-     * Name
-     */
-    name: string;
-    settings: EndstopConfig | null;
-};
-
-/**
  * EndstopConfig
  *
  * Configuration for a motor endstop.
@@ -544,6 +536,77 @@ export type EndstopConfig = {
 };
 
 /**
+ * EndstopStatusResponse
+ */
+export type EndstopStatusResponse = {
+    /**
+     * Assigned Motor
+     */
+    assigned_motor: string;
+    /**
+     * Position
+     */
+    position: number;
+    /**
+     * Pin
+     */
+    pin: number;
+    /**
+     * Is Pressed
+     */
+    is_pressed: boolean;
+    /**
+     * Pull Up
+     */
+    pull_up?: boolean | null;
+    /**
+     * Active High
+     */
+    active_high?: boolean | null;
+    /**
+     * Bounce Time
+     */
+    bounce_time?: number | null;
+};
+
+/**
+ * FirmwareSettingPatchRequest
+ */
+export type FirmwareSettingPatchRequest = {
+    /**
+     * Value
+     */
+    value: unknown;
+};
+
+/**
+ * FirmwareSettings
+ *
+ * Global firmware behaviour toggles.
+ *
+ * Attributes:
+ * qr_wifi_scan_enabled: When True the firmware automatically starts the
+ * QR WiFi scan task on startup if no usable network connection is
+ * detected.
+ * enable_cloud: When True the firmware enables cloud-facing features and
+ * UX affordances.
+ */
+export type FirmwareSettings = {
+    /**
+     * Qr Wifi Scan Enabled
+     *
+     * Automatically scan for WiFi QR codes on startup when no WiFi or Ethernet connection is active.
+     */
+    qr_wifi_scan_enabled?: boolean;
+    /**
+     * Enable Cloud
+     *
+     * Enable integrations with OpenScan Cloud services.
+     */
+    enable_cloud?: boolean;
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -551,17 +614,6 @@ export type HttpValidationError = {
      * Detail
      */
     detail?: Array<ValidationError>;
-};
-
-/**
- * Light
- */
-export type Light = {
-    /**
-     * Name
-     */
-    name: string;
-    settings: LightConfig;
 };
 
 /**
@@ -601,21 +653,6 @@ export type LightStatusResponse = {
      */
     is_on: boolean;
     settings: LightConfig;
-};
-
-/**
- * Motor
- */
-export type Motor = {
-    /**
-     * Name
-     */
-    name: string;
-    settings: MotorConfig | null;
-    /**
-     * Angle
-     */
-    angle?: number;
 };
 
 /**
@@ -709,18 +746,35 @@ export type MotorStatusResponse = {
      * Calibrated
      */
     calibrated: boolean;
-    /**
-     * Endstop
-     */
-    endstop: {
-        [key: string]: unknown;
-    } | null;
+    endstop: EndstopStatusResponse | null;
 };
 
 /**
  * PathMethod
  */
 export type PathMethod = 'fibonacci';
+
+/**
+ * PersistedCameraConfig
+ */
+export type PersistedCameraConfig = {
+    /**
+     * Type
+     */
+    type: CameraType | string;
+    /**
+     * Path
+     */
+    path: string;
+    settings?: CameraSettings;
+};
+
+/**
+ * PersistedEndstopConfig
+ */
+export type PersistedEndstopConfig = {
+    settings: EndstopConfig;
+};
 
 /**
  * PhotoResponse
@@ -978,56 +1032,116 @@ export type ScanSetting = {
 export type ScannerCalibrateMode = 'calibrate_manual' | 'calibrate_on_home' | 'calibrate_on_scan' | 'calibrate_on_wake';
 
 /**
- * ScannerDevice
+ * ScannerDeviceConfig
+ *
+ * Persisted scanner configuration payload stored as JSON.
  */
-export type ScannerDevice = {
+export type ScannerDeviceConfigInput = {
     /**
      * Name
      */
     name: string;
-    model: ScannerModel | null;
-    shield: ScannerShield | null;
+    /**
+     * Model
+     */
+    model?: string | null;
+    /**
+     * Shield
+     */
+    shield?: string | null;
     /**
      * Cameras
      */
-    cameras: {
-        [key: string]: Camera;
+    cameras?: {
+        [key: string]: PersistedCameraConfig;
     };
     /**
      * Motors
      */
-    motors: {
-        [key: string]: Motor;
+    motors?: {
+        [key: string]: MotorConfig;
     };
     /**
      * Lights
      */
-    lights: {
-        [key: string]: Light;
+    lights?: {
+        [key: string]: LightConfig;
     };
     /**
      * Endstops
      */
-    endstops: {
-        [key: string]: Endstop;
+    endstops?: {
+        [key: string]: PersistedEndstopConfig;
     } | null;
     /**
      * Motors Timeout
      */
     motors_timeout?: number;
-    startup_mode?: ScannerStartupMode;
-    calibrate_mode?: ScannerCalibrateMode;
+    /**
+     * Startup Mode
+     */
+    startup_mode?: ScannerStartupMode | string;
+    /**
+     * Calibrate Mode
+     */
+    calibrate_mode?: ScannerCalibrateMode | string;
 };
 
 /**
- * ScannerModel
+ * ScannerDeviceConfig
+ *
+ * Persisted scanner configuration payload stored as JSON.
  */
-export type ScannerModel = 'classic' | 'mini' | 'custom';
-
-/**
- * ScannerShield
- */
-export type ScannerShield = 'greenshield' | 'blackshield' | 'custom';
+export type ScannerDeviceConfigOutput = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Model
+     */
+    model?: string | null;
+    /**
+     * Shield
+     */
+    shield?: string | null;
+    /**
+     * Cameras
+     */
+    cameras?: {
+        [key: string]: PersistedCameraConfig;
+    };
+    /**
+     * Motors
+     */
+    motors?: {
+        [key: string]: MotorConfig;
+    };
+    /**
+     * Lights
+     */
+    lights?: {
+        [key: string]: LightConfig;
+    };
+    /**
+     * Endstops
+     */
+    endstops?: {
+        [key: string]: PersistedEndstopConfig;
+    } | null;
+    /**
+     * Motors Timeout
+     */
+    motors_timeout?: number;
+    /**
+     * Startup Mode
+     */
+    startup_mode?: ScannerStartupMode | string;
+    /**
+     * Calibrate Mode
+     */
+    calibrate_mode?: ScannerCalibrateMode | string;
+};
 
 /**
  * ScannerStartupMode
@@ -1318,7 +1432,16 @@ export type GetPhotoData = {
          */
         camera_name: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Image Format
+         */
+        image_format?: 'jpeg' | 'dng' | 'rgb_array' | 'yuv_array';
+        /**
+         * With Metadata
+         */
+        with_metadata?: boolean;
+    };
     url: '/cameras/{camera_name}/photo';
 };
 
@@ -1336,6 +1459,42 @@ export type GetPhotoErrors = {
 export type GetPhotoError = GetPhotoErrors[keyof GetPhotoErrors];
 
 export type GetPhotoResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type GetPhotoPayloadData = {
+    body?: never;
+    path: {
+        /**
+         * Camera Name
+         */
+        camera_name: string;
+        /**
+         * Payload Id
+         */
+        payload_id: string;
+    };
+    query?: never;
+    url: '/cameras/{camera_name}/photo/payload/{payload_id}';
+};
+
+export type GetPhotoPayloadErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetPhotoPayloadError = GetPhotoPayloadErrors[keyof GetPhotoPayloadErrors];
+
+export type GetPhotoPayloadResponses = {
     /**
      * Successful Response
      */
@@ -2141,6 +2300,92 @@ export type ReplaceLightNameSettingsResponses = {
 };
 
 export type ReplaceLightNameSettingsResponse = ReplaceLightNameSettingsResponses[keyof ReplaceLightNameSettingsResponses];
+
+export type GetSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/firmware/settings';
+};
+
+export type GetSettingsErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+};
+
+export type GetSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: FirmwareSettings;
+};
+
+export type GetSettingsResponse = GetSettingsResponses[keyof GetSettingsResponses];
+
+export type ReplaceSettingsData = {
+    body: FirmwareSettings;
+    path?: never;
+    query?: never;
+    url: '/firmware/settings';
+};
+
+export type ReplaceSettingsErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ReplaceSettingsError = ReplaceSettingsErrors[keyof ReplaceSettingsErrors];
+
+export type ReplaceSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: FirmwareSettings;
+};
+
+export type ReplaceSettingsResponse = ReplaceSettingsResponses[keyof ReplaceSettingsResponses];
+
+export type UpdateSettingData = {
+    body: FirmwareSettingPatchRequest;
+    path: {
+        /**
+         * Key
+         */
+        key: string;
+    };
+    query?: never;
+    url: '/firmware/settings/{key}';
+};
+
+export type UpdateSettingErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateSettingError = UpdateSettingErrors[keyof UpdateSettingErrors];
+
+export type UpdateSettingResponses = {
+    /**
+     * Successful Response
+     */
+    200: FirmwareSettings;
+};
+
+export type UpdateSettingResponse = UpdateSettingResponses[keyof UpdateSettingResponses];
 
 export type GetProjectsData = {
     body?: never;
@@ -3123,34 +3368,28 @@ export type ListConfigFilesResponses = {
     200: unknown;
 };
 
-export type AddConfigJsonData = {
-    body: BodyAddConfigJsonDeviceConfigurationsPost;
+export type GetCurrentConfigData = {
+    body?: never;
     path?: never;
     query?: never;
-    url: '/device/configurations/';
+    url: '/device/configurations/current';
 };
 
-export type AddConfigJsonErrors = {
+export type GetCurrentConfigErrors = {
     /**
      * Not found
      */
     404: unknown;
-    /**
-     * Validation Error
-     */
-    422: HttpValidationError;
 };
 
-export type AddConfigJsonError = AddConfigJsonErrors[keyof AddConfigJsonErrors];
-
-export type AddConfigJsonResponses = {
+export type GetCurrentConfigResponses = {
     /**
      * Successful Response
      */
-    200: DeviceControlResponse;
+    200: DeviceConfigResponse;
 };
 
-export type AddConfigJsonResponse = AddConfigJsonResponses[keyof AddConfigJsonResponses];
+export type GetCurrentConfigResponse = GetCurrentConfigResponses[keyof GetCurrentConfigResponses];
 
 export type SaveDeviceConfigData = {
     body?: never;
@@ -3203,6 +3442,69 @@ export type SetConfigFileResponses = {
 };
 
 export type SetConfigFileResponse = SetConfigFileResponses[keyof SetConfigFileResponses];
+
+export type GetConfigFileData = {
+    body?: never;
+    path: {
+        /**
+         * Filename
+         */
+        filename: string;
+    };
+    query?: never;
+    url: '/device/configurations/{filename}';
+};
+
+export type GetConfigFileErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetConfigFileError = GetConfigFileErrors[keyof GetConfigFileErrors];
+
+export type GetConfigFileResponses = {
+    /**
+     * Successful Response
+     */
+    200: DeviceConfigResponse;
+};
+
+export type GetConfigFileResponse = GetConfigFileResponses[keyof GetConfigFileResponses];
+
+export type AddConfigJsonData = {
+    body: BodyAddConfigJsonDeviceConfigurationsPost;
+    path?: never;
+    query?: never;
+    url: '/device/configurations/';
+};
+
+export type AddConfigJsonErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AddConfigJsonError = AddConfigJsonErrors[keyof AddConfigJsonErrors];
+
+export type AddConfigJsonResponses = {
+    /**
+     * Successful Response
+     */
+    200: DeviceControlResponse;
+};
+
+export type AddConfigJsonResponse = AddConfigJsonResponses[keyof AddConfigJsonResponses];
 
 export type ReinitializeHardwareData = {
     body?: never;
@@ -3593,6 +3895,38 @@ export type RestartApplicationResponses = {
 
 export type RestartApplicationResponse = RestartApplicationResponses[keyof RestartApplicationResponses];
 
+export type GetCameraReportData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Format
+         */
+        format?: 'json' | 'text';
+    };
+    url: '/develop/camera-report';
+};
+
+export type GetCameraReportErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetCameraReportError = GetCameraReportErrors[keyof GetCameraReportErrors];
+
+export type GetCameraReportResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
 export type CropImageData = {
     body?: never;
     path?: never;
@@ -3667,6 +4001,42 @@ export type HelloWorldAsyncResponses = {
 
 export type HelloWorldAsyncResponse = HelloWorldAsyncResponses[keyof HelloWorldAsyncResponses];
 
+export type StartQrScanData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Camera Name
+         *
+         * Name of the camera controller to use
+         */
+        camera_name: string;
+    };
+    url: '/develop/qr-scan';
+};
+
+export type StartQrScanErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type StartQrScanError = StartQrScanErrors[keyof StartQrScanErrors];
+
+export type StartQrScanResponses = {
+    /**
+     * Successful Response
+     */
+    202: Task;
+};
+
+export type StartQrScanResponse = StartQrScanResponses[keyof StartQrScanResponses];
+
 export type GetPathData = {
     body?: never;
     path: {
@@ -3727,6 +4097,29 @@ export type GetCloudStatusResponses = {
 };
 
 export type GetCloudStatusResponse = GetCloudStatusResponses[keyof GetCloudStatusResponses];
+
+export type DeleteCloudSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/cloud/settings';
+};
+
+export type DeleteCloudSettingsErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+};
+
+export type DeleteCloudSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: CloudSettingsResponse;
+};
+
+export type DeleteCloudSettingsResponse = DeleteCloudSettingsResponses[keyof DeleteCloudSettingsResponses];
 
 export type GetCloudSettingsData = {
     body?: never;

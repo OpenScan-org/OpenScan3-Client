@@ -978,7 +978,8 @@ const { activeScanTaskId } = storeToRefs(taskStore)
 const scanLocked = computed(() => Boolean(activeScanTaskId.value))
 const scanLockedTooltip = 'Unavailable while a scan is running.'
 
-const isNextApiTarget = computed(() => resolveApiTarget(apiConfigStore.version) === 'next')
+const NEXT_COMPATIBLE_API_TARGETS = new Set(['next', 'v0_9'])
+const isNextApiTarget = computed(() => NEXT_COMPATIBLE_API_TARGETS.has(resolveApiTarget(apiConfigStore.version)))
 
 const scannerAddress = computed(() => apiConfigStore.baseURL.replace(/\/$/, ''))
 
@@ -2232,7 +2233,7 @@ async function fetchCurrentConfig(): Promise<ScannerDeviceConfigInput | null> {
   }
 
   try {
-    const response = await getApiSdk('next').getCurrentConfig({ client: apiClient })
+    const response = await apiSdk().getCurrentConfig({ client: apiClient })
     const payload = (response?.data ?? response) as DeviceConfigResponse | null
     const baseConfig = (payload?.config ?? null) as ScannerDeviceConfigInput | null
 
@@ -2254,7 +2255,7 @@ async function fetchCurrentConfig(): Promise<ScannerDeviceConfigInput | null> {
 }
 
 async function persistConfig(config: ScannerDeviceConfigInput) {
-  return getApiSdk('next').addConfigJson({
+  return apiSdk().addConfigJson({
     client: apiClient,
     body: {
       config_data: {
@@ -2427,7 +2428,7 @@ async function loadDeviceConfigs() {
         return null
       })
     const nextCurrentConfigPromise = isNextApiTarget.value
-      ? getApiSdk('next')
+      ? apiSdk()
           .getCurrentConfig({ client: apiClient })
           .then((response) => ((response?.data ?? response) as DeviceConfigResponse | null) ?? null)
           .catch((error) => {
