@@ -688,56 +688,69 @@
                             </q-input>
                           </div>
                           <div class="col-12">
-                            <BaseButtonSecondary
-                              icon="auto_awesome"
-                              label="AWB Auto-Lock"
-                              :disable="!selectedCamera || scanLocked"
-                              :loading="cameraAwbCalibrating"
-                              @click="calibrateCameraAwb"
-                            >
-                              <q-tooltip>
-                                {{
-                                  scanLocked
-                                    ? scanLockedTooltip
-                                    : 'Run automatic white balance calibration and lock the gains.'
-                                }}
-                              </q-tooltip>
-                            </BaseButtonSecondary>
-                          </div>
-                          <div class="col-12">
-                            <q-toggle v-model="cameraForm.AF" label="Autofocus">
-                              <q-tooltip>{{ cameraSettingDescription('AF') }}</q-tooltip>
-                            </q-toggle>
+                            <div class="row items-center q-col-gutter-md">
+                              <div class="col-auto">
+                                <BaseButtonSecondary
+                                  icon="auto_awesome"
+                                  label="AWB Auto-Lock"
+                                  :disable="!selectedCamera || scanLocked"
+                                  :loading="cameraAwbCalibrating"
+                                  @click="calibrateCameraAwb"
+                                >
+                                  <q-tooltip>
+                                    {{
+                                      scanLocked
+                                        ? scanLockedTooltip
+                                        : 'Run automatic white balance calibration and lock the gains.'
+                                    }}
+                                  </q-tooltip>
+                                </BaseButtonSecondary>
+                              </div>
+                              <div class="col-auto">
+                                <q-toggle v-model="cameraForm.AF" label="Autofocus">
+                                  <q-tooltip>{{ cameraSettingDescription('AF') }}</q-tooltip>
+                                </q-toggle>
+                              </div>
+                            </div>
                           </div>
                         </template>
                       </div>
-                      <div class="row items-center justify-between q-gutter-sm q-mt-md settings-section-actions">
-                        <div class="col-auto" v-if="isNextApiTarget">
-                          <BaseButtonSecondary
-                            icon="photo_camera"
-                            label="Detect cameras"
-                            :disable="scanLocked"
-                            :loading="reinitializeHardwareLoading"
-                            @click="handleReinitializeHardware"
-                          >
-                            <q-tooltip>
-                              {{ scanLocked ? scanLockedTooltip : 'Reinitialize hardware and detect cameras automatically.' }}
-                            </q-tooltip>
-                          </BaseButtonSecondary>
-                        </div>
-                        <div class="col-auto">
-                          <BaseButtonPrimary
-                            icon="save"
-                            label="Save"
-                            :disable="scanLocked || !selectedCamera"
-                            :loading="cameraSaving"
-                            @click="saveCameraSettings"
-                          >
-                            <q-tooltip>
-                              {{ scanLocked ? scanLockedTooltip : 'Save camera configuration.' }}
-                            </q-tooltip>
-                          </BaseButtonPrimary>
-                        </div>
+                      <div class="row items-center q-gutter-sm q-mt-md settings-section-actions">
+                        <BaseButtonSecondary
+                          v-if="isNextApiTarget"
+                          icon="photo_camera"
+                          label="Detect cameras"
+                          :disable="scanLocked"
+                          :loading="reinitializeHardwareLoading"
+                          @click="handleReinitializeHardware"
+                        >
+                          <q-tooltip>
+                            {{ scanLocked ? scanLockedTooltip : 'Reinitialize hardware and detect cameras automatically.' }}
+                          </q-tooltip>
+                        </BaseButtonSecondary>
+                        <BaseButtonSecondary
+                          v-if="isNextApiTarget"
+                          icon="description"
+                          label="Camera report"
+                          :loading="cameraReportDownloadLoading"
+                          :disable="cameraReportDownloadLoading"
+                          @click="handleDownloadCameraReport"
+                        >
+                          <q-tooltip>Develop camera report as a text file.</q-tooltip>
+                        </BaseButtonSecondary>
+                      </div>
+                      <div class="row justify-end q-mt-sm settings-section-actions">
+                        <BaseButtonPrimary
+                          icon="save"
+                          label="Save"
+                          :disable="scanLocked || !selectedCamera"
+                          :loading="cameraSaving"
+                          @click="saveCameraSettings"
+                        >
+                          <q-tooltip>
+                            {{ scanLocked ? scanLockedTooltip : 'Save camera configuration.' }}
+                          </q-tooltip>
+                        </BaseButtonPrimary>
                       </div>
                     </BaseSection>
                   </BaseSectionGroup>
@@ -944,7 +957,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { apiClient, getApiSdk, resolveApiTarget, updateApiClientConfig } from 'src/services/apiClient'
+import { apiClient, buildApiUrl, getApiSdk, resolveApiTarget, updateApiClientConfig } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
@@ -1588,6 +1601,7 @@ const cameraOptions = computed<CameraOption[]>(() =>
 const cameraOptionsLoading = computed(() => deviceStatus.value !== 'open')
 const cameraLoading = ref(false)
 const cameraSaving = ref(false)
+const cameraReportDownloadLoading = ref(false)
 const cameraForm = reactive<{ [K in keyof CameraSettings]?: CameraSettings[K] | null }>({})
 
 type CameraSettingsField = keyof (typeof fieldDescriptions)['CameraSettings']
@@ -2969,6 +2983,38 @@ async function handleReinitializeHardware() {
     console.error('Hardware could not be reinitialized.', error)
   } finally {
     reinitializeHardwareLoading.value = false
+  }
+}
+
+async function handleDownloadCameraReport() {
+  if (cameraReportDownloadLoading.value) {
+    return
+  }
+
+  cameraReportDownloadLoading.value = true
+  try {
+    const response = await fetch(buildApiUrl('develop/camera-report?format=text'), {
+      cache: 'no-store'
+    })
+    if (!response.ok) {
+      throw new Error(`Camera report request failed with status ${response.status}`)
+    }
+
+    const reportText = await response.text()
+    const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `camera-report-${timestamp}.txt`
+    document.body.appendChild(anchor)
+    anchor.click()
+    document.body.removeChild(anchor)
+    URL.revokeObjectURL(url)
+  } catch (error) {
+    console.error('Camera report could not be downloaded.', error)
+  } finally {
+    cameraReportDownloadLoading.value = false
   }
 }
 
