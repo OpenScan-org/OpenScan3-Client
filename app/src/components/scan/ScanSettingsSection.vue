@@ -60,8 +60,8 @@ import ScanQualitySection from 'components/scan/ScanQualitySection.vue'
 import ScanFocusSection from 'components/scan/ScanFocusSection.vue'
 import ScanAdvancedSection from 'components/scan/ScanAdvancedSection.vue'
 import ScanPictureQualitySection from 'components/scan/ScanPictureQualitySection.vue'
-import { updateCameraNameSettings, type CameraSettings as CameraSettingsModel, type ScanSetting } from 'src/generated/api'
-import { apiClient } from 'src/services/apiClient'
+import { type CameraSettings as CameraSettingsModel, type ScanSetting } from 'src/generated/api'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
 import { useDeviceStore } from 'src/stores/device'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import { fieldDefaults } from 'src/generated/api/fieldDefaults'
@@ -86,6 +86,7 @@ const emit = defineEmits<{
 }>()
 
 const deviceStore = useDeviceStore()
+const apiSdk = () => getApiSdk()
 void deviceStore.ensureConnected()
 
 const pathMethods = [
@@ -213,7 +214,7 @@ async function persistAF(value: boolean) {
   }
 
   try {
-    await updateCameraNameSettings({
+    await apiSdk().updateCameraNameSettings({
       client: apiClient,
       path: { name: props.cameraName },
       body: { AF: value }
@@ -229,7 +230,7 @@ async function persistManualFocus(value: number) {
   }
 
   try {
-    await updateCameraNameSettings({
+    await apiSdk().updateCameraNameSettings({
       client: apiClient,
       path: { name: props.cameraName },
       body: { manual_focus: value }

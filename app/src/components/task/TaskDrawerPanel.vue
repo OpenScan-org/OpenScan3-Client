@@ -62,6 +62,18 @@
               @dismiss="taskStore.dismissTask(task.id)"
             />
           </div>
+          <div class="q-mt-sm q-px-xs">
+            <q-btn
+              flat
+              dense
+              no-caps
+              size="sm"
+              label="Dismiss all"
+              icon="done_all"
+              color="grey-6"
+              @click="dismissAllFailedTasks"
+            />
+          </div>
         </q-expansion-item>
       </template>
 
@@ -193,4 +205,10 @@ const completedTasks = computed(() =>
 const failedTasks = computed(() =>
   tasks.value.filter((t) => t.status === 'cancelled' || t.status === 'error' || t.status === 'interrupted').sort(sortByTime)
 )
+
+function dismissAllFailedTasks() {
+  for (const task of [...failedTasks.value]) {
+    taskStore.dismissTask(task.id)
+  }
+}
 </script>

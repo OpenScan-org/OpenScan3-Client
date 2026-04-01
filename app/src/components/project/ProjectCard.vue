@@ -172,17 +172,9 @@
 import { computed, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
-import { apiClient, getApiBaseUrl } from 'src/services/apiClient'
+import { apiClient, buildApiUrl, getApiSdk } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
 import {
-    deleteProject,
-    uploadProjectToCloud,
-    deleteScan,
-    pauseScan,
-    resumeScan,
-    cancelScan,
-    startFocusStacking,
-    downloadProjectFromCloud,
     type Project,
     type Scan
 } from 'src/generated/api'
@@ -199,6 +191,7 @@ const router = useRouter()
 const apiConfigStore = useApiConfigStore()
 const taskStore = useTaskStore()
 const cloudProjectsStore = useCloudProjectsStore()
+const apiSdk = () => getApiSdk()
 
 const compactButtons = computed(() => $q.screen.width < 1800)
 
@@ -221,7 +214,7 @@ const handleBulkDeleteSelected = (data: { project_name: string; scan_indices: nu
         try {
             await Promise.all(
                 data.scan_indices.map((scan_index) =>
-                    deleteScan({ path: { project_name: data.project_name, scan_index }, client: apiClient })
+                    apiSdk().deleteScan({ path: { project_name: data.project_name, scan_index }, client: apiClient })
                 )
             )
             emit('reload')
@@ -246,7 +239,7 @@ const handleBulkDeleteByStatus = (data: { project_name: string; scan_indices: nu
         try {
             await Promise.all(
                 data.scan_indices.map((scan_index) =>
-                    deleteScan({ path: { project_name: data.project_name, scan_index }, client: apiClient })
+                    apiSdk().deleteScan({ path: { project_name: data.project_name, scan_index }, client: apiClient })
                 )
             )
             emit('reload')
@@ -264,7 +257,7 @@ const handleBulkDownloadSelected = (data: { project_name: string; scan_indices: 
     try {
         const params = new URLSearchParams()
         data.scan_indices.forEach((index) => params.append('scan_indices', index.toString()))
-        const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(data.project_name)}/scans/zip?${params.toString()}`
+        const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(data.project_name)}/scans/zip?${params.toString()}`)
         window.open(downloadUrl, '_blank')
     } catch (error) {
         console.error('Could not download selected scans.', error)
@@ -331,7 +324,7 @@ const projectTotalSizeLabel = computed(() => {
 })
 
 const thumbnailUrl = computed(() => {
-    return `${getApiBaseUrl()}projects/${encodeURIComponent(props.project.name)}/thumbnail`
+    return buildApiUrl(`projects/${encodeURIComponent(props.project.name)}/thumbnail`)
 })
 
 const cloudReconstructionBlocked = computed(() => {
@@ -431,11 +424,11 @@ const confirm_delete = () => {
             if (activeScans.length) {
                 await Promise.all(
                     activeScans.map((scan) =>
-                        cancelScan({ path: { project_name: props.project.name, scan_index: scan.index }, client: apiClient })
+                        apiSdk().cancelScan({ path: { project_name: props.project.name, scan_index: scan.index }, client: apiClient })
                     )
                 )
             }
-            await deleteProject({ path: { project_name: props.project.name }, client: apiClient })
+            await apiSdk().deleteProject({ path: { project_name: props.project.name }, client: apiClient })
             emit('reload')
         } catch (error) {
             console.error('Could not delete project.', error)
@@ -452,7 +445,7 @@ const confirm_upload = () => {
     }).onOk(async () => {
         try {
             cloudUploadLoading.value = true
-            await uploadProjectToCloud({ path: { project_name: props.project.name }, client: apiClient })
+            await apiSdk().uploadProjectToCloud({ path: { project_name: props.project.name }, client: apiClient })
         } catch (error) {
             console.error('Could not upload project.', error)
         } finally {
@@ -474,7 +467,7 @@ const confirm_fetch_model = async () => {
 
     try {
         cloudFetchLoading.value = true
-        await downloadProjectFromCloud({ path: { project_name: props.project.name }, client: apiClient })
+        await apiSdk().downloadProjectFromCloud({ path: { project_name: props.project.name }, client: apiClient })
     } catch (error) {
         console.error('Could not fetch model from cloud.', error)
     } finally {
@@ -485,7 +478,7 @@ const confirm_fetch_model = async () => {
 
 const confirm_download = () => {
     try {
-        const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(props.project.name)}/zip`
+        const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(props.project.name)}/zip`)
         window.open(downloadUrl, '_blank')
     } catch (error) {
         console.error('Could not download project.', error)
@@ -494,7 +487,7 @@ const confirm_download = () => {
 
 const download_model = () => {
     try {
-        const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(props.project.name)}/model/zip`
+        const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(props.project.name)}/model/zip`)
         window.open(downloadUrl, '_blank')
     } catch (error) {
         console.error('Could not download project model.', error)
@@ -520,7 +513,7 @@ const handleDeleteScan = async (data: { project_name: string; scan_index: number
         cancel: 'No'
     }).onOk(async () => {
         try {
-            await deleteScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
+            await apiSdk().deleteScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
             emit('reload')
         } catch (error) {
             console.error('Could not delete scan.', error)
@@ -530,7 +523,7 @@ const handleDeleteScan = async (data: { project_name: string; scan_index: number
 
 const handlePauseScan = async (data: { project_name: string; scan_index: number }) => {
     try {
-        await pauseScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
+        await apiSdk().pauseScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
         await refreshTaskForScan(data.scan_index)
         emit('reload')
     } catch (error) {
@@ -540,7 +533,7 @@ const handlePauseScan = async (data: { project_name: string; scan_index: number 
 
 const handleResumeScan = async (data: { project_name: string; scan_index: number; camera_name: string }) => {
     try {
-        await resumeScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, query: { camera_name: data.camera_name }, client: apiClient })
+        await apiSdk().resumeScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, query: { camera_name: data.camera_name }, client: apiClient })
         await refreshTaskForScan(data.scan_index)
         emit('reload')
     } catch (error) {
@@ -550,7 +543,7 @@ const handleResumeScan = async (data: { project_name: string; scan_index: number
 
 const handleCancelScan = async (data: { project_name: string; scan_index: number }) => {
     try {
-        await cancelScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
+        await apiSdk().cancelScan({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
         await refreshTaskForScan(data.scan_index)
         emit('reload')
     } catch (error) {
@@ -560,7 +553,7 @@ const handleCancelScan = async (data: { project_name: string; scan_index: number
 
 const handleStackScan = async (data: { project_name: string; scan_index: number }) => {
     try {
-        await startFocusStacking({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
+        await apiSdk().startFocusStacking({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
         emit('reload')
     } catch (error) {
         console.error('Could not start focus stacking.', error)

@@ -2,8 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useDeviceStore } from 'src/stores/device'
-import { moveMotorByDegree, motorEndstopCalibration } from 'src/generated/api'
-import { apiClient } from 'src/services/apiClient'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
 import BaseButtonIconPrimary from './BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from './BaseButtonIconSecondary.vue'
 
@@ -40,6 +39,7 @@ const emit = defineEmits<{
 
 const $q = useQuasar()
 const deviceStore = useDeviceStore()
+const apiSdk = () => getApiSdk()
 const moveBusy = ref(false)
 const calibrateBusy = ref(false)
 
@@ -92,7 +92,7 @@ async function handleMove(direction: 'negative' | 'positive') {
   moveBusy.value = true
   try {
     await deviceStore.ensureConnected()
-    await moveMotorByDegree({
+    await apiSdk().moveMotorByDegree({
       client: apiClient,
       path: { motor_name: props.motorName },
       body: { degrees: delta }
@@ -119,7 +119,7 @@ async function handleCalibrate() {
   calibrateBusy.value = true
   try {
     await deviceStore.ensureConnected()
-    await motorEndstopCalibration({
+    await apiSdk().motorEndstopCalibration({
       client: apiClient,
       path: { motor_name: props.motorName },
       query: force ? { force: true } : undefined

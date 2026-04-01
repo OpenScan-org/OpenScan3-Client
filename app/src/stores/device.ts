@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { useApiConfigStore, buildWebSocketUrl } from './apiConfig'
-import { apiClient } from 'src/services/apiClient'
-import { getDeviceInfo, type DeviceStatusResponse } from 'src/generated/api'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
+import { type DeviceStatusResponse } from 'src/generated/api'
 import { useCameraStore } from './camera'
 
 export type DeviceStoreStatus = 'idle' | 'connecting' | 'open' | 'closed' | 'error'
@@ -184,15 +184,25 @@ export const useDeviceStore = defineStore('device', {
     },
     async refreshFromRest() {
       try {
-        const snapshot = await getDeviceInfo<true>({ client: apiClient, throwOnError: true })
+        const snapshotResponse = await getApiSdk().getDeviceInfo<true>({ client: apiClient, throwOnError: true })
+        const snapshot = (snapshotResponse as { data?: DeviceStatusResponse } | DeviceStatusResponse)?.['data'] ?? snapshotResponse
         this.device = snapshot ?? null
         this.lastChanged = null
         this.needsSetup = false
         return snapshot
       } catch (error) {
-        const message = (error as { detail?: { message?: string } })?.detail?.message
+        const err = error as {
+          detail?: unknown
+          response?: { data?: { detail?: unknown } }
+        }
+        const rawDetail = err?.detail ?? err?.response?.data?.detail
+        const message = typeof rawDetail === 'string'
+          ? rawDetail
+          : typeof rawDetail === 'object' && rawDetail !== null && 'message' in rawDetail
+            ? (rawDetail as { message?: string }).message
+            : undefined
 
-        if (message === 'Device configuration is not loaded.') {
+        if (message && message.includes('Device configuration is not loaded.')) {
           this.device = null
           this.lastChanged = null
           this.needsSetup = true

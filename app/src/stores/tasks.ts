@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { useApiConfigStore, buildWebSocketUrl } from './apiConfig'
-import { apiClient } from 'src/services/apiClient'
-import { cancelTask, deleteTask, getAllTasks, getTaskStatus, pauseTask, resumeTask, type Task } from 'src/generated/api'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
+import { type Task } from 'src/generated/api'
 import { filterLatestScanTasks, pickActiveScanTaskId } from 'src/utils/taskUtils'
 
 export type TaskStoreStatus = 'idle' | 'connecting' | 'open' | 'closed' | 'error'
@@ -35,6 +35,8 @@ let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 let reconnectAttempts = 0
 let allowReconnect = true
 let clockTimer: ReturnType<typeof setInterval> | null = null
+
+const apiSdk = () => getApiSdk()
 
 export const useTaskStore = defineStore('tasks', {
   state: (): TaskStoreState => ({
@@ -93,6 +95,16 @@ export const useTaskStore = defineStore('tasks', {
     }
   },
   actions: {
+    normalizeTaskId(taskId: string | null | undefined): string | null {
+      if (typeof taskId !== 'string') {
+        return null
+      }
+      const normalized = taskId.trim()
+      if (!normalized || normalized === 'undefined' || normalized === 'null') {
+        return null
+      }
+      return normalized
+    },
     ensureTaskTiming(taskId: string) {
       if (!this.taskTiming[taskId]) {
         this.taskTiming[taskId] = {
@@ -288,8 +300,9 @@ export const useTaskStore = defineStore('tasks', {
     },
     async refreshFromRest() {
       try {
-        const snapshot = await getAllTasks({ client: apiClient })
-        this.tasks = snapshot ?? []
+        const snapshotResponse = await apiSdk().getAllTasks({ client: apiClient })
+        const snapshot = (snapshotResponse?.data ?? snapshotResponse) as Task[] | undefined
+        this.tasks = Array.isArray(snapshot) ? snapshot : []
 
         const nowMs = Date.now()
         for (const task of this.tasks) {
@@ -316,29 +329,53 @@ export const useTaskStore = defineStore('tasks', {
       }
     },
     async refreshTask(taskId: string) {
-      const task = await getTaskStatus({ client: apiClient, path: { task_id: taskId } })
+      const normalizedTaskId = this.normalizeTaskId(taskId)
+      if (!normalizedTaskId) {
+        return null
+      }
+      const taskResponse = await apiSdk().getTaskStatus({ client: apiClient, path: { task_id: normalizedTaskId } })
+      const task = (taskResponse?.data ?? taskResponse) as Task
       this.applyTaskUpdate(task)
       return task
     },
     async ensureTaskLoaded(taskId: string) {
-      const existing = this.tasks.find((task) => task.id === taskId)
+      const normalizedTaskId = this.normalizeTaskId(taskId)
+      if (!normalizedTaskId) {
+        return null
+      }
+      const existing = this.tasks.find((task) => task.id === normalizedTaskId)
       if (existing) {
         return existing
       }
-      return await this.refreshTask(taskId)
+      return await this.refreshTask(normalizedTaskId)
     },
     async pause(taskId: string) {
-      const task = await pauseTask({ client: apiClient, path: { task_id: taskId } })
+      const normalizedTaskId = this.normalizeTaskId(taskId)
+      if (!normalizedTaskId) {
+        return null
+      }
+      const taskResponse = await apiSdk().pauseTask({ client: apiClient, path: { task_id: normalizedTaskId } })
+      const task = (taskResponse?.data ?? taskResponse) as Task
       this.applyTaskUpdate(task)
       return task
     },
     async resume(taskId: string) {
-      const task = await resumeTask({ client: apiClient, path: { task_id: taskId } })
+      const normalizedTaskId = this.normalizeTaskId(taskId)
+      if (!normalizedTaskId) {
+        return null
+      }
+      const taskResponse = await apiSdk().resumeTask({ client: apiClient, path: { task_id: normalizedTaskId } })
+      const task = (taskResponse?.data ?? taskResponse) as Task
       this.applyTaskUpdate(task)
       return task
     },
     async cancel(taskId: string) {
-      const task = await cancelTask({ client: apiClient, path: { task_id: taskId } })
+      const normalizedTaskId = this.normalizeTaskId(taskId)
+      if (!normalizedTaskId) {
+        return null
+      }
+      const taskResponse = await apiSdk().cancelTask({ client: apiClient, path: { task_id: normalizedTaskId } })
+      const task = (taskResponse?.data ?? taskResponse) as Task
       this.applyTaskUpdate(task)
       return task
     },
@@ -361,12 +398,12 @@ export const useTaskStore = defineStore('tasks', {
       this.dismissedTasks = []
     },
     async cleanupTask(taskId: string) {
-      await deleteTask({ client: apiClient, path: { task_id: taskId } })
+      await apiSdk().deleteTask({ client: apiClient, path: { task_id: taskId } })
       this.dismissedTasks = this.dismissedTasks.filter((t) => t.id !== taskId)
     },
     async cleanupAllDismissed() {
       await Promise.allSettled(
-        this.dismissedTasks.map((t) => deleteTask({ client: apiClient, path: { task_id: t.id } }))
+        this.dismissedTasks.map((t) => apiSdk().deleteTask({ client: apiClient, path: { task_id: t.id } }))
       )
       this.dismissedTasks = []
     },

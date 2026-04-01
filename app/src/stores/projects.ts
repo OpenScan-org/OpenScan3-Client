@@ -1,14 +1,37 @@
 import { defineStore } from 'pinia';
-import { apiClient } from 'src/services/apiClient';
-import { getProjects, newProject, type Project } from 'src/generated/api';
+import { apiClient, getApiSdk } from 'src/services/apiClient';
+import { type Project } from 'src/generated/api';
+
+function unwrapPayload(payload: unknown): unknown {
+  if (!payload || typeof payload !== 'object') {
+    return payload;
+  }
+  if ('data' in (payload as Record<string, unknown>)) {
+    return (payload as { data?: unknown }).data;
+  }
+  return payload;
+}
+
+function normalizeProject(project: Project): Project {
+  return {
+    ...project,
+    scans: project.scans ?? {},
+  };
+}
 
 function normalizeProjects(payload: unknown): Project[] {
-  if (!payload || typeof payload !== 'object') {
+  const source = unwrapPayload(payload);
+  if (Array.isArray(source)) {
+    return source
+      .filter((project): project is Project => Boolean(project && typeof project === 'object' && typeof (project as Project).name === 'string'))
+      .map((project) => normalizeProject(project));
+  }
+  if (!source || typeof source !== 'object') {
     return [];
   }
-  return Object.values(payload as Record<string, Project | null | undefined>).filter(
-    (project): project is Project => Boolean(project && typeof project.name === 'string')
-  );
+  return Object.values(source as Record<string, Project | null | undefined>)
+    .filter((project): project is Project => Boolean(project && typeof project.name === 'string'))
+    .map((project) => normalizeProject(project));
 }
 
 export const useProjectsStore = defineStore('projects', {
@@ -50,8 +73,8 @@ export const useProjectsStore = defineStore('projects', {
       this.loading = true;
       this.error = null;
       try {
-        const data = await getProjects({ client: apiClient });
-        this.projects = normalizeProjects(data);
+        const response = await getApiSdk().getProjects({ client: apiClient });
+        this.projects = normalizeProjects(response);
       } catch (error) {
         this.error = 'Error loading projects';
         console.error(error);
@@ -61,13 +84,20 @@ export const useProjectsStore = defineStore('projects', {
     },
     async createProject(name: string, description?: string) {
       try {
-        const newProj = await newProject({
+        const response = await getApiSdk().newProject({
           path: { project_name: name },
           query: { project_description: description || '' },
           client: apiClient
         });
-        this.projects.push(newProj);
-        return newProj;
+        const payload = unwrapPayload(response);
+        const newProj = (payload && typeof payload === 'object' ? payload : null) as Project | null;
+        if (!newProj || typeof newProj.name !== 'string') {
+          await this.fetchProjects();
+          throw new Error('Project creation response did not contain a project object.');
+        }
+        const normalized = normalizeProject(newProj);
+        this.projects.push(normalized);
+        return normalized;
       } catch (error) {
         this.error = 'Error creating the project';
         throw error;

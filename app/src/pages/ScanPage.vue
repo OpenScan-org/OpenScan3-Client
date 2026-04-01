@@ -97,8 +97,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { apiClient } from 'src/services/apiClient'
-import { addScanWithDescription, type ScanSetting } from 'src/generated/api'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
+import { type ScanSetting, type Task } from 'src/generated/api'
 import generateDashedName from 'src/utils/randomName'
 
 import CameraView from 'components/CameraView.vue'
@@ -125,6 +125,7 @@ const scanTemplateStore = useScanTemplateStore()
 const scanPresetsStore = useScanPresetsStore()
 const { promptCloudReset } = useCloudResetGuard()
 const deviceStore = useDeviceStore()
+const apiSdk = () => getApiSdk()
 
 const selectedCameraName = ref<string>('')
 const selectedProject = ref('')
@@ -270,12 +271,16 @@ const performStartScan = async () => {
   const scanSettings = scanSettingsSectionRef.value.getScanSettings()
 
   try {
-    const task = await addScanWithDescription({
+    const taskResponse = await apiSdk().addScanWithDescription({
       client: apiClient,
       path: { project_name: selectedProject.value },
       query: { camera_name: selectedCameraName.value },
       body: scanSettings
     })
+    const task = (taskResponse?.data ?? taskResponse) as Task | null
+    if (!task?.id || typeof task.id !== 'string' || !task.id.trim()) {
+      throw new Error('Scan start response does not contain a valid task id')
+    }
 
     taskStore.applyTaskUpdate(task)
     await router.push(`/scan/progress/${task.id}`)

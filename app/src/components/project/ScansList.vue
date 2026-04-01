@@ -213,7 +213,7 @@
 import { useRouter } from 'vue-router'
 import { computed, ref } from 'vue'
 import { type Scan } from 'src/generated/api'
-import { getApiBaseUrl } from 'src/services/apiClient'
+import { buildApiUrl } from 'src/services/apiClient'
 import { formatBytes } from 'src/utils/formatBytes'
 import { useTaskStore } from 'src/stores/tasks'
 import { useScanTemplateStore } from 'src/stores/scanTemplate'
@@ -436,7 +436,7 @@ const download_scan = (index: number) => {
   try {
     const params = new URLSearchParams()
     params.append('scan_indices', index.toString())
-    const downloadUrl = `${getApiBaseUrl()}projects/${encodeURIComponent(props.project_name)}/scans/zip?${params.toString()}`
+    const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(props.project_name)}/scans/zip?${params.toString()}`)
     window.open(downloadUrl, '_blank')
     emit('download:scan', { project_name: props.project_name, scan_index: index })
   } catch (error) {

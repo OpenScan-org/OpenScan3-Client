@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
-import { apiClient } from 'src/services/apiClient'
-import { tailLogs } from 'src/generated/api'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
 
 export type LogsStoreStatus = 'idle' | 'polling'
 export type LogFormat = 'text' | 'json'
@@ -76,16 +75,17 @@ export const useLogsStore = defineStore('logs', {
       ctx.error = null
 
       try {
-        const result = await tailLogs({
+        const result = await getApiSdk().tailLogs({
           client: apiClient,
-          parseAs: 'text',
+          responseType: 'text',
           query: {
             format: ctx.format,
             lines: ctx.lines
           }
         })
 
-        ctx.logsText = result as unknown as string
+        const data = (result as { data?: unknown } | string)?.['data'] ?? result
+        ctx.logsText = typeof data === 'string' ? data : JSON.stringify(data, null, 2)
       } catch (error) {
         ctx.error = 'Failed to load logs'
         throw error

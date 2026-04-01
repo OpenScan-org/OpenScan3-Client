@@ -125,8 +125,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { deleteProject, type Project } from 'src/generated/api'
-import { apiClient } from 'src/services/apiClient'
+import { type Project } from 'src/generated/api'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
 import BaseSection from 'src/components/base/BaseSection.vue'
 import CreateProjectDialog from './CreateProjectDialog.vue'
 import ProjectListItem from './ProjectListItem.vue'
@@ -146,6 +146,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const $q = useQuasar()
+const apiSdk = () => getApiSdk()
 const working = ref(false)
 
 const selected_project_name = computed({
@@ -254,7 +255,7 @@ const deleteProjects = async (projectsToDelete: Project[]) => {
   working.value = true
   try {
     for (const project of projectsToDelete) {
-      await deleteProject({ path: { project_name: project.name }, client: apiClient })
+      await apiSdk().deleteProject({ path: { project_name: project.name }, client: apiClient })
     }
     emit('bulk:deleted')
   } catch (error) {

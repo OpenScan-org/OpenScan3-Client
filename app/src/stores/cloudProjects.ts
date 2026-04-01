@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import { listCloudProjects, getCloudProject, type CloudProjectStatus } from 'src/generated/api'
-import { apiClient } from 'src/services/apiClient'
+import { type CloudProjectStatus } from 'src/generated/api'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
 
 interface CloudProjectEntry {
   data: CloudProjectStatus
@@ -88,7 +88,7 @@ export const useCloudProjectsStore = defineStore('cloudProjects', {
       this.loading = true
       this.error = null
       try {
-        const response = await listCloudProjects({ client: apiClient })
+        const response = await getApiSdk().listCloudProjects({ client: apiClient })
         const list = ((response?.data ?? response) as CloudProjectStatus[] | undefined) ?? []
         const nextEntries: Record<string, CloudProjectEntry> = {}
         const now = Date.now()
@@ -117,7 +117,7 @@ export const useCloudProjectsStore = defineStore('cloudProjects', {
       }
 
       try {
-        const response = await getCloudProject({ client: apiClient, path: { project_name: projectName } })
+        const response = await getApiSdk().getCloudProject({ client: apiClient, path: { project_name: projectName } })
         const data = ((response?.data ?? response) as CloudProjectStatus | undefined) ?? null
         if (data) {
           this.entries[projectName] = { data, fetchedAt: Date.now() }

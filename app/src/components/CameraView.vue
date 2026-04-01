@@ -116,6 +116,7 @@
             ref="hqPreviewRef"
             :camera="camera"
             :scanning="scanning"
+            :auto-refresh-on-camera-change="!disableAutomaticHqCapture"
             :max-height="stackHeight"
             @preview-click="openFullPreview"
           />
@@ -271,10 +272,14 @@ import CameraHistogram from './camera/CameraHistogram.vue'
 import CameraHQPreview, { type CameraHQPreviewExposed } from './camera/CameraHQPreview.vue'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
-import { moveToPosition, restartCamera } from 'src/generated/api'
-import { apiClient } from 'src/services/apiClient'
+import { apiClient, getApiSdk } from 'src/services/apiClient'
 
-type CameraOption = { label: string; value: string; orientationFlag?: number | null }
+type CameraOption = {
+  label: string
+  value: string
+  orientationFlag?: number | null
+  type?: string | null
+}
 
 function openFullPreview() {
   if (!fullPreviewImageUrl.value) {
@@ -309,7 +314,7 @@ async function handleMoveHome() {
   homeBusy.value = true
   try {
     await deviceStore.ensureConnected()
-    await moveToPosition({
+    await apiSdk().moveToPosition({
       client: apiClient,
       body: {
         theta: 90,
@@ -331,6 +336,7 @@ interface CameraViewProps {
     label: string
     value: string
     orientationFlag?: number | null
+    type?: string | null
   } | null
   cameraOptions?: CameraOption[]
   selectedCameraName?: string
@@ -343,6 +349,7 @@ const emit = defineEmits<{
 
 const deviceStore = useDeviceStore()
 const cameraStore = useCameraStore()
+const apiSdk = () => getApiSdk()
 
 const fastPreviewRef = ref<CameraFastPreviewExposed | null>(null)
 const hqPreviewRef = ref<CameraHQPreviewExposed | null>(null)
@@ -365,6 +372,7 @@ const motorControlsBusy = computed(() => rotorControlsBusy.value || turntableCon
 
 const cameraOptionsList = computed<CameraOption[]>(() => props.cameraOptions ?? [])
 const showFastPreview = computed(() => !props.scanning && props.camera !== null)
+const disableAutomaticHqCapture = computed(() => props.camera?.type === 'gphoto2')
 const selectedCameraNameModel = computed({
   get: () => props.selectedCameraName ?? '',
   set: (value: string) => emit('update:selectedCameraName', value)
@@ -395,7 +403,7 @@ function refreshHqPhoto() {
 }
 
 function scheduleHqRefresh(delay = 600) {
-  if (!props.camera || props.scanning) {
+  if (!props.camera || props.scanning || disableAutomaticHqCapture.value) {
     return
   }
   clearHqRefreshTimeout()
@@ -417,7 +425,7 @@ async function handleRestartCamera() {
 
   restartBusy.value = true
   try {
-    await restartCamera({
+    await apiSdk().restartCamera({
       client: apiClient,
       path: { camera_name: cameraName }
     })

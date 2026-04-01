@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
-import { apiClient, getApiBaseUrl } from 'src/services/apiClient';
-import { getCameras, type Camera } from 'src/generated/api';
+import { apiClient, buildApiUrl, getApiSdk } from 'src/services/apiClient';
+import { type Camera } from 'src/generated/api';
 
 const CAMERA_SETTINGS_CHANGE = /^cameras\.([^.\s]+)\.settings(?:\.|$)/;
 const PHOTO_DEBOUNCE_MS = 800;
@@ -37,27 +37,25 @@ export const useCameraStore = defineStore('camera', {
     cameraOptions: (state) => state.cameras.map(camera => ({
       label: camera.name,
       value: camera.name,
-      orientationFlag: camera.settings?.orientation_flag ?? null
+      orientationFlag: camera.settings?.orientation_flag ?? null,
+      type: camera.type
     })),
     previewUrl: (state) => {
-      const baseUrl = getApiBaseUrl();
-      return state.selectedCamera ? `${baseUrl}cameras/${state.selectedCamera}/preview?mode=stream` : null;
+      return state.selectedCamera ? buildApiUrl(`cameras/${state.selectedCamera}/preview?mode=stream`) : null;
     },
     getPreviewUrl: () => {
       return (cameraName: string, fps?: number) => {
-        const baseUrl = getApiBaseUrl();
         if (!cameraName) {
           return null;
         }
 
         const fpsParam = typeof fps === 'number' ? `&fps=${fps}` : '';
-        return `${baseUrl}cameras/${cameraName}/preview?mode=stream${fpsParam}`;
+        return buildApiUrl(`cameras/${cameraName}/preview?mode=stream${fpsParam}`);
       };
     },
     getPhotoUrl: () => {
       return (cameraName: string) => {
-        const baseUrl = getApiBaseUrl();
-        return cameraName ? `${baseUrl}cameras/${cameraName}/photo` : null;
+        return cameraName ? buildApiUrl(`cameras/${cameraName}/photo`) : null;
       };
     },
   },
@@ -66,8 +64,9 @@ export const useCameraStore = defineStore('camera', {
       this.loading = true;
       this.error = null;
       try {
-        const data = await getCameras({ client: apiClient });
-        this.cameras = Object.values(data ?? {});
+        const response = await getApiSdk().getCameras({ client: apiClient });
+        const data = (response as { data?: Record<string, Camera> } | Record<string, Camera>)?.['data'] ?? response;
+        this.cameras = Object.values((data ?? {}) as Record<string, Camera>);
         // Set selectedCamera to first if not set
         if (!this.selectedCamera && this.cameras.length > 0) {
           this.selectedCamera = this.cameras[0].name;

@@ -86,8 +86,8 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRoute, useRouter } from 'vue-router'
-import { apiClient, getApiBaseUrl } from 'src/services/apiClient'
-import { newProject, type Project, type Scan } from 'src/generated/api'
+import { buildApiUrl } from 'src/services/apiClient'
+import { type Project, type Scan } from 'src/generated/api'
 import ProjectsList from 'src/components/project/ProjectsList.vue'
 import ProjectCard from 'src/components/project/ProjectCard.vue'
 import { useProjectsStore } from 'src/stores/projects'
@@ -174,7 +174,7 @@ const selectedProject = computed(() =>
 
 const projectBackgroundUrl = computed(() =>
   selectedProject.value
-    ? `${getApiBaseUrl()}projects/${encodeURIComponent(selectedProject.value.name)}/thumbnail`
+    ? buildApiUrl(`projects/${encodeURIComponent(selectedProject.value.name)}/thumbnail`)
     : null
 )
 
@@ -183,7 +183,7 @@ const projectScans = computed<Scan[]>(() => {
     return []
   }
 
-  return Object.values(selectedProject.value.scans).sort((a, b) => a.index - b.index)
+  return Object.values(selectedProject.value.scans ?? {}).sort((a, b) => a.index - b.index)
 })
 
 const updateRouteProject = (name: string | null) => {
