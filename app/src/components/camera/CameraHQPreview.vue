@@ -55,10 +55,12 @@ import CameraHeatmapOverlay from './CameraHeatmapOverlay.vue'
 interface CameraHQPreviewProps {
   scanning: boolean
   maxHeight?: number | null
+  autoRefreshOnCameraChange?: boolean
   camera?: {
     label: string
     value: string
     orientationFlag?: number | null
+    type?: string | null
   } | null
 }
 
@@ -169,7 +171,14 @@ watch(
   () => props.camera?.value,
   (cameraName) => {
     if (cameraName) {
-      refreshPhoto()
+      if (props.autoRefreshOnCameraChange ?? true) {
+        refreshPhoto()
+      } else {
+        imageLoaded.value = false
+        imageDimensions.value = null
+        cacheBuster.value = 0
+        cameraStore.clearPhoto()
+      }
     } else {
       imageLoaded.value = false
       imageDimensions.value = null

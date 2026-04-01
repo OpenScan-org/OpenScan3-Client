@@ -116,6 +116,7 @@
             ref="hqPreviewRef"
             :camera="camera"
             :scanning="scanning"
+            :auto-refresh-on-camera-change="!disableAutomaticHqCapture"
             :max-height="stackHeight"
             @preview-click="openFullPreview"
           />
@@ -273,7 +274,12 @@ import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
 import { apiClient, getApiSdk } from 'src/services/apiClient'
 
-type CameraOption = { label: string; value: string; orientationFlag?: number | null }
+type CameraOption = {
+  label: string
+  value: string
+  orientationFlag?: number | null
+  type?: string | null
+}
 
 function openFullPreview() {
   if (!fullPreviewImageUrl.value) {
@@ -330,6 +336,7 @@ interface CameraViewProps {
     label: string
     value: string
     orientationFlag?: number | null
+    type?: string | null
   } | null
   cameraOptions?: CameraOption[]
   selectedCameraName?: string
@@ -365,6 +372,7 @@ const motorControlsBusy = computed(() => rotorControlsBusy.value || turntableCon
 
 const cameraOptionsList = computed<CameraOption[]>(() => props.cameraOptions ?? [])
 const showFastPreview = computed(() => !props.scanning && props.camera !== null)
+const disableAutomaticHqCapture = computed(() => props.camera?.type === 'gphoto2')
 const selectedCameraNameModel = computed({
   get: () => props.selectedCameraName ?? '',
   set: (value: string) => emit('update:selectedCameraName', value)
@@ -395,7 +403,7 @@ function refreshHqPhoto() {
 }
 
 function scheduleHqRefresh(delay = 600) {
-  if (!props.camera || props.scanning) {
+  if (!props.camera || props.scanning || disableAutomaticHqCapture.value) {
     return
   }
   clearHqRefreshTimeout()

@@ -1432,7 +1432,16 @@ export type GetPhotoData = {
          */
         camera_name: string;
     };
-    query?: never;
+    query?: {
+        /**
+         * Image Format
+         */
+        image_format?: 'jpeg' | 'dng' | 'rgb_array' | 'yuv_array';
+        /**
+         * With Metadata
+         */
+        with_metadata?: boolean;
+    };
     url: '/cameras/{camera_name}/photo';
 };
 
@@ -1450,6 +1459,42 @@ export type GetPhotoErrors = {
 export type GetPhotoError = GetPhotoErrors[keyof GetPhotoErrors];
 
 export type GetPhotoResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type GetPhotoPayloadData = {
+    body?: never;
+    path: {
+        /**
+         * Camera Name
+         */
+        camera_name: string;
+        /**
+         * Payload Id
+         */
+        payload_id: string;
+    };
+    query?: never;
+    url: '/cameras/{camera_name}/photo/payload/{payload_id}';
+};
+
+export type GetPhotoPayloadErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetPhotoPayloadError = GetPhotoPayloadErrors[keyof GetPhotoPayloadErrors];
+
+export type GetPhotoPayloadResponses = {
     /**
      * Successful Response
      */

@@ -37,7 +37,8 @@ export const useCameraStore = defineStore('camera', {
     cameraOptions: (state) => state.cameras.map(camera => ({
       label: camera.name,
       value: camera.name,
-      orientationFlag: camera.settings?.orientation_flag ?? null
+      orientationFlag: camera.settings?.orientation_flag ?? null,
+      type: camera.type
     })),
     previewUrl: (state) => {
       return state.selectedCamera ? buildApiUrl(`cameras/${state.selectedCamera}/preview?mode=stream`) : null;
