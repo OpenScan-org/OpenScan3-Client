@@ -1022,7 +1022,7 @@ export type ScannerDevice = {
 /**
  * ScannerModel
  */
-export type ScannerModel = 'classic' | 'mini' | 'custom';
+export type ScannerModel = 'classic' | 'mini' | 'midi' | 'custom';
 
 /**
  * ScannerShield
