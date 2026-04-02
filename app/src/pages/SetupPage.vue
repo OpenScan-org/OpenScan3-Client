@@ -484,9 +484,13 @@ const isOrientationUpdating = computed(() => orientationAction.value !== null)
 const rotorImageDialogVisible = ref(false)
 
 const deviceModel = computed(() => deviceStore.device?.model ?? null)
+const isMiniLikeModel = computed(() => {
+  const model = deviceModel.value?.toLowerCase() ?? ''
+  return model.includes('mini') || model.includes('midi')
+})
 const rotorDirectionImageSrc = computed(() => {
   const model = deviceModel.value?.toLowerCase() ?? ''
-  if (model.includes('mini')) return rotorDirectionMiniImage
+  if (isMiniLikeModel.value) return rotorDirectionMiniImage
   if (!model) return null
   return rotorDirectionClassicImage
 })
@@ -495,7 +499,7 @@ const rotorDirectionHint = computed(() => {
   if (!model) {
     return 'Model-specific guidance will appear once the device model is detected.'
   }
-  if (model.includes('mini')) {
+  if (isMiniLikeModel.value) {
     return 'Moving up should lift the entire camera unit upwards.'
   }
   return 'Moving up should swing the arm farther from the camera to reveal more of the top.'
@@ -504,7 +508,7 @@ const rotorDialogTitle = computed(() => deviceModel.value ?? 'Rotor direction re
 const ROTOR_HOME_OVERRIDE_ANGLE = 90
 const rotorPositionImageSrc = computed(() => {
   const model = deviceModel.value?.toLowerCase() ?? ''
-  if (model.includes('mini')) return homePositionMiniImage
+  if (isMiniLikeModel.value) return homePositionMiniImage
   if (!model) return null
   return homePositionClassicImage
 })
@@ -513,7 +517,7 @@ const rotorPositionHint = computed(() => {
   if (!model) {
     return 'Model-specific position guidance will appear once the device model is detected.'
   }
-  if (model.includes('mini')) {
+  if (isMiniLikeModel.value) {
     return 'Ensure the camera unit is level.'
   }
   return 'Ensure the swing arm sits at 90° to floor.'
