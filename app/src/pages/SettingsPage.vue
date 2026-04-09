@@ -550,6 +550,98 @@
                     </div>
                   </div>
                 </BaseSection>
+
+                <BaseSection v-if="isNextApiTarget" title="Trigger Settings">
+                  <div class="row q-col-gutter-md">
+                    <div class="col-12" v-if="triggerRows.length === 0">
+                      <q-banner dense>No triggers found.</q-banner>
+                    </div>
+                    <div class="col-12" v-for="trigger in triggerRows" :key="trigger.name">
+                      <q-card flat bordered>
+                        <q-card-section>
+                          <div class="row items-center justify-between no-wrap">
+                            <div class="text-subtitle1">{{ trigger.name }}</div>
+                          </div>
+                        </q-card-section>
+                        <q-card-section class="q-pt-none" v-if="triggerForms[trigger.name]">
+                          <div class="row q-col-gutter-sm">
+                            <div class="col-12 col-sm-6">
+                              <q-input
+                                v-model.number="triggerForms[trigger.name].pin"
+                                label="Pin"
+                                type="number"
+                                @update:model-value="() => markTriggerFormDirty(trigger.name)"
+                              >
+                                <q-tooltip>{{ triggerConfigDescription('pin') }}</q-tooltip>
+                              </q-input>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                              <q-select
+                                v-model="triggerForms[trigger.name].polarity"
+                                :options="triggerPolarityOptions"
+                                label="Polarity"
+                                emit-value
+                                map-options
+                                @update:model-value="() => markTriggerFormDirty(trigger.name)"
+                              >
+                                <q-tooltip>{{ triggerConfigDescription('polarity') }}</q-tooltip>
+                              </q-select>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                              <q-input
+                                v-model.number="triggerForms[trigger.name].pulse_width_ms"
+                                label="Pulse Width (ms)"
+                                type="number"
+                                @update:model-value="() => markTriggerFormDirty(trigger.name)"
+                              >
+                                <q-tooltip>{{ triggerConfigDescription('pulse_width_ms') }}</q-tooltip>
+                              </q-input>
+                            </div>
+                            <div class="col-12 col-sm-6">
+                              <q-toggle
+                                v-model="triggerForms[trigger.name].enabled"
+                                label="Enabled"
+                                left-label
+                                @update:model-value="() => markTriggerFormDirty(trigger.name)"
+                              >
+                                <q-tooltip>{{ triggerConfigDescription('enabled') }}</q-tooltip>
+                              </q-toggle>
+                            </div>
+                          </div>
+                        </q-card-section>
+                        <q-card-actions align="right">
+                          <BaseButtonSecondary
+                            icon="flash_on"
+                            label="Trigger once"
+                            :disable="scanLocked || triggerFiring[trigger.name] === true"
+                            :loading="triggerFiring[trigger.name] === true"
+                            @click="fireTriggerOnce(trigger.name)"
+                          >
+                            <q-tooltip>
+                              {{ scanLocked ? scanLockedTooltip : 'Trigger this output once.' }}
+                            </q-tooltip>
+                          </BaseButtonSecondary>
+                          <BaseButtonPrimary
+                            icon="save"
+                            label="Save"
+                            :disable="scanLocked || Boolean(triggerFormError(trigger.name))"
+                            :loading="triggerSaving[trigger.name] === true"
+                            @click="saveTriggerSettings(trigger.name)"
+                          >
+                            <q-tooltip>
+                              {{ scanLocked ? scanLockedTooltip : triggerFormError(trigger.name) ?? 'Save trigger configuration.' }}
+                            </q-tooltip>
+                          </BaseButtonPrimary>
+                        </q-card-actions>
+                      </q-card>
+                    </div>
+                  </div>
+                  <div class="row q-mt-md settings-section-actions">
+                    <div class="col-auto">
+                      <BaseButtonSecondary icon="add_task" label="Add trigger" @click="addTriggerDialog = true" />
+                    </div>
+                  </div>
+                </BaseSection>
                 </div>
 
                 <div v-if="deviceStore.hasConnectionIssue" class="non-frontend-settings__overlay">
@@ -952,6 +1044,53 @@
       </q-card-actions>
     </q-card>
   </q-dialog>
+
+  <q-dialog v-model="addTriggerDialog" persistent>
+    <q-card style="min-width: 480px">
+      <q-card-section>
+        <div class="text-h6">Add Trigger</div>
+      </q-card-section>
+      <q-card-section class="q-pt-none">
+        <div class="row q-col-gutter-sm">
+          <div class="col-12">
+            <q-input v-model="addTriggerForm.name" label="Name" autofocus />
+          </div>
+          <div class="col-6">
+            <q-input v-model.number="addTriggerForm.pin" type="number" label="Pin" />
+          </div>
+          <div class="col-6">
+            <q-select
+              v-model="addTriggerForm.polarity"
+              :options="triggerPolarityOptions"
+              label="Polarity"
+              emit-value
+              map-options
+            />
+          </div>
+          <div class="col-6">
+            <q-input
+              v-model.number="addTriggerForm.pulse_width_ms"
+              type="number"
+              label="Pulse Width (ms)"
+            />
+          </div>
+          <div class="col-6">
+            <q-toggle v-model="addTriggerForm.enabled" label="Enabled" left-label />
+          </div>
+        </div>
+      </q-card-section>
+      <q-card-actions align="right">
+        <BaseButtonSecondary label="Cancel" @click="addTriggerDialog = false" />
+        <BaseButtonPrimary
+          label="Add trigger"
+          icon="add"
+          :disable="!isAddTriggerFormValid"
+          :loading="addTriggerSaving"
+          @click="handleAddTrigger"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup lang="ts">
@@ -988,6 +1127,8 @@ import type {
   MotorConfig,
   PersistedCameraConfig,
   PersistedEndstopConfig,
+  TriggerConfig,
+  TriggerPolarity,
   ScannerDeviceConfigInput
 } from 'src/generated/api'
 
@@ -1555,6 +1696,7 @@ const configOptions = ref<DeviceConfigOption[]>([])
 const configOptionsLoading = ref(false)
 const selectedConfig = ref<string | null>(null)
 const configApplying = ref(false)
+const currentDeviceConfigSnapshot = ref<ScannerDeviceConfigInput | null>(null)
 const lastKnownConfigFile = ref<string | null>(localStorage.getItem(LAST_KNOWN_CONFIG_STORAGE_KEY))
 
 const setLastKnownConfig = (value: string | null) => {
@@ -1626,6 +1768,8 @@ type MotorConfigField = keyof (typeof fieldDescriptions)['MotorConfig']
 const motorConfigDescription = (field: MotorConfigField) => getFieldDescription('MotorConfig', field)
 type EndstopConfigField = keyof (typeof fieldDescriptions)['EndstopConfig']
 const endstopConfigDescription = (field: EndstopConfigField) => getFieldDescription('EndstopConfig', field)
+type TriggerConfigField = keyof (typeof fieldDescriptions)['TriggerConfig']
+const triggerConfigDescription = (field: TriggerConfigField) => getFieldDescription('TriggerConfig', field)
 
 const lightNames = computed(() => Object.keys(lights.value ?? {}))
 const lightStatuses = computed<Record<string, boolean | null>>(() => {
@@ -1656,6 +1800,21 @@ type EndstopForm = {
   pull_up: boolean
   active_high: boolean
   bounce_time: number | null
+}
+
+type TriggerRow = {
+  name: string
+  pin: number | null
+  polarity: TriggerPolarity | null
+  pulse_width_ms: number | null
+  enabled: boolean | null
+}
+
+type TriggerForm = {
+  pin: number | null
+  polarity: TriggerPolarity
+  pulse_width_ms: number | null
+  enabled: boolean
 }
 
 const endstopRows = computed<EndstopRow[]>(() => {
@@ -1696,9 +1855,58 @@ const endstopRows = computed<EndstopRow[]>(() => {
     })
     .filter((row): row is EndstopRow => row !== null)
 })
+
+const triggerRows = computed<TriggerRow[]>(() => {
+  const runtimeTriggers = (
+    deviceStore.device as {
+      triggers?: Record<
+        string,
+        {
+          settings?: TriggerConfig
+          pin?: number
+          polarity?: TriggerPolarity
+          pulse_width_ms?: number
+          enabled?: boolean
+          last_triggered_at?: string | null
+        }
+      >
+    } | null
+  )?.triggers
+
+  if (runtimeTriggers && Object.keys(runtimeTriggers).length > 0) {
+    return Object.entries(runtimeTriggers).map(([name, status]) => {
+      const settings = status?.settings
+      return {
+        name,
+        pin: settings?.pin ?? status?.pin ?? null,
+        polarity: settings?.polarity ?? status?.polarity ?? null,
+        pulse_width_ms: settings?.pulse_width_ms ?? status?.pulse_width_ms ?? null,
+        enabled: settings?.enabled ?? status?.enabled ?? null
+      }
+    })
+  }
+
+  const persistedTriggers = currentDeviceConfigSnapshot.value?.triggers
+  if (persistedTriggers && Object.keys(persistedTriggers).length > 0) {
+    return Object.entries(persistedTriggers).map(([name, settings]) => ({
+      name,
+      pin: settings?.pin ?? null,
+      polarity: settings?.polarity ?? null,
+      pulse_width_ms: settings?.pulse_width_ms ?? null,
+      enabled: settings?.enabled ?? null
+    }))
+  }
+
+  return []
+})
+
 const endstopForms = reactive<Record<string, EndstopForm>>({})
 const endstopSaving = reactive<Record<string, boolean>>({})
 const endstopFormDirty = reactive<Record<string, boolean>>({})
+const triggerForms = reactive<Record<string, TriggerForm>>({})
+const triggerSaving = reactive<Record<string, boolean>>({})
+const triggerFormDirty = reactive<Record<string, boolean>>({})
+const triggerFiring = reactive<Record<string, boolean>>({})
 
 type MotorForm = {
   direction_pin: number
@@ -1752,15 +1960,28 @@ type AddEndstopForm = {
   active_high: boolean | null
 }
 
+type AddTriggerForm = {
+  name: string
+  pin: number | null
+  polarity: TriggerPolarity
+  pulse_width_ms: number | null
+  enabled: boolean
+}
+
 const directionOptions = [
   { label: 'Forward (1)', value: 1 },
   { label: 'Reverse (-1)', value: -1 }
 ]
+const triggerPolarityOptions = [
+  { label: 'Active high', value: 'active_high' },
+  { label: 'Active low', value: 'active_low' }
+] as const
 
 const addMotorDialog = ref(false)
 const addLightDialog = ref(false)
 const addCameraDialog = ref(false)
 const addEndstopDialog = ref(false)
+const addTriggerDialog = ref(false)
 
 const addMotorForm = reactive<AddMotorForm>({
   name: '',
@@ -1797,11 +2018,19 @@ const addEndstopForm = reactive<AddEndstopForm>({
   bounce_time: fieldDefaults.EndstopConfig?.bounce_time ?? null,
   active_high: fieldDefaults.EndstopConfig?.active_high ?? false
 })
+const addTriggerForm = reactive<AddTriggerForm>({
+  name: '',
+  pin: null,
+  polarity: (fieldDefaults.TriggerConfig?.polarity ?? 'active_high') as TriggerPolarity,
+  pulse_width_ms: fieldDefaults.TriggerConfig?.pulse_width_ms ?? null,
+  enabled: fieldDefaults.TriggerConfig?.enabled ?? true
+})
 
 const addMotorSaving = ref(false)
 const addLightSaving = ref(false)
 const addCameraSaving = ref(false)
 const addEndstopSaving = ref(false)
+const addTriggerSaving = ref(false)
 
 const isAddMotorFormValid = computed(() => {
   return (
@@ -1861,6 +2090,10 @@ const isAddEndstopFormValid = computed(() => {
     addEndstopForm.pin !== null &&
     addEndstopForm.angular_position !== null
   )
+})
+
+const isAddTriggerFormValid = computed(() => {
+  return addTriggerForm.name.trim().length > 0 && addTriggerForm.pin !== null
 })
 
 function formatMotorAngle(angle: number) {
@@ -2181,6 +2414,15 @@ function mapEndstopRowToForm(row: EndstopRow): EndstopForm {
   }
 }
 
+function mapTriggerRowToForm(row: TriggerRow): TriggerForm {
+  return {
+    pin: row.pin ?? null,
+    polarity: row.polarity ?? ((fieldDefaults.TriggerConfig?.polarity ?? 'active_high') as TriggerPolarity),
+    pulse_width_ms: row.pulse_width_ms ?? fieldDefaults.TriggerConfig?.pulse_width_ms ?? null,
+    enabled: row.enabled ?? (fieldDefaults.TriggerConfig?.enabled ?? true)
+  }
+}
+
 const lightPinError = (name: string) => {
   const form = lightForms[name]
   if (!form) {
@@ -2203,6 +2445,17 @@ const endstopFormError = (name: string) => {
   }
   if (form.angular_position === null) {
     return 'Angular position is required.'
+  }
+  return null
+}
+
+const triggerFormError = (name: string) => {
+  const form = triggerForms[name]
+  if (!form) {
+    return 'Trigger form not initialized.'
+  }
+  if (form.pin === null) {
+    return 'Pin is required.'
   }
   return null
 }
@@ -2251,6 +2504,16 @@ function resetAddEndstopForm() {
   })
 }
 
+function resetAddTriggerForm() {
+  Object.assign(addTriggerForm, {
+    name: '',
+    pin: null,
+    polarity: (fieldDefaults.TriggerConfig?.polarity ?? 'active_high') as TriggerPolarity,
+    pulse_width_ms: fieldDefaults.TriggerConfig?.pulse_width_ms ?? null,
+    enabled: fieldDefaults.TriggerConfig?.enabled ?? true
+  })
+}
+
 async function fetchCurrentConfig(): Promise<ScannerDeviceConfigInput | null> {
   if (!isNextApiTarget.value) {
     return null
@@ -2265,13 +2528,16 @@ async function fetchCurrentConfig(): Promise<ScannerDeviceConfigInput | null> {
       return null
     }
 
-    return {
+    const normalized: ScannerDeviceConfigInput = {
       ...baseConfig,
       motors: { ...(baseConfig.motors ?? {}) },
       lights: { ...(baseConfig.lights ?? {}) },
       cameras: { ...(baseConfig.cameras ?? {}) },
+      triggers: { ...(baseConfig.triggers ?? {}) },
       endstops: baseConfig.endstops ? { ...baseConfig.endstops } : {}
     }
+    currentDeviceConfigSnapshot.value = normalized
+    return normalized
   } catch (error) {
     console.error('Current device config could not be loaded.', error)
     return null
@@ -2304,6 +2570,7 @@ async function updateConfigWithMutation(mutator: (config: ScannerDeviceConfigInp
     motors: { ...(current.motors ?? {}) },
     lights: { ...(current.lights ?? {}) },
     cameras: { ...(current.cameras ?? {}) },
+    triggers: { ...(current.triggers ?? {}) },
     endstops: current.endstops ? { ...(current.endstops ?? {}) } : {}
   }
 
@@ -2313,6 +2580,7 @@ async function updateConfigWithMutation(mutator: (config: ScannerDeviceConfigInp
     client: apiClient,
     body: { config_file: DEFAULT_CONFIG_FILENAME }
   })
+  currentDeviceConfigSnapshot.value = nextConfig
   setLastKnownConfig(FRONTEND_CONFIG_PATH)
   await deviceStore.refreshFromRest()
   await loadDeviceConfigs()
@@ -2440,6 +2708,33 @@ async function handleAddEndstop() {
   }
 }
 
+async function handleAddTrigger() {
+  if (!isAddTriggerFormValid.value || addTriggerSaving.value || !isNextApiTarget.value) {
+    return
+  }
+
+  addTriggerSaving.value = true
+  try {
+    await updateConfigWithMutation((config) => {
+      const triggers = config.triggers ?? {}
+      config.triggers = triggers
+      triggers[addTriggerForm.name.trim()] = {
+        pin: addTriggerForm.pin ?? 0,
+        polarity: addTriggerForm.polarity,
+        pulse_width_ms: addTriggerForm.pulse_width_ms ?? undefined,
+        enabled: addTriggerForm.enabled
+      }
+    })
+
+    addTriggerDialog.value = false
+    resetAddTriggerForm()
+  } catch (error) {
+    console.error('Trigger could not be added.', error)
+  } finally {
+    addTriggerSaving.value = false
+  }
+}
+
 async function loadDeviceConfigs() {
   configOptionsLoading.value = true
   try {
@@ -2470,6 +2765,21 @@ async function loadDeviceConfigs() {
     const payload = (listResponse?.data ?? listResponse) as { status?: string; configs?: DeviceConfigListItem[] }
     const currentConfigFile =
       nextCurrentConfig?.path ?? nextCurrentConfig?.filename ?? (typeof statusConfigFile === 'string' ? statusConfigFile : null)
+    if (isNextApiTarget.value) {
+      const responseConfig = (nextCurrentConfig?.config as ScannerDeviceConfigInput | null | undefined) ?? null
+      currentDeviceConfigSnapshot.value = responseConfig
+        ? {
+            ...responseConfig,
+            motors: { ...(responseConfig.motors ?? {}) },
+            lights: { ...(responseConfig.lights ?? {}) },
+            cameras: { ...(responseConfig.cameras ?? {}) },
+            triggers: { ...(responseConfig.triggers ?? {}) },
+            endstops: responseConfig.endstops ? { ...(responseConfig.endstops ?? {}) } : {}
+          }
+        : null
+    } else {
+      currentDeviceConfigSnapshot.value = null
+    }
 
     if (currentConfigFile) {
       setLastKnownConfig(currentConfigFile)
@@ -2559,6 +2869,7 @@ async function loadDeviceConfigs() {
   } catch (error) {
     configOptions.value = []
     selectedConfig.value = null
+    currentDeviceConfigSnapshot.value = null
     console.error('Device configurations could not be loaded.', error)
   } finally {
     configOptionsLoading.value = false
@@ -2743,6 +3054,71 @@ async function saveEndstopSettings(name: string) {
   }
 }
 
+async function saveTriggerSettings(name: string) {
+  const form = triggerForms[name]
+  if (!form || !isNextApiTarget.value) {
+    return
+  }
+
+  const validationError = triggerFormError(name)
+  if (validationError) {
+    return
+  }
+
+  triggerSaving[name] = true
+  try {
+    await updateConfigWithMutation((config) => {
+      const triggers = config.triggers ?? {}
+      config.triggers = triggers
+      delete triggers[name]
+      triggers[name] = {
+        pin: form.pin ?? 0,
+        polarity: form.polarity,
+        pulse_width_ms: form.pulse_width_ms ?? undefined,
+        enabled: form.enabled
+      }
+    })
+
+    triggerFormDirty[name] = false
+  } catch (error) {
+    console.error(`Trigger "${name}" could not be saved.`, error)
+  } finally {
+    triggerSaving[name] = false
+  }
+}
+
+async function fireTriggerOnce(name: string) {
+  if (!isNextApiTarget.value || triggerFiring[name] === true || scanLocked.value) {
+    return
+  }
+
+  triggerFiring[name] = true
+  try {
+    const triggerOnceFn = (apiSdk() as {
+      triggerOnce?: (options: {
+        client?: unknown
+        path: { trigger_name: string }
+        body?: Record<string, unknown> | null
+      }) => Promise<unknown>
+    }).triggerOnce
+
+    if (!triggerOnceFn) {
+      console.warn('triggerOnce endpoint is not available on the selected API version.')
+      return
+    }
+
+    await triggerOnceFn({
+      client: apiClient,
+      path: { trigger_name: name }
+    })
+    await deviceStore.refreshFromRest()
+  } catch (error) {
+    console.error(`Trigger "${name}" could not be fired.`, error)
+  } finally {
+    triggerFiring[name] = false
+  }
+}
+
 function markMotorFormDirty(name: string) {
   motorFormDirty[name] = true
 }
@@ -2753,6 +3129,10 @@ function markLightFormDirty(name: string) {
 
 function markEndstopFormDirty(name: string) {
   endstopFormDirty[name] = true
+}
+
+function markTriggerFormDirty(name: string) {
+  triggerFormDirty[name] = true
 }
 
 watch(selectedCamera, (name) => {
@@ -2787,6 +3167,12 @@ watch(addEndstopDialog, (open) => {
   }
 })
 
+watch(addTriggerDialog, (open) => {
+  if (!open) {
+    resetAddTriggerForm()
+  }
+})
+
 watch(
   () => firmwareSettingsStore.settings,
   (settings) => {
@@ -2803,6 +3189,7 @@ watch(isNextApiTarget, (isNext) => {
   if (isNext) {
     void loadFirmwareSettings(true)
   } else {
+    currentDeviceConfigSnapshot.value = null
     firmwareSettingsStore.resetState()
     firmwareSettingsInitialized.value = false
     firmwareForm.qr_wifi_scan_enabled = false
@@ -2939,6 +3326,39 @@ watch(
       }
       if (!(row.name in endstopFormDirty)) {
         endstopFormDirty[row.name] = false
+      }
+    })
+  },
+  { immediate: true, deep: true }
+)
+
+watch(
+  triggerRows,
+  (rows) => {
+    const names = new Set(rows.map((row) => row.name))
+
+    Object.keys(triggerForms).forEach((name) => {
+      if (!names.has(name)) {
+        delete triggerForms[name]
+        delete triggerSaving[name]
+        delete triggerFormDirty[name]
+        delete triggerFiring[name]
+      }
+    })
+
+    rows.forEach((row) => {
+      const mapped = mapTriggerRowToForm(row)
+      if (!(row.name in triggerForms) || triggerFormDirty[row.name] !== true) {
+        triggerForms[row.name] = mapped
+      }
+      if (!(row.name in triggerSaving)) {
+        triggerSaving[row.name] = false
+      }
+      if (!(row.name in triggerFormDirty)) {
+        triggerFormDirty[row.name] = false
+      }
+      if (!(row.name in triggerFiring)) {
+        triggerFiring[row.name] = false
       }
     })
   },

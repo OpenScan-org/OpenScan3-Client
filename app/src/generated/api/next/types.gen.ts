@@ -212,7 +212,7 @@ export type CameraStatusResponse = {
 /**
  * CameraType
  */
-export type CameraType = 'gphoto2' | 'linuxpy' | 'picamera2' | 'external';
+export type CameraType = 'gphoto2' | 'linuxpy' | 'picamera2';
 
 /**
  * CartesianPoint3D
@@ -447,6 +447,12 @@ export type DeviceStatusResponse = {
         [key: string]: LightStatusResponse;
     };
     /**
+     * Triggers
+     */
+    triggers?: {
+        [key: string]: TriggerStatusResponse;
+    };
+    /**
      * Motors Timeout
      */
     motors_timeout: number;
@@ -567,6 +573,117 @@ export type EndstopStatusResponse = {
      * Bounce Time
      */
     bounce_time?: number | null;
+};
+
+/**
+ * ExternalTriggerPoint
+ */
+export type ExternalTriggerPoint = {
+    /**
+     * Execution Step
+     */
+    execution_step: number;
+    /**
+     * Original Step
+     */
+    original_step: number;
+    polar_coordinates: PolarPoint3d;
+    cartesian_coordinates: CartesianPoint3d;
+};
+
+/**
+ * ExternalTriggerRunCreateRequest
+ */
+export type ExternalTriggerRunCreateRequest = {
+    /**
+     * Label
+     */
+    label?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    settings: ExternalTriggerRunSettings;
+};
+
+/**
+ * ExternalTriggerRunPath
+ */
+export type ExternalTriggerRunPath = {
+    /**
+     * Task Id
+     */
+    task_id: string;
+    /**
+     * Generated At
+     */
+    generated_at?: string;
+    /**
+     * Total Steps
+     */
+    total_steps?: number;
+    /**
+     * Points
+     */
+    points?: Array<ExternalTriggerPoint>;
+};
+
+/**
+ * ExternalTriggerRunSettings
+ */
+export type ExternalTriggerRunSettings = {
+    /**
+     * Scanning path generator for the external trigger run.
+     */
+    path_method?: PathMethod;
+    /**
+     * Points
+     *
+     * Number of trigger positions.
+     */
+    points?: number;
+    /**
+     * Min Theta
+     *
+     * Minimum theta angle in degrees for constrained paths.
+     */
+    min_theta?: number;
+    /**
+     * Max Theta
+     *
+     * Maximum theta angle in degrees for constrained paths.
+     */
+    max_theta?: number;
+    /**
+     * Optimize Path
+     *
+     * Enable path optimization based on the configured motor parameters.
+     */
+    optimize_path?: boolean;
+    /**
+     * Optimization Algorithm
+     *
+     * Path optimization algorithm to use when optimize_path is enabled.
+     */
+    optimization_algorithm?: string;
+    /**
+     * Trigger Name
+     *
+     * Name of the configured trigger device to fire at each scan point.
+     */
+    trigger_name: string;
+    /**
+     * Pre Trigger Delay Ms
+     *
+     * Delay after reaching the scan position and before asserting the trigger.
+     */
+    pre_trigger_delay_ms?: number;
+    /**
+     * Post Trigger Delay Ms
+     *
+     * Delay after releasing the trigger before the next scan step starts.
+     */
+    post_trigger_delay_ms?: number;
 };
 
 /**
@@ -984,7 +1101,7 @@ export type ScanSetting = {
      *
      * Output image format (JPEG, DNG, RGB array or YUV array).
      */
-    image_format?: 'jpeg' | 'dng' | 'rgb_array' | 'yuv_array';
+    image_format?: 'jpeg' | 'raw' | 'dng' | 'rgb_array' | 'yuv_array';
     /**
      * Min Theta
      *
@@ -1068,6 +1185,12 @@ export type ScannerDeviceConfigInput = {
         [key: string]: LightConfig;
     };
     /**
+     * Triggers
+     */
+    triggers?: {
+        [key: string]: TriggerConfig;
+    };
+    /**
      * Endstops
      */
     endstops?: {
@@ -1122,6 +1245,12 @@ export type ScannerDeviceConfigOutput = {
      */
     lights?: {
         [key: string]: LightConfig;
+    };
+    /**
+     * Triggers
+     */
+    triggers?: {
+        [key: string]: TriggerConfig;
     };
     /**
      * Endstops
@@ -1305,6 +1434,102 @@ export type TaskProgress = {
 export type TaskStatus = 'pending' | 'running' | 'paused' | 'completed' | 'cancelled' | 'error' | 'interrupted';
 
 /**
+ * TriggerConfig
+ */
+export type TriggerConfig = {
+    /**
+     * Enabled
+     *
+     * Whether this trigger can be fired.
+     */
+    enabled?: boolean;
+    /**
+     * Pin
+     *
+     * BCM GPIO pin used for the trigger line.
+     */
+    pin: number;
+    /**
+     * Defines whether the trigger line is active-high or active-low.
+     */
+    polarity?: TriggerPolarity;
+    /**
+     * Pulse Width Ms
+     *
+     * How long the trigger line stays active for each trigger pulse.
+     */
+    pulse_width_ms?: number;
+};
+
+/**
+ * TriggerExecutionRequest
+ */
+export type TriggerExecutionRequest = {
+    /**
+     * Pre Trigger Delay Ms
+     */
+    pre_trigger_delay_ms?: number;
+    /**
+     * Post Trigger Delay Ms
+     */
+    post_trigger_delay_ms?: number;
+};
+
+/**
+ * TriggerExecutionResponse
+ */
+export type TriggerExecutionResponse = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Triggered At
+     */
+    triggered_at: string;
+    /**
+     * Completed At
+     */
+    completed_at: string;
+    /**
+     * Duration Ms
+     */
+    duration_ms: number;
+};
+
+/**
+ * TriggerPolarity
+ */
+export type TriggerPolarity = 'active_high' | 'active_low';
+
+/**
+ * TriggerStatusResponse
+ */
+export type TriggerStatusResponse = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Busy
+     */
+    busy: boolean;
+    settings: TriggerConfig;
+    /**
+     * Last Triggered At
+     */
+    last_triggered_at?: string | null;
+    /**
+     * Last Completed At
+     */
+    last_completed_at?: string | null;
+    /**
+     * Last Duration Ms
+     */
+    last_duration_ms?: number | null;
+};
+
+/**
  * ValidationError
  */
 export type ValidationError = {
@@ -1436,7 +1661,7 @@ export type GetPhotoData = {
         /**
          * Image Format
          */
-        image_format?: 'jpeg' | 'dng' | 'rgb_array' | 'yuv_array';
+        image_format?: 'jpeg' | 'raw' | 'dng' | 'rgb_array' | 'yuv_array';
         /**
          * With Metadata
          */
@@ -1673,6 +1898,230 @@ export type ReplaceCameraNameSettingsResponses = {
 };
 
 export type ReplaceCameraNameSettingsResponse = ReplaceCameraNameSettingsResponses[keyof ReplaceCameraNameSettingsResponses];
+
+export type ListExternalTriggerRunsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/external-trigger/runs/';
+};
+
+export type ListExternalTriggerRunsErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+};
+
+export type ListExternalTriggerRunsResponses = {
+    /**
+     * Response List External Trigger Runs External Trigger Runs  Get
+     *
+     * Successful Response
+     */
+    200: Array<Task>;
+};
+
+export type ListExternalTriggerRunsResponse = ListExternalTriggerRunsResponses[keyof ListExternalTriggerRunsResponses];
+
+export type CreateExternalTriggerRunData = {
+    body: ExternalTriggerRunCreateRequest;
+    path?: never;
+    query?: never;
+    url: '/external-trigger/runs/';
+};
+
+export type CreateExternalTriggerRunErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateExternalTriggerRunError = CreateExternalTriggerRunErrors[keyof CreateExternalTriggerRunErrors];
+
+export type CreateExternalTriggerRunResponses = {
+    /**
+     * Successful Response
+     */
+    202: Task;
+};
+
+export type CreateExternalTriggerRunResponse = CreateExternalTriggerRunResponses[keyof CreateExternalTriggerRunResponses];
+
+export type GetExternalTriggerRunData = {
+    body?: never;
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/external-trigger/runs/{task_id}';
+};
+
+export type GetExternalTriggerRunErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetExternalTriggerRunError = GetExternalTriggerRunErrors[keyof GetExternalTriggerRunErrors];
+
+export type GetExternalTriggerRunResponses = {
+    /**
+     * Successful Response
+     */
+    200: Task;
+};
+
+export type GetExternalTriggerRunResponse = GetExternalTriggerRunResponses[keyof GetExternalTriggerRunResponses];
+
+export type GetExternalTriggerRunPathData = {
+    body?: never;
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/external-trigger/runs/{task_id}/path';
+};
+
+export type GetExternalTriggerRunPathErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetExternalTriggerRunPathError = GetExternalTriggerRunPathErrors[keyof GetExternalTriggerRunPathErrors];
+
+export type GetExternalTriggerRunPathResponses = {
+    /**
+     * Successful Response
+     */
+    200: ExternalTriggerRunPath;
+};
+
+export type GetExternalTriggerRunPathResponse = GetExternalTriggerRunPathResponses[keyof GetExternalTriggerRunPathResponses];
+
+export type CancelExternalTriggerRunEndpointData = {
+    body?: never;
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/external-trigger/runs/{task_id}/cancel';
+};
+
+export type CancelExternalTriggerRunEndpointErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CancelExternalTriggerRunEndpointError = CancelExternalTriggerRunEndpointErrors[keyof CancelExternalTriggerRunEndpointErrors];
+
+export type CancelExternalTriggerRunEndpointResponses = {
+    /**
+     * Successful Response
+     */
+    200: Task;
+};
+
+export type CancelExternalTriggerRunEndpointResponse = CancelExternalTriggerRunEndpointResponses[keyof CancelExternalTriggerRunEndpointResponses];
+
+export type PauseExternalTriggerRunEndpointData = {
+    body?: never;
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/external-trigger/runs/{task_id}/pause';
+};
+
+export type PauseExternalTriggerRunEndpointErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PauseExternalTriggerRunEndpointError = PauseExternalTriggerRunEndpointErrors[keyof PauseExternalTriggerRunEndpointErrors];
+
+export type PauseExternalTriggerRunEndpointResponses = {
+    /**
+     * Successful Response
+     */
+    200: Task;
+};
+
+export type PauseExternalTriggerRunEndpointResponse = PauseExternalTriggerRunEndpointResponses[keyof PauseExternalTriggerRunEndpointResponses];
+
+export type ResumeExternalTriggerRunEndpointData = {
+    body?: never;
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/external-trigger/runs/{task_id}/resume';
+};
+
+export type ResumeExternalTriggerRunEndpointErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ResumeExternalTriggerRunEndpointError = ResumeExternalTriggerRunEndpointErrors[keyof ResumeExternalTriggerRunEndpointErrors];
+
+export type ResumeExternalTriggerRunEndpointResponses = {
+    /**
+     * Successful Response
+     */
+    200: Task;
+};
+
+export type ResumeExternalTriggerRunEndpointResponse = ResumeExternalTriggerRunEndpointResponses[keyof ResumeExternalTriggerRunEndpointResponses];
 
 export type GetMotorsData = {
     body?: never;
@@ -2300,6 +2749,211 @@ export type ReplaceLightNameSettingsResponses = {
 };
 
 export type ReplaceLightNameSettingsResponse = ReplaceLightNameSettingsResponses[keyof ReplaceLightNameSettingsResponses];
+
+export type GetTriggersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/triggers/';
+};
+
+export type GetTriggersErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+};
+
+export type GetTriggersResponses = {
+    /**
+     * Response Get Triggers Triggers  Get
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: TriggerStatusResponse;
+    };
+};
+
+export type GetTriggersResponse = GetTriggersResponses[keyof GetTriggersResponses];
+
+export type GetTriggerData = {
+    body?: never;
+    path: {
+        /**
+         * Trigger Name
+         */
+        trigger_name: string;
+    };
+    query?: never;
+    url: '/triggers/{trigger_name}';
+};
+
+export type GetTriggerErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetTriggerError = GetTriggerErrors[keyof GetTriggerErrors];
+
+export type GetTriggerResponses = {
+    /**
+     * Successful Response
+     */
+    200: TriggerStatusResponse;
+};
+
+export type GetTriggerResponse = GetTriggerResponses[keyof GetTriggerResponses];
+
+export type TriggerOnceData = {
+    /**
+     * Request
+     */
+    body?: TriggerExecutionRequest | null;
+    path: {
+        /**
+         * Trigger Name
+         */
+        trigger_name: string;
+    };
+    query?: never;
+    url: '/triggers/{trigger_name}/trigger';
+};
+
+export type TriggerOnceErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type TriggerOnceError = TriggerOnceErrors[keyof TriggerOnceErrors];
+
+export type TriggerOnceResponses = {
+    /**
+     * Successful Response
+     */
+    200: TriggerExecutionResponse;
+};
+
+export type TriggerOnceResponse = TriggerOnceResponses[keyof TriggerOnceResponses];
+
+export type GetTriggerNameSettingsData = {
+    body?: never;
+    path: {
+        /**
+         * Name
+         */
+        name: string;
+    };
+    query?: never;
+    url: '/triggers/{name}/settings';
+};
+
+export type GetTriggerNameSettingsErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetTriggerNameSettingsError = GetTriggerNameSettingsErrors[keyof GetTriggerNameSettingsErrors];
+
+export type GetTriggerNameSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: TriggerConfig;
+};
+
+export type GetTriggerNameSettingsResponse = GetTriggerNameSettingsResponses[keyof GetTriggerNameSettingsResponses];
+
+export type UpdateTriggerNameSettingsData = {
+    /**
+     * Settings
+     */
+    body: {
+        [key: string]: unknown;
+    };
+    path: {
+        /**
+         * Name
+         */
+        name: string;
+    };
+    query?: never;
+    url: '/triggers/{name}/settings';
+};
+
+export type UpdateTriggerNameSettingsErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateTriggerNameSettingsError = UpdateTriggerNameSettingsErrors[keyof UpdateTriggerNameSettingsErrors];
+
+export type UpdateTriggerNameSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: TriggerConfig;
+};
+
+export type UpdateTriggerNameSettingsResponse = UpdateTriggerNameSettingsResponses[keyof UpdateTriggerNameSettingsResponses];
+
+export type ReplaceTriggerNameSettingsData = {
+    body: TriggerConfig;
+    path: {
+        /**
+         * Name
+         */
+        name: string;
+    };
+    query?: never;
+    url: '/triggers/{name}/settings';
+};
+
+export type ReplaceTriggerNameSettingsErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ReplaceTriggerNameSettingsError = ReplaceTriggerNameSettingsErrors[keyof ReplaceTriggerNameSettingsErrors];
+
+export type ReplaceTriggerNameSettingsResponses = {
+    /**
+     * Successful Response
+     */
+    200: TriggerConfig;
+};
+
+export type ReplaceTriggerNameSettingsResponse = ReplaceTriggerNameSettingsResponses[keyof ReplaceTriggerNameSettingsResponses];
 
 export type GetSettingsData = {
     body?: never;
@@ -3199,10 +3853,14 @@ export type SetPinError = SetPinErrors[keyof SetPinErrors];
 
 export type SetPinResponses = {
     /**
+     * Response Set Pin Gpio  Pin Id  Patch
+     *
      * Successful Response
      */
-    200: unknown;
+    200: boolean;
 };
+
+export type SetPinResponse = SetPinResponses[keyof SetPinResponses];
 
 export type TogglePinData = {
     body?: never;
@@ -3231,10 +3889,14 @@ export type TogglePinError = TogglePinErrors[keyof TogglePinErrors];
 
 export type TogglePinResponses = {
     /**
+     * Response Toggle Pin Gpio  Pin Id  Toggle Patch
+     *
      * Successful Response
      */
-    200: unknown;
+    200: boolean;
 };
+
+export type TogglePinResponse = TogglePinResponses[keyof TogglePinResponses];
 
 export type GetSoftwareInfoData = {
     body?: never;
