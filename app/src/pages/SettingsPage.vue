@@ -50,6 +50,13 @@
                       />
                     </div>
                     <div class="col-12">
+                      <q-toggle
+                        v-model="backgroundCameraPreviewEnabledModel"
+                        label="Background camera preview"
+                        left-label
+                      />
+                    </div>
+                    <div class="col-12">
                       <div class="row justify-end q-gutter-sm">
                         <BaseButtonSecondary
                           icon="restart_alt"
@@ -1102,6 +1109,7 @@ import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
 import { useTaskStore } from 'src/stores/tasks'
 import { useFirmwareSettingsStore } from 'src/stores/firmwareSettings'
+import { useFrontendSettingsStore } from 'src/stores/frontendSettings'
 import { versionToApiTarget } from 'src/generated/api/versioned.gen'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
@@ -1136,6 +1144,7 @@ const apiConfigStore = useApiConfigStore()
 const cameraStore = useCameraStore()
 const taskStore = useTaskStore()
 const firmwareSettingsStore = useFirmwareSettingsStore()
+const frontendSettingsStore = useFrontendSettingsStore()
 const apiSdk = () => getApiSdk()
 void taskStore.ensureConnected()
 const { activeScanTaskId } = storeToRefs(taskStore)
@@ -1723,8 +1732,15 @@ const cameraAwbCalibrating = ref(false)
 const homeBusy = ref(false)
 
 const selectedSettingsCamera = computed(() => selectedCamera.value ?? cameraStore.selectedCamera)
+const backgroundCameraPreviewEnabledModel = computed({
+  get: () => frontendSettingsStore.backgroundCameraPreviewEnabled,
+  set: (value: boolean) => frontendSettingsStore.setBackgroundCameraPreviewEnabled(value)
+})
 
 const backgroundPreviewUrl = computed(() => {
+  if (!frontendSettingsStore.backgroundCameraPreviewEnabled) {
+    return null
+  }
   const cameraName = selectedSettingsCamera.value
   return cameraName ? cameraStore.getPreviewUrl(cameraName, 10) : null
 })
