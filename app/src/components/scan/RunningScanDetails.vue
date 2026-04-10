@@ -70,13 +70,12 @@
 
           <div class="row q-mt-md">
             <div class="col-12">
-              <q-card flat bordered>
-                <q-card-section class="q-pa-none">
-                  <div ref="logsContainer" style="height: 50vh; overflow: auto">
-                    <pre class="logs-output">{{ logsCtx.logsText }}</pre>
-                  </div>
-                </q-card-section>
-              </q-card>
+              <LogsViewer
+                :logs-text="logsCtx.logsText"
+                :format="logsCtx.format"
+                height="50vh"
+                :auto-scroll="autoScroll"
+              />
             </div>
           </div>
 
@@ -101,11 +100,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import type { Task } from 'src/generated/api'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseSelect from 'components/base/BaseSelect.vue'
+import LogsViewer from 'components/common/LogsViewer.vue'
 import { useLogsStore } from 'src/stores/logs'
 import { useTaskStore } from 'src/stores/tasks'
 
@@ -179,14 +179,9 @@ const formatOptions = [
 ]
 
 const autoScroll = ref(true)
-const logsContainer = ref<HTMLElement | null>(null)
 
 const loadLogs = async () => {
   await logsStore.load(logsKey.value)
-  if (autoScroll.value) {
-    await nextTick()
-    logsContainer.value!.scrollTop = logsContainer.value!.scrollHeight
-  }
 }
 
 watch(

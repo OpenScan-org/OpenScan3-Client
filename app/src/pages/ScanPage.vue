@@ -115,6 +115,7 @@ import { useScanTemplateStore } from 'src/stores/scanTemplate'
 import { useScanPresetsStore } from 'src/stores/scanPresets'
 import { useCloudResetGuard } from 'src/composables/useCloudResetGuard'
 import { useDeviceStore } from 'src/stores/device'
+import { useFrontendSettingsStore } from 'src/stores/frontendSettings'
 const route = useRoute()
 const router = useRouter()
 
@@ -125,6 +126,7 @@ const scanTemplateStore = useScanTemplateStore()
 const scanPresetsStore = useScanPresetsStore()
 const { promptCloudReset } = useCloudResetGuard()
 const deviceStore = useDeviceStore()
+const frontendSettingsStore = useFrontendSettingsStore()
 const apiSdk = () => getApiSdk()
 
 const selectedCameraName = ref<string>('')
@@ -222,7 +224,9 @@ const handleScanSettingsChange = (settings: ScanSetting) => {
 
 const selectedCamera = computed(() => cameraStore.cameraOptions.find(c => c.value === selectedCameraName.value) || null)
 const snapshotOrientationFlag = computed(() => selectedCamera.value?.orientationFlag ?? null)
-const snapshotBackgroundSrc = computed(() => cameraStore.photoObjectUrl)
+const snapshotBackgroundSrc = computed(() =>
+  frontendSettingsStore.backgroundCameraPreviewEnabled ? cameraStore.photoObjectUrl : null
+)
 const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
 const selectedProjectEntity = computed(() =>
   projectsStore.projects.find((project) => project.name === selectedProject.value) ?? null

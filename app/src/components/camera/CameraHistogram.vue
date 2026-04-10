@@ -72,6 +72,7 @@ const redrawInterval = ref<number | null>(null)
 const histogramImage = ref<HTMLImageElement | null>(null)
 const histogramImageUrl = ref<string | null>(null)
 const imageLoaded = ref(false)
+const HISTOGRAM_ANALYSIS_MAX_EDGE = 1024
 
 const histogramTheme = computed(() => {
   const isDark = $q.dark.isActive
@@ -112,9 +113,16 @@ function drawHistogram() {
     return
   }
 
-  tempCanvas.width = img.naturalWidth
-  tempCanvas.height = img.naturalHeight
-  tempCtx.drawImage(img, 0, 0)
+  const longestEdge = Math.max(img.naturalWidth, img.naturalHeight)
+  const downsampleScale = longestEdge > HISTOGRAM_ANALYSIS_MAX_EDGE
+    ? HISTOGRAM_ANALYSIS_MAX_EDGE / longestEdge
+    : 1
+  const analysisWidth = Math.max(1, Math.round(img.naturalWidth * downsampleScale))
+  const analysisHeight = Math.max(1, Math.round(img.naturalHeight * downsampleScale))
+
+  tempCanvas.width = analysisWidth
+  tempCanvas.height = analysisHeight
+  tempCtx.drawImage(img, 0, 0, analysisWidth, analysisHeight)
 
   const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height)
   const data = imageData.data

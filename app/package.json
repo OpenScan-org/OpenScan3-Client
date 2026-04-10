@@ -1,6 +1,6 @@
 {
   "name": "openscan3-client",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "apiVersion": "0.9.0",
   "description": "Frontend client for OpenScan3 firmware devices",
   "productName": "OpenScan3",
