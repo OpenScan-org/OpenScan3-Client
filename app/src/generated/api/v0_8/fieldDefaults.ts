@@ -95,6 +95,11 @@ export const fieldDefaults = {
     "current": 0,
     "message": "",
     "total": 0
+  },
+  "TriggerConfig": {
+    "enabled": true,
+    "polarity": "active_high",
+    "pulse_width_ms": 100
   }
 } as const;
 

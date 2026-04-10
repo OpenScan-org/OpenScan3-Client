@@ -228,7 +228,7 @@ export type CameraStatusResponse = {
 /**
  * CameraType
  */
-export type CameraType = 'gphoto2' | 'linuxpy' | 'picamera2' | 'external';
+export type CameraType = 'gphoto2' | 'linuxpy' | 'picamera2';
 
 /**
  * CartesianPoint3D
@@ -930,7 +930,7 @@ export type ScanSetting = {
      *
      * Output image format (JPEG, DNG, RGB array or YUV array).
      */
-    image_format?: 'jpeg' | 'dng' | 'rgb_array' | 'yuv_array';
+    image_format?: 'jpeg' | 'raw' | 'dng' | 'rgb_array' | 'yuv_array';
     /**
      * Min Theta
      *
@@ -1004,6 +1004,12 @@ export type ScannerDevice = {
      */
     lights: {
         [key: string]: Light;
+    };
+    /**
+     * Triggers
+     */
+    triggers?: {
+        [key: string]: Trigger;
     };
     /**
      * Endstops
@@ -1189,6 +1195,50 @@ export type TaskProgress = {
  * Enum for task status
  */
 export type TaskStatus = 'pending' | 'running' | 'paused' | 'completed' | 'cancelled' | 'error' | 'interrupted';
+
+/**
+ * Trigger
+ */
+export type Trigger = {
+    /**
+     * Name
+     */
+    name: string;
+    settings: TriggerConfig;
+};
+
+/**
+ * TriggerConfig
+ */
+export type TriggerConfig = {
+    /**
+     * Enabled
+     *
+     * Whether this trigger can be fired.
+     */
+    enabled?: boolean;
+    /**
+     * Pin
+     *
+     * BCM GPIO pin used for the trigger line.
+     */
+    pin: number;
+    /**
+     * Defines whether the trigger line is active-high or active-low.
+     */
+    polarity?: TriggerPolarity;
+    /**
+     * Pulse Width Ms
+     *
+     * How long the trigger line stays active for each trigger pulse.
+     */
+    pulse_width_ms?: number;
+};
+
+/**
+ * TriggerPolarity
+ */
+export type TriggerPolarity = 'active_high' | 'active_low';
 
 /**
  * ValidationError
@@ -2954,10 +3004,14 @@ export type SetPinError = SetPinErrors[keyof SetPinErrors];
 
 export type SetPinResponses = {
     /**
+     * Response Set Pin Gpio  Pin Id  Patch
+     *
      * Successful Response
      */
-    200: unknown;
+    200: boolean;
 };
+
+export type SetPinResponse = SetPinResponses[keyof SetPinResponses];
 
 export type TogglePinData = {
     body?: never;
@@ -2986,10 +3040,14 @@ export type TogglePinError = TogglePinErrors[keyof TogglePinErrors];
 
 export type TogglePinResponses = {
     /**
+     * Response Toggle Pin Gpio  Pin Id  Toggle Patch
+     *
      * Successful Response
      */
-    200: unknown;
+    200: boolean;
 };
+
+export type TogglePinResponse = TogglePinResponses[keyof TogglePinResponses];
 
 export type GetSoftwareInfoData = {
     body?: never;
