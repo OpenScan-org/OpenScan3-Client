@@ -114,6 +114,12 @@ export const fieldDescriptions = {
   "TaskProgress": {
     "current": "The current step or value of progress (e.g., files processed).",
     "total": "The total number of steps or value for completion (e.g., total files)."
+  },
+  "TriggerConfig": {
+    "enabled": "Whether this trigger can be fired.",
+    "pin": "BCM GPIO pin used for the trigger line.",
+    "polarity": "Defines whether the trigger line is active-high or active-low.",
+    "pulse_width_ms": "How long the trigger line stays active for each trigger pulse."
   }
 } as const;
 

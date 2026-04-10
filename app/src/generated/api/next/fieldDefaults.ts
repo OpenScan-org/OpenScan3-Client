@@ -40,6 +40,19 @@ export const fieldDefaults = {
     "bounce_time": 0.005,
     "pull_up": true
   },
+  "ExternalTriggerRunPath": {
+    "total_steps": 0
+  },
+  "ExternalTriggerRunSettings": {
+    "max_theta": 125,
+    "min_theta": 12,
+    "optimization_algorithm": "nearest_neighbor",
+    "optimize_path": true,
+    "path_method": "fibonacci",
+    "points": 130,
+    "post_trigger_delay_ms": 0,
+    "pre_trigger_delay_ms": 0
+  },
   "FirmwareSettings": {
     "enable_cloud": false,
     "qr_wifi_scan_enabled": true
@@ -101,6 +114,15 @@ export const fieldDefaults = {
     "current": 0,
     "message": "",
     "total": 0
+  },
+  "TriggerConfig": {
+    "enabled": true,
+    "polarity": "active_high",
+    "pulse_width_ms": 100
+  },
+  "TriggerExecutionRequest": {
+    "post_trigger_delay_ms": 0,
+    "pre_trigger_delay_ms": 0
   }
 } as const;
 

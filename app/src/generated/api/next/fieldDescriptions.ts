@@ -49,6 +49,17 @@ export const fieldDescriptions = {
     "pin": "GPIO pin number used for the endstop",
     "pull_up": "Whether to use a pull-up resistor"
   },
+  "ExternalTriggerRunSettings": {
+    "max_theta": "Maximum theta angle in degrees for constrained paths.",
+    "min_theta": "Minimum theta angle in degrees for constrained paths.",
+    "optimization_algorithm": "Path optimization algorithm to use when optimize_path is enabled.",
+    "optimize_path": "Enable path optimization based on the configured motor parameters.",
+    "path_method": "Scanning path generator for the external trigger run.",
+    "points": "Number of trigger positions.",
+    "post_trigger_delay_ms": "Delay after releasing the trigger before the next scan step starts.",
+    "pre_trigger_delay_ms": "Delay after reaching the scan position and before asserting the trigger.",
+    "trigger_name": "Name of the configured trigger device to fire at each scan point."
+  },
   "FirmwareSettings": {
     "enable_cloud": "Enable integrations with OpenScan Cloud services.",
     "qr_wifi_scan_enabled": "Automatically scan for WiFi QR codes on startup when no WiFi or Ethernet connection is active."
@@ -118,6 +129,12 @@ export const fieldDescriptions = {
   "TaskProgress": {
     "current": "The current step or value of progress (e.g., files processed).",
     "total": "The total number of steps or value for completion (e.g., total files)."
+  },
+  "TriggerConfig": {
+    "enabled": "Whether this trigger can be fired.",
+    "pin": "BCM GPIO pin used for the trigger line.",
+    "polarity": "Defines whether the trigger line is active-high or active-low.",
+    "pulse_width_ms": "How long the trigger line stays active for each trigger pulse."
   }
 } as const;
 
