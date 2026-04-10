@@ -558,7 +558,7 @@
                   </div>
                 </BaseSection>
 
-                <BaseSection v-if="isNextApiTarget" title="Trigger Settings">
+                <BaseSection v-if="supportsTriggers" title="Trigger Settings">
                   <div class="row q-col-gutter-md">
                     <div class="col-12" v-if="triggerRows.length === 0">
                       <q-banner dense>No triggers found.</q-banner>
@@ -1153,6 +1153,14 @@ const scanLockedTooltip = 'Unavailable while a scan is running.'
 
 const NEXT_COMPATIBLE_API_TARGETS = new Set(['latest', 'next', 'v0_9'])
 const isNextApiTarget = computed(() => NEXT_COMPATIBLE_API_TARGETS.has(resolveApiTarget(apiConfigStore.version)))
+const supportsTriggers = computed(() => {
+  const sdk = apiSdk() as {
+    getTriggers?: unknown
+    triggerOnce?: unknown
+  }
+
+  return typeof sdk.getTriggers === 'function' && typeof sdk.triggerOnce === 'function'
+})
 
 const scannerAddress = computed(() => apiConfigStore.baseURL.replace(/\/$/, ''))
 
@@ -1873,6 +1881,10 @@ const endstopRows = computed<EndstopRow[]>(() => {
 })
 
 const triggerRows = computed<TriggerRow[]>(() => {
+  if (!supportsTriggers.value) {
+    return []
+  }
+
   const runtimeTriggers = (
     deviceStore.device as {
       triggers?: Record<
@@ -2725,7 +2737,7 @@ async function handleAddEndstop() {
 }
 
 async function handleAddTrigger() {
-  if (!isAddTriggerFormValid.value || addTriggerSaving.value || !isNextApiTarget.value) {
+  if (!isAddTriggerFormValid.value || addTriggerSaving.value || !supportsTriggers.value) {
     return
   }
 
@@ -3072,7 +3084,7 @@ async function saveEndstopSettings(name: string) {
 
 async function saveTriggerSettings(name: string) {
   const form = triggerForms[name]
-  if (!form || !isNextApiTarget.value) {
+  if (!form || !supportsTriggers.value) {
     return
   }
 
@@ -3104,7 +3116,7 @@ async function saveTriggerSettings(name: string) {
 }
 
 async function fireTriggerOnce(name: string) {
-  if (!isNextApiTarget.value || triggerFiring[name] === true || scanLocked.value) {
+  if (!supportsTriggers.value || triggerFiring[name] === true || scanLocked.value) {
     return
   }
 
@@ -3186,6 +3198,12 @@ watch(addEndstopDialog, (open) => {
 watch(addTriggerDialog, (open) => {
   if (!open) {
     resetAddTriggerForm()
+  }
+})
+
+watch(supportsTriggers, (supported) => {
+  if (!supported) {
+    addTriggerDialog.value = false
   }
 })
 
