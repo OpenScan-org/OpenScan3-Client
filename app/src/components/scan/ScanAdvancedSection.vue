@@ -49,6 +49,28 @@
           <q-tooltip>{{ maxThetaDescription }}</q-tooltip>
         </q-input>
       </div>
+      <div class="col-6">
+        <q-input
+          type="number"
+          v-model.number="minPhiModel"
+          label="Min Phi (degrees)"
+          dense
+          outlined
+        >
+          <q-tooltip>{{ minPhiDescription }}</q-tooltip>
+        </q-input>
+      </div>
+      <div class="col-6">
+        <q-input
+          type="number"
+          v-model.number="maxPhiModel"
+          label="Max Phi (degrees)"
+          dense
+          outlined
+        >
+          <q-tooltip>{{ maxPhiDescription }}</q-tooltip>
+        </q-input>
+      </div>
       <div class="col-12">
         <div class="row items-center q-col-gutter-md">
           <div class="col-auto">
@@ -89,12 +111,16 @@ const props = defineProps<{
   pathMethodDisabledMessage?: string
   minTheta: number
   maxTheta: number
+  minPhi: number | null
+  maxPhi: number | null
   optimizePath: boolean
   optimizationAlgorithm: string
   imageFormatDescription: string
   pathMethodDescription: string
   minThetaDescription: string
   maxThetaDescription: string
+  minPhiDescription: string
+  maxPhiDescription: string
   optimizePathDescription: string
   optimizationAlgorithmDescription: string
 }>()
@@ -104,6 +130,8 @@ const emit = defineEmits<{
   (e: 'update:pathMethod', value: PathMethodOption): void
   (e: 'update:minTheta', value: number): void
   (e: 'update:maxTheta', value: number): void
+  (e: 'update:minPhi', value: number | null): void
+  (e: 'update:maxPhi', value: number | null): void
   (e: 'update:optimizePath', value: boolean): void
   (e: 'update:optimizationAlgorithm', value: string): void
 }>()
@@ -126,6 +154,16 @@ const minThetaModel = computed({
 const maxThetaModel = computed({
   get: () => props.maxTheta,
   set: (value: number) => emit('update:maxTheta', value)
+})
+
+const minPhiModel = computed({
+  get: () => props.minPhi,
+  set: (value: number | null) => emit('update:minPhi', value)
+})
+
+const maxPhiModel = computed({
+  get: () => props.maxPhi,
+  set: (value: number | null) => emit('update:maxPhi', value)
 })
 
 const optimizePathModel = computed({
