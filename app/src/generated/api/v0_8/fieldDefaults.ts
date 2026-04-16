@@ -97,8 +97,8 @@ export const fieldDefaults = {
     "total": 0
   },
   "TriggerConfig": {
+    "active_level": "active_high",
     "enabled": true,
-    "polarity": "active_high",
     "pulse_width_ms": 100
   }
 } as const;

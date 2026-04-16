@@ -584,14 +584,14 @@
                             </div>
                             <div class="col-12 col-sm-6">
                               <q-select
-                                v-model="triggerForms[trigger.name].polarity"
-                                :options="triggerPolarityOptions"
-                                label="Polarity"
+                                v-model="triggerForms[trigger.name].active_level"
+                                :options="triggerActiveLevelOptions"
+                                label="Active Level"
                                 emit-value
                                 map-options
                                 @update:model-value="() => markTriggerFormDirty(trigger.name)"
                               >
-                                <q-tooltip>{{ triggerConfigDescription('polarity') }}</q-tooltip>
+                                <q-tooltip>{{ triggerConfigDescription('active_level') }}</q-tooltip>
                               </q-select>
                             </div>
                             <div class="col-12 col-sm-6">
@@ -1067,9 +1067,9 @@
           </div>
           <div class="col-6">
             <q-select
-              v-model="addTriggerForm.polarity"
-              :options="triggerPolarityOptions"
-              label="Polarity"
+              v-model="addTriggerForm.active_level"
+              :options="triggerActiveLevelOptions"
+              label="Active Level"
               emit-value
               map-options
             />
@@ -1135,8 +1135,8 @@ import type {
   MotorConfig,
   PersistedCameraConfig,
   PersistedEndstopConfig,
+  TriggerActiveLevel,
   TriggerConfig,
-  TriggerPolarity,
   ScannerDeviceConfigInput
 } from 'src/generated/api'
 
@@ -1199,6 +1199,7 @@ const cloudStatus = ref<CloudStatusResponse | null>(null)
 const cloudStatusChecked = ref(false)
 const cloudHasPersistedToken = ref(false)
 const cloudTokenDirty = ref(false)
+const defaultCameraPreviewEnabled = fieldDefaults.FirmwareSettings?.camera_preview_enabled ?? true
 
 type FirmwareForm = {
   enable_cloud: boolean
@@ -1258,6 +1259,7 @@ async function saveFirmwareSettings() {
   }
 
   const payload: FirmwareSettings = {
+    camera_preview_enabled: firmwareSettingsStore.settings?.camera_preview_enabled ?? defaultCameraPreviewEnabled,
     enable_cloud: firmwareForm.enable_cloud,
     qr_wifi_scan_enabled: firmwareForm.qr_wifi_scan_enabled
   }
@@ -1826,19 +1828,37 @@ type EndstopForm = {
   bounce_time: number | null
 }
 
+type TriggerConfigLike = TriggerConfig & { polarity?: TriggerActiveLevel }
+
+type TriggerRuntimeStatus = {
+  settings?: TriggerConfigLike
+  pin?: number
+  active_level?: TriggerActiveLevel
+  polarity?: TriggerActiveLevel
+  pulse_width_ms?: number
+  enabled?: boolean
+  last_triggered_at?: string | null
+}
+
 type TriggerRow = {
   name: string
   pin: number | null
-  polarity: TriggerPolarity | null
+  active_level: TriggerActiveLevel | null
   pulse_width_ms: number | null
   enabled: boolean | null
 }
 
 type TriggerForm = {
   pin: number | null
-  polarity: TriggerPolarity
+  active_level: TriggerActiveLevel
   pulse_width_ms: number | null
   enabled: boolean
+}
+
+function resolveTriggerActiveLevel(
+  config: { active_level?: TriggerActiveLevel | null; polarity?: TriggerActiveLevel | null } | null | undefined
+): TriggerActiveLevel | null {
+  return config?.active_level ?? config?.polarity ?? null
 }
 
 const endstopRows = computed<EndstopRow[]>(() => {
@@ -1887,17 +1907,7 @@ const triggerRows = computed<TriggerRow[]>(() => {
 
   const runtimeTriggers = (
     deviceStore.device as {
-      triggers?: Record<
-        string,
-        {
-          settings?: TriggerConfig
-          pin?: number
-          polarity?: TriggerPolarity
-          pulse_width_ms?: number
-          enabled?: boolean
-          last_triggered_at?: string | null
-        }
-      >
+      triggers?: Record<string, TriggerRuntimeStatus>
     } | null
   )?.triggers
 
@@ -1907,7 +1917,7 @@ const triggerRows = computed<TriggerRow[]>(() => {
       return {
         name,
         pin: settings?.pin ?? status?.pin ?? null,
-        polarity: settings?.polarity ?? status?.polarity ?? null,
+        active_level: resolveTriggerActiveLevel(settings) ?? resolveTriggerActiveLevel(status),
         pulse_width_ms: settings?.pulse_width_ms ?? status?.pulse_width_ms ?? null,
         enabled: settings?.enabled ?? status?.enabled ?? null
       }
@@ -1919,7 +1929,7 @@ const triggerRows = computed<TriggerRow[]>(() => {
     return Object.entries(persistedTriggers).map(([name, settings]) => ({
       name,
       pin: settings?.pin ?? null,
-      polarity: settings?.polarity ?? null,
+      active_level: resolveTriggerActiveLevel(settings as TriggerConfigLike | null | undefined),
       pulse_width_ms: settings?.pulse_width_ms ?? null,
       enabled: settings?.enabled ?? null
     }))
@@ -1991,7 +2001,7 @@ type AddEndstopForm = {
 type AddTriggerForm = {
   name: string
   pin: number | null
-  polarity: TriggerPolarity
+  active_level: TriggerActiveLevel
   pulse_width_ms: number | null
   enabled: boolean
 }
@@ -2000,7 +2010,8 @@ const directionOptions = [
   { label: 'Forward (1)', value: 1 },
   { label: 'Reverse (-1)', value: -1 }
 ]
-const triggerPolarityOptions = [
+const defaultTriggerActiveLevel = (fieldDefaults.TriggerConfig?.active_level ?? 'active_high') as TriggerActiveLevel
+const triggerActiveLevelOptions = [
   { label: 'Active high', value: 'active_high' },
   { label: 'Active low', value: 'active_low' }
 ] as const
@@ -2049,7 +2060,7 @@ const addEndstopForm = reactive<AddEndstopForm>({
 const addTriggerForm = reactive<AddTriggerForm>({
   name: '',
   pin: null,
-  polarity: (fieldDefaults.TriggerConfig?.polarity ?? 'active_high') as TriggerPolarity,
+  active_level: defaultTriggerActiveLevel,
   pulse_width_ms: fieldDefaults.TriggerConfig?.pulse_width_ms ?? null,
   enabled: fieldDefaults.TriggerConfig?.enabled ?? true
 })
@@ -2445,7 +2456,7 @@ function mapEndstopRowToForm(row: EndstopRow): EndstopForm {
 function mapTriggerRowToForm(row: TriggerRow): TriggerForm {
   return {
     pin: row.pin ?? null,
-    polarity: row.polarity ?? ((fieldDefaults.TriggerConfig?.polarity ?? 'active_high') as TriggerPolarity),
+    active_level: row.active_level ?? defaultTriggerActiveLevel,
     pulse_width_ms: row.pulse_width_ms ?? fieldDefaults.TriggerConfig?.pulse_width_ms ?? null,
     enabled: row.enabled ?? (fieldDefaults.TriggerConfig?.enabled ?? true)
   }
@@ -2536,7 +2547,7 @@ function resetAddTriggerForm() {
   Object.assign(addTriggerForm, {
     name: '',
     pin: null,
-    polarity: (fieldDefaults.TriggerConfig?.polarity ?? 'active_high') as TriggerPolarity,
+    active_level: defaultTriggerActiveLevel,
     pulse_width_ms: fieldDefaults.TriggerConfig?.pulse_width_ms ?? null,
     enabled: fieldDefaults.TriggerConfig?.enabled ?? true
   })
@@ -2748,7 +2759,7 @@ async function handleAddTrigger() {
       config.triggers = triggers
       triggers[addTriggerForm.name.trim()] = {
         pin: addTriggerForm.pin ?? 0,
-        polarity: addTriggerForm.polarity,
+        active_level: addTriggerForm.active_level,
         pulse_width_ms: addTriggerForm.pulse_width_ms ?? undefined,
         enabled: addTriggerForm.enabled
       }
@@ -3101,7 +3112,7 @@ async function saveTriggerSettings(name: string) {
       delete triggers[name]
       triggers[name] = {
         pin: form.pin ?? 0,
-        polarity: form.polarity,
+        active_level: form.active_level,
         pulse_width_ms: form.pulse_width_ms ?? undefined,
         enabled: form.enabled
       }

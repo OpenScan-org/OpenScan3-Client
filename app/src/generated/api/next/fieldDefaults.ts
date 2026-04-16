@@ -54,6 +54,7 @@ export const fieldDefaults = {
     "pre_trigger_delay_ms": 0
   },
   "FirmwareSettings": {
+    "camera_preview_enabled": true,
     "enable_cloud": false,
     "qr_wifi_scan_enabled": true
   },
@@ -116,8 +117,8 @@ export const fieldDefaults = {
     "total": 0
   },
   "TriggerConfig": {
+    "active_level": "active_high",
     "enabled": true,
-    "polarity": "active_high",
     "pulse_width_ms": 100
   },
   "TriggerExecutionRequest": {

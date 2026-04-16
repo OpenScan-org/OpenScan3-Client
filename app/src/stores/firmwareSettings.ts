@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { apiClient, getApiSdk } from 'src/services/apiClient'
+import { fieldDefaults } from 'src/generated/api/fieldDefaults'
 import type { FirmwareSettings } from 'src/generated/api'
 
 interface FirmwareSettingsState {
@@ -9,8 +10,11 @@ interface FirmwareSettingsState {
   error: string | null
 }
 
+const defaultCameraPreviewEnabled = fieldDefaults.FirmwareSettings?.camera_preview_enabled ?? true
+
 function normalizeFirmwareSettings(settings: FirmwareSettings | null | undefined): FirmwareSettings {
   return {
+    camera_preview_enabled: Boolean(settings?.camera_preview_enabled ?? defaultCameraPreviewEnabled),
     enable_cloud: Boolean(settings?.enable_cloud ?? false),
     qr_wifi_scan_enabled: Boolean(settings?.qr_wifi_scan_enabled ?? false)
   }

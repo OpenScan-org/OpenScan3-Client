@@ -1208,6 +1208,11 @@ export type Trigger = {
 };
 
 /**
+ * TriggerActiveLevel
+ */
+export type TriggerActiveLevel = 'active_high' | 'active_low';
+
+/**
  * TriggerConfig
  */
 export type TriggerConfig = {
@@ -1224,21 +1229,16 @@ export type TriggerConfig = {
      */
     pin: number;
     /**
-     * Defines whether the trigger line is active-high or active-low.
+     * Defines which logic level is considered active. The idle level is the inverse.
      */
-    polarity?: TriggerPolarity;
+    active_level?: TriggerActiveLevel;
     /**
      * Pulse Width Ms
      *
-     * How long the trigger line stays active for each trigger pulse.
+     * How long the trigger line stays active for each trigger pulse in ms.
      */
     pulse_width_ms?: number;
 };
-
-/**
- * TriggerPolarity
- */
-export type TriggerPolarity = 'active_high' | 'active_low';
 
 /**
  * ValidationError

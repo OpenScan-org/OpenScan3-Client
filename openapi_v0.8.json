@@ -5975,6 +5975,14 @@
         ],
         "title": "Trigger"
       },
+      "TriggerActiveLevel": {
+        "type": "string",
+        "enum": [
+          "active_high",
+          "active_low"
+        ],
+        "title": "TriggerActiveLevel"
+      },
       "TriggerConfig": {
         "properties": {
           "enabled": {
@@ -5989,9 +5997,9 @@
             "title": "Pin",
             "description": "BCM GPIO pin used for the trigger line."
           },
-          "polarity": {
-            "$ref": "#/components/schemas/TriggerPolarity",
-            "description": "Defines whether the trigger line is active-high or active-low.",
+          "active_level": {
+            "$ref": "#/components/schemas/TriggerActiveLevel",
+            "description": "Defines which logic level is considered active. The idle level is the inverse.",
             "default": "active_high"
           },
           "pulse_width_ms": {
@@ -5999,7 +6007,7 @@
             "maximum": 5000.0,
             "minimum": 1.0,
             "title": "Pulse Width Ms",
-            "description": "How long the trigger line stays active for each trigger pulse.",
+            "description": "How long the trigger line stays active for each trigger pulse in ms.",
             "default": 100
           }
         },
@@ -6008,14 +6016,6 @@
           "pin"
         ],
         "title": "TriggerConfig"
-      },
-      "TriggerPolarity": {
-        "type": "string",
-        "enum": [
-          "active_high",
-          "active_low"
-        ],
-        "title": "TriggerPolarity"
       },
       "ValidationError": {
         "properties": {
