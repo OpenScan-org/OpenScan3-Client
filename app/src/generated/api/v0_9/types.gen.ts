@@ -52,7 +52,7 @@ export type AutoCalibrateAwbResponse = {
  * Body_add_config_json_device_configurations__post
  */
 export type BodyAddConfigJsonDeviceConfigurationsPost = {
-    config_data: ScannerDeviceConfigInput;
+    config_data: ScannerDeviceConfig;
     filename: DeviceConfigRequest;
 };
 
@@ -394,7 +394,12 @@ export type DeviceConfigResponse = {
      * Path
      */
     path: string;
-    config: ScannerDeviceConfigOutput;
+    /**
+     * Config
+     */
+    config: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -450,6 +455,10 @@ export type DeviceStatusResponse = {
      * Motors Timeout
      */
     motors_timeout: number;
+    /**
+     * Scan Radius Mm
+     */
+    scan_radius_mm?: number;
     startup_mode: ScannerStartupMode;
     calibrate_mode: ScannerCalibrateMode;
     /**
@@ -1007,6 +1016,18 @@ export type ScanSetting = {
      */
     max_theta?: number;
     /**
+     * Min Phi
+     *
+     * Optional minimum phi angle in degrees for constrained paths.
+     */
+    min_phi?: number | null;
+    /**
+     * Max Phi
+     *
+     * Optional maximum phi angle in degrees for constrained paths.
+     */
+    max_phi?: number | null;
+    /**
      * Optimize Path
      *
      * Enable path optimization for faster scanning.
@@ -1045,7 +1066,7 @@ export type ScannerCalibrateMode = 'calibrate_manual' | 'calibrate_on_home' | 'c
  *
  * Persisted scanner configuration payload stored as JSON.
  */
-export type ScannerDeviceConfigInput = {
+export type ScannerDeviceConfig = {
     /**
      * Name
      */
@@ -1093,67 +1114,11 @@ export type ScannerDeviceConfigInput = {
      */
     motors_timeout?: number;
     /**
-     * Startup Mode
+     * Scan Radius Mm
+     *
+     * Distance in millimeters between the camera lens and the turntable center point.
      */
-    startup_mode?: ScannerStartupMode | string;
-    /**
-     * Calibrate Mode
-     */
-    calibrate_mode?: ScannerCalibrateMode | string;
-};
-
-/**
- * ScannerDeviceConfig
- *
- * Persisted scanner configuration payload stored as JSON.
- */
-export type ScannerDeviceConfigOutput = {
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Model
-     */
-    model?: string | null;
-    /**
-     * Shield
-     */
-    shield?: string | null;
-    /**
-     * Cameras
-     */
-    cameras?: {
-        [key: string]: PersistedCameraConfig;
-    };
-    /**
-     * Motors
-     */
-    motors?: {
-        [key: string]: MotorConfig;
-    };
-    /**
-     * Lights
-     */
-    lights?: {
-        [key: string]: LightConfig;
-    };
-    /**
-     * Triggers
-     */
-    triggers?: {
-        [key: string]: TriggerConfig;
-    };
-    /**
-     * Endstops
-     */
-    endstops?: {
-        [key: string]: PersistedEndstopConfig;
-    } | null;
-    /**
-     * Motors Timeout
-     */
-    motors_timeout?: number;
+    scan_radius_mm?: number;
     /**
      * Startup Mode
      */

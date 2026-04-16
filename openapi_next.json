@@ -5092,7 +5092,7 @@
       "Body_add_config_json_device_configurations__post": {
         "properties": {
           "config_data": {
-            "$ref": "#/components/schemas/ScannerDeviceConfig-Input"
+            "$ref": "#/components/schemas/ScannerDeviceConfig"
           },
           "filename": {
             "$ref": "#/components/schemas/DeviceConfigRequest"
@@ -5702,7 +5702,9 @@
             "title": "Path"
           },
           "config": {
-            "$ref": "#/components/schemas/ScannerDeviceConfig-Output"
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Config"
           }
         },
         "type": "object",
@@ -5795,6 +5797,11 @@
           "motors_timeout": {
             "type": "number",
             "title": "Motors Timeout"
+          },
+          "scan_radius_mm": {
+            "type": "number",
+            "title": "Scan Radius Mm",
+            "default": 1.0
           },
           "startup_mode": {
             "$ref": "#/components/schemas/ScannerStartupMode"
@@ -6095,6 +6102,34 @@
             "title": "Max Theta",
             "description": "Maximum theta angle in degrees for constrained paths.",
             "default": 125.0
+          },
+          "min_phi": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 360.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Phi",
+            "description": "Optional minimum phi angle in degrees for constrained paths."
+          },
+          "max_phi": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 360.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Phi",
+            "description": "Optional maximum phi angle in degrees for constrained paths."
           },
           "optimize_path": {
             "type": "boolean",
@@ -6748,6 +6783,34 @@
             "description": "Maximum theta angle in degrees for constrained paths.",
             "default": 125.0
           },
+          "min_phi": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 360.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Phi",
+            "description": "Optional minimum phi angle in degrees for constrained paths."
+          },
+          "max_phi": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 360.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Phi",
+            "description": "Optional maximum phi angle in degrees for constrained paths."
+          },
           "optimize_path": {
             "type": "boolean",
             "title": "Optimize Path",
@@ -6805,7 +6868,7 @@
         ],
         "title": "ScannerCalibrateMode"
       },
-      "ScannerDeviceConfig-Input": {
+      "ScannerDeviceConfig": {
         "properties": {
           "name": {
             "type": "string",
@@ -6880,112 +6943,12 @@
             "title": "Motors Timeout",
             "default": 0.0
           },
-          "startup_mode": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ScannerStartupMode"
-              },
-              {
-                "type": "string"
-              }
-            ],
-            "title": "Startup Mode",
-            "default": "startup_enabled"
-          },
-          "calibrate_mode": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ScannerCalibrateMode"
-              },
-              {
-                "type": "string"
-              }
-            ],
-            "title": "Calibrate Mode",
-            "default": "calibrate_manual"
-          }
-        },
-        "type": "object",
-        "required": [
-          "name"
-        ],
-        "title": "ScannerDeviceConfig",
-        "description": "Persisted scanner configuration payload stored as JSON."
-      },
-      "ScannerDeviceConfig-Output": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "model": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Model"
-          },
-          "shield": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Shield"
-          },
-          "cameras": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/PersistedCameraConfig"
-            },
-            "type": "object",
-            "title": "Cameras"
-          },
-          "motors": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/MotorConfig"
-            },
-            "type": "object",
-            "title": "Motors"
-          },
-          "lights": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/LightConfig"
-            },
-            "type": "object",
-            "title": "Lights"
-          },
-          "triggers": {
-            "additionalProperties": {
-              "$ref": "#/components/schemas/TriggerConfig"
-            },
-            "type": "object",
-            "title": "Triggers"
-          },
-          "endstops": {
-            "anyOf": [
-              {
-                "additionalProperties": {
-                  "$ref": "#/components/schemas/PersistedEndstopConfig"
-                },
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Endstops"
-          },
-          "motors_timeout": {
+          "scan_radius_mm": {
             "type": "number",
-            "title": "Motors Timeout",
-            "default": 0.0
+            "exclusiveMinimum": 0.0,
+            "title": "Scan Radius Mm",
+            "description": "Distance in millimeters between the camera lens and the turntable center point.",
+            "default": 1.0
           },
           "startup_mode": {
             "anyOf": [

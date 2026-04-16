@@ -4814,6 +4814,11 @@
             "type": "number",
             "title": "Motors Timeout"
           },
+          "scan_radius_mm": {
+            "type": "number",
+            "title": "Scan Radius Mm",
+            "default": 1.0
+          },
           "startup_mode": {
             "$ref": "#/components/schemas/ScannerStartupMode"
           },
@@ -5539,6 +5544,34 @@
             "description": "Maximum theta angle in degrees for constrained paths.",
             "default": 125.0
           },
+          "min_phi": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 360.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min Phi",
+            "description": "Optional minimum phi angle in degrees for constrained paths."
+          },
+          "max_phi": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 360.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Phi",
+            "description": "Optional maximum phi angle in degrees for constrained paths."
+          },
           "optimize_path": {
             "type": "boolean",
             "title": "Optimize Path",
@@ -5668,6 +5701,12 @@
             "type": "number",
             "title": "Motors Timeout",
             "default": 0.0
+          },
+          "scan_radius_mm": {
+            "type": "number",
+            "title": "Scan Radius Mm",
+            "description": "Distance in millimeters between the camera lens and the turntable center point.",
+            "default": 1.0
           },
           "startup_mode": {
             "$ref": "#/components/schemas/ScannerStartupMode",

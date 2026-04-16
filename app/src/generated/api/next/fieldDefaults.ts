@@ -35,6 +35,9 @@ export const fieldDefaults = {
   "CloudSettingsResponse": {
     "persisted": false
   },
+  "DeviceStatusResponse": {
+    "scan_radius_mm": 1
+  },
   "EndstopConfig": {
     "active_high": false,
     "bounce_time": 0.005,
@@ -82,14 +85,10 @@ export const fieldDefaults = {
     "status": "pending",
     "total_size_bytes": 0
   },
-  "ScannerDeviceConfig-Input": {
+  "ScannerDeviceConfig": {
     "calibrate_mode": "calibrate_manual",
     "motors_timeout": 0,
-    "startup_mode": "startup_enabled"
-  },
-  "ScannerDeviceConfig-Output": {
-    "calibrate_mode": "calibrate_manual",
-    "motors_timeout": 0,
+    "scan_radius_mm": 1,
     "startup_mode": "startup_enabled"
   },
   "ScanSetting": {

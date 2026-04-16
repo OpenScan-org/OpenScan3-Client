@@ -447,6 +447,10 @@ export type DeviceStatusResponse = {
      * Motors Timeout
      */
     motors_timeout: number;
+    /**
+     * Scan Radius Mm
+     */
+    scan_radius_mm?: number;
     startup_mode: ScannerStartupMode;
     calibrate_mode: ScannerCalibrateMode;
     /**
@@ -944,6 +948,18 @@ export type ScanSetting = {
      */
     max_theta?: number;
     /**
+     * Min Phi
+     *
+     * Optional minimum phi angle in degrees for constrained paths.
+     */
+    min_phi?: number | null;
+    /**
+     * Max Phi
+     *
+     * Optional maximum phi angle in degrees for constrained paths.
+     */
+    max_phi?: number | null;
+    /**
      * Optimize Path
      *
      * Enable path optimization for faster scanning.
@@ -1021,6 +1037,12 @@ export type ScannerDevice = {
      * Motors Timeout
      */
     motors_timeout?: number;
+    /**
+     * Scan Radius Mm
+     *
+     * Distance in millimeters between the camera lens and the turntable center point.
+     */
+    scan_radius_mm?: number;
     startup_mode?: ScannerStartupMode;
     calibrate_mode?: ScannerCalibrateMode;
 };

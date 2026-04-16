@@ -50,7 +50,9 @@ export const fieldDescriptions = {
     "pull_up": "Whether to use a pull-up resistor"
   },
   "ExternalTriggerRunSettings": {
+    "max_phi": "Optional maximum phi angle in degrees for constrained paths.",
     "max_theta": "Maximum theta angle in degrees for constrained paths.",
+    "min_phi": "Optional minimum phi angle in degrees for constrained paths.",
     "min_theta": "Minimum theta angle in degrees for constrained paths.",
     "optimization_algorithm": "Path optimization algorithm to use when optimize_path is enabled.",
     "optimize_path": "Enable path optimization based on the configured motor parameters.",
@@ -101,11 +103,16 @@ export const fieldDescriptions = {
     "status": "The final, persistent status of the scan, mirroring the associated Task status.",
     "total_size_bytes": "Total size of all files belonging to the scan, in bytes."
   },
+  "ScannerDeviceConfig": {
+    "scan_radius_mm": "Distance in millimeters between the camera lens and the turntable center point."
+  },
   "ScanSetting": {
     "focus_range": "Minimum and maximum focus distance in diopters.",
     "focus_stacks": "Number of photos with different focus per position.This ignores AF and you need to set a focus range.Focus values will then be evenly spaced between min and max.",
     "image_format": "Output image format (JPEG, DNG, RGB array or YUV array).",
+    "max_phi": "Optional maximum phi angle in degrees for constrained paths.",
     "max_theta": "Maximum theta angle in degrees for constrained paths.",
+    "min_phi": "Optional minimum phi angle in degrees for constrained paths.",
     "min_theta": "Minimum theta angle in degrees for constrained paths.",
     "optimization_algorithm": "Path optimization algorithm to use.",
     "optimize_path": "Enable path optimization for faster scanning.",
