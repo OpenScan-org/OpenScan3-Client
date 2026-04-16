@@ -52,7 +52,7 @@ export type AutoCalibrateAwbResponse = {
  * Body_add_config_json_device_configurations__post
  */
 export type BodyAddConfigJsonDeviceConfigurationsPost = {
-    config_data: ScannerDeviceConfigInput;
+    config_data: ScannerDeviceConfig;
     filename: DeviceConfigRequest;
 };
 
@@ -394,7 +394,12 @@ export type DeviceConfigResponse = {
      * Path
      */
     path: string;
-    config: ScannerDeviceConfigOutput;
+    /**
+     * Config
+     */
+    config: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -450,6 +455,10 @@ export type DeviceStatusResponse = {
      * Motors Timeout
      */
     motors_timeout: number;
+    /**
+     * Scan Radius Mm
+     */
+    scan_radius_mm?: number;
     startup_mode: ScannerStartupMode;
     calibrate_mode: ScannerCalibrateMode;
     /**
@@ -590,6 +599,9 @@ export type FirmwareSettingPatchRequest = {
  * detected.
  * enable_cloud: When True the firmware enables cloud-facing features and
  * UX affordances.
+ * camera_preview_enabled: When False the system is expected to operate
+ * without a live camera preview workflow, for example on trigger-only
+ * DSLR setups.
  */
 export type FirmwareSettings = {
     /**
@@ -604,6 +616,12 @@ export type FirmwareSettings = {
      * Enable integrations with OpenScan Cloud services.
      */
     enable_cloud?: boolean;
+    /**
+     * Camera Preview Enabled
+     *
+     * Expose camera preview-oriented workflows. Disable for trigger-only systems without a live camera feed.
+     */
+    camera_preview_enabled?: boolean;
 };
 
 /**
@@ -998,6 +1016,18 @@ export type ScanSetting = {
      */
     max_theta?: number;
     /**
+     * Min Phi
+     *
+     * Optional minimum phi angle in degrees for constrained paths.
+     */
+    min_phi?: number | null;
+    /**
+     * Max Phi
+     *
+     * Optional maximum phi angle in degrees for constrained paths.
+     */
+    max_phi?: number | null;
+    /**
      * Optimize Path
      *
      * Enable path optimization for faster scanning.
@@ -1036,7 +1066,7 @@ export type ScannerCalibrateMode = 'calibrate_manual' | 'calibrate_on_home' | 'c
  *
  * Persisted scanner configuration payload stored as JSON.
  */
-export type ScannerDeviceConfigInput = {
+export type ScannerDeviceConfig = {
     /**
      * Name
      */
@@ -1084,67 +1114,11 @@ export type ScannerDeviceConfigInput = {
      */
     motors_timeout?: number;
     /**
-     * Startup Mode
+     * Scan Radius Mm
+     *
+     * Distance in millimeters between the camera lens and the turntable center point.
      */
-    startup_mode?: ScannerStartupMode | string;
-    /**
-     * Calibrate Mode
-     */
-    calibrate_mode?: ScannerCalibrateMode | string;
-};
-
-/**
- * ScannerDeviceConfig
- *
- * Persisted scanner configuration payload stored as JSON.
- */
-export type ScannerDeviceConfigOutput = {
-    /**
-     * Name
-     */
-    name: string;
-    /**
-     * Model
-     */
-    model?: string | null;
-    /**
-     * Shield
-     */
-    shield?: string | null;
-    /**
-     * Cameras
-     */
-    cameras?: {
-        [key: string]: PersistedCameraConfig;
-    };
-    /**
-     * Motors
-     */
-    motors?: {
-        [key: string]: MotorConfig;
-    };
-    /**
-     * Lights
-     */
-    lights?: {
-        [key: string]: LightConfig;
-    };
-    /**
-     * Triggers
-     */
-    triggers?: {
-        [key: string]: TriggerConfig;
-    };
-    /**
-     * Endstops
-     */
-    endstops?: {
-        [key: string]: PersistedEndstopConfig;
-    } | null;
-    /**
-     * Motors Timeout
-     */
-    motors_timeout?: number;
+    scan_radius_mm?: number;
     /**
      * Startup Mode
      */
@@ -1317,6 +1291,11 @@ export type TaskProgress = {
 export type TaskStatus = 'pending' | 'running' | 'paused' | 'completed' | 'cancelled' | 'error' | 'interrupted';
 
 /**
+ * TriggerActiveLevel
+ */
+export type TriggerActiveLevel = 'active_high' | 'active_low';
+
+/**
  * TriggerConfig
  */
 export type TriggerConfig = {
@@ -1333,21 +1312,16 @@ export type TriggerConfig = {
      */
     pin: number;
     /**
-     * Defines whether the trigger line is active-high or active-low.
+     * Defines which logic level is considered active. The idle level is the inverse.
      */
-    polarity?: TriggerPolarity;
+    active_level?: TriggerActiveLevel;
     /**
      * Pulse Width Ms
      *
-     * How long the trigger line stays active for each trigger pulse.
+     * How long the trigger line stays active for each trigger pulse in ms.
      */
     pulse_width_ms?: number;
 };
-
-/**
- * TriggerPolarity
- */
-export type TriggerPolarity = 'active_high' | 'active_low';
 
 /**
  * ValidationError

@@ -85,11 +85,16 @@ export const fieldDescriptions = {
     "status": "The final, persistent status of the scan, mirroring the associated Task status.",
     "total_size_bytes": "Total size of all files belonging to the scan, in bytes."
   },
+  "ScannerDevice": {
+    "scan_radius_mm": "Distance in millimeters between the camera lens and the turntable center point."
+  },
   "ScanSetting": {
     "focus_range": "Minimum and maximum focus distance in diopters.",
     "focus_stacks": "Number of photos with different focus per position.This ignores AF and you need to set a focus range.Focus values will then be evenly spaced between min and max.",
     "image_format": "Output image format (JPEG, DNG, RGB array or YUV array).",
+    "max_phi": "Optional maximum phi angle in degrees for constrained paths.",
     "max_theta": "Maximum theta angle in degrees for constrained paths.",
+    "min_phi": "Optional minimum phi angle in degrees for constrained paths.",
     "min_theta": "Minimum theta angle in degrees for constrained paths.",
     "optimization_algorithm": "Path optimization algorithm to use.",
     "optimize_path": "Enable path optimization for faster scanning.",
@@ -116,10 +121,10 @@ export const fieldDescriptions = {
     "total": "The total number of steps or value for completion (e.g., total files)."
   },
   "TriggerConfig": {
+    "active_level": "Defines which logic level is considered active. The idle level is the inverse.",
     "enabled": "Whether this trigger can be fired.",
     "pin": "BCM GPIO pin used for the trigger line.",
-    "polarity": "Defines whether the trigger line is active-high or active-low.",
-    "pulse_width_ms": "How long the trigger line stays active for each trigger pulse."
+    "pulse_width_ms": "How long the trigger line stays active for each trigger pulse in ms."
   }
 } as const;
 

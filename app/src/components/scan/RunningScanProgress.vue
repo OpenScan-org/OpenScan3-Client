@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import type { Task } from 'src/generated/api'
+import type { ScanSetting, Task } from 'src/generated/api'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseSection from 'components/base/BaseSection.vue'
 import { useTaskStore } from 'src/stores/tasks'
@@ -84,7 +84,7 @@ const scanTitle = computed(() => {
 })
 
 const scanSettingsDescription = computed(() => {
-  const settings = scanArgs.value.settings as any
+  const settings = scanArgs.value.settings as ScanSetting
   const focusRange = settings.focus_range ?? ['n/a', 'n/a']
   const focusRangeLabel = `${focusRange[0]}-${focusRange[1]}`
   return [
@@ -93,11 +93,13 @@ const scanSettingsDescription = computed(() => {
     `Image format: ${settings.image_format}`,
     `Min theta: ${settings.min_theta}`,
     `Max theta: ${settings.max_theta}`,
+    settings.min_phi !== undefined && settings.min_phi !== null ? `Min phi: ${settings.min_phi}` : null,
+    settings.max_phi !== undefined && settings.max_phi !== null ? `Max phi: ${settings.max_phi}` : null,
     `Optimize path: ${settings.optimize_path ? 'yes' : 'no'}`,
     `Optimization: ${settings.optimization_algorithm}`,
     `Focus stacks: ${settings.focus_stacks}`,
     `Focus range: ${focusRangeLabel}`
-  ].join(' | ')
+  ].filter((value): value is string => value !== null).join(' | ')
 })
 
 const progressCurrent = computed(() => task.value.progress?.current ?? 0)

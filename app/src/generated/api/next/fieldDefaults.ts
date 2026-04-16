@@ -35,6 +35,9 @@ export const fieldDefaults = {
   "CloudSettingsResponse": {
     "persisted": false
   },
+  "DeviceStatusResponse": {
+    "scan_radius_mm": 1
+  },
   "EndstopConfig": {
     "active_high": false,
     "bounce_time": 0.005,
@@ -54,6 +57,7 @@ export const fieldDefaults = {
     "pre_trigger_delay_ms": 0
   },
   "FirmwareSettings": {
+    "camera_preview_enabled": true,
     "enable_cloud": false,
     "qr_wifi_scan_enabled": true
   },
@@ -81,14 +85,10 @@ export const fieldDefaults = {
     "status": "pending",
     "total_size_bytes": 0
   },
-  "ScannerDeviceConfig-Input": {
+  "ScannerDeviceConfig": {
     "calibrate_mode": "calibrate_manual",
     "motors_timeout": 0,
-    "startup_mode": "startup_enabled"
-  },
-  "ScannerDeviceConfig-Output": {
-    "calibrate_mode": "calibrate_manual",
-    "motors_timeout": 0,
+    "scan_radius_mm": 1,
     "startup_mode": "startup_enabled"
   },
   "ScanSetting": {
@@ -116,8 +116,8 @@ export const fieldDefaults = {
     "total": 0
   },
   "TriggerConfig": {
+    "active_level": "active_high",
     "enabled": true,
-    "polarity": "active_high",
     "pulse_width_ms": 100
   },
   "TriggerExecutionRequest": {

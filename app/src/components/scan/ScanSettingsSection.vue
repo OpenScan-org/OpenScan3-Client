@@ -16,12 +16,16 @@
           :path-method-disabled-message="pathMethodDisabledMessage"
           v-model:minTheta="minTheta"
           v-model:maxTheta="maxTheta"
+          v-model:minPhi="minPhi"
+          v-model:maxPhi="maxPhi"
           v-model:optimizePath="optimizePath"
           v-model:optimizationAlgorithm="optimizationAlgorithm"
           :image-format-description="scanSettingDescription('image_format')"
           :path-method-description="scanSettingDescription('path_method')"
           :min-theta-description="scanSettingDescription('min_theta')"
           :max-theta-description="scanSettingDescription('max_theta')"
+          :min-phi-description="scanSettingDescription('min_phi')"
+          :max-phi-description="scanSettingDescription('max_phi')"
           :optimize-path-description="scanSettingDescription('optimize_path')"
           :optimization-algorithm-description="scanSettingDescription('optimization_algorithm')"
         />
@@ -104,6 +108,8 @@ const points = ref(130)
 const imageFormat = ref(imageFormats[0])
 const minTheta = ref<number>(12.0)
 const maxTheta = ref<number>(125.0)
+const minPhi = ref<number | null>(null)
+const maxPhi = ref<number | null>(null)
 const optimizePath = ref(true)
 const optimizationAlgorithm = ref('nearest_neighbor')
 const focusStacks = ref<number>(2)
@@ -191,6 +197,8 @@ watch(
     imageFormat,
     minTheta,
     maxTheta,
+    minPhi,
+    maxPhi,
     optimizePath,
     optimizationAlgorithm,
     focusStacks,
@@ -254,6 +262,8 @@ const resetToDefaults = () => {
   if (scanDefaults.points !== undefined) points.value = scanDefaults.points
   if (scanDefaults.min_theta !== undefined) minTheta.value = scanDefaults.min_theta
   if (scanDefaults.max_theta !== undefined) maxTheta.value = scanDefaults.max_theta
+  minPhi.value = null
+  maxPhi.value = null
   if (scanDefaults.optimize_path !== undefined) optimizePath.value = scanDefaults.optimize_path
   if (scanDefaults.optimization_algorithm !== undefined) optimizationAlgorithm.value = scanDefaults.optimization_algorithm
   
@@ -301,6 +311,8 @@ function getScanSettings() {
 
   if (minTheta.value !== undefined) settings.min_theta = minTheta.value
   if (maxTheta.value !== undefined) settings.max_theta = maxTheta.value
+  if (minPhi.value !== null && minPhi.value !== undefined) settings.min_phi = minPhi.value
+  if (maxPhi.value !== null && maxPhi.value !== undefined) settings.max_phi = maxPhi.value
   if (optimizePath.value) settings.optimize_path = optimizePath.value
   if (optimizationAlgorithm.value) settings.optimization_algorithm = optimizationAlgorithm.value
   if (enableFocusStacking.value) {
@@ -326,6 +338,8 @@ const applySettings = (scanSettings: ScanSetting, cameraSettings: CameraSettings
   
   if (scanSettings.min_theta !== undefined) minTheta.value = scanSettings.min_theta
   if (scanSettings.max_theta !== undefined) maxTheta.value = scanSettings.max_theta
+  minPhi.value = scanSettings.min_phi ?? null
+  maxPhi.value = scanSettings.max_phi ?? null
   if (scanSettings.optimize_path !== undefined) optimizePath.value = scanSettings.optimize_path
   if (scanSettings.optimization_algorithm !== undefined) optimizationAlgorithm.value = scanSettings.optimization_algorithm
   

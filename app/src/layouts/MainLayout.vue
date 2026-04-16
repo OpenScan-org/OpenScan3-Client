@@ -4,7 +4,7 @@
       <q-toolbar class="main-toolbar">
         <div class="row items-center no-wrap">
           <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-          <q-toolbar-title>OpenScan3 [alpha]</q-toolbar-title>
+          <q-toolbar-title>OpenScan3</q-toolbar-title>
         </div>
 
         <q-space />

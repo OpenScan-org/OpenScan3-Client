@@ -447,6 +447,10 @@ export type DeviceStatusResponse = {
      * Motors Timeout
      */
     motors_timeout: number;
+    /**
+     * Scan Radius Mm
+     */
+    scan_radius_mm?: number;
     startup_mode: ScannerStartupMode;
     calibrate_mode: ScannerCalibrateMode;
     /**
@@ -944,6 +948,18 @@ export type ScanSetting = {
      */
     max_theta?: number;
     /**
+     * Min Phi
+     *
+     * Optional minimum phi angle in degrees for constrained paths.
+     */
+    min_phi?: number | null;
+    /**
+     * Max Phi
+     *
+     * Optional maximum phi angle in degrees for constrained paths.
+     */
+    max_phi?: number | null;
+    /**
      * Optimize Path
      *
      * Enable path optimization for faster scanning.
@@ -1021,6 +1037,12 @@ export type ScannerDevice = {
      * Motors Timeout
      */
     motors_timeout?: number;
+    /**
+     * Scan Radius Mm
+     *
+     * Distance in millimeters between the camera lens and the turntable center point.
+     */
+    scan_radius_mm?: number;
     startup_mode?: ScannerStartupMode;
     calibrate_mode?: ScannerCalibrateMode;
 };
@@ -1208,6 +1230,11 @@ export type Trigger = {
 };
 
 /**
+ * TriggerActiveLevel
+ */
+export type TriggerActiveLevel = 'active_high' | 'active_low';
+
+/**
  * TriggerConfig
  */
 export type TriggerConfig = {
@@ -1224,21 +1251,16 @@ export type TriggerConfig = {
      */
     pin: number;
     /**
-     * Defines whether the trigger line is active-high or active-low.
+     * Defines which logic level is considered active. The idle level is the inverse.
      */
-    polarity?: TriggerPolarity;
+    active_level?: TriggerActiveLevel;
     /**
      * Pulse Width Ms
      *
-     * How long the trigger line stays active for each trigger pulse.
+     * How long the trigger line stays active for each trigger pulse in ms.
      */
     pulse_width_ms?: number;
 };
-
-/**
- * TriggerPolarity
- */
-export type TriggerPolarity = 'active_high' | 'active_low';
 
 /**
  * ValidationError

@@ -187,73 +187,6 @@ export const replaceCameraNameSettings = <ThrowOnError extends boolean = false>(
 });
 
 /**
- * List External Trigger Runs
- */
-export const listExternalTriggerRuns = <ThrowOnError extends boolean = false>(options?: Options<ListExternalTriggerRunsData, ThrowOnError>) => (options?.client ?? client).get<ListExternalTriggerRunsResponses, ListExternalTriggerRunsErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/external-trigger/runs/',
-    ...options
-});
-
-/**
- * Create External Trigger Run
- */
-export const createExternalTriggerRun = <ThrowOnError extends boolean = false>(options: Options<CreateExternalTriggerRunData, ThrowOnError>) => (options.client ?? client).post<CreateExternalTriggerRunResponses, CreateExternalTriggerRunErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/external-trigger/runs/',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Get External Trigger Run
- */
-export const getExternalTriggerRun = <ThrowOnError extends boolean = false>(options: Options<GetExternalTriggerRunData, ThrowOnError>) => (options.client ?? client).get<GetExternalTriggerRunResponses, GetExternalTriggerRunErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/external-trigger/runs/{task_id}',
-    ...options
-});
-
-/**
- * Get External Trigger Run Path
- */
-export const getExternalTriggerRunPath = <ThrowOnError extends boolean = false>(options: Options<GetExternalTriggerRunPathData, ThrowOnError>) => (options.client ?? client).get<GetExternalTriggerRunPathResponses, GetExternalTriggerRunPathErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/external-trigger/runs/{task_id}/path',
-    ...options
-});
-
-/**
- * Cancel External Trigger Run Endpoint
- */
-export const cancelExternalTriggerRunEndpoint = <ThrowOnError extends boolean = false>(options: Options<CancelExternalTriggerRunEndpointData, ThrowOnError>) => (options.client ?? client).patch<CancelExternalTriggerRunEndpointResponses, CancelExternalTriggerRunEndpointErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/external-trigger/runs/{task_id}/cancel',
-    ...options
-});
-
-/**
- * Pause External Trigger Run Endpoint
- */
-export const pauseExternalTriggerRunEndpoint = <ThrowOnError extends boolean = false>(options: Options<PauseExternalTriggerRunEndpointData, ThrowOnError>) => (options.client ?? client).patch<PauseExternalTriggerRunEndpointResponses, PauseExternalTriggerRunEndpointErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/external-trigger/runs/{task_id}/pause',
-    ...options
-});
-
-/**
- * Resume External Trigger Run Endpoint
- */
-export const resumeExternalTriggerRunEndpoint = <ThrowOnError extends boolean = false>(options: Options<ResumeExternalTriggerRunEndpointData, ThrowOnError>) => (options.client ?? client).patch<ResumeExternalTriggerRunEndpointResponses, ResumeExternalTriggerRunEndpointErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/external-trigger/runs/{task_id}/resume',
-    ...options
-});
-
-/**
  * Get Motors
  *
  * Get all motors with their current status
@@ -557,85 +490,6 @@ export const updateLightNameSettings = <ThrowOnError extends boolean = false>(op
 export const replaceLightNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceLightNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceLightNameSettingsResponses, ReplaceLightNameSettingsErrors, ThrowOnError>({
     responseType: 'json',
     url: '/lights/{name}/settings',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Get Triggers
- */
-export const getTriggers = <ThrowOnError extends boolean = false>(options?: Options<GetTriggersData, ThrowOnError>) => (options?.client ?? client).get<GetTriggersResponses, GetTriggersErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/triggers/',
-    ...options
-});
-
-/**
- * Get Trigger
- */
-export const getTrigger = <ThrowOnError extends boolean = false>(options: Options<GetTriggerData, ThrowOnError>) => (options.client ?? client).get<GetTriggerResponses, GetTriggerErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/triggers/{trigger_name}',
-    ...options
-});
-
-/**
- * Trigger Once
- */
-export const triggerOnce = <ThrowOnError extends boolean = false>(options: Options<TriggerOnceData, ThrowOnError>) => (options.client ?? client).post<TriggerOnceResponses, TriggerOnceErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/triggers/{trigger_name}/trigger',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Get Trigger Name Settings
- *
- * Get settings for a specific resource
- */
-export const getTriggerNameSettings = <ThrowOnError extends boolean = false>(options: Options<GetTriggerNameSettingsData, ThrowOnError>) => (options.client ?? client).get<GetTriggerNameSettingsResponses, GetTriggerNameSettingsErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/triggers/{name}/settings',
-    ...options
-});
-
-/**
- * Update Trigger Name Settings
- *
- * Update one or more specific settings for a resource
- *
- * Args:
- * name: The name of the resource to update settings for
- * settings: A dictionary of settings to update
- *
- * Returns:
- * The updated settings for the resource
- */
-export const updateTriggerNameSettings = <ThrowOnError extends boolean = false>(options: Options<UpdateTriggerNameSettingsData, ThrowOnError>) => (options.client ?? client).patch<UpdateTriggerNameSettingsResponses, UpdateTriggerNameSettingsErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/triggers/{name}/settings',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Replace Trigger Name Settings
- *
- * Replace all settings for a specific resource
- */
-export const replaceTriggerNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceTriggerNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceTriggerNameSettingsResponses, ReplaceTriggerNameSettingsErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/triggers/{name}/settings',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1007,66 +861,6 @@ export const downloadScans = <ThrowOnError extends boolean = false>(options: Opt
 });
 
 /**
- * Get Pins
- *
- * Get all initialized GPIO pins
- *
- * Returns:
- * dict[str, list[int]]: A dictionary of initialized output pins and buttons
- */
-export const getPins = <ThrowOnError extends boolean = false>(options?: Options<GetPinsData, ThrowOnError>) => (options?.client ?? client).get<GetPinsResponses, GetPinsErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/gpio/',
-    ...options
-});
-
-/**
- * Get Pin
- *
- * Get output value of a specific GPIO pin
- *
- * Args:
- * pin_id: The ID (int) of the GPIO pin to get the value of
- *
- * Returns:
- * bool: The output value of the GPIO pin
- */
-export const getPin = <ThrowOnError extends boolean = false>(options: Options<GetPinData, ThrowOnError>) => (options.client ?? client).get<GetPinResponses, GetPinErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/gpio/{pin_id}',
-    ...options
-});
-
-/**
- * Set Pin
- *
- * Set GPIO pin output value
- *
- * Args:
- * pin_id: The ID (int) of the GPIO pin to set the value of
- * status: The output value to set for the GPIO pin
- */
-export const setPin = <ThrowOnError extends boolean = false>(options: Options<SetPinData, ThrowOnError>) => (options.client ?? client).patch<SetPinResponses, SetPinErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/gpio/{pin_id}',
-    ...options
-});
-
-/**
- * Toggle Pin
- *
- * Toggle GPIO pin output value
- *
- * Args:
- * pin_id: The ID (int) of the GPIO pin to toggle
- */
-export const togglePin = <ThrowOnError extends boolean = false>(options: Options<TogglePinData, ThrowOnError>) => (options.client ?? client).patch<TogglePinResponses, TogglePinErrors, ThrowOnError>({
-    responseType: 'json',
-    url: '/gpio/{pin_id}/toggle',
-    ...options
-});
-
-/**
  * Get Software Info
  *
  * Get information about the scanner software
@@ -1409,6 +1203,212 @@ export const createTask = <ThrowOnError extends boolean = false>(options: Option
         'Content-Type': 'application/json',
         ...options.headers
     }
+});
+
+/**
+ * Get Pins
+ *
+ * Get all initialized GPIO pins
+ *
+ * Returns:
+ * dict[str, list[int]]: A dictionary of initialized output pins and buttons
+ */
+export const getPins = <ThrowOnError extends boolean = false>(options?: Options<GetPinsData, ThrowOnError>) => (options?.client ?? client).get<GetPinsResponses, GetPinsErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/gpio/',
+    ...options
+});
+
+/**
+ * Get Pin
+ *
+ * Get output value of a specific GPIO pin
+ *
+ * Args:
+ * pin_id: The ID (int) of the GPIO pin to get the value of
+ *
+ * Returns:
+ * bool: The output value of the GPIO pin
+ */
+export const getPin = <ThrowOnError extends boolean = false>(options: Options<GetPinData, ThrowOnError>) => (options.client ?? client).get<GetPinResponses, GetPinErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/gpio/{pin_id}',
+    ...options
+});
+
+/**
+ * Set Pin
+ *
+ * Set GPIO pin output value
+ *
+ * Args:
+ * pin_id: The ID (int) of the GPIO pin to set the value of
+ * status: The output value to set for the GPIO pin
+ */
+export const setPin = <ThrowOnError extends boolean = false>(options: Options<SetPinData, ThrowOnError>) => (options.client ?? client).patch<SetPinResponses, SetPinErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/gpio/{pin_id}',
+    ...options
+});
+
+/**
+ * Toggle Pin
+ *
+ * Toggle GPIO pin output value
+ *
+ * Args:
+ * pin_id: The ID (int) of the GPIO pin to toggle
+ */
+export const togglePin = <ThrowOnError extends boolean = false>(options: Options<TogglePinData, ThrowOnError>) => (options.client ?? client).patch<TogglePinResponses, TogglePinErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/gpio/{pin_id}/toggle',
+    ...options
+});
+
+/**
+ * Get Triggers
+ */
+export const getTriggers = <ThrowOnError extends boolean = false>(options?: Options<GetTriggersData, ThrowOnError>) => (options?.client ?? client).get<GetTriggersResponses, GetTriggersErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/triggers/',
+    ...options
+});
+
+/**
+ * Get Trigger
+ */
+export const getTrigger = <ThrowOnError extends boolean = false>(options: Options<GetTriggerData, ThrowOnError>) => (options.client ?? client).get<GetTriggerResponses, GetTriggerErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/triggers/{trigger_name}',
+    ...options
+});
+
+/**
+ * Trigger Once
+ */
+export const triggerOnce = <ThrowOnError extends boolean = false>(options: Options<TriggerOnceData, ThrowOnError>) => (options.client ?? client).post<TriggerOnceResponses, TriggerOnceErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/triggers/{trigger_name}/trigger',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get Trigger Name Settings
+ *
+ * Get settings for a specific resource
+ */
+export const getTriggerNameSettings = <ThrowOnError extends boolean = false>(options: Options<GetTriggerNameSettingsData, ThrowOnError>) => (options.client ?? client).get<GetTriggerNameSettingsResponses, GetTriggerNameSettingsErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/triggers/{name}/settings',
+    ...options
+});
+
+/**
+ * Update Trigger Name Settings
+ *
+ * Update one or more specific settings for a resource
+ *
+ * Args:
+ * name: The name of the resource to update settings for
+ * settings: A dictionary of settings to update
+ *
+ * Returns:
+ * The updated settings for the resource
+ */
+export const updateTriggerNameSettings = <ThrowOnError extends boolean = false>(options: Options<UpdateTriggerNameSettingsData, ThrowOnError>) => (options.client ?? client).patch<UpdateTriggerNameSettingsResponses, UpdateTriggerNameSettingsErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/triggers/{name}/settings',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Replace Trigger Name Settings
+ *
+ * Replace all settings for a specific resource
+ */
+export const replaceTriggerNameSettings = <ThrowOnError extends boolean = false>(options: Options<ReplaceTriggerNameSettingsData, ThrowOnError>) => (options.client ?? client).put<ReplaceTriggerNameSettingsResponses, ReplaceTriggerNameSettingsErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/triggers/{name}/settings',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List External Trigger Runs
+ */
+export const listExternalTriggerRuns = <ThrowOnError extends boolean = false>(options?: Options<ListExternalTriggerRunsData, ThrowOnError>) => (options?.client ?? client).get<ListExternalTriggerRunsResponses, ListExternalTriggerRunsErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/external-trigger/runs/',
+    ...options
+});
+
+/**
+ * Create External Trigger Run
+ */
+export const createExternalTriggerRun = <ThrowOnError extends boolean = false>(options: Options<CreateExternalTriggerRunData, ThrowOnError>) => (options.client ?? client).post<CreateExternalTriggerRunResponses, CreateExternalTriggerRunErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/external-trigger/runs/',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get External Trigger Run
+ */
+export const getExternalTriggerRun = <ThrowOnError extends boolean = false>(options: Options<GetExternalTriggerRunData, ThrowOnError>) => (options.client ?? client).get<GetExternalTriggerRunResponses, GetExternalTriggerRunErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/external-trigger/runs/{task_id}',
+    ...options
+});
+
+/**
+ * Get External Trigger Run Path
+ */
+export const getExternalTriggerRunPath = <ThrowOnError extends boolean = false>(options: Options<GetExternalTriggerRunPathData, ThrowOnError>) => (options.client ?? client).get<GetExternalTriggerRunPathResponses, GetExternalTriggerRunPathErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/external-trigger/runs/{task_id}/path',
+    ...options
+});
+
+/**
+ * Cancel External Trigger Run Endpoint
+ */
+export const cancelExternalTriggerRunEndpoint = <ThrowOnError extends boolean = false>(options: Options<CancelExternalTriggerRunEndpointData, ThrowOnError>) => (options.client ?? client).patch<CancelExternalTriggerRunEndpointResponses, CancelExternalTriggerRunEndpointErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/external-trigger/runs/{task_id}/cancel',
+    ...options
+});
+
+/**
+ * Pause External Trigger Run Endpoint
+ */
+export const pauseExternalTriggerRunEndpoint = <ThrowOnError extends boolean = false>(options: Options<PauseExternalTriggerRunEndpointData, ThrowOnError>) => (options.client ?? client).patch<PauseExternalTriggerRunEndpointResponses, PauseExternalTriggerRunEndpointErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/external-trigger/runs/{task_id}/pause',
+    ...options
+});
+
+/**
+ * Resume External Trigger Run Endpoint
+ */
+export const resumeExternalTriggerRunEndpoint = <ThrowOnError extends boolean = false>(options: Options<ResumeExternalTriggerRunEndpointData, ThrowOnError>) => (options.client ?? client).patch<ResumeExternalTriggerRunEndpointResponses, ResumeExternalTriggerRunEndpointErrors, ThrowOnError>({
+    responseType: 'json',
+    url: '/external-trigger/runs/{task_id}/resume',
+    ...options
 });
 
 /**
