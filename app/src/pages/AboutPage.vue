@@ -277,9 +277,11 @@ import BaseLink from 'components/base/BaseLink.vue';
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue';
 import { useApiConfigStore } from 'src/stores/apiConfig';
 import { useCameraStore } from 'src/stores/camera';
+import { useFrontendSettingsStore } from 'src/stores/frontendSettings';
 
 const apiConfigStore = useApiConfigStore();
 const cameraStore = useCameraStore();
+const frontendSettingsStore = useFrontendSettingsStore();
 
 const apiDocsUrl = computed(
   () => apiConfigStore.baseURL.replace(/\/$/, '') + '/docs',
@@ -289,6 +291,9 @@ const selectedCamera = computed(
   () => cameraStore.cameras.find((camera) => camera.name === cameraStore.selectedCamera) ?? null,
 );
 const backgroundPreviewUrl = computed(() => {
+  if (!frontendSettingsStore.backgroundCameraPreviewEnabled) {
+    return null;
+  }
   const cameraName = cameraStore.selectedCamera;
   return cameraName ? cameraStore.getPreviewUrl(cameraName, 30) : null;
 });
