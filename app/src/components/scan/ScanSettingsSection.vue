@@ -38,6 +38,8 @@
         v-model:manualFocusValue="manualFocusValue"
         v-model:focusStacks="focusStacks"
         v-model:focusRange="focusRange"
+        :camera-name="cameraName"
+        :camera-label="camera?.label ?? cameraName ?? ''"
         :af-description="cameraSettingDescription('AF')"
         :manual-focus-description="cameraSettingDescription('manual_focus')"
         :focus-stacks-description="scanSettingDescription('focus_stacks')"
