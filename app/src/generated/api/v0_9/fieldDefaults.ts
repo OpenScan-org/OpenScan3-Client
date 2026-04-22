@@ -69,6 +69,7 @@ export const fieldDefaults = {
   "Scan": {
     "current_step": 0,
     "duration": 0,
+    "stacked_size_bytes": 0,
     "status": "pending",
     "total_size_bytes": 0
   },

@@ -1100,9 +1100,15 @@ export type Scan = {
      */
     total_size_bytes?: number;
     /**
+     * Stacked Size Bytes
+     *
+     * Total size of focus-stacked JPEG files in scanXX/stacked, in bytes.
+     */
+    stacked_size_bytes?: number;
+    /**
      * Photos
      *
-     * Relative filenames (with extension) of all photos captured for this scan.
+     * Relative photo paths of all photos for this scan (e.g. scan01_001.jpg or stacked/stacked_scan01_001.jpg).
      */
     photos?: Array<string>;
     /**
