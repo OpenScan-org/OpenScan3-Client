@@ -67,12 +67,41 @@
                                         <q-tooltip>Download the reconstructed model archive</q-tooltip>
                                     </BaseButtonSecondary>
                                 </template>
+                                <q-btn-dropdown
+                                    v-if="projectHasStackedOutput"
+                                    class="project-download-dropdown"
+                                    split
+                                    color="primary"
+                                    unelevated
+                                    dense
+                                    icon="archive"
+                                    label="Download"
+                                    :disable="projectDownloadBlocked"
+                                    @click="confirm_download()"
+                                >
+                                    <q-list dense style="min-width: 240px">
+                                        <q-item clickable v-close-popup @click="confirm_download()">
+                                            <q-item-section avatar>
+                                                <q-icon name="archive" />
+                                            </q-item-section>
+                                            <q-item-section>Download full project archive</q-item-section>
+                                        </q-item>
+                                        <q-item clickable v-close-popup @click="confirm_download(true)">
+                                            <q-item-section avatar>
+                                                <q-icon name="layers" />
+                                            </q-item-section>
+                                            <q-item-section>Prefer focus-stacked photos</q-item-section>
+                                        </q-item>
+                                    </q-list>
+                                    <q-tooltip>{{ projectDownloadTooltip }}</q-tooltip>
+                                </q-btn-dropdown>
                                 <BaseButtonPrimary
+                                    v-else
                                     unelevated
                                     icon="archive"
                                     label="Download"
                                     :disable="projectDownloadBlocked"
-                                    @click="confirm_download"
+                                    @click="confirm_download()"
                                 >
                                     <q-tooltip>{{ projectDownloadTooltip }}</q-tooltip>
                                 </BaseButtonPrimary>
@@ -165,6 +194,17 @@
  .project-total-size {
      font-weight: 500;
      margin-right: 8px;
+ }
+
+ .project-download-dropdown :deep(.q-btn) {
+     min-height: 28px;
+     padding: 4px 10px;
+ }
+
+ .project-download-dropdown :deep(.q-btn-dropdown__arrow-container) {
+     min-width: 28px;
+     padding-left: 6px;
+     padding-right: 6px;
  }
 </style>
 
@@ -314,6 +354,9 @@ const projectScansNormalized = computed<Scan[]>(() => {
 })
 
 const projectHasScans = computed(() => projectScansNormalized.value.length > 0)
+const projectHasStackedOutput = computed(() =>
+    projectScansNormalized.value.some((scan) => scan.stacking_task_status?.status === 'completed')
+)
 
 const projectTotalSizeLabel = computed(() => {
     const totalBytes = projectScansNormalized.value.reduce(
@@ -336,7 +379,7 @@ const cloudReconstructionTooltip = computed(() => {
     if (cloudReconstructionBlocked.value) {
         return 'Cloud reconstruction is disabled while a scan is running or paused.'
     }
-    return 'Upload this project to the cloud.'
+    return 'Upload this project to the cloud. If focus-stacked batches exist, cloud reconstruction prefers them.'
 })
 
 const projectActionsBlocked = computed(() => cloudReconstructionBlocked.value)
@@ -349,6 +392,9 @@ const projectDownloadTooltip = computed(() => {
     }
     if (cloudReconstructionBlocked.value) {
         return 'Project download is disabled while a scan is running or paused.'
+    }
+    if (projectHasStackedOutput.value) {
+        return 'Download the project archive or prefer focus-stacked photos.'
     }
     return 'Download the project archive'
 })
@@ -476,9 +522,14 @@ const confirm_fetch_model = async () => {
     }
 }
 
-const confirm_download = () => {
+const confirm_download = (preferStackedPhotos = false) => {
     try {
-        const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(props.project.name)}/zip`)
+        const params = new URLSearchParams()
+        if (preferStackedPhotos) {
+            params.append('prefer_stacked_photos', 'true')
+        }
+        const suffix = params.size ? `?${params.toString()}` : ''
+        const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(props.project.name)}/zip${suffix}`)
         window.open(downloadUrl, '_blank')
     } catch (error) {
         console.error('Could not download project.', error)

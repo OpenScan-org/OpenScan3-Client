@@ -173,11 +173,15 @@
                 <q-btn
                   flat
                   round
-                  icon="layers"
-                  :disable="!canStartStacking(scan)"
-                  :color="canStartStacking(scan) ? 'primary' : 'grey-5'"
-                  @click.stop="stack_scan(scan.index)"
+                  :disable="!canUseStackAction(scan)"
+                  :color="canUseStackAction(scan) ? 'primary' : 'grey-5'"
+                  @click.stop="performStackAction(scan)"
                 >
+                  <div v-if="isStacked(scan)" class="stack-action-icon" aria-hidden="true">
+                    <q-icon name="layers" class="stack-action-icon__base" />
+                    <q-icon name="south" class="stack-action-icon__overlay" />
+                  </div>
+                  <q-icon v-else name="layers" />
                   <q-tooltip>{{ getStackButtonTooltip(scan) }}</q-tooltip>
                 </q-btn>
                 <q-btn
@@ -366,6 +370,10 @@ const canStartStacking = (scan: Scan) => {
   return getStackingState(scan) === 'stackable'
 }
 
+const isStacked = (scan: Scan) => getStackingState(scan) === 'stacked'
+
+const canUseStackAction = (scan: Scan) => canStartStacking(scan) || isStacked(scan)
+
 const getStackingBadgeColor = (scan: Scan) => {
   const state = getStackingState(scan)
   if (state === 'stacked') {
@@ -391,7 +399,7 @@ const getStackButtonTooltip = (scan: Scan) => {
     return 'Focus stacking is in progress'
   }
   if (state === 'stacked') {
-    return 'Focus stacking already completed'
+    return 'Focus stacking completed. Download stacked photos for this scan.'
   }
   if (scanActiveStatuses.has(scan.status ?? '')) {
     return 'Focus stacking becomes available once the scan is finished'
@@ -432,16 +440,30 @@ const resume_scan = (index: number) => {
   emit('resume:scan', { project_name: props.project_name, scan_index: index, camera_name: scan?.camera_name || 'default' })
 }
 
-const download_scan = (index: number) => {
+const download_scan = (index: number, preferStackedPhotos = false) => {
   try {
     const params = new URLSearchParams()
     params.append('scan_indices', index.toString())
+    if (preferStackedPhotos) {
+      params.append('prefer_stacked_photos', 'true')
+    }
     const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(props.project_name)}/scans/zip?${params.toString()}`)
     window.open(downloadUrl, '_blank')
     emit('download:scan', { project_name: props.project_name, scan_index: index })
   } catch (error) {
     console.error('Could not download scan.', error)
   }
+}
+
+const performStackAction = (scan: Scan) => {
+  if (isStacked(scan)) {
+    download_scan(scan.index, true)
+    return
+  }
+  if (!canStartStacking(scan)) {
+    return
+  }
+  stack_scan(scan.index)
 }
 
 const toggle_scan_selection = (index: number, checked: boolean) => {
@@ -579,5 +601,25 @@ const cancel_scan = (index: number) => {
   min-width: 32px;
   padding-left: var(--scans-list-gap) !important;
   padding-right: var(--scans-list-gap) !important;
+}
+
+.stack-action-icon {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stack-action-icon__base {
+  font-size: 18px;
+}
+
+.stack-action-icon__overlay {
+  position: absolute;
+  right: -2px;
+  bottom: -5px;
+  font-size: 11px;
 }
 </style>
