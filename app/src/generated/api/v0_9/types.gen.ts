@@ -3030,6 +3030,12 @@ export type DownloadProjectData = {
          * If true, stream only photo files without metadata or directory structure.
          */
         photos_only?: boolean;
+        /**
+         * Prefer Stacked Photos
+         *
+         * Prefer scanXX/stacked JPEGs and skip original photos when stacked output exists.
+         */
+        prefer_stacked_photos?: boolean;
     };
     url: '/projects/{project_name}/zip';
 };
@@ -3099,6 +3105,12 @@ export type DownloadScansData = {
          * Scan Indices
          */
         scan_indices?: Array<number>;
+        /**
+         * Prefer Stacked Photos
+         *
+         * Prefer scanXX/stacked JPEGs and skip original photos when stacked output exists.
+         */
+        prefer_stacked_photos?: boolean;
     };
     url: '/projects/{project_name}/scans/zip';
 };
