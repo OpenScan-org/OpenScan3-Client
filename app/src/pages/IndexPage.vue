@@ -4,6 +4,7 @@ import { useQuasar } from 'quasar'
 
 import { useCameraStore } from 'src/stores/camera'
 import { useDeviceStore } from 'src/stores/device'
+import { useFrontendSettingsStore } from 'src/stores/frontendSettings'
 import { useProjectsStore } from 'src/stores/projects'
 import { useTaskStore } from 'src/stores/tasks'
 import BaseButtonIconPrimary from 'components/base/BaseButtonIconPrimary.vue'
@@ -21,6 +22,7 @@ import {
 const $q = useQuasar()
 const cameraStore = useCameraStore()
 const deviceStore = useDeviceStore()
+const frontendSettingsStore = useFrontendSettingsStore()
 const projectsStore = useProjectsStore()
 const taskStore = useTaskStore()
 const apiSdk = () => getApiSdk()
@@ -45,6 +47,9 @@ const selectedCamera = computed(() =>
 )
 
 const backgroundPreviewUrl = computed(() => {
+  if (!frontendSettingsStore.backgroundCameraPreviewEnabled) {
+    return null
+  }
   const cameraName = cameraStore.selectedCamera
   return cameraName ? cameraStore.getPreviewUrl(cameraName, 30) : null
 })

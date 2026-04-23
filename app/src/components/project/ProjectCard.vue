@@ -30,6 +30,12 @@
                         >
                             <div v-if="projectTotalSizeLabel" class="text-caption text-grey-7 project-total-size">
                                 Total size: {{ projectTotalSizeLabel }}
+                                <template v-if="projectPreferStackedSizeLabel">
+                                    ({{ projectPreferStackedSizeLabel }})
+                                </template>
+                                <q-tooltip v-if="projectPreferStackedSizeLabel">
+                                    {{ projectPreferStackedSizeTooltip }}
+                                </q-tooltip>
                             </div>
                             <div class="project-action-buttons row items-center q-gutter-sm justify-center">
                                 <template v-if="apiConfigStore.cloudEnabled">
@@ -39,10 +45,10 @@
                                         icon="cloud_upload"
                                         :label="compactButtons ? 'OpenScanCloud' : 'Cloud Reconstruction'"
                                         :loading="cloudUploadLoading"
-                                        :disable="cloudUploadLoading || cloudReconstructionBlocked"
+                                        :disable="cloudUploadLoading || Boolean(cloudUploadBlockedReason)"
                                         @click="confirm_upload"
                                     >
-                                        <q-tooltip>{{ cloudReconstructionTooltip }}</q-tooltip>
+                                        <q-tooltip>{{ cloudUploadTooltip }}</q-tooltip>
                                     </BaseButtonSecondary>
                                     <BaseButtonSecondary
                                         v-else-if="!project.downloaded"
@@ -67,15 +73,45 @@
                                         <q-tooltip>Download the reconstructed model archive</q-tooltip>
                                     </BaseButtonSecondary>
                                 </template>
-                                <BaseButtonPrimary
+                                <q-btn-dropdown
+                                    class="project-download-dropdown"
+                                    split
+                                    color="primary"
                                     unelevated
+                                    dense
                                     icon="archive"
                                     label="Download"
                                     :disable="projectDownloadBlocked"
-                                    @click="confirm_download"
+                                    @click="confirm_download()"
                                 >
+                                    <q-list dense style="min-width: 260px">
+                                        <q-item clickable v-close-popup @click="confirm_download()">
+                                            <q-item-section avatar>
+                                                <q-icon name="archive" />
+                                            </q-item-section>
+                                            <q-item-section>Download full project archive</q-item-section>
+                                        </q-item>
+                                        <q-item clickable v-close-popup @click="confirm_download({ photosOnly: true })">
+                                            <q-item-section avatar>
+                                                <q-icon name="photo_library" />
+                                            </q-item-section>
+                                            <q-item-section>Download photos only</q-item-section>
+                                        </q-item>
+                                        <q-item v-if="projectHasStackedOutput" clickable v-close-popup @click="confirm_download({ preferStackedPhotos: true })">
+                                            <q-item-section avatar>
+                                                <q-icon name="layers" />
+                                            </q-item-section>
+                                            <q-item-section>Use stacked outputs when available</q-item-section>
+                                        </q-item>
+                                        <q-item v-if="projectHasStackedOutput" clickable v-close-popup @click="confirm_download({ photosOnly: true, preferStackedPhotos: true })">
+                                            <q-item-section avatar>
+                                                <q-icon name="collections" />
+                                            </q-item-section>
+                                            <q-item-section>Photos only (prefer stacked outputs)</q-item-section>
+                                        </q-item>
+                                    </q-list>
                                     <q-tooltip>{{ projectDownloadTooltip }}</q-tooltip>
-                                </BaseButtonPrimary>
+                                </q-btn-dropdown>
                                 <BaseButtonPrimary
                                     color="positive"
                                     unelevated
@@ -166,6 +202,17 @@
      font-weight: 500;
      margin-right: 8px;
  }
+
+ .project-download-dropdown :deep(.q-btn) {
+     min-height: 28px;
+     padding: 4px 10px;
+ }
+
+ .project-download-dropdown :deep(.q-btn-dropdown__arrow-container) {
+     min-width: 28px;
+     padding-left: 6px;
+     padding-right: 6px;
+ }
 </style>
 
 <script setup lang="ts">
@@ -194,6 +241,7 @@ const cloudProjectsStore = useCloudProjectsStore()
 const apiSdk = () => getApiSdk()
 
 const compactButtons = computed(() => $q.screen.width < 1800)
+const CLOUD_UPLOAD_LIMIT_BYTES = 2 * 1024 * 1024 * 1024
 
 interface ProjectProp {
     project: Project
@@ -250,13 +298,16 @@ const handleBulkDeleteByStatus = (data: { project_name: string; scan_indices: nu
     })
 }
 
-const handleBulkDownloadSelected = (data: { project_name: string; scan_indices: number[] }) => {
+const handleBulkDownloadSelected = (data: { project_name: string; scan_indices: number[]; prefer_stacked_photos?: boolean }) => {
     if (!data.scan_indices.length) {
         return
     }
     try {
         const params = new URLSearchParams()
         data.scan_indices.forEach((index) => params.append('scan_indices', index.toString()))
+        if (data.prefer_stacked_photos) {
+            params.append('prefer_stacked_photos', 'true')
+        }
         const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(data.project_name)}/scans/zip?${params.toString()}`)
         window.open(downloadUrl, '_blank')
     } catch (error) {
@@ -314,6 +365,9 @@ const projectScansNormalized = computed<Scan[]>(() => {
 })
 
 const projectHasScans = computed(() => projectScansNormalized.value.length > 0)
+const projectHasStackedOutput = computed(() =>
+    projectScansNormalized.value.some((scan) => scan.stacking_task_status?.status === 'completed')
+)
 
 const projectTotalSizeLabel = computed(() => {
     const totalBytes = projectScansNormalized.value.reduce(
@@ -322,6 +376,54 @@ const projectTotalSizeLabel = computed(() => {
     )
     return totalBytes > 0 ? formatBytes(totalBytes) : null
 })
+
+const projectPreferStackedSizeBytes = computed(() =>
+    projectScansNormalized.value.reduce((sum, scan) => {
+        const total = scan.total_size_bytes ?? 0
+        const stacked = scan.stacked_size_bytes ?? 0
+        return sum + (stacked > 0 ? stacked : total)
+    }, 0)
+)
+
+const getOriginalPhotoCount = (scan: Scan) => {
+    if (scan.photos?.length) {
+        return scan.photos.length
+    }
+    const points = scan.settings?.points ?? 0
+    const focusStacks = scan.settings?.focus_stacks ?? 1
+    if (points > 0) {
+        return points * Math.max(1, focusStacks)
+    }
+    return 0
+}
+
+const getStackedPhotoCount = (scan: Scan) => {
+    const stackedPhotosFromList = (scan.photos ?? []).filter((photo) => photo.startsWith('stacked/')).length
+    if (stackedPhotosFromList > 0) {
+        return stackedPhotosFromList
+    }
+    const points = scan.settings?.points ?? 0
+    return points > 0 ? points : 0
+}
+
+const projectStackOptimizedPhotoCount = computed(() =>
+    projectScansNormalized.value.reduce((sum, scan) => {
+        const hasStackedOutput = (scan.stacked_size_bytes ?? 0) > 0
+        return sum + (hasStackedOutput ? getStackedPhotoCount(scan) : getOriginalPhotoCount(scan))
+    }, 0)
+)
+
+const projectPreferStackedSizeLabel = computed(() => {
+    if (!projectHasStackedOutput.value) {
+        return null
+    }
+    const label = formatBytes(projectPreferStackedSizeBytes.value)
+    return label ? `Stack-optimized: ${label}` : null
+})
+
+const projectPreferStackedSizeTooltip = computed(() =>
+    'Value in parentheses estimates a stack-optimized export: stacked outputs are used where available; other scans keep their regular photos.'
+)
 
 const thumbnailUrl = computed(() => {
     return buildApiUrl(`projects/${encodeURIComponent(props.project.name)}/thumbnail`)
@@ -332,12 +434,23 @@ const cloudReconstructionBlocked = computed(() => {
     return projectScansNormalized.value.some((scan) => inProgressStatuses.has(scan.status ?? ''))
 })
 
-const cloudReconstructionTooltip = computed(() => {
+const cloudUploadLimitLabel = formatBytes(CLOUD_UPLOAD_LIMIT_BYTES) ?? '2 GB'
+const cloudUploadSizeLabel = computed(() => formatBytes(projectPreferStackedSizeBytes.value) ?? '0 B')
+const cloudUploadExceedsLimit = computed(() => projectPreferStackedSizeBytes.value > CLOUD_UPLOAD_LIMIT_BYTES)
+
+const cloudUploadBlockedReason = computed(() => {
     if (cloudReconstructionBlocked.value) {
         return 'Cloud reconstruction is disabled while a scan is running or paused.'
     }
-    return 'Upload this project to the cloud.'
+    if (cloudUploadExceedsLimit.value) {
+        return `Cloud upload limit is ${cloudUploadLimitLabel}. This project is about ${cloudUploadSizeLabel.value} (stack-optimized). Delete scans or use focus stacking to reduce size.`
+    }
+    return null
 })
+
+const cloudUploadTooltip = computed(() =>
+    cloudUploadBlockedReason.value ?? 'Upload this project to the cloud. Stacked outputs are used where available.'
+)
 
 const projectActionsBlocked = computed(() => cloudReconstructionBlocked.value)
 
@@ -350,7 +463,10 @@ const projectDownloadTooltip = computed(() => {
     if (cloudReconstructionBlocked.value) {
         return 'Project download is disabled while a scan is running or paused.'
     }
-    return 'Download the project archive'
+    if (projectHasStackedOutput.value) {
+        return 'Download full archive, photos only, or prefer stacked outputs where available.'
+    }
+    return 'Download full archive or photos only'
 })
 
 const addScanTooltip = computed(() => {
@@ -437,9 +553,26 @@ const confirm_delete = () => {
 }
 
 const confirm_upload = () => {
+    if (cloudUploadBlockedReason.value) {
+        $q.notify({
+            type: 'warning',
+            message: cloudUploadBlockedReason.value
+        })
+        return
+    }
+
+    const stackOptimizedSizeLabel = formatBytes(projectPreferStackedSizeBytes.value) ?? 'unknown size'
+    const stackOptimizedPhotoCountLabel =
+        projectStackOptimizedPhotoCount.value > 0
+            ? `${projectStackOptimizedPhotoCount.value} photo${projectStackOptimizedPhotoCount.value === 1 ? '' : 's'}`
+            : 'an unknown number of photos'
+
     $q.dialog({
         title: 'Confirm Upload',
-        message: `Do you want to upload ${props.project.name} to the cloud?`,
+        message:
+            `Do you want to upload ${props.project.name} to the cloud?\n\n` +
+            `Stack-optimized upload will include approximately ${stackOptimizedPhotoCountLabel} (${stackOptimizedSizeLabel}).\n` +
+            `Cloud limit: ${cloudUploadLimitLabel}.`,
         cancel: true,
         persistent: true
     }).onOk(async () => {
@@ -476,9 +609,17 @@ const confirm_fetch_model = async () => {
     }
 }
 
-const confirm_download = () => {
+const confirm_download = (options?: { preferStackedPhotos?: boolean; photosOnly?: boolean }) => {
     try {
-        const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(props.project.name)}/zip`)
+        const params = new URLSearchParams()
+        if (options?.preferStackedPhotos) {
+            params.append('prefer_stacked_photos', 'true')
+        }
+        if (options?.photosOnly) {
+            params.append('photos_only', 'true')
+        }
+        const suffix = params.size ? `?${params.toString()}` : ''
+        const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(props.project.name)}/zip${suffix}`)
         window.open(downloadUrl, '_blank')
     } catch (error) {
         console.error('Could not download project.', error)

@@ -28,6 +28,7 @@ export const useCameraStore = defineStore('camera', {
     selectedCamera: null as string | null,
     loading: false,
     error: null as string | null,
+    autoPhotoRefreshEnabled: true,
     photoBlob: null as Blob | null,
     photoObjectUrl: null as string | null,
     photoLoading: false,
@@ -81,6 +82,16 @@ export const useCameraStore = defineStore('camera', {
     setSelectedCamera(cameraName: string | null) {
       this.selectedCamera = cameraName;
     },
+    markPhotoStale() {
+      if (!this.selectedCamera) {
+        return;
+      }
+      this.photoLoading = true;
+      this.photoError = null;
+    },
+    setAutoPhotoRefreshEnabled(enabled: boolean) {
+      this.autoPhotoRefreshEnabled = enabled;
+    },
     setPhoto(blob: Blob | null, { immediateCleanup = false }: { immediateCleanup?: boolean } = {}) {
       const previousUrl = this.photoObjectUrl;
 
@@ -113,7 +124,7 @@ export const useCameraStore = defineStore('camera', {
       if (affectedCameras.has(this.selectedCamera)) {
         const onlyOrientationChange = paths.every((path) => path.includes('.settings.orientation_flag'));
 
-        if (!onlyOrientationChange) {
+        if (!onlyOrientationChange && this.autoPhotoRefreshEnabled) {
           this.debouncedFetchPhoto(this.selectedCamera);
         }
 

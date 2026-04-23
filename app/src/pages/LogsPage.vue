@@ -49,74 +49,28 @@
       </template>
 
       <template v-else>
-        <div class="row q-col-gutter-md items-end">
-          <div class="col-12 col-md-3">
-            <BaseSelect
-              v-model="logsCtx.format"
-              label="Format"
-              :options="formatOptions"
-              emit-value
-              map-options
-            />
-          </div>
-          <div class="col-12 col-md-3">
-            <BaseSelect
-              v-model="selectedLogLevel"
-              label="Log level"
-              :options="logLevelOptions"
-              emit-value
-              map-options
-            />
-          </div>
-          <div class="col-12 col-md-2">
-            <q-input v-model.number="logsCtx.lines" type="number" label="Lines" outlined dense />
-          </div>
-          <div class="col-12 col-md-4">
-            <div class="row items-center q-col-gutter-sm">
-              <div class="col">
-                <q-toggle v-model="logsCtx.autoRefresh" label="Auto refresh" left-label />
-              </div>
-              <div class="col">
-                <q-input
-                  v-model.number="logsCtx.pollIntervalSeconds"
-                  type="number"
-                  label="Interval (s)"
-                  outlined
-                  dense
-                  :disable="!logsCtx.autoRefresh"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <LogsViewer
-          ref="logsViewer"
-          class="q-mt-md"
+        <LogsWorkspace
+          v-model:format="logsCtx.format"
+          v-model:lines="logsCtx.lines"
+          v-model:auto-refresh="logsCtx.autoRefresh"
+          v-model:poll-interval-seconds="logsCtx.pollIntervalSeconds"
           v-model:log-level="selectedLogLevel"
           :logs-text="logsCtx.logsText"
-          :format="logsCtx.format"
-          :show-level-filter="false"
-          :show-copy-button="false"
+          :loading="logsCtx.loading"
           height="60vh"
-        />
-
-        <q-separator class="q-mt-md q-mb-md" />
-
-        <div class="row q-col-gutter-sm justify-end">
-          <div class="col-12 col-md-auto">
-            <BaseButtonSecondary icon="refresh" label="Refresh" :loading="logsCtx.loading" @click="loadLogs" />
-          </div>
-          <div class="col-12 col-md-auto">
-            <BaseButtonPrimary icon="download" label="Download logs" @click="downloadLogs" />
-          </div>
-          <div class="col-12 col-md-auto">
-            <BaseButtonSecondary icon="content_copy" label="Copy logs" :disable="!logsCtx.logsText" @click="copyLogs" />
-          </div>
-          <div class="col-12 col-md-auto">
-            <BaseButtonSecondary icon="feedback" label="Submit feedback" @click="openFeedbackDialog" />
-          </div>
-        </div>
+          @refresh="loadLogs"
+        >
+          <template #actions-before-copy>
+            <div class="col-12 col-md-auto">
+              <BaseButtonPrimary icon="download" label="Download logs" @click="downloadLogs" />
+            </div>
+          </template>
+          <template #actions-after-copy>
+            <div class="col-12 col-md-auto">
+              <BaseButtonSecondary icon="feedback" label="Submit feedback" @click="openFeedbackDialog" />
+            </div>
+          </template>
+        </LogsWorkspace>
       </template>
     </BaseSection>
 
@@ -154,34 +108,17 @@ import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BasePage from 'components/base/BasePage.vue'
 import BaseSection from 'components/base/BaseSection.vue'
-import BaseSelect from 'components/base/BaseSelect.vue'
-import LogsViewer from 'components/common/LogsViewer.vue'
+import LogsWorkspace from 'components/common/LogsWorkspace.vue'
 import { buildApiUrl } from 'src/services/apiClient'
 import { useDeviceStore } from 'src/stores/device'
 import { useLogsStore } from 'src/stores/logs'
 
 type LogLevelFilter = 'all' | 'trace' | 'debug' | 'info' | 'warning' | 'error' | 'critical'
 
-const formatOptions = [
-  { label: 'Text log', value: 'text' },
-  { label: 'Detailed JSON log', value: 'json' }
-]
-
-const logLevelOptions = [
-  { label: 'All levels', value: 'all' },
-  { label: 'Trace', value: 'trace' },
-  { label: 'Debug', value: 'debug' },
-  { label: 'Info', value: 'info' },
-  { label: 'Warning', value: 'warning' },
-  { label: 'Error', value: 'error' },
-  { label: 'Critical', value: 'critical' }
-] satisfies Array<{ label: string; value: LogLevelFilter }>
-
 const logsStore = useLogsStore()
 const deviceStore = useDeviceStore()
 const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
 const logsKey = 'logs-page'
-const logsViewer = ref<{ copyVisibleLogs: () => Promise<void> } | null>(null)
 const selectedLogLevel = ref<LogLevelFilter>('all')
 const logsCtx = computed(() =>
   logsStore.ensureContext(logsKey, {
@@ -198,10 +135,6 @@ const loadLogs = async () => {
 
 const downloadLogs = () => {
   window.open(buildApiUrl('logs/archive'), '_blank')
-}
-
-const copyLogs = async () => {
-  await logsViewer.value?.copyVisibleLogs()
 }
 
 const feedbackDialog = ref(false)

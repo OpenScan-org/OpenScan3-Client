@@ -48,7 +48,7 @@
             class="camera-view__toolbar-refresh"
             icon="refresh"
             size="sm"
-            :disable="!props.camera || props.scanning"
+            :disable="!props.camera || props.scanning || props.disableHqPreview"
             @click="refreshHqPhoto"
           >
             <q-tooltip anchor="bottom middle" self="top middle">Refresh HQ preview</q-tooltip>
@@ -56,7 +56,7 @@
           <BaseButtonSecondary
             class="camera-view__toolbar-button"
             :label="heatmapEnabled ? 'feature heatmap' : 'feature heatmap'"
-            :disable="!props.camera"
+            :disable="!props.camera || props.disableHqPreview"
             dense
             outline
             @click="toggleHeatmap"
@@ -112,6 +112,7 @@
 
         <div class="camera-surface__hq">
           <CameraHQPreview
+            v-if="!props.disableHqPreview"
             class="camera-surface__hq-preview"
             ref="hqPreviewRef"
             :camera="camera"
@@ -120,6 +121,9 @@
             :max-height="stackHeight"
             @preview-click="openFullPreview"
           />
+          <div v-else class="camera-surface__hq-disabled text-grey-5">
+            HQ preview disabled while Focus Stacking tab is active.
+          </div>
         </div>
       </div>
     </div>
@@ -181,7 +185,7 @@
                 class="camera-view__toolbar-refresh"
                 icon="refresh"
                 size="sm"
-                :disable="!props.camera || props.scanning"
+                :disable="!props.camera || props.scanning || props.disableHqPreview"
                 @click="refreshHqPhoto"
               >
                 <q-tooltip anchor="bottom middle" self="top middle">Refresh HQ preview</q-tooltip>
@@ -189,7 +193,7 @@
               <BaseButtonSecondary
                 class="camera-view__toolbar-button"
                 :label="heatmapEnabled ? 'feature heatmap' : 'feature heatmap'"
-                :disable="!props.camera"
+                :disable="!props.camera || props.disableHqPreview"
                 dense
                 outline
                 @click="toggleHeatmap"
@@ -282,7 +286,7 @@ type CameraOption = {
 }
 
 function openFullPreview() {
-  if (!fullPreviewImageUrl.value) {
+  if (!fullPreviewImageUrl.value || props.disableHqPreview) {
     return
   }
   fullPreviewDialogVisible.value = true
@@ -332,6 +336,7 @@ async function handleMoveHome() {
 
 interface CameraViewProps {
   scanning: boolean
+  disableHqPreview?: boolean
   camera?: {
     label: string
     value: string
@@ -396,14 +401,14 @@ function clearHqRefreshTimeout() {
 
 function refreshHqPhoto() {
   clearHqRefreshTimeout()
-  if (!props.camera || props.scanning) {
+  if (!props.camera || props.scanning || props.disableHqPreview) {
     return
   }
   hqPreviewRef.value?.refreshPhoto()
 }
 
 function scheduleHqRefresh(delay = 600) {
-  if (!props.camera || props.scanning || disableAutomaticHqCapture.value) {
+  if (!props.camera || props.scanning || props.disableHqPreview || disableAutomaticHqCapture.value) {
     return
   }
   clearHqRefreshTimeout()
@@ -456,7 +461,7 @@ function handleTurntableBusyChange(isBusy: boolean) {
 const hqPreviewImageElement = computed(() => unref(hqPreviewRef.value?.previewImage) ?? null)
 const hqPreviewImageLoaded = computed(() => unref(hqPreviewRef.value?.imageLoaded) ?? false)
 const canDownloadHqPhoto = computed(
-  () => Boolean(cameraStore.photoBlob) && Boolean(props.camera) && !props.scanning
+  () => Boolean(cameraStore.photoBlob) && Boolean(props.camera) && !props.scanning && !props.disableHqPreview
 )
 const fullPreviewImageUrl = computed(() => cameraStore.photoObjectUrl)
 const fullPreviewImageElement = computed(() => fullPreviewImageRef.value)
@@ -506,6 +511,18 @@ watch(
     if (isScanning) {
       setHeatmapActiveState(false)
     }
+  }
+)
+
+watch(
+  () => props.disableHqPreview,
+  (disabled) => {
+    if (!disabled) {
+      return
+    }
+    clearHqRefreshTimeout()
+    setHeatmapActiveState(false)
+    fullPreviewDialogVisible.value = false
   }
 )
 
@@ -612,6 +629,18 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  padding: 16px;
+}
+
+.camera-surface__hq-disabled {
+  min-height: 220px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.16);
   padding: 16px;
 }
 

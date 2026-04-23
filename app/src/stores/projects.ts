@@ -87,7 +87,8 @@ export const useProjectsStore = defineStore('projects', {
         const response = await getApiSdk().newProject({
           path: { project_name: name },
           query: { project_description: description || '' },
-          client: apiClient
+          client: apiClient,
+          throwOnError: true
         });
         const payload = unwrapPayload(response);
         const newProj = (payload && typeof payload === 'object' ? payload : null) as Project | null;

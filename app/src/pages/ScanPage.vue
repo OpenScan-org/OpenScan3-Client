@@ -64,6 +64,7 @@
               :scanning="scanning"
               :camera="selectedCamera"
               :camera-options="cameraStore.cameraOptions"
+              :disable-hq-preview="focusStackingModeActive"
               v-model:selectedCameraName="selectedCameraName"
             />
           </div>
@@ -77,6 +78,7 @@
             :camera-options="cameraStore.cameraOptions"
             v-model:selectedCameraName="selectedCameraName"
             @scan-settings-change="handleScanSettingsChange"
+            @focus-mode-change="handleFocusModeChange"
             @update:photoCount="value => (photoCount = value)"
           />
         </div>
@@ -136,6 +138,7 @@ const selectedPresetId = ref('')
 const showSavePresetDialog = ref(false)
 const presetDialogInitialName = ref('')
 const lastScanSettings = ref<ScanSetting | null>(null)
+const focusStackingModeActive = ref(false)
 const isRestoringFromHiddenPreset = ref(false)
 const canPersistHiddenPreset = ref(false)
 let hiddenPresetPersistTimeout: ReturnType<typeof setTimeout> | null = null
@@ -222,6 +225,10 @@ const handleScanSettingsChange = (settings: ScanSetting) => {
   scheduleHiddenPresetPersist()
 }
 
+const handleFocusModeChange = (mode: 'autofocus' | 'manual' | 'stacking') => {
+  focusStackingModeActive.value = mode === 'stacking'
+}
+
 const selectedCamera = computed(() => cameraStore.cameraOptions.find(c => c.value === selectedCameraName.value) || null)
 const snapshotOrientationFlag = computed(() => selectedCamera.value?.orientationFlag ?? null)
 const snapshotBackgroundSrc = computed(() =>
@@ -234,10 +241,98 @@ const selectedProjectEntity = computed(() =>
 
 const activeScanTaskId = computed(() => taskStore.activeScanTaskId)
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object'
+
+const formatApiErrorPayload = (value: unknown): string | null => {
+  if (typeof value === 'string') {
+    return value
+  }
+
+  if (Array.isArray(value)) {
+    const items = value
+      .map((entry) => formatApiErrorPayload(entry))
+      .filter((entry): entry is string => Boolean(entry))
+    return items.length ? items.join('; ') : null
+  }
+
+  if (!isRecord(value)) {
+    return null
+  }
+
+  const detail = value.detail
+  if (typeof detail === 'string') {
+    return detail
+  }
+
+  if (Array.isArray(detail)) {
+    const details = detail
+      .map((entry) => {
+        if (!isRecord(entry)) {
+          return formatApiErrorPayload(entry)
+        }
+
+        const location = Array.isArray(entry.loc)
+          ? entry.loc.map((part) => String(part)).join('.')
+          : null
+        const message = typeof entry.msg === 'string'
+          ? entry.msg
+          : formatApiErrorPayload(entry)
+
+        return [location, message].filter((part): part is string => Boolean(part)).join(': ')
+      })
+      .filter((entry): entry is string => Boolean(entry))
+
+    if (details.length) {
+      return details.join('; ')
+    }
+  }
+
+  if (typeof value.message === 'string') {
+    return value.message
+  }
+
+  try {
+    return JSON.stringify(value)
+  } catch {
+    return null
+  }
+}
+
+const formatApiError = (error: unknown) => {
+  if (!isRecord(error)) {
+    return 'Unknown error'
+  }
+
+  const response = isRecord(error.response) ? error.response : null
+  const status = response && typeof response.status === 'number' ? response.status : null
+  const detail = formatApiErrorPayload(response?.data)
+    ?? formatApiErrorPayload('error' in error ? error.error : null)
+    ?? (typeof error.message === 'string' ? error.message : null)
+
+  if (status !== null && detail) {
+    return `HTTP ${status}: ${detail}`
+  }
+
+  if (status !== null) {
+    return `HTTP ${status}`
+  }
+
+  return detail ?? 'Unknown error'
+}
+
 watch(selectedCameraName, (newVal) => {
   cameraStore.setSelectedCamera(newVal)
   scheduleHiddenPresetPersist()
 })
+
+watch(
+  focusStackingModeActive,
+  (isStackingMode) => {
+    cameraStore.setAutoPhotoRefreshEnabled(!isStackingMode)
+  },
+  { immediate: true }
+)
 
 watch(selectedProject, () => {
   scheduleHiddenPresetPersist()
@@ -261,7 +356,7 @@ const onCreateProject = async (data: { name: string; description?: string }) => 
     await projectsStore.createProject(data.name, data.description)
     selectedProject.value = data.name
   } catch (error) {
-    console.error('Failed to create project.', error)
+    console.error(`Failed to create project "${data.name}". ${formatApiError(error)}`, error)
   }
 }
 
@@ -279,9 +374,10 @@ const performStartScan = async () => {
       client: apiClient,
       path: { project_name: selectedProject.value },
       query: { camera_name: selectedCameraName.value },
-      body: scanSettings
+      body: scanSettings,
+      throwOnError: true
     })
-    const task = (taskResponse?.data ?? taskResponse) as Task | null
+    const task = taskResponse.data as Task | null
     if (!task?.id || typeof task.id !== 'string' || !task.id.trim()) {
       throw new Error('Scan start response does not contain a valid task id')
     }
@@ -292,7 +388,7 @@ const performStartScan = async () => {
     // Refresh projects list after starting scan (in case a new project was created)
     await projectsStore.fetchProjects()
   } catch (error) {
-    console.error('Scan could not be started.', error)
+    console.error(`Scan could not be started for project "${selectedProject.value}". ${formatApiError(error)}`, error)
   } finally {
     scanning.value = false
   }
@@ -433,6 +529,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  cameraStore.setAutoPhotoRefreshEnabled(true)
   if (hiddenPresetPersistTimeout) {
     window.clearTimeout(hiddenPresetPersistTimeout)
     hiddenPresetPersistTimeout = null

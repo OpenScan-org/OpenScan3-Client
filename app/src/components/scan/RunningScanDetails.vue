@@ -33,60 +33,26 @@
 
       <div class="col-12">
         <q-expansion-item v-model="logsExpanded" icon="terminal" label="Live logs">
-          <div class="row q-col-gutter-md items-end q-pt-sm">
-            <div class="col-12 col-md-4">
-              <BaseSelect
-                v-model="logsCtx.format"
-                label="Format"
-                :options="formatOptions"
-                emit-value
-                map-options
-              />
-            </div>
-            <div class="col-12 col-md-2">
-              <q-input v-model.number="logsCtx.lines" type="number" label="Lines" outlined dense />
-            </div>
-            <div class="col-12 col-md-6">
-              <div class="row items-center q-col-gutter-sm">
-                <div class="col">
-                  <q-toggle v-model="logsCtx.autoRefresh" label="Auto refresh" left-label />
-                </div>
-                <div class="col">
-                  <q-input
-                    v-model.number="logsCtx.pollIntervalSeconds"
-                    type="number"
-                    label="Interval (s)"
-                    outlined
-                    dense
-                    :disable="!logsCtx.autoRefresh"
-                  />
-                </div>
-                <div class="col">
-                  <q-toggle v-model="autoScroll" label="Auto scroll" left-label />
-                </div>
+          <LogsWorkspace
+            class="q-pt-sm"
+            v-model:format="logsCtx.format"
+            v-model:lines="logsCtx.lines"
+            v-model:auto-refresh="logsCtx.autoRefresh"
+            v-model:poll-interval-seconds="logsCtx.pollIntervalSeconds"
+            v-model:log-level="selectedLogLevel"
+            v-model:auto-scroll="autoScroll"
+            :logs-text="logsCtx.logsText"
+            :loading="logsCtx.loading"
+            height="50vh"
+            :show-auto-scroll="true"
+            @refresh="loadLogs"
+          >
+            <template #actions-after-copy>
+              <div class="col-12 col-md-auto">
+                <BaseButtonSecondary icon="open_in_new" label="Open Logs page" to="/logs" />
               </div>
-            </div>
-          </div>
-
-          <div class="row q-mt-md">
-            <div class="col-12">
-              <LogsViewer
-                :logs-text="logsCtx.logsText"
-                :format="logsCtx.format"
-                height="50vh"
-                :auto-scroll="autoScroll"
-              />
-            </div>
-          </div>
-
-          <div class="row q-col-gutter-sm q-mt-sm justify-end">
-            <div class="col-12 col-md-auto">
-              <BaseButtonSecondary icon="refresh" label="Refresh" :loading="logsCtx.loading" @click="loadLogs" />
-            </div>
-            <div class="col-12 col-md-auto">
-              <BaseButtonSecondary icon="open_in_new" label="Open Logs page" to="/logs" />
-            </div>
-          </div>
+            </template>
+          </LogsWorkspace>
         </q-expansion-item>
       </div>
 
@@ -104,10 +70,11 @@ import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import type { Task } from 'src/generated/api'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseSection from 'components/base/BaseSection.vue'
-import BaseSelect from 'components/base/BaseSelect.vue'
-import LogsViewer from 'components/common/LogsViewer.vue'
+import LogsWorkspace from 'components/common/LogsWorkspace.vue'
 import { useLogsStore } from 'src/stores/logs'
 import { useTaskStore } from 'src/stores/tasks'
+
+type LogLevelFilter = 'all' | 'trace' | 'debug' | 'info' | 'warning' | 'error' | 'critical'
 
 const props = defineProps<{
   taskId: string
@@ -162,6 +129,7 @@ const taskJson = computed(() => JSON.stringify(task.value, null, 2))
 const logsStore = useLogsStore()
 const logsExpanded = ref(false)
 const rawExpanded = ref(false)
+const selectedLogLevel = ref<LogLevelFilter>('all')
 
 const logsKey = computed(() => `scan-overlay:${props.taskId}`)
 const logsCtx = computed(() =>
@@ -172,11 +140,6 @@ const logsCtx = computed(() =>
     pollIntervalSeconds: 1
   })
 )
-
-const formatOptions = [
-  { label: 'Text log', value: 'text' },
-  { label: 'Detailed JSON log', value: 'json' }
-]
 
 const autoScroll = ref(true)
 

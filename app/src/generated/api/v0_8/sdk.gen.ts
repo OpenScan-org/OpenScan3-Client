@@ -765,6 +765,8 @@ export const cancelScan = <ThrowOnError extends boolean = false>(options: Option
  * This endpoint streams the entire project directory as a ZIP file,
  * including all scans, photos, and metadata. When ``photos_only`` is true,
  * only the recorded photo files are included without metadata or subfolders.
+ * When ``prefer_stacked_photos`` is true, stacked JPEG outputs are preferred
+ * per scan and originals are skipped for scans with stacked results.
  *
  * Args:
  * project_name: Name of the project to download

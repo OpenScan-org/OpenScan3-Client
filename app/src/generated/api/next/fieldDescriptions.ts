@@ -97,9 +97,10 @@ export const fieldDescriptions = {
     "camera_settings": "The camera settings used for this scan.",
     "created": "The timestamp when the scan was created.",
     "index": "The sequential index of the scan within the project.",
-    "photos": "Relative filenames (with extension) of all photos captured for this scan.",
+    "photos": "Relative photo paths of all photos for this scan (e.g. scan01_001.jpg or stacked/stacked_scan01_001.jpg).",
     "project_name": "The name of the project this scan belongs to.",
     "settings": "The settings used for this scan.",
+    "stacked_size_bytes": "Total size of focus-stacked JPEG files in scanXX/stacked, in bytes.",
     "status": "The final, persistent status of the scan, mirroring the associated Task status.",
     "total_size_bytes": "Total size of all files belonging to the scan, in bytes."
   },

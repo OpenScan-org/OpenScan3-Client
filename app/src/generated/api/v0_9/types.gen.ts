@@ -971,9 +971,15 @@ export type Scan = {
      */
     total_size_bytes?: number;
     /**
+     * Stacked Size Bytes
+     *
+     * Total size of focus-stacked JPEG files in scanXX/stacked, in bytes.
+     */
+    stacked_size_bytes?: number;
+    /**
      * Photos
      *
-     * Relative filenames (with extension) of all photos captured for this scan.
+     * Relative photo paths of all photos for this scan (e.g. scan01_001.jpg or stacked/stacked_scan01_001.jpg).
      */
     photos?: Array<string>;
     /**
@@ -3030,6 +3036,12 @@ export type DownloadProjectData = {
          * If true, stream only photo files without metadata or directory structure.
          */
         photos_only?: boolean;
+        /**
+         * Prefer Stacked Photos
+         *
+         * Prefer scanXX/stacked JPEGs and skip original photos when stacked output exists.
+         */
+        prefer_stacked_photos?: boolean;
     };
     url: '/projects/{project_name}/zip';
 };
@@ -3099,6 +3111,12 @@ export type DownloadScansData = {
          * Scan Indices
          */
         scan_indices?: Array<number>;
+        /**
+         * Prefer Stacked Photos
+         *
+         * Prefer scanXX/stacked JPEGs and skip original photos when stacked output exists.
+         */
+        prefer_stacked_photos?: boolean;
     };
     url: '/projects/{project_name}/scans/zip';
 };
