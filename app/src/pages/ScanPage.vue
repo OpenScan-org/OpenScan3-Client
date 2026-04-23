@@ -64,6 +64,7 @@
               :scanning="scanning"
               :camera="selectedCamera"
               :camera-options="cameraStore.cameraOptions"
+              :disable-hq-preview="focusStackingModeActive"
               v-model:selectedCameraName="selectedCameraName"
             />
           </div>
@@ -77,6 +78,7 @@
             :camera-options="cameraStore.cameraOptions"
             v-model:selectedCameraName="selectedCameraName"
             @scan-settings-change="handleScanSettingsChange"
+            @focus-mode-change="handleFocusModeChange"
             @update:photoCount="value => (photoCount = value)"
           />
         </div>
@@ -136,6 +138,7 @@ const selectedPresetId = ref('')
 const showSavePresetDialog = ref(false)
 const presetDialogInitialName = ref('')
 const lastScanSettings = ref<ScanSetting | null>(null)
+const focusStackingModeActive = ref(false)
 const isRestoringFromHiddenPreset = ref(false)
 const canPersistHiddenPreset = ref(false)
 let hiddenPresetPersistTimeout: ReturnType<typeof setTimeout> | null = null
@@ -220,6 +223,10 @@ const restoreHiddenPreset = async () => {
 const handleScanSettingsChange = (settings: ScanSetting) => {
   lastScanSettings.value = settings
   scheduleHiddenPresetPersist()
+}
+
+const handleFocusModeChange = (mode: 'autofocus' | 'manual' | 'stacking') => {
+  focusStackingModeActive.value = mode === 'stacking'
 }
 
 const selectedCamera = computed(() => cameraStore.cameraOptions.find(c => c.value === selectedCameraName.value) || null)
@@ -318,6 +325,14 @@ watch(selectedCameraName, (newVal) => {
   cameraStore.setSelectedCamera(newVal)
   scheduleHiddenPresetPersist()
 })
+
+watch(
+  focusStackingModeActive,
+  (isStackingMode) => {
+    cameraStore.setAutoPhotoRefreshEnabled(!isStackingMode)
+  },
+  { immediate: true }
+)
 
 watch(selectedProject, () => {
   scheduleHiddenPresetPersist()
@@ -514,6 +529,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
+  cameraStore.setAutoPhotoRefreshEnabled(true)
   if (hiddenPresetPersistTimeout) {
     window.clearTimeout(hiddenPresetPersistTimeout)
     hiddenPresetPersistTimeout = null

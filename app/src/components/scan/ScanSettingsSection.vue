@@ -89,6 +89,7 @@ const emit = defineEmits<{
   (e: 'update:selectedCameraName', value: string): void
   (e: 'update:photoCount', value: number): void
   (e: 'scan-settings-change', value: ScanSetting): void
+  (e: 'focus-mode-change', value: FocusMode): void
 }>()
 
 const deviceStore = useDeviceStore()
@@ -123,12 +124,15 @@ type FocusMode = 'autofocus' | 'manual' | 'stacking'
 const afValue = ref(false)
 const manualFocusValue = ref<number>(0)
 const focusMode = ref<FocusMode>('autofocus')
-const FOCUS_SETTING_SYNC_GUARD_MS = 1200
+const FOCUS_SETTING_SYNC_GUARD_MS = 1800
+const FOCUS_MODE_SYNC_GUARD_MS = 1200
 const MANUAL_FOCUS_MATCH_EPSILON = 0.051
 const lastManualFocusLocalInputAt = ref(0)
 const pendingManualFocusValue = ref<number | null>(null)
 const lastAFLocalInputAt = ref(0)
 const pendingAFValue = ref<boolean | null>(null)
+const lastFocusModeLocalInputAt = ref(0)
+const pendingFocusMode = ref<FocusMode | null>(null)
 
 const manualFocusMatches = (left: number, right: number) =>
   Math.abs(left - right) <= MANUAL_FOCUS_MATCH_EPSILON
@@ -143,9 +147,18 @@ const markAFLocalInput = (value: boolean) => {
   pendingAFValue.value = value
 }
 
+const markFocusModeLocalInput = (value: FocusMode) => {
+  lastFocusModeLocalInputAt.value = Date.now()
+  pendingFocusMode.value = value
+}
+
 const canApplyRemoteManualFocus = (value: number) => {
   const pending = pendingManualFocusValue.value
   if (pending === null) {
+    const withinGuardWindow = Date.now() - lastManualFocusLocalInputAt.value < FOCUS_SETTING_SYNC_GUARD_MS
+    if (withinGuardWindow && !manualFocusMatches(value, manualFocusValue.value)) {
+      return false
+    }
     return true
   }
 
@@ -166,6 +179,10 @@ const canApplyRemoteManualFocus = (value: number) => {
 const canApplyRemoteAF = (value: boolean) => {
   const pending = pendingAFValue.value
   if (pending === null) {
+    const withinGuardWindow = Date.now() - lastAFLocalInputAt.value < FOCUS_SETTING_SYNC_GUARD_MS
+    if (withinGuardWindow && value !== afValue.value) {
+      return false
+    }
     return true
   }
 
@@ -183,6 +200,30 @@ const canApplyRemoteAF = (value: boolean) => {
   return true
 }
 
+const canApplyRemoteFocusMode = (value: FocusMode) => {
+  const pending = pendingFocusMode.value
+  if (pending === null) {
+    const withinGuardWindow = Date.now() - lastFocusModeLocalInputAt.value < FOCUS_MODE_SYNC_GUARD_MS
+    if (withinGuardWindow && value !== focusMode.value) {
+      return false
+    }
+    return true
+  }
+
+  if (value === pending) {
+    pendingFocusMode.value = null
+    return true
+  }
+
+  const withinGuardWindow = Date.now() - lastFocusModeLocalInputAt.value < FOCUS_MODE_SYNC_GUARD_MS
+  if (withinGuardWindow) {
+    return false
+  }
+
+  pendingFocusMode.value = null
+  return true
+}
+
 const focusModeModel = computed({
   get: () => focusMode.value,
   set: (mode: FocusMode) => {
@@ -190,7 +231,13 @@ const focusModeModel = computed({
       return
     }
 
+    if (mode === 'autofocus') {
+      // Avoid delayed manual_focus writes from flipping state right after tab switch.
+      debouncedPersistManualFocus.cancel()
+    }
+
     focusMode.value = mode
+    markFocusModeLocalInput(mode)
 
     const shouldEnableStacking = mode === 'stacking'
     if (enableFocusStacking.value !== shouldEnableStacking) {
@@ -238,12 +285,12 @@ watch(
       }
     }
 
-    if (afValue.value) {
-      focusMode.value = 'autofocus'
-    } else if (enableFocusStacking.value) {
-      focusMode.value = 'stacking'
-    } else {
-      focusMode.value = 'manual'
+    const remoteDerivedFocusMode: FocusMode = afValue.value
+      ? 'autofocus'
+      : (enableFocusStacking.value ? 'stacking' : 'manual')
+
+    if (canApplyRemoteFocusMode(remoteDerivedFocusMode)) {
+      focusMode.value = remoteDerivedFocusMode
     }
   },
   { immediate: true }
@@ -256,6 +303,8 @@ watch(
     lastAFLocalInputAt.value = 0
     pendingManualFocusValue.value = null
     lastManualFocusLocalInputAt.value = 0
+    pendingFocusMode.value = null
+    lastFocusModeLocalInputAt.value = 0
   }
 )
 
@@ -263,6 +312,14 @@ watch(
   photoCount,
   (value) => {
     emit('update:photoCount', value)
+  },
+  { immediate: true }
+)
+
+watch(
+  focusMode,
+  (value) => {
+    emit('focus-mode-change', value)
   },
   { immediate: true }
 )
