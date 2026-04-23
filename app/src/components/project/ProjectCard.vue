@@ -74,7 +74,6 @@
                                     </BaseButtonSecondary>
                                 </template>
                                 <q-btn-dropdown
-                                    v-if="projectHasStackedOutput"
                                     class="project-download-dropdown"
                                     split
                                     color="primary"
@@ -85,32 +84,34 @@
                                     :disable="projectDownloadBlocked"
                                     @click="confirm_download()"
                                 >
-                                    <q-list dense style="min-width: 240px">
+                                    <q-list dense style="min-width: 260px">
                                         <q-item clickable v-close-popup @click="confirm_download()">
                                             <q-item-section avatar>
                                                 <q-icon name="archive" />
                                             </q-item-section>
                                             <q-item-section>Download full project archive</q-item-section>
                                         </q-item>
-                                        <q-item clickable v-close-popup @click="confirm_download(true)">
+                                        <q-item clickable v-close-popup @click="confirm_download({ photosOnly: true })">
+                                            <q-item-section avatar>
+                                                <q-icon name="photo_library" />
+                                            </q-item-section>
+                                            <q-item-section>Download photos only</q-item-section>
+                                        </q-item>
+                                        <q-item v-if="projectHasStackedOutput" clickable v-close-popup @click="confirm_download({ preferStackedPhotos: true })">
                                             <q-item-section avatar>
                                                 <q-icon name="layers" />
                                             </q-item-section>
                                             <q-item-section>Use stacked outputs when available</q-item-section>
                                         </q-item>
+                                        <q-item v-if="projectHasStackedOutput" clickable v-close-popup @click="confirm_download({ photosOnly: true, preferStackedPhotos: true })">
+                                            <q-item-section avatar>
+                                                <q-icon name="collections" />
+                                            </q-item-section>
+                                            <q-item-section>Photos only (prefer stacked outputs)</q-item-section>
+                                        </q-item>
                                     </q-list>
                                     <q-tooltip>{{ projectDownloadTooltip }}</q-tooltip>
                                 </q-btn-dropdown>
-                                <BaseButtonPrimary
-                                    v-else
-                                    unelevated
-                                    icon="archive"
-                                    label="Download"
-                                    :disable="projectDownloadBlocked"
-                                    @click="confirm_download()"
-                                >
-                                    <q-tooltip>{{ projectDownloadTooltip }}</q-tooltip>
-                                </BaseButtonPrimary>
                                 <BaseButtonPrimary
                                     color="positive"
                                     unelevated
@@ -463,9 +464,9 @@ const projectDownloadTooltip = computed(() => {
         return 'Project download is disabled while a scan is running or paused.'
     }
     if (projectHasStackedOutput.value) {
-        return 'Download the full archive or use stacked outputs where available.'
+        return 'Download full archive, photos only, or prefer stacked outputs where available.'
     }
-    return 'Download the project archive'
+    return 'Download full archive or photos only'
 })
 
 const addScanTooltip = computed(() => {
@@ -608,11 +609,14 @@ const confirm_fetch_model = async () => {
     }
 }
 
-const confirm_download = (preferStackedPhotos = false) => {
+const confirm_download = (options?: { preferStackedPhotos?: boolean; photosOnly?: boolean }) => {
     try {
         const params = new URLSearchParams()
-        if (preferStackedPhotos) {
+        if (options?.preferStackedPhotos) {
             params.append('prefer_stacked_photos', 'true')
+        }
+        if (options?.photosOnly) {
+            params.append('photos_only', 'true')
         }
         const suffix = params.size ? `?${params.toString()}` : ''
         const downloadUrl = buildApiUrl(`projects/${encodeURIComponent(props.project.name)}/zip${suffix}`)
