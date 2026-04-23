@@ -12,7 +12,7 @@
             :input-min="sliderMinMs"
             :input-max="sliderMaxMs"
             :tooltip="cameraSettingDescription('shutter')"
-            @update:model-value="debouncedPersistShutter"
+            @update:model-value="handleShutterInput"
           />
 
           <div class="col-12">
@@ -25,7 +25,7 @@
               :input-min="0"
               :input-max="100"
               :tooltip="cameraSettingDescription('jpeg_quality')"
-              @update:model-value="debouncedPersistJpegQuality"
+              @update:model-value="handleJpegQualityInput"
             />
           </div>
         </BaseSection>
@@ -43,7 +43,7 @@
               :input-min="0"
               :input-max="32"
               :tooltip="cameraSettingDescription('contrast')"
-              @update:model-value="debouncedPersistContrast"
+              @update:model-value="handleContrastInput"
             />
 
             <BaseSliderWithInput
@@ -55,7 +55,7 @@
               :input-min="0"
               :input-max="32"
               :tooltip="cameraSettingDescription('saturation')"
-              @update:model-value="debouncedPersistSaturation"
+              @update:model-value="handleSaturationInput"
             />
           </div>
 
@@ -69,7 +69,7 @@
               :input-min="0"
               :input-max="32"
               :tooltip="cameraSettingDescription('gain')"
-              @update:model-value="debouncedPersistGain"
+              @update:model-value="handleGainInput"
             />
           </div>
 
@@ -83,7 +83,7 @@
               :input-min="0"
               :input-max="32"
               :tooltip="cameraSettingDescription('awbg_red')"
-              @update:model-value="debouncedPersistAwbgRed"
+              @update:model-value="handleAwbgRedInput"
             />
           </div>
 
@@ -97,7 +97,7 @@
               :input-min="0"
               :input-max="32"
               :tooltip="cameraSettingDescription('awbg_blue')"
-              @update:model-value="debouncedPersistAwbgBlue"
+              @update:model-value="handleAwbgBlueInput"
             />
           </div>
 
@@ -111,7 +111,7 @@
               :input-min="1"
               :input-max="8"
               :tooltip="cameraSettingDescription('orientation_flag')"
-              @update:model-value="debouncedPersistOrientationFlag"
+              @update:model-value="handleOrientationFlagInput"
             />
           </div>
           </div>
@@ -190,6 +190,18 @@ const defaultContrast = 16;
 const defaultGain = 16;
 const defaultAwbg = 16;
 const defaultJpegQuality = 75;
+const CAMERA_SETTING_SYNC_GUARD_MS = 1200;
+const CAMERA_SETTING_MATCH_EPSILON = 0.051;
+
+type NumericCameraSettingKey =
+  | 'shutter'
+  | 'saturation'
+  | 'contrast'
+  | 'gain'
+  | 'awbg_red'
+  | 'awbg_blue'
+  | 'jpeg_quality'
+  | 'orientation_flag';
 
 const shutterValue = ref<number>(defaultShutterMs);
 const saturationValue = ref<number>(defaultSaturation);
@@ -199,26 +211,64 @@ const awbgRedValue = ref<number>(defaultAwbg);
 const awbgBlueValue = ref<number>(defaultAwbg);
 const jpegQualityValue = ref<number>(defaultJpegQuality);
 
-const hasInitializedShutterFromSettings = ref(false);
-const hasInitializedSaturationFromSettings = ref(false);
-const hasInitializedContrastFromSettings = ref(false);
-const hasInitializedGainFromSettings = ref(false);
-const hasInitializedAwbgRedFromSettings = ref(false);
-const hasInitializedAwbgBlueFromSettings = ref(false);
-const hasInitializedJpegQualityFromSettings = ref(false);
-
 const orientationFlagValue = ref<number>(1);
+const pendingLocalValues = ref<Partial<Record<NumericCameraSettingKey, number>>>({});
+const lastLocalInputAt = ref<Partial<Record<NumericCameraSettingKey, number>>>({});
+
+const cameraSettingMatches = (left: number, right: number) =>
+  Math.abs(left - right) <= CAMERA_SETTING_MATCH_EPSILON;
+
+const markLocalInput = (key: NumericCameraSettingKey, value: number) => {
+  pendingLocalValues.value = {
+    ...pendingLocalValues.value,
+    [key]: value,
+  };
+  lastLocalInputAt.value = {
+    ...lastLocalInputAt.value,
+    [key]: Date.now(),
+  };
+};
+
+const clearPendingLocalInput = (key: NumericCameraSettingKey) => {
+  if (pendingLocalValues.value[key] === undefined) {
+    return;
+  }
+
+  const nextPending = { ...pendingLocalValues.value };
+  delete nextPending[key];
+  pendingLocalValues.value = nextPending;
+};
+
+const canApplyRemoteSetting = (key: NumericCameraSettingKey, value: number) => {
+  const pending = pendingLocalValues.value[key];
+  if (pending === undefined) {
+    return true;
+  }
+
+  if (cameraSettingMatches(value, pending)) {
+    clearPendingLocalInput(key);
+    return true;
+  }
+
+  const lastInputAt = lastLocalInputAt.value[key] ?? 0;
+  const withinGuardWindow = Date.now() - lastInputAt < CAMERA_SETTING_SYNC_GUARD_MS;
+  if (withinGuardWindow) {
+    return false;
+  }
+
+  clearPendingLocalInput(key);
+  return true;
+};
+
+const resetLocalSyncState = () => {
+  pendingLocalValues.value = {};
+  lastLocalInputAt.value = {};
+};
 
 watch(
   () => props.camera?.value,
   () => {
-    hasInitializedShutterFromSettings.value = false;
-    hasInitializedSaturationFromSettings.value = false;
-    hasInitializedContrastFromSettings.value = false;
-    hasInitializedGainFromSettings.value = false;
-    hasInitializedAwbgRedFromSettings.value = false;
-    hasInitializedAwbgBlueFromSettings.value = false;
-    hasInitializedJpegQualityFromSettings.value = false;
+    resetLocalSyncState();
     shutterValue.value = defaultShutterMs;
     saturationValue.value = defaultSaturation;
     contrastValue.value = defaultContrast;
@@ -232,62 +282,44 @@ watch(
 watch(
   cameraSettings,
   (settings) => {
-    if (settings?.shutter != null && !hasInitializedShutterFromSettings.value) {
-      shutterValue.value = settings.shutter;
-      hasInitializedShutterFromSettings.value = true;
-    }
+    const applyRemoteNumeric = (
+      key: NumericCameraSettingKey,
+      value: number | null | undefined,
+      assign: (remoteValue: number) => void,
+    ) => {
+      if (value === undefined || value === null) {
+        return;
+      }
 
-    if (
-      settings?.saturation != null &&
-      !hasInitializedSaturationFromSettings.value
-    ) {
-      saturationValue.value = settings.saturation;
-      hasInitializedSaturationFromSettings.value = true;
-    }
+      if (canApplyRemoteSetting(key, value)) {
+        assign(value);
+      }
+    };
 
-    if (
-      settings?.contrast != null &&
-      !hasInitializedContrastFromSettings.value
-    ) {
-      contrastValue.value = settings.contrast;
-      hasInitializedContrastFromSettings.value = true;
-    }
-
-    if (settings?.gain != null && !hasInitializedGainFromSettings.value) {
-      gainValue.value = settings.gain;
-      hasInitializedGainFromSettings.value = true;
-    }
-
-    if (
-      settings?.awbg_red != null &&
-      !hasInitializedAwbgRedFromSettings.value
-    ) {
-      awbgRedValue.value = settings.awbg_red;
-      hasInitializedAwbgRedFromSettings.value = true;
-    }
-
-    if (
-      settings?.awbg_blue != null &&
-      !hasInitializedAwbgBlueFromSettings.value
-    ) {
-      awbgBlueValue.value = settings.awbg_blue;
-      hasInitializedAwbgBlueFromSettings.value = true;
-    }
-
-    if (
-      settings?.jpeg_quality != null &&
-      !hasInitializedJpegQualityFromSettings.value
-    ) {
-      jpegQualityValue.value = settings.jpeg_quality;
-      hasInitializedJpegQualityFromSettings.value = true;
-    }
-
-    if (
-      settings?.orientation_flag !== undefined &&
-      settings.orientation_flag !== null
-    ) {
-      orientationFlagValue.value = settings.orientation_flag;
-    }
+    applyRemoteNumeric('shutter', settings?.shutter, (value) => {
+      shutterValue.value = value;
+    });
+    applyRemoteNumeric('saturation', settings?.saturation, (value) => {
+      saturationValue.value = value;
+    });
+    applyRemoteNumeric('contrast', settings?.contrast, (value) => {
+      contrastValue.value = value;
+    });
+    applyRemoteNumeric('gain', settings?.gain, (value) => {
+      gainValue.value = value;
+    });
+    applyRemoteNumeric('awbg_red', settings?.awbg_red, (value) => {
+      awbgRedValue.value = value;
+    });
+    applyRemoteNumeric('awbg_blue', settings?.awbg_blue, (value) => {
+      awbgBlueValue.value = value;
+    });
+    applyRemoteNumeric('jpeg_quality', settings?.jpeg_quality, (value) => {
+      jpegQualityValue.value = value;
+    });
+    applyRemoteNumeric('orientation_flag', settings?.orientation_flag, (value) => {
+      orientationFlagValue.value = value;
+    });
   },
   { immediate: true },
 );
@@ -312,6 +344,11 @@ const debouncedPersistShutter = debounce((value: number) => {
   void persistShutter(value);
 }, 300);
 
+const handleShutterInput = (value: number) => {
+  markLocalInput('shutter', value);
+  debouncedPersistShutter(value);
+};
+
 async function persistSaturation(value: number) {
   if (!props.camera?.value) {
     return;
@@ -331,6 +368,11 @@ async function persistSaturation(value: number) {
 const debouncedPersistSaturation = debounce((value: number) => {
   void persistSaturation(value);
 }, 300);
+
+const handleSaturationInput = (value: number) => {
+  markLocalInput('saturation', value);
+  debouncedPersistSaturation(value);
+};
 
 async function persistContrast(value: number) {
   if (!props.camera?.value) {
@@ -352,6 +394,11 @@ const debouncedPersistContrast = debounce((value: number) => {
   void persistContrast(value);
 }, 300);
 
+const handleContrastInput = (value: number) => {
+  markLocalInput('contrast', value);
+  debouncedPersistContrast(value);
+};
+
 async function persistGain(value: number) {
   if (!props.camera?.value) {
     return;
@@ -371,6 +418,11 @@ async function persistGain(value: number) {
 const debouncedPersistGain = debounce((value: number) => {
   void persistGain(value);
 }, 300);
+
+const handleGainInput = (value: number) => {
+  markLocalInput('gain', value);
+  debouncedPersistGain(value);
+};
 
 async function persistJpegQuality(value: number) {
   if (!props.camera?.value) {
@@ -392,6 +444,11 @@ const debouncedPersistJpegQuality = debounce((value: number) => {
   void persistJpegQuality(value);
 }, 300);
 
+const handleJpegQualityInput = (value: number) => {
+  markLocalInput('jpeg_quality', value);
+  debouncedPersistJpegQuality(value);
+};
+
 async function persistAwbgRed(value: number) {
   if (!props.camera?.value) {
     return;
@@ -411,6 +468,11 @@ async function persistAwbgRed(value: number) {
 const debouncedPersistAwbgRed = debounce((value: number) => {
   void persistAwbgRed(value);
 }, 300);
+
+const handleAwbgRedInput = (value: number) => {
+  markLocalInput('awbg_red', value);
+  debouncedPersistAwbgRed(value);
+};
 
 async function persistAwbgBlue(value: number) {
   if (!props.camera?.value) {
@@ -432,6 +494,11 @@ const debouncedPersistAwbgBlue = debounce((value: number) => {
   void persistAwbgBlue(value);
 }, 300);
 
+const handleAwbgBlueInput = (value: number) => {
+  markLocalInput('awbg_blue', value);
+  debouncedPersistAwbgBlue(value);
+};
+
 async function persistOrientationFlag(value: number) {
   if (!props.camera?.value) {
     return;
@@ -452,6 +519,11 @@ const debouncedPersistOrientationFlag = debounce((value: number) => {
   void persistOrientationFlag(value);
 }, 300);
 
+const handleOrientationFlagInput = (value: number) => {
+  markLocalInput('orientation_flag', value);
+  debouncedPersistOrientationFlag(value);
+};
+
 const resetToDefaults = () => {
   const defaults = fieldDefaults.CameraSettings;
   applyCameraSettings(defaults);
@@ -462,45 +534,45 @@ const applyCameraSettings = (settings: Partial<CameraSettingsModel> | null | und
     return;
   }
 
-  const assignNumeric = (value: number | null | undefined, assign: (val: number) => void) => {
+  const assignNumeric = (
+    key: NumericCameraSettingKey,
+    value: number | null | undefined,
+    assign: (val: number) => void,
+    persist: (val: number) => Promise<void>,
+  ) => {
     if (value === undefined || value === null) {
       return;
     }
+
     assign(value);
+    markLocalInput(key, value);
+    void persist(value);
   };
 
-  assignNumeric(settings.shutter, (value) => {
+  assignNumeric('shutter', settings.shutter, (value) => {
     shutterValue.value = value;
-    void persistShutter(value);
-  });
-  assignNumeric(settings.saturation, (value) => {
+  }, persistShutter);
+  assignNumeric('saturation', settings.saturation, (value) => {
     saturationValue.value = value;
-    void persistSaturation(value);
-  });
-  assignNumeric(settings.contrast, (value) => {
+  }, persistSaturation);
+  assignNumeric('contrast', settings.contrast, (value) => {
     contrastValue.value = value;
-    void persistContrast(value);
-  });
-  assignNumeric(settings.gain, (value) => {
+  }, persistContrast);
+  assignNumeric('gain', settings.gain, (value) => {
     gainValue.value = value;
-    void persistGain(value);
-  });
-  assignNumeric(settings.awbg_red, (value) => {
+  }, persistGain);
+  assignNumeric('awbg_red', settings.awbg_red, (value) => {
     awbgRedValue.value = value;
-    void persistAwbgRed(value);
-  });
-  assignNumeric(settings.awbg_blue, (value) => {
+  }, persistAwbgRed);
+  assignNumeric('awbg_blue', settings.awbg_blue, (value) => {
     awbgBlueValue.value = value;
-    void persistAwbgBlue(value);
-  });
-  assignNumeric(settings.jpeg_quality, (value) => {
+  }, persistAwbgBlue);
+  assignNumeric('jpeg_quality', settings.jpeg_quality, (value) => {
     jpegQualityValue.value = value;
-    void persistJpegQuality(value);
-  });
-  assignNumeric(settings.orientation_flag, (value) => {
+  }, persistJpegQuality);
+  assignNumeric('orientation_flag', settings.orientation_flag, (value) => {
     orientationFlagValue.value = value;
-    void persistOrientationFlag(value);
-  });
+  }, persistOrientationFlag);
 };
 
 const getCameraSettingsSnapshot = (): CameraSettingsModel => ({

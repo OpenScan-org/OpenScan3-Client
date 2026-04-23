@@ -42,7 +42,7 @@
         :manual-focus-description="cameraSettingDescription('manual_focus')"
         :focus-stacks-description="scanSettingDescription('focus_stacks')"
         :focus-range-description="scanSettingDescription('focus_range')"
-        @manual-focus-input="debouncedPersistManualFocus"
+        @manual-focus-input="handleManualFocusInput"
       />
     </div>
 
@@ -121,6 +121,66 @@ type FocusMode = 'autofocus' | 'manual' | 'stacking'
 const afValue = ref(false)
 const manualFocusValue = ref<number>(0)
 const focusMode = ref<FocusMode>('autofocus')
+const FOCUS_SETTING_SYNC_GUARD_MS = 1200
+const MANUAL_FOCUS_MATCH_EPSILON = 0.051
+const lastManualFocusLocalInputAt = ref(0)
+const pendingManualFocusValue = ref<number | null>(null)
+const lastAFLocalInputAt = ref(0)
+const pendingAFValue = ref<boolean | null>(null)
+
+const manualFocusMatches = (left: number, right: number) =>
+  Math.abs(left - right) <= MANUAL_FOCUS_MATCH_EPSILON
+
+const markManualFocusLocalInput = (value: number) => {
+  lastManualFocusLocalInputAt.value = Date.now()
+  pendingManualFocusValue.value = value
+}
+
+const markAFLocalInput = (value: boolean) => {
+  lastAFLocalInputAt.value = Date.now()
+  pendingAFValue.value = value
+}
+
+const canApplyRemoteManualFocus = (value: number) => {
+  const pending = pendingManualFocusValue.value
+  if (pending === null) {
+    return true
+  }
+
+  if (manualFocusMatches(value, pending)) {
+    pendingManualFocusValue.value = null
+    return true
+  }
+
+  const withinGuardWindow = Date.now() - lastManualFocusLocalInputAt.value < FOCUS_SETTING_SYNC_GUARD_MS
+  if (withinGuardWindow) {
+    return false
+  }
+
+  pendingManualFocusValue.value = null
+  return true
+}
+
+const canApplyRemoteAF = (value: boolean) => {
+  const pending = pendingAFValue.value
+  if (pending === null) {
+    return true
+  }
+
+  if (value === pending) {
+    pendingAFValue.value = null
+    return true
+  }
+
+  const withinGuardWindow = Date.now() - lastAFLocalInputAt.value < FOCUS_SETTING_SYNC_GUARD_MS
+  if (withinGuardWindow) {
+    return false
+  }
+
+  pendingAFValue.value = null
+  return true
+}
+
 const focusModeModel = computed({
   get: () => focusMode.value,
   set: (mode: FocusMode) => {
@@ -138,6 +198,7 @@ const focusModeModel = computed({
     const shouldEnableAF = mode === 'autofocus'
     if (shouldEnableAF !== afValue.value) {
       afValue.value = shouldEnableAF
+      markAFLocalInput(shouldEnableAF)
       void persistAF(shouldEnableAF)
     }
   }
@@ -160,11 +221,19 @@ watch(
   cameraSettings,
   (settings) => {
     if (!settings) {
+      pendingAFValue.value = null
       afValue.value = false
+      pendingManualFocusValue.value = null
       manualFocusValue.value = 0
     } else {
-      afValue.value = settings.AF ?? false
-      manualFocusValue.value = settings.manual_focus ?? 0
+      const remoteAF = settings.AF ?? false
+      if (canApplyRemoteAF(remoteAF)) {
+        afValue.value = remoteAF
+      }
+      const remoteManualFocus = settings.manual_focus ?? 0
+      if (canApplyRemoteManualFocus(remoteManualFocus)) {
+        manualFocusValue.value = remoteManualFocus
+      }
     }
 
     if (afValue.value) {
@@ -176,6 +245,16 @@ watch(
     }
   },
   { immediate: true }
+)
+
+watch(
+  () => props.cameraName,
+  () => {
+    pendingAFValue.value = null
+    lastAFLocalInputAt.value = 0
+    pendingManualFocusValue.value = null
+    lastManualFocusLocalInputAt.value = 0
+  }
 )
 
 watch(
@@ -252,6 +331,11 @@ const debouncedPersistManualFocus = debounce((value: number) => {
   void persistManualFocus(value)
 }, 300)
 
+const handleManualFocusInput = (value: number) => {
+  markManualFocusLocalInput(value)
+  debouncedPersistManualFocus(value)
+}
+
 const scanPictureQualitySectionRef = ref<InstanceType<typeof ScanPictureQualitySection> | null>(null)
 
 const resetToDefaults = () => {
@@ -275,10 +359,12 @@ const resetToDefaults = () => {
   // Reset Camera Settings (Focus)
   if (cameraDefaults.AF !== undefined) {
     afValue.value = cameraDefaults.AF
+    markAFLocalInput(cameraDefaults.AF)
     void persistAF(cameraDefaults.AF)
   }
   if (cameraDefaults.manual_focus !== undefined) {
     manualFocusValue.value = cameraDefaults.manual_focus
+    markManualFocusLocalInput(cameraDefaults.manual_focus)
     void persistManualFocus(cameraDefaults.manual_focus)
   }
 
