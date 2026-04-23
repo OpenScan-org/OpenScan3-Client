@@ -103,28 +103,39 @@
               @moved="handleMotorMoved"
               @calibrated="handleMotorMoved"
             />
-            <q-btn
-              flat
-              dense
-              round
+            <BaseButtonIconSecondary
+              class="focus-preview-dialog__home"
               icon="home"
+              size="sm"
               :disable="motorControlsDisabled || homeBusy"
               @click="handleMoveHome"
             >
               <q-tooltip anchor="bottom middle" self="top middle">Return to home position</q-tooltip>
-            </q-btn>
+            </BaseButtonIconSecondary>
           </q-btn-group>
 
-          <q-btn
-            dense
-            outline
-            color="primary"
+          <BaseButtonIconSecondary
             icon="refresh"
-            label="Refresh"
+            size="sm"
             :loading="refreshingBoth"
             :disable="!cameraName"
             @click="refreshBothPreviews"
-          />
+          >
+            <q-tooltip anchor="bottom middle" self="top middle">Refresh HQ preview</q-tooltip>
+          </BaseButtonIconSecondary>
+
+          <BaseButtonSecondary
+            class="focus-preview-dialog__overlay-button"
+            outline
+            dense
+            label="feature heatmap"
+            :disable="!cameraName"
+            @click="featureOverlayEnabled = !featureOverlayEnabled"
+          >
+            <q-tooltip anchor="bottom middle" self="top middle">
+              Highlights image features detected by photogrammetry. Ideally only the object shows red areas.
+            </q-tooltip>
+          </BaseButtonSecondary>
         </div>
       </q-card-section>
 
@@ -132,13 +143,23 @@
         <div class="focus-preview-grid">
           <div class="focus-preview-panel">
             <div class="focus-preview-panel__image-wrapper">
-              <img
-                v-if="minPreview.imageUrl"
-                :src="minPreview.imageUrl"
-                alt="Minimum focus preview"
-                class="focus-preview-panel__image"
-              />
-              <div v-else class="focus-preview-panel__placeholder text-grey-6">
+              <div v-if="minPreview.imageUrl" class="focus-preview-panel__image-stage">
+                <img
+                  :src="minPreview.imageUrl"
+                  alt="Minimum focus preview"
+                  class="focus-preview-panel__image"
+                  ref="minPreviewImageRef"
+                  crossorigin="anonymous"
+                  @load="handleMinPreviewImageLoad"
+                  @error="handleMinPreviewImageError"
+                />
+                <CameraHeatmapOverlay
+                  :active="featureOverlayEnabled"
+                  :image-element="minPreviewImageRef"
+                  :image-loaded="minPreviewImageLoaded"
+                />
+              </div>
+              <div v-if="!minPreview.imageUrl" class="focus-preview-panel__placeholder text-grey-6">
                 No preview image
               </div>
               <q-inner-loading :showing="minPreview.loading">
@@ -164,13 +185,23 @@
 
           <div class="focus-preview-panel">
             <div class="focus-preview-panel__image-wrapper">
-              <img
-                v-if="maxPreview.imageUrl"
-                :src="maxPreview.imageUrl"
-                alt="Maximum focus preview"
-                class="focus-preview-panel__image"
-              />
-              <div v-else class="focus-preview-panel__placeholder text-grey-6">
+              <div v-if="maxPreview.imageUrl" class="focus-preview-panel__image-stage">
+                <img
+                  :src="maxPreview.imageUrl"
+                  alt="Maximum focus preview"
+                  class="focus-preview-panel__image"
+                  ref="maxPreviewImageRef"
+                  crossorigin="anonymous"
+                  @load="handleMaxPreviewImageLoad"
+                  @error="handleMaxPreviewImageError"
+                />
+                <CameraHeatmapOverlay
+                  :active="featureOverlayEnabled"
+                  :image-element="maxPreviewImageRef"
+                  :image-loaded="maxPreviewImageLoaded"
+                />
+              </div>
+              <div v-if="!maxPreview.imageUrl" class="focus-preview-panel__placeholder text-grey-6">
                 No preview image
               </div>
               <q-inner-loading :showing="maxPreview.loading">
@@ -207,6 +238,9 @@ import BaseSliderWithInput from 'components/base/BaseSliderWithInput.vue'
 import BaseRangeWithInput from 'components/base/BaseRangeWithInput.vue'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseMotorButtonBar from 'components/base/BaseMotorButtonBar.vue'
+import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
+import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
+import CameraHeatmapOverlay from 'components/camera/CameraHeatmapOverlay.vue'
 import { apiClient, buildApiUrl, getApiSdk } from 'src/services/apiClient'
 
 type FocusMode = 'autofocus' | 'manual' | 'stacking'
@@ -261,9 +295,14 @@ const ROTOR_MOTOR = 'rotor'
 const TURNTABLE_MOTOR = 'turntable'
 const focusPreviewDialogVisible = ref(false)
 const refreshingBoth = ref(false)
+const featureOverlayEnabled = ref(false)
 const homeBusy = ref(false)
 const rotorControlsBusy = ref(false)
 const turntableControlsBusy = ref(false)
+const minPreviewImageRef = ref<HTMLImageElement | null>(null)
+const maxPreviewImageRef = ref<HTMLImageElement | null>(null)
+const minPreviewImageLoaded = ref(false)
+const maxPreviewImageLoaded = ref(false)
 
 type FocusPreviewState = {
   imageUrl: string | null
@@ -334,6 +373,11 @@ async function capturePreview(target: FocusPreviewState, focusValue: number) {
   const requestId = ++target.requestId
   target.loading = true
   target.error = null
+  if (target === minPreview) {
+    minPreviewImageLoaded.value = false
+  } else {
+    maxPreviewImageLoaded.value = false
+  }
 
   try {
     await apiSdk().updateCameraNameSettings({
@@ -369,6 +413,22 @@ async function capturePreview(target: FocusPreviewState, focusValue: number) {
       target.loading = false
     }
   }
+}
+
+function handleMinPreviewImageLoad() {
+  minPreviewImageLoaded.value = true
+}
+
+function handleMinPreviewImageError() {
+  minPreviewImageLoaded.value = false
+}
+
+function handleMaxPreviewImageLoad() {
+  maxPreviewImageLoaded.value = true
+}
+
+function handleMaxPreviewImageError() {
+  maxPreviewImageLoaded.value = false
 }
 
 async function refreshBothPreviews() {
@@ -454,6 +514,8 @@ watch(
   () => {
     replacePreviewImage(minPreview, null)
     replacePreviewImage(maxPreview, null)
+    minPreviewImageLoaded.value = false
+    maxPreviewImageLoaded.value = false
     minPreview.error = null
     maxPreview.error = null
   }
@@ -502,6 +564,10 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 
+.focus-preview-dialog__overlay-button {
+  flex: 0 0 auto;
+}
+
 .focus-preview-dialog__body {
   padding: 0 16px 16px;
 }
@@ -525,11 +591,25 @@ onBeforeUnmount(() => {
   background: rgba(15, 23, 42, 0.35);
   border-radius: 8px;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.focus-preview-panel__image-stage {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .focus-preview-panel__image {
-  width: 100%;
-  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
   object-fit: contain;
   display: block;
 }
