@@ -82,6 +82,13 @@ export const useCameraStore = defineStore('camera', {
     setSelectedCamera(cameraName: string | null) {
       this.selectedCamera = cameraName;
     },
+    markPhotoStale() {
+      if (!this.selectedCamera) {
+        return;
+      }
+      this.photoLoading = true;
+      this.photoError = null;
+    },
     setAutoPhotoRefreshEnabled(enabled: boolean) {
       this.autoPhotoRefreshEnabled = enabled;
     },

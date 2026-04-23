@@ -68,6 +68,7 @@ import ScanAdvancedSection from 'components/scan/ScanAdvancedSection.vue'
 import ScanPictureQualitySection from 'components/scan/ScanPictureQualitySection.vue'
 import { type CameraSettings as CameraSettingsModel, type ScanSetting } from 'src/generated/api'
 import { apiClient, getApiSdk } from 'src/services/apiClient'
+import { useCameraStore } from 'src/stores/camera'
 import { useDeviceStore } from 'src/stores/device'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import { fieldDefaults } from 'src/generated/api/fieldDefaults'
@@ -93,6 +94,7 @@ const emit = defineEmits<{
 }>()
 
 const deviceStore = useDeviceStore()
+const cameraStore = useCameraStore()
 const apiSdk = () => getApiSdk()
 void deviceStore.ensureConnected()
 
@@ -391,6 +393,7 @@ const debouncedPersistManualFocus = debounce((value: number) => {
 }, 300)
 
 const handleManualFocusInput = (value: number) => {
+  cameraStore.markPhotoStale()
   markManualFocusLocalInput(value)
   debouncedPersistManualFocus(value)
 }
