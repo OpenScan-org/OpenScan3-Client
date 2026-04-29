@@ -27,7 +27,7 @@
           </q-tooltip>
         </div>
       </div>
-      <div class="col-6">
+      <div class="col-12 col-sm-6 col-md-3">
         <q-input
           type="number"
           v-model.number="minThetaModel"
@@ -38,7 +38,7 @@
           <q-tooltip>{{ minThetaDescription }}</q-tooltip>
         </q-input>
       </div>
-      <div class="col-6">
+      <div class="col-12 col-sm-6 col-md-3">
         <q-input
           type="number"
           v-model.number="maxThetaModel"
@@ -49,7 +49,7 @@
           <q-tooltip>{{ maxThetaDescription }}</q-tooltip>
         </q-input>
       </div>
-      <div class="col-6">
+      <div class="col-12 col-sm-6 col-md-3">
         <q-input
           type="number"
           v-model.number="minPhiModel"
@@ -60,7 +60,7 @@
           <q-tooltip>{{ minPhiDescription }}</q-tooltip>
         </q-input>
       </div>
-      <div class="col-6">
+      <div class="col-12 col-sm-6 col-md-3">
         <q-input
           type="number"
           v-model.number="maxPhiModel"
