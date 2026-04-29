@@ -20,6 +20,7 @@
           v-model:maxPhi="maxPhi"
           v-model:optimizePath="optimizePath"
           v-model:optimizationAlgorithm="optimizationAlgorithm"
+          v-model:pauseBeforeCaptureMs="pauseBeforeCaptureMs"
           :image-format-description="scanSettingDescription('image_format')"
           :path-method-description="scanSettingDescription('path_method')"
           :min-theta-description="scanSettingDescription('min_theta')"
@@ -28,6 +29,7 @@
           :max-phi-description="scanSettingDescription('max_phi')"
           :optimize-path-description="scanSettingDescription('optimize_path')"
           :optimization-algorithm-description="scanSettingDescription('optimization_algorithm')"
+          :pause-before-capture-ms-description="scanSettingDescription('pause_before_capture_ms')"
         />
       </BaseSectionGroup>
     </div>
@@ -117,6 +119,7 @@ const minPhi = ref<number | null>(null)
 const maxPhi = ref<number | null>(null)
 const optimizePath = ref(true)
 const optimizationAlgorithm = ref('nearest_neighbor')
+const pauseBeforeCaptureMs = ref(0)
 const focusStacks = ref<number>(2)
 const enableFocusStacking = ref(false)
 const focusRange = ref({ min: 10.0, max: 15.0 })
@@ -341,6 +344,7 @@ watch(
     maxPhi,
     optimizePath,
     optimizationAlgorithm,
+    pauseBeforeCaptureMs,
     focusStacks,
     enableFocusStacking,
     focusRange
@@ -412,6 +416,9 @@ const resetToDefaults = () => {
   maxPhi.value = null
   if (scanDefaults.optimize_path !== undefined) optimizePath.value = scanDefaults.optimize_path
   if (scanDefaults.optimization_algorithm !== undefined) optimizationAlgorithm.value = scanDefaults.optimization_algorithm
+  if (scanDefaults.pause_before_capture_ms !== undefined) {
+    pauseBeforeCaptureMs.value = scanDefaults.pause_before_capture_ms
+  }
   
   if (scanDefaults.focus_stacks !== undefined) focusStacks.value = scanDefaults.focus_stacks
   if (scanDefaults.focus_range && Array.isArray(scanDefaults.focus_range) && scanDefaults.focus_range.length === 2) {
@@ -463,6 +470,7 @@ function getScanSettings() {
   if (maxPhi.value !== null && maxPhi.value !== undefined) settings.max_phi = maxPhi.value
   if (optimizePath.value) settings.optimize_path = optimizePath.value
   if (optimizationAlgorithm.value) settings.optimization_algorithm = optimizationAlgorithm.value
+  if (pauseBeforeCaptureMs.value !== undefined) settings.pause_before_capture_ms = pauseBeforeCaptureMs.value
   if (enableFocusStacking.value) {
     if (focusStacks.value !== undefined) settings.focus_stacks = focusStacks.value
     if (focusRange.value.min !== 0 && focusRange.value.max !== 0) settings.focus_range = [focusRange.value.min, focusRange.value.max]
@@ -490,6 +498,9 @@ const applySettings = (scanSettings: ScanSetting, cameraSettings: CameraSettings
   maxPhi.value = scanSettings.max_phi ?? null
   if (scanSettings.optimize_path !== undefined) optimizePath.value = scanSettings.optimize_path
   if (scanSettings.optimization_algorithm !== undefined) optimizationAlgorithm.value = scanSettings.optimization_algorithm
+  if (scanSettings.pause_before_capture_ms !== undefined) {
+    pauseBeforeCaptureMs.value = scanSettings.pause_before_capture_ms
+  }
   
   if (scanSettings.focus_stacks !== undefined) focusStacks.value = scanSettings.focus_stacks
   if (scanSettings.focus_range && Array.isArray(scanSettings.focus_range) && scanSettings.focus_range.length === 2) {

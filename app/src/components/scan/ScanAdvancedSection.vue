@@ -91,6 +91,17 @@
           </div>
         </div>
       </div>
+      <div class="col-12">
+        <q-input
+          type="number"
+          v-model.number="pauseBeforeCaptureMsModel"
+          label="Pause Before Capture (ms)"
+          dense
+          outlined
+        >
+          <q-tooltip>{{ pauseBeforeCaptureMsDescription }}</q-tooltip>
+        </q-input>
+      </div>
     </div>
   </BaseSection>
 </template>
@@ -115,6 +126,7 @@ const props = defineProps<{
   maxPhi: number | null
   optimizePath: boolean
   optimizationAlgorithm: string
+  pauseBeforeCaptureMs: number
   imageFormatDescription: string
   pathMethodDescription: string
   minThetaDescription: string
@@ -123,6 +135,7 @@ const props = defineProps<{
   maxPhiDescription: string
   optimizePathDescription: string
   optimizationAlgorithmDescription: string
+  pauseBeforeCaptureMsDescription: string
 }>()
 
 const emit = defineEmits<{
@@ -134,6 +147,7 @@ const emit = defineEmits<{
   (e: 'update:maxPhi', value: number | null): void
   (e: 'update:optimizePath', value: boolean): void
   (e: 'update:optimizationAlgorithm', value: string): void
+  (e: 'update:pauseBeforeCaptureMs', value: number): void
 }>()
 
 const imageFormatModel = computed({
@@ -174,5 +188,10 @@ const optimizePathModel = computed({
 const optimizationAlgorithmModel = computed({
   get: () => props.optimizationAlgorithm,
   set: (value: string) => emit('update:optimizationAlgorithm', value)
+})
+
+const pauseBeforeCaptureMsModel = computed({
+  get: () => props.pauseBeforeCaptureMs,
+  set: (value: number) => emit('update:pauseBeforeCaptureMs', value)
 })
 </script>

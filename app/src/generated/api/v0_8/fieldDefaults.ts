@@ -89,6 +89,7 @@ export const fieldDefaults = {
     "optimization_algorithm": "nearest_neighbor",
     "optimize_path": true,
     "path_method": "fibonacci",
+    "pause_before_capture_ms": 0,
     "points": 130
   },
   "Task": {

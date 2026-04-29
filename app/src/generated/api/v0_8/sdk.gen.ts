@@ -621,11 +621,7 @@ export const uploadProjectToCloud = <ThrowOnError extends boolean = false>(optio
 export const deletePhotos = <ThrowOnError extends boolean = false>(options: Options<DeletePhotosData, ThrowOnError>) => (options.client ?? client).delete<DeletePhotosResponses, DeletePhotosErrors, ThrowOnError>({
     responseType: 'json',
     url: '/projects/{project_name}/{scan_index}/photos',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
+    ...options
 });
 
 /**

@@ -984,6 +984,12 @@ export type ScanSetting = {
      */
     focus_stacks?: number;
     /**
+     * Pause Before Capture Ms
+     *
+     * Pause in milliseconds before capture to let vibrations settle.
+     */
+    pause_before_capture_ms?: number;
+    /**
      * Focus Range
      *
      * Minimum and maximum focus distance in diopters.
@@ -2469,10 +2475,7 @@ export type UploadProjectToCloudResponses = {
 export type UploadProjectToCloudResponse = UploadProjectToCloudResponses[keyof UploadProjectToCloudResponses];
 
 export type DeletePhotosData = {
-    /**
-     * Photo Filenames
-     */
-    body: Array<string>;
+    body?: never;
     path: {
         /**
          * Project Name
@@ -2483,7 +2486,14 @@ export type DeletePhotosData = {
          */
         scan_index: number;
     };
-    query?: never;
+    query: {
+        /**
+         * Photo Filenames
+         *
+         * Relative photo paths to delete.
+         */
+        photo_filenames: Array<string>;
+    };
     url: '/projects/{project_name}/{scan_index}/photos';
 };
 

@@ -118,6 +118,7 @@ export const fieldDescriptions = {
     "optimization_algorithm": "Path optimization algorithm to use.",
     "optimize_path": "Enable path optimization for faster scanning.",
     "path_method": "Scanning path generator (e.g. fibonacci or spriral).",
+    "pause_before_capture_ms": "Pause in milliseconds before capture to let vibrations settle.",
     "points": "Number of points in scanning path."
   },
   "SoftwareInfoResponse": {
