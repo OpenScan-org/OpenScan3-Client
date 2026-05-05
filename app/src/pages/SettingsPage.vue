@@ -127,6 +127,39 @@
                             </BaseButtonSecondary>
                           </div>
                         </div>
+                        <div class="col-12 col-md-8 col-lg-6" v-if="isNextApiTarget && deviceMetadataForm">
+                          <q-input
+                            v-model.number="deviceMetadataForm.scan_radius_mm"
+                            type="number"
+                            min="0"
+                            step="1"
+                            label="Scan Radius (mm)"
+                            @update:model-value="markDeviceMetadataDirty"
+                          >
+                            <q-tooltip max-width="320px">
+                              {{ scanRadiusTooltip }}
+                            </q-tooltip>
+                          </q-input>
+                        </div>
+                        <div class="col-12 col-md-auto" v-if="isNextApiTarget && deviceMetadataForm">
+                          <div class="row justify-end">
+                            <BaseButtonPrimary
+                              icon="save"
+                              label="Save"
+                              :disable="scanLocked || !deviceMetadataDirty"
+                              :loading="deviceMetadataSaving"
+                              @click="saveDeviceMetadataSettings"
+                            >
+                              <q-tooltip>
+                                {{
+                                  scanLocked
+                                    ? scanLockedTooltip
+                                    : 'Save the camera-to-object-center distance.'
+                                }}
+                              </q-tooltip>
+                            </BaseButtonPrimary>
+                          </div>
+                        </div>
                       </div>
                     </BaseSection>
 
@@ -1746,6 +1779,7 @@ type DeviceConfigListItem = {
 }
 
 const DEFAULT_CONFIG_FILENAME = 'frontend_config.json'
+const RUNTIME_CONFIG_FILENAME = 'device_config.json'
 const FRONTEND_CONFIG_LABEL = 'modified in frontend'
 const FRONTEND_CONFIG_PATH = `settings/device/${DEFAULT_CONFIG_FILENAME}`
 const CONFIG_LABEL_PRIORITY = [
@@ -1765,7 +1799,39 @@ const normalizeConfigIdentifier = (value: string | null | undefined) => {
   return value.replace(/^\/+/, '').trim().toLowerCase()
 }
 
+const configIdentifierBasename = (value: string | null | undefined) => {
+  const normalized = normalizeConfigIdentifier(value)
+  if (!normalized) {
+    return null
+  }
+  const segments = normalized.split('/').filter((segment) => segment.length > 0)
+  return segments.at(-1) ?? normalized
+}
+
+const configIdentifiersMatch = (left: string | null | undefined, right: string | null | undefined) => {
+  const normalizedLeft = normalizeConfigIdentifier(left)
+  const normalizedRight = normalizeConfigIdentifier(right)
+  if (!normalizedLeft || !normalizedRight) {
+    return false
+  }
+  if (normalizedLeft === normalizedRight) {
+    return true
+  }
+
+  const leftBasename = configIdentifierBasename(left)
+  const rightBasename = configIdentifierBasename(right)
+  return leftBasename !== null && leftBasename === rightBasename
+}
+
 const DEFAULT_CONFIG_IDENTIFIER = normalizeConfigIdentifier(DEFAULT_CONFIG_FILENAME) ?? ''
+const RUNTIME_CONFIG_IDENTIFIER = normalizeConfigIdentifier(RUNTIME_CONFIG_FILENAME) ?? ''
+
+const isRuntimeConfigIdentifier = (value: string | null | undefined) => {
+  if (!RUNTIME_CONFIG_IDENTIFIER) {
+    return false
+  }
+  return configIdentifiersMatch(value, RUNTIME_CONFIG_IDENTIFIER)
+}
 
 const isDefaultConfigItem = (item: DeviceConfigListItem) => {
   if (!DEFAULT_CONFIG_IDENTIFIER) {
@@ -1776,6 +1842,18 @@ const isDefaultConfigItem = (item: DeviceConfigListItem) => {
   return (
     normalizedFilename === DEFAULT_CONFIG_IDENTIFIER ||
     (normalizedPath ? normalizedPath.endsWith(DEFAULT_CONFIG_IDENTIFIER) : false)
+  )
+}
+
+const isRuntimeConfigItem = (item: DeviceConfigListItem) => {
+  if (!RUNTIME_CONFIG_IDENTIFIER) {
+    return false
+  }
+  const normalizedFilename = normalizeConfigIdentifier(item.filename)
+  const normalizedPath = normalizeConfigIdentifier(item.path)
+  return (
+    normalizedFilename === RUNTIME_CONFIG_IDENTIFIER ||
+    (normalizedPath ? normalizedPath.endsWith(RUNTIME_CONFIG_IDENTIFIER) : false)
   )
 }
 
@@ -2036,6 +2114,10 @@ type MotorDeviceSettingsForm = {
   calibrate_mode: ScannerCalibrateMode
 }
 
+type DeviceMetadataForm = {
+  scan_radius_mm: number | null
+}
+
 type LightForm = {
   pins: string
 }
@@ -2169,6 +2251,9 @@ const addTriggerSaving = ref(false)
 const motorDeviceSettingsSaving = ref(false)
 const motorDeviceSettingsDirty = ref(false)
 const motorDeviceSettingsForm = ref<MotorDeviceSettingsForm | null>(null)
+const deviceMetadataSaving = ref(false)
+const deviceMetadataDirty = ref(false)
+const deviceMetadataForm = ref<DeviceMetadataForm | null>(null)
 
 const isAddMotorFormValid = computed(() => {
   return (
@@ -2345,6 +2430,19 @@ function mapMotorDeviceSettingsForm(
     startup_mode: (config?.startup_mode ?? defaultStartupMode) as ScannerStartupMode,
     motors_timeout: config?.motors_timeout ?? fieldDefaults.ScannerDeviceConfig?.motors_timeout ?? 0,
     calibrate_mode: (config?.calibrate_mode ?? defaultCalibrateMode) as ScannerCalibrateMode
+  }
+}
+
+const scanRadiusTooltip = `${getFieldDescription('ScannerDeviceConfig', 'scan_radius_mm')} In practice, this is the distance from the camera to the center of the object.`
+
+function mapDeviceMetadataForm(
+  config: Pick<ScannerDeviceConfigInput, 'scan_radius_mm'> | null | undefined
+): DeviceMetadataForm {
+  return {
+    scan_radius_mm:
+      typeof config?.scan_radius_mm === 'number'
+        ? config.scan_radius_mm
+        : fieldDefaults.ScannerDeviceConfig?.scan_radius_mm ?? null
   }
 }
 
@@ -2929,7 +3027,7 @@ async function loadDeviceConfigs() {
       currentDeviceConfigSnapshot.value = null
     }
 
-    if (currentConfigFile) {
+    if (currentConfigFile && !isRuntimeConfigIdentifier(currentConfigFile)) {
       setLastKnownConfig(currentConfigFile)
     }
 
@@ -2950,30 +3048,34 @@ async function loadDeviceConfigs() {
       return index >= 0 ? index + 1 : CONFIG_LABEL_PRIORITY.length + 1
     }
 
-    const normalizedCurrentConfig = normalizeConfigIdentifier(currentConfigFile ?? lastKnownConfigFile.value)
+    const effectiveCurrentConfig = isRuntimeConfigIdentifier(currentConfigFile)
+      ? lastKnownConfigFile.value
+      : currentConfigFile ?? lastKnownConfigFile.value
+    const normalizedCurrentConfig = normalizeConfigIdentifier(effectiveCurrentConfig)
 
     const isSameAsCurrent = (value: string | null | undefined) => {
       if (!normalizedCurrentConfig) {
         return false
       }
-      const normalized = normalizeConfigIdentifier(value)
-      return normalized !== null && normalized === normalizedCurrentConfig
+      return configIdentifiersMatch(value, normalizedCurrentConfig)
     }
 
     type PreparedConfigOption = DeviceConfigOption & { baseLabel: string; priority: number }
-    const preparedOptions: PreparedConfigOption[] = (payload?.configs ?? []).map((item) => {
-      const isCurrent = isSameAsCurrent(item.path) || isSameAsCurrent(item.filename)
-      const baseLabel = getBaseLabel(item)
-      const optionLabel = isCurrent ? `${baseLabel} (current)` : baseLabel
+    const preparedOptions: PreparedConfigOption[] = (payload?.configs ?? [])
+      .filter((item) => !isRuntimeConfigItem(item))
+      .map((item) => {
+        const isCurrent = isSameAsCurrent(item.path) || isSameAsCurrent(item.filename)
+        const baseLabel = getBaseLabel(item)
+        const optionLabel = isCurrent ? `${baseLabel} (current)` : baseLabel
 
-      return {
-        label: optionLabel,
-        value: item.filename,
-        meta: item,
-        baseLabel,
-        priority: getPriority(baseLabel, isCurrent)
-      }
-    })
+        return {
+          label: optionLabel,
+          value: item.filename,
+          meta: item,
+          baseLabel,
+          priority: getPriority(baseLabel, isCurrent)
+        }
+      })
 
     preparedOptions.sort((a, b) => {
       if (a.priority !== b.priority) {
@@ -3153,6 +3255,30 @@ async function saveMotorDeviceSettings() {
   }
 }
 
+async function saveDeviceMetadataSettings() {
+  const form = deviceMetadataForm.value
+  if (!form || !isNextApiTarget.value || deviceMetadataSaving.value) {
+    return
+  }
+
+  deviceMetadataSaving.value = true
+  try {
+    await updateConfigWithMutation((config) => {
+      if (typeof form.scan_radius_mm === 'number' && Number.isFinite(form.scan_radius_mm)) {
+        config.scan_radius_mm = form.scan_radius_mm
+      } else {
+        delete config.scan_radius_mm
+      }
+    })
+
+    deviceMetadataDirty.value = false
+  } catch (error) {
+    console.error('Device metadata settings could not be saved.', error)
+  } finally {
+    deviceMetadataSaving.value = false
+  }
+}
+
 async function saveLightSettings(name: string) {
   const form = lightForms[name]
   if (!form) {
@@ -3295,6 +3421,10 @@ function markMotorFormDirty(name: string) {
 
 function markMotorDeviceSettingsDirty() {
   motorDeviceSettingsDirty.value = true
+}
+
+function markDeviceMetadataDirty() {
+  deviceMetadataDirty.value = true
 }
 
 function markLightFormDirty(name: string) {
@@ -3556,6 +3686,21 @@ watch(
 
     motorDeviceSettingsForm.value = mapMotorDeviceSettingsForm(config)
     motorDeviceSettingsDirty.value = false
+  },
+  { immediate: true }
+)
+
+watch(
+  [isNextApiTarget, currentDeviceConfigSnapshot],
+  ([isNext, config]) => {
+    if (!isNext) {
+      deviceMetadataForm.value = null
+      deviceMetadataDirty.value = false
+      return
+    }
+
+    deviceMetadataForm.value = mapDeviceMetadataForm(config)
+    deviceMetadataDirty.value = false
   },
   { immediate: true }
 )
