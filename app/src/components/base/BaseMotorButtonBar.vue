@@ -3,8 +3,11 @@ import { computed, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useDeviceStore } from 'src/stores/device'
 import { apiClient, getApiSdk } from 'src/services/apiClient'
+import homePositionClassicImage from 'src/assets/setup-wizard/home-position-classic.jpg'
+import homePositionMiniImage from 'src/assets/setup-wizard/home-position-mini.jpg'
 import BaseButtonIconPrimary from './BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from './BaseButtonIconSecondary.vue'
+import BaseMotorManualCalibration from './BaseMotorManualCalibration.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -42,11 +45,17 @@ const deviceStore = useDeviceStore()
 const apiSdk = () => getApiSdk()
 const moveBusy = ref(false)
 const calibrateBusy = ref(false)
+const manualCalibrationDialogVisible = ref(false)
 
 const normalizedStep = computed(() => Math.abs(props.stepDegrees))
 
 const motorStatus = computed(() => deviceStore.device?.motors?.[props.motorName] ?? null)
 const motorCalibrated = computed(() => Boolean(motorStatus.value?.calibrated))
+const deviceModel = computed(() => deviceStore.device?.model ?? null)
+const isMiniLikeModel = computed(() => {
+  const model = deviceModel.value?.toLowerCase() ?? ''
+  return model.includes('mini') || model.includes('midi')
+})
 const motorEndstop = computed(() => {
   const directEndstop = (motorStatus.value as { endstop?: { assigned_motor?: string } | null } | null)?.endstop
   if (directEndstop?.assigned_motor === props.motorName) {
@@ -61,19 +70,43 @@ const motorEndstop = computed(() => {
 })
 
 const canCalibrate = computed(() => props.showCalibrate && Boolean(motorEndstop.value))
+const canManualCalibrate = computed(() => props.showCalibrate && !motorEndstop.value)
 const calibrateTooltip = computed(() =>
   props.calibrateTooltip ??
   (canCalibrate.value
     ? `Calibrate ${props.motorName} via endstop to re-establish the home position.`
-    : `No endstop configured for ${props.motorName}. Configure one before running calibration.`)
+    : `Manually align ${props.motorName} and set its current position.`)
 )
 
 const disableMoveButtons = computed(() => props.disable || moveBusy.value)
 const disableCalibrateButton = computed(
-  () => props.disable || calibrateBusy.value || !canCalibrate.value
+  () => props.disable || calibrateBusy.value
 )
 
 const busy = computed(() => moveBusy.value || calibrateBusy.value)
+const manualCalibrationImageSrc = computed(() => {
+  if (props.motorName !== 'rotor') {
+    return null
+  }
+  const model = deviceModel.value?.toLowerCase() ?? ''
+  if (isMiniLikeModel.value) return homePositionMiniImage
+  if (!model) return null
+  return homePositionClassicImage
+})
+const manualCalibrationHint = computed(() => {
+  if (props.motorName !== 'rotor') {
+    return `Use the buttons to align ${props.motorName}, then confirm the current position.`
+  }
+  const model = deviceModel.value?.toLowerCase() ?? ''
+  if (!model) {
+    return 'Use the buttons to align the rotor with the reference position, then confirm the current position.'
+  }
+  if (isMiniLikeModel.value) {
+    return 'Ensure the camera unit is level, then confirm the current position.'
+  }
+  return 'Ensure the swing arm sits at 90° to floor, then confirm the current position.'
+})
+const manualCalibrationTargetAngle = computed(() => (props.motorName === 'rotor' ? 90 : 0))
 
 watch(
   busy,
@@ -110,6 +143,10 @@ async function handleMove(direction: 'negative' | 'positive') {
 
 async function handleCalibrate() {
   if (disableCalibrateButton.value) {
+    return
+  }
+  if (!canCalibrate.value && canManualCalibrate.value) {
+    manualCalibrationDialogVisible.value = true
     return
   }
   const { proceed, force } = await resolveCalibrationIntent()
@@ -151,6 +188,11 @@ function resolveCalibrationIntent() {
       .onDismiss(() => resolve({ proceed: false, force: false }))
   })
 }
+
+function handleManualCalibrated() {
+  manualCalibrationDialogVisible.value = false
+  emit('calibrated')
+}
 </script>
 
 <template>
@@ -187,4 +229,30 @@ function resolveCalibrationIntent() {
       {{ calibrateTooltip }}
     </q-tooltip>
   </BaseButtonIconSecondary>
+  <q-dialog v-model="manualCalibrationDialogVisible" persistent>
+    <q-card class="base-motor-button-bar__manual-dialog">
+      <q-card-section class="row items-center justify-between">
+        <div class="text-subtitle1">Manual Calibration</div>
+        <q-btn icon="close" flat round dense @click="manualCalibrationDialogVisible = false" />
+      </q-card-section>
+      <q-card-section>
+        <BaseMotorManualCalibration
+          :motor-name="props.motorName"
+          :target-angle="manualCalibrationTargetAngle"
+          :disable="props.disable"
+          :image-src="manualCalibrationImageSrc"
+          :image-alt="`Position reference for ${props.motorName}`"
+          :hint="manualCalibrationHint"
+          confirm-label="Set current position"
+          @calibrated="handleManualCalibrated"
+        />
+      </q-card-section>
+    </q-card>
+  </q-dialog>
 </template>
+
+<style scoped>
+.base-motor-button-bar__manual-dialog {
+  width: min(92vw, 480px);
+}
+</style>

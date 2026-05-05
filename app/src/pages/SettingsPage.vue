@@ -2195,7 +2195,7 @@ function motorCalibrateTooltip(name: string) {
   if (name !== ROTOR_MOTOR) {
     return undefined
   }
-  return 'Calibrate rotor via endstop to re-establish the home position.'
+  return 'Calibrate rotor via endstop or manually set the current position.'
 }
 
 async function handleMotorCalibrated(name: string) {
