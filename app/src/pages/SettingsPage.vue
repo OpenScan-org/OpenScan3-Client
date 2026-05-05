@@ -292,6 +292,72 @@
                 >
                   <BaseSection title="Motor Settings">
                   <div class="row q-col-gutter-md">
+                    <div class="col-12" v-if="showMotorDeviceSettings && motorDeviceSettingsForm">
+                      <q-card flat bordered>
+                        <q-card-section>
+                          <div class="text-subtitle1">Motor behavior</div>
+                          <div class="text-caption text-grey-7">
+                            Startup state, idle timeout and automatic endstop calibration.
+                          </div>
+                        </q-card-section>
+                        <q-card-section class="q-pt-none">
+                          <div class="row q-col-gutter-md">
+                            <div class="col-12 col-md-6 col-lg-4">
+                              <q-select
+                                v-model="motorDeviceSettingsForm.startup_mode"
+                                :options="startupModeOptions"
+                                label="Startup Mode"
+                                emit-value
+                                map-options
+                                @update:model-value="markMotorDeviceSettingsDirty"
+                              >
+                                <q-tooltip>{{ motorDeviceSettingDescriptions.startup_mode }}</q-tooltip>
+                              </q-select>
+                            </div>
+                            <div class="col-12 col-md-6 col-lg-4">
+                              <q-input
+                                v-model.number="motorDeviceSettingsForm.motors_timeout"
+                                type="number"
+                                min="0"
+                                label="Motors Timeout (s)"
+                                @update:model-value="markMotorDeviceSettingsDirty"
+                              >
+                                <q-tooltip>{{ motorDeviceSettingDescriptions.motors_timeout }}</q-tooltip>
+                              </q-input>
+                            </div>
+                            <div class="col-12 col-md-6 col-lg-4">
+                              <q-select
+                                v-model="motorDeviceSettingsForm.calibrate_mode"
+                                :options="calibrateModeOptions"
+                                label="Calibrate Mode"
+                                emit-value
+                                map-options
+                                @update:model-value="markMotorDeviceSettingsDirty"
+                              >
+                                <q-tooltip>{{ motorDeviceSettingDescriptions.calibrate_mode }}</q-tooltip>
+                              </q-select>
+                            </div>
+                          </div>
+                        </q-card-section>
+                        <q-card-actions align="right">
+                          <BaseButtonPrimary
+                            icon="save"
+                            label="Save"
+                            :disable="scanLocked || !motorDeviceSettingsDirty"
+                            :loading="motorDeviceSettingsSaving"
+                            @click="saveMotorDeviceSettings"
+                          >
+                            <q-tooltip>
+                              {{
+                                scanLocked
+                                  ? scanLockedTooltip
+                                  : 'Save startup mode, timeout and calibration behavior.'
+                              }}
+                            </q-tooltip>
+                          </BaseButtonPrimary>
+                        </q-card-actions>
+                      </q-card>
+                    </div>
                     <div class="col-12" v-if="motorNames.length === 0">
                       <q-banner dense>No motors found.</q-banner>
                     </div>
@@ -1135,9 +1201,11 @@ import type {
   MotorConfig,
   PersistedCameraConfig,
   PersistedEndstopConfig,
+  ScannerCalibrateMode,
   TriggerActiveLevel,
   TriggerConfig,
-  ScannerDeviceConfigInput
+  ScannerDeviceConfigInput,
+  ScannerStartupMode
 } from 'src/generated/api'
 
 const apiConfigStore = useApiConfigStore()
@@ -1717,6 +1785,10 @@ const selectedConfig = ref<string | null>(null)
 const configApplying = ref(false)
 const currentDeviceConfigSnapshot = ref<ScannerDeviceConfigInput | null>(null)
 const lastKnownConfigFile = ref<string | null>(localStorage.getItem(LAST_KNOWN_CONFIG_STORAGE_KEY))
+const currentShield = computed(() => (currentDeviceConfigSnapshot.value?.shield ?? null)?.toLowerCase() ?? null)
+const showMotorDeviceSettings = computed(
+  () => isNextApiTarget.value && (currentShield.value === 'custom' || currentShield.value === 'blackshield')
+)
 
 const setLastKnownConfig = (value: string | null) => {
   lastKnownConfigFile.value = value
@@ -1958,6 +2030,12 @@ type MotorForm = {
   max_angle: number | null
 }
 
+type MotorDeviceSettingsForm = {
+  startup_mode: ScannerStartupMode
+  motors_timeout: number | null
+  calibrate_mode: ScannerCalibrateMode
+}
+
 type LightForm = {
   pins: string
 }
@@ -2010,6 +2088,24 @@ const directionOptions = [
   { label: 'Forward (1)', value: 1 },
   { label: 'Reverse (-1)', value: -1 }
 ]
+const defaultStartupMode = (fieldDefaults.ScannerDeviceConfig?.startup_mode ?? 'startup_enabled') as ScannerStartupMode
+const defaultCalibrateMode = (fieldDefaults.ScannerDeviceConfig?.calibrate_mode ??
+  'calibrate_manual') as ScannerCalibrateMode
+const startupModeOptions = [
+  { label: 'Enabled on startup', value: 'startup_enabled' },
+  { label: 'Idle on startup', value: 'startup_idle' }
+] as const
+const calibrateModeOptions = [
+  { label: 'Manual only', value: 'calibrate_manual' },
+  { label: 'On home', value: 'calibrate_on_home' },
+  { label: 'On scan', value: 'calibrate_on_scan' },
+  { label: 'On wake', value: 'calibrate_on_wake' }
+] as const
+const motorDeviceSettingDescriptions = {
+  startup_mode: 'Defines whether the motor drivers start enabled or stay idle after boot.',
+  motors_timeout: 'Time in seconds until idle motors are disabled automatically. Use 0 to keep them enabled.',
+  calibrate_mode: 'Controls if and when motors are calibrated automatically via configured endstops.'
+} as const
 const defaultTriggerActiveLevel = (fieldDefaults.TriggerConfig?.active_level ?? 'active_high') as TriggerActiveLevel
 const triggerActiveLevelOptions = [
   { label: 'Active high', value: 'active_high' },
@@ -2070,6 +2166,9 @@ const addLightSaving = ref(false)
 const addCameraSaving = ref(false)
 const addEndstopSaving = ref(false)
 const addTriggerSaving = ref(false)
+const motorDeviceSettingsSaving = ref(false)
+const motorDeviceSettingsDirty = ref(false)
+const motorDeviceSettingsForm = ref<MotorDeviceSettingsForm | null>(null)
 
 const isAddMotorFormValid = computed(() => {
   return (
@@ -2238,6 +2337,16 @@ function formatBooleanSetting(value: boolean | null | undefined) {
 }
 
 const awbCalibrationDefaults = fieldDefaults.AutoCalibrateAwbRequest ?? null
+
+function mapMotorDeviceSettingsForm(
+  config: Pick<ScannerDeviceConfigInput, 'startup_mode' | 'motors_timeout' | 'calibrate_mode'> | null | undefined
+): MotorDeviceSettingsForm {
+  return {
+    startup_mode: (config?.startup_mode ?? defaultStartupMode) as ScannerStartupMode,
+    motors_timeout: config?.motors_timeout ?? fieldDefaults.ScannerDeviceConfig?.motors_timeout ?? 0,
+    calibrate_mode: (config?.calibrate_mode ?? defaultCalibrateMode) as ScannerCalibrateMode
+  }
+}
 
 function createEmptyCloudForm(): CloudForm {
   return {
@@ -3022,6 +3131,28 @@ async function saveMotorSettings(name: string) {
   }
 }
 
+async function saveMotorDeviceSettings() {
+  const form = motorDeviceSettingsForm.value
+  if (!form || !showMotorDeviceSettings.value || motorDeviceSettingsSaving.value) {
+    return
+  }
+
+  motorDeviceSettingsSaving.value = true
+  try {
+    await updateConfigWithMutation((config) => {
+      config.startup_mode = form.startup_mode
+      config.motors_timeout = form.motors_timeout ?? 0
+      config.calibrate_mode = form.calibrate_mode
+    })
+
+    motorDeviceSettingsDirty.value = false
+  } catch (error) {
+    console.error('Motor device settings could not be saved.', error)
+  } finally {
+    motorDeviceSettingsSaving.value = false
+  }
+}
+
 async function saveLightSettings(name: string) {
   const form = lightForms[name]
   if (!form) {
@@ -3160,6 +3291,10 @@ async function fireTriggerOnce(name: string) {
 
 function markMotorFormDirty(name: string) {
   motorFormDirty[name] = true
+}
+
+function markMotorDeviceSettingsDirty() {
+  motorDeviceSettingsDirty.value = true
 }
 
 function markLightFormDirty(name: string) {
@@ -3408,6 +3543,21 @@ watch(
     })
   },
   { immediate: true, deep: true }
+)
+
+watch(
+  [showMotorDeviceSettings, currentDeviceConfigSnapshot],
+  ([visible, config]) => {
+    if (!visible) {
+      motorDeviceSettingsForm.value = null
+      motorDeviceSettingsDirty.value = false
+      return
+    }
+
+    motorDeviceSettingsForm.value = mapMotorDeviceSettingsForm(config)
+    motorDeviceSettingsDirty.value = false
+  },
+  { immediate: true }
 )
 
 async function saveApiConfig() {
