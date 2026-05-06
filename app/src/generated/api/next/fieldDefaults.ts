@@ -62,6 +62,9 @@ export const fieldDefaults = {
     "qr_wifi_scan_enabled": true
   },
   "LightConfig": {
+    "pwm_frequency": 10000,
+    "pwm_max": 3.3,
+    "pwm_min": 0,
     "pwm_support": false
   },
   "MotorConfig": {
@@ -88,7 +91,7 @@ export const fieldDefaults = {
   },
   "ScannerDeviceConfig": {
     "calibrate_mode": "calibrate_manual",
-    "motors_timeout": 0,
+    "idle_timeout": 0,
     "scan_radius_mm": 1,
     "startup_mode": "startup_enabled"
   },
@@ -99,11 +102,14 @@ export const fieldDefaults = {
     ],
     "focus_stacks": 1,
     "image_format": "jpeg",
+    "max_phi": 360,
     "max_theta": 125,
+    "min_phi": 0,
     "min_theta": 12,
     "optimization_algorithm": "nearest_neighbor",
     "optimize_path": true,
     "path_method": "fibonacci",
+    "pause_before_capture_ms": 0,
     "points": 130
   },
   "Task": {

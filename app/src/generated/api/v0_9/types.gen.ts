@@ -656,6 +656,24 @@ export type LightConfig = {
      * Indicates whether this light hardware can handle PWM (otherwise only on/off).
      */
     pwm_support?: boolean;
+    /**
+     * Pwm Frequency
+     *
+     * PWM frequency for led driver.
+     */
+    pwm_frequency?: number;
+    /**
+     * Pwm Min
+     *
+     * Minimum pwm voltage for led driver.
+     */
+    pwm_min?: number;
+    /**
+     * Pwm Max
+     *
+     * Maximum pwm voltage for led driver.
+     */
+    pwm_max?: number;
 };
 
 /**
@@ -1052,6 +1070,12 @@ export type ScanSetting = {
      */
     focus_stacks?: number;
     /**
+     * Pause Before Capture Ms
+     *
+     * Pause in milliseconds before capture to let vibrations settle.
+     */
+    pause_before_capture_ms?: number;
+    /**
      * Focus Range
      *
      * Minimum and maximum focus distance in diopters.
@@ -1116,9 +1140,13 @@ export type ScannerDeviceConfig = {
         [key: string]: PersistedEndstopConfig;
     } | null;
     /**
+     * Idle Timeout
+     */
+    idle_timeout?: number;
+    /**
      * Motors Timeout
      */
-    motors_timeout?: number;
+    motors_timeout?: number | null;
     /**
      * Scan Radius Mm
      *
@@ -2661,10 +2689,7 @@ export type UploadProjectToCloudResponses = {
 export type UploadProjectToCloudResponse = UploadProjectToCloudResponses[keyof UploadProjectToCloudResponses];
 
 export type DeletePhotosData = {
-    /**
-     * Photo Filenames
-     */
-    body: Array<string>;
+    body?: never;
     path: {
         /**
          * Project Name
@@ -2675,7 +2700,14 @@ export type DeletePhotosData = {
          */
         scan_index: number;
     };
-    query?: never;
+    query: {
+        /**
+         * Photo Filenames
+         *
+         * Relative photo paths to delete.
+         */
+        photo_filenames: Array<string>;
+    };
     url: '/projects/{project_name}/{scan_index}/photos';
 };
 
@@ -3584,6 +3616,29 @@ export type ReinitializeHardwareResponses = {
 };
 
 export type ReinitializeHardwareResponse = ReinitializeHardwareResponses[keyof ReinitializeHardwareResponses];
+
+export type WakeupDeviceData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/device/wakeup';
+};
+
+export type WakeupDeviceErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+};
+
+export type WakeupDeviceResponses = {
+    /**
+     * Successful Response
+     */
+    200: DeviceControlResponse;
+};
+
+export type WakeupDeviceResponse = WakeupDeviceResponses[keyof WakeupDeviceResponses];
 
 export type RebootData = {
     body?: never;

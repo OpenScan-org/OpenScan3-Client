@@ -116,6 +116,7 @@ import { useTaskStore } from 'src/stores/tasks'
 import { useScanTemplateStore } from 'src/stores/scanTemplate'
 import { useScanPresetsStore } from 'src/stores/scanPresets'
 import { useCloudResetGuard } from 'src/composables/useCloudResetGuard'
+import { useDeviceWakeup } from 'src/composables/useDeviceWakeup'
 import { useDeviceStore } from 'src/stores/device'
 import { useFrontendSettingsStore } from 'src/stores/frontendSettings'
 const route = useRoute()
@@ -127,6 +128,7 @@ const taskStore = useTaskStore()
 const scanTemplateStore = useScanTemplateStore()
 const scanPresetsStore = useScanPresetsStore()
 const { promptCloudReset } = useCloudResetGuard()
+const { wakeUpDevice } = useDeviceWakeup()
 const deviceStore = useDeviceStore()
 const frontendSettingsStore = useFrontendSettingsStore()
 const apiSdk = () => getApiSdk()
@@ -222,11 +224,13 @@ const restoreHiddenPreset = async () => {
 
 const handleScanSettingsChange = (settings: ScanSetting) => {
   lastScanSettings.value = settings
+  void wakeUpDevice()
   scheduleHiddenPresetPersist()
 }
 
 const handleFocusModeChange = (mode: 'autofocus' | 'manual' | 'stacking') => {
   focusStackingModeActive.value = mode === 'stacking'
+  void wakeUpDevice()
 }
 
 const selectedCamera = computed(() => cameraStore.cameraOptions.find(c => c.value === selectedCameraName.value) || null)
@@ -323,6 +327,7 @@ const formatApiError = (error: unknown) => {
 
 watch(selectedCameraName, (newVal) => {
   cameraStore.setSelectedCamera(newVal)
+  void wakeUpDevice()
   scheduleHiddenPresetPersist()
 })
 
@@ -335,6 +340,7 @@ watch(
 )
 
 watch(selectedProject, () => {
+  void wakeUpDevice()
   scheduleHiddenPresetPersist()
 })
 
@@ -419,6 +425,7 @@ const startScan = async () => {
 }
 
 const resetSettingsToDefaults = () => {
+  void wakeUpDevice()
   scanSettingsSectionRef.value?.resetToDefaults()
 }
 
@@ -471,6 +478,7 @@ const handleOverwritePreset = () => {
 }
 
 watch(selectedPresetId, (newId) => {
+  void wakeUpDevice()
   scheduleHiddenPresetPersist()
   if (!newId) {
     return
@@ -486,6 +494,7 @@ watch(selectedPresetId, (newId) => {
 })
 
 onMounted(async () => {
+  await wakeUpDevice()
   await taskStore.ensureConnected()
 
   if (activeScanTaskId.value) {

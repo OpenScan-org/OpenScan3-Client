@@ -126,59 +126,17 @@
           <div v-else-if="step.id === 'hardware'">
             <div class="text-subtitle1 q-mb-sm">Rotor position</div>
             <p>Verify that the initial rotor position is correct as in the picture.</p>
-            <div class="rotor-position-visual q-mb-md">
-              <div v-if="rotorPositionImageSrc" class="rotor-position-image-wrapper">
-                <img
-                  :src="rotorPositionImageSrc"
-                  :alt="`Rotor position reference for ${deviceModel ?? 'current device'}`"
-                  class="rotor-image"
-                />
-                <div class="text-caption text-grey-7 q-mt-sm text-center">
-                  {{ rotorPositionHint }}
-                </div>
-              </div>
-              <div v-else class="rotor-position-skeleton-wrapper">
-                <q-skeleton type="rect" class="rotor-position-skeleton" />
-                <div class="text-caption text-grey-6 q-mt-sm text-center">
-                  Waiting for device model…
-                </div>
-              </div>
-            </div>
             <div class="rotor-position-controls q-mb-lg">
-              <div class="text-subtitle2 text-center q-mb-sm">Fine adjustments</div>
-              <div class="rotor-position-controls__row">
-                <BaseButtonSecondary
-                  label="Up 5°"
-                  icon="north"
-                  :loading="rotorFineMoveAction === 'up-5'"
-                  :disable="isRotorControlDisabled"
-                  @click="handleRotorFineMove(-5, 'up-5')"
-                />
-                <BaseButtonSecondary
-                  label="Up 1°"
-                  icon="north"
-                  :loading="rotorFineMoveAction === 'up-1'"
-                  :disable="isRotorControlDisabled"
-                  @click="handleRotorFineMove(-1, 'up-1')"
-                />
-                <BaseButtonSecondary
-                  label="Down 1°"
-                  icon="south"
-                  :loading="rotorFineMoveAction === 'down-1'"
-                  :disable="isRotorControlDisabled"
-                  @click="handleRotorFineMove(1, 'down-1')"
-                />
-                <BaseButtonSecondary
-                  label="Down 5°"
-                  icon="south"
-                  :loading="rotorFineMoveAction === 'down-5'"
-                  :disable="isRotorControlDisabled"
-                  @click="handleRotorFineMove(5, 'down-5')"
-                />
-              </div>
-              <div class="text-body2 text-center text-grey-7 q-mt-md">
-                Use the buttons to align the rotor with the picture, then click "Next".
-              </div>
+              <BaseMotorManualCalibration
+                ref="rotorManualCalibrationRef"
+                :motor-name="ROTOR_MOTOR_NAME"
+                :target-angle="ROTOR_HOME_OVERRIDE_ANGLE"
+                :disable="isRotorControlDisabled"
+                :image-src="rotorPositionImageSrc"
+                :image-alt="`Rotor position reference for ${deviceModel ?? 'current device'}`"
+                :hint="'Use the buttons to align the rotor with the picture, then click Next.'"
+                :show-confirm-button="false"
+              />
               <div
                 v-if="canCalibrateWithEndstop"
                 class="rotor-endstop-calibrate q-mt-md q-pa-md q-mx-auto"
@@ -381,6 +339,7 @@ import BaseList from 'components/base/BaseList.vue'
 import BaseListItem from 'components/base/BaseListItem.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
+import BaseMotorManualCalibration from 'components/base/BaseMotorManualCalibration.vue'
 import BaseSpinner from 'components/base/BaseSpinner.vue'
 import homePositionClassicImage from 'src/assets/setup-wizard/home-position-classic.jpg'
 import homePositionMiniImage from 'src/assets/setup-wizard/home-position-mini.jpg'
@@ -440,9 +399,9 @@ const nextButtonLoading = computed(
 
 const ROTOR_MOTOR_NAME = 'rotor'
 const rotorMoveAction = ref<'up' | 'down' | null>(null)
-const rotorFineMoveAction = ref<string | null>(null)
 const isReversingRotorDirection = ref(false)
 const isEndstopCalibrating = ref(false)
+const rotorManualCalibrationRef = ref<InstanceType<typeof BaseMotorManualCalibration> | null>(null)
 
 const rotorMotor = computed(() => deviceStore.device?.motors?.[ROTOR_MOTOR_NAME] ?? null)
 const rotorCalibrated = computed(() => Boolean(rotorMotor.value?.calibrated))
@@ -459,7 +418,6 @@ const rotorDirectionLabel = computed(() => {
 const isRotorControlDisabled = computed(
   () =>
     rotorMoveAction.value !== null ||
-    rotorFineMoveAction.value !== null ||
     isEndstopCalibrating.value ||
     isReversingRotorDirection.value ||
     deviceStore.status !== 'open'
@@ -511,16 +469,6 @@ const rotorPositionImageSrc = computed(() => {
   if (isMiniLikeModel.value) return homePositionMiniImage
   if (!model) return null
   return homePositionClassicImage
-})
-const rotorPositionHint = computed(() => {
-  const model = deviceModel.value?.toLowerCase() ?? ''
-  if (!model) {
-    return 'Model-specific position guidance will appear once the device model is detected.'
-  }
-  if (isMiniLikeModel.value) {
-    return 'Ensure the camera unit is level.'
-  }
-  return 'Ensure the swing arm sits at 90° to floor.'
 })
 const rotorEndstop = computed(() => {
   const directEndstop = (rotorMotor.value as unknown as { endstop?: { assigned_motor?: string } | null } | null)?.endstop
@@ -632,14 +580,8 @@ async function handleNext(goNext: () => void) {
 
     isOverridingRotorAngle.value = true
     try {
-      await deviceStore.ensureConnected()
-      await apiSdk().overrideMotorAngle<true>({
-        client: apiClient,
-        throwOnError: true,
-        path: { motor_name: ROTOR_MOTOR_NAME },
-        query: { angle: ROTOR_HOME_OVERRIDE_ANGLE }
-      })
-      await deviceStore.refreshFromRest()
+      const confirmed = await rotorManualCalibrationRef.value?.confirmCalibration()
+      if (!confirmed) return
       goNext()
     } catch (error) {
       console.error('Failed to override rotor angle', error)
@@ -653,18 +595,8 @@ async function handleNext(goNext: () => void) {
   goNext()
 }
 
-async function performRotorMove(degrees: number) {
-  await deviceStore.ensureConnected()
-  await apiSdk().moveMotorByDegree<true>({
-    client: apiClient,
-    throwOnError: true,
-    path: { motor_name: ROTOR_MOTOR_NAME },
-    body: { degrees }
-  })
-}
-
 async function handleRotorMove(direction: 'up' | 'down') {
-  if (rotorMoveAction.value !== null || rotorFineMoveAction.value !== null) {
+  if (rotorMoveAction.value !== null) {
     return
   }
 
@@ -672,28 +604,18 @@ async function handleRotorMove(direction: 'up' | 'down') {
   const degrees = direction === 'up' ? -10 : 10
 
   try {
-    await performRotorMove(degrees)
+    await deviceStore.ensureConnected()
+    await apiSdk().moveMotorByDegree<true>({
+      client: apiClient,
+      throwOnError: true,
+      path: { motor_name: ROTOR_MOTOR_NAME },
+      body: { degrees }
+    })
   } catch (error) {
     console.error('Failed to move rotor motor', error)
     $q.notify({ type: 'negative', message: 'Failed to move rotor motor' })
   } finally {
     rotorMoveAction.value = null
-  }
-}
-
-async function handleRotorFineMove(degrees: number, actionKey: string) {
-  if (rotorFineMoveAction.value !== null || rotorMoveAction.value !== null) {
-    return
-  }
-
-  rotorFineMoveAction.value = actionKey
-  try {
-    await performRotorMove(degrees)
-  } catch (error) {
-    console.error('Failed to fine-adjust rotor motor', error)
-    $q.notify({ type: 'negative', message: 'Failed to move rotor motor' })
-  } finally {
-    rotorFineMoveAction.value = null
   }
 }
 

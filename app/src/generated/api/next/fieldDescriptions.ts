@@ -70,6 +70,9 @@ export const fieldDescriptions = {
   "LightConfig": {
     "pin": "Single GPIO pin controlling the light output.",
     "pins": "Multiple GPIO pins driving grouped light outputs.",
+    "pwm_frequency": "PWM frequency for led driver.",
+    "pwm_max": "Maximum pwm voltage for led driver.",
+    "pwm_min": "Minimum pwm voltage for led driver.",
     "pwm_support": "Indicates whether this light hardware can handle PWM (otherwise only on/off)."
   },
   "MotorConfig": {
@@ -118,6 +121,7 @@ export const fieldDescriptions = {
     "optimization_algorithm": "Path optimization algorithm to use.",
     "optimize_path": "Enable path optimization for faster scanning.",
     "path_method": "Scanning path generator (e.g. fibonacci or spriral).",
+    "pause_before_capture_ms": "Pause in milliseconds before capture to let vibrations settle.",
     "points": "Number of points in scanning path."
   },
   "SoftwareInfoResponse": {
