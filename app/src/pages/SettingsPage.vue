@@ -160,6 +160,39 @@
                             </BaseButtonPrimary>
                           </div>
                         </div>
+                        <div class="col-12 col-md-8 col-lg-6" v-if="motorDeviceSettingsForm">
+                          <q-input
+                            v-model.number="motorDeviceSettingsForm.idle_timeout"
+                            type="number"
+                            min="0"
+                            label="Idle Timeout (s)"
+                            @update:model-value="markMotorDeviceSettingsDirty"
+                          >
+                            <q-tooltip>{{ motorDeviceSettingDescriptions.idle_timeout }}</q-tooltip>
+                          </q-input>
+                          <div class="text-caption text-grey-7 q-mt-xs">
+                            Idle status: {{ idleStatusLabel }}
+                          </div>
+                        </div>
+                        <div class="col-12 col-md-auto" v-if="motorDeviceSettingsForm">
+                          <div class="row justify-end">
+                            <BaseButtonPrimary
+                              icon="save"
+                              label="Save"
+                              :disable="scanLocked || !motorDeviceSettingsDirty"
+                              :loading="motorDeviceSettingsSaving"
+                              @click="saveMotorDeviceSettings"
+                            >
+                              <q-tooltip>
+                                {{
+                                  scanLocked
+                                    ? scanLockedTooltip
+                                    : 'Save idle timeout for automatic motor and light shutdown.'
+                                }}
+                              </q-tooltip>
+                            </BaseButtonPrimary>
+                          </div>
+                        </div>
                       </div>
                     </BaseSection>
 
@@ -325,17 +358,17 @@
                 >
                   <BaseSection title="Motor Settings">
                   <div class="row q-col-gutter-md">
-                    <div class="col-12" v-if="showMotorDeviceSettings && motorDeviceSettingsForm">
+                    <div class="col-12" v-if="showMotorBehaviorSettings && motorDeviceSettingsForm">
                       <q-card flat bordered>
                         <q-card-section>
                           <div class="text-subtitle1">Motor behavior</div>
                           <div class="text-caption text-grey-7">
-                            Startup state, idle timeout and automatic endstop calibration.
+                            Startup state and automatic endstop calibration.
                           </div>
                         </q-card-section>
                         <q-card-section class="q-pt-none">
                           <div class="row q-col-gutter-md">
-                            <div class="col-12 col-md-6 col-lg-4">
+                            <div class="col-12 col-md-6">
                               <q-select
                                 v-model="motorDeviceSettingsForm.startup_mode"
                                 :options="startupModeOptions"
@@ -347,18 +380,7 @@
                                 <q-tooltip>{{ motorDeviceSettingDescriptions.startup_mode }}</q-tooltip>
                               </q-select>
                             </div>
-                            <div class="col-12 col-md-6 col-lg-4">
-                              <q-input
-                                v-model.number="motorDeviceSettingsForm.motors_timeout"
-                                type="number"
-                                min="0"
-                                label="Motors Timeout (s)"
-                                @update:model-value="markMotorDeviceSettingsDirty"
-                              >
-                                <q-tooltip>{{ motorDeviceSettingDescriptions.motors_timeout }}</q-tooltip>
-                              </q-input>
-                            </div>
-                            <div class="col-12 col-md-6 col-lg-4">
+                            <div class="col-12 col-md-6">
                               <q-select
                                 v-model="motorDeviceSettingsForm.calibrate_mode"
                                 :options="calibrateModeOptions"
@@ -781,11 +803,14 @@
                             <q-card-section>
                               <div class="row items-center justify-between no-wrap">
                                 <div class="text-subtitle1">{{ lightName }}</div>
-                                <div class="text-caption text-grey-7">
+                                <div class="column items-end text-caption text-grey-7">
                                   <template v-if="lightStatuses[lightName] !== null && lightStatuses[lightName] !== undefined">
                                     Status: {{ formatLightStatus(lightStatuses[lightName]) }}
                                   </template>
                                   <template v-else>Status unavailable</template>
+                                  <template v-if="lightSupportsIntensityControl(lightName)">
+                                    Intensity: {{ formatLightIntensity(lightForms[lightName].intensity) }}
+                                  </template>
                                 </div>
                               </div>
                             </q-card-section>
@@ -800,13 +825,30 @@
                                     @update:model-value="() => markLightFormDirty(lightName)"
                                   />
                                 </div>
+                                <div class="col-12" v-if="lightSupportsIntensityControl(lightName)">
+                                  <BaseSliderWithInput
+                                    v-model="lightForms[lightName].intensity"
+                                    label="Intensity"
+                                    :slider-min="0"
+                                    :slider-max="100"
+                                    :input-min="0"
+                                    :input-max="100"
+                                    :slider-step="1"
+                                    input-width="74px"
+                                    :disabled="scanLocked"
+                                    @update:model-value="() => markLightFormDirty(lightName)"
+                                  />
+                                  <div v-if="lightIntensityError(lightName)" class="text-negative text-caption q-mt-xs">
+                                    {{ lightIntensityError(lightName) }}
+                                  </div>
+                                </div>
                               </div>
                             </q-card-section>
                             <q-card-actions align="right">
                               <BaseButtonPrimary
                                 icon="save"
                                 label="Save"
-                                :disable="scanLocked || Boolean(lightPinError(lightName))"
+                                :disable="scanLocked || Boolean(lightPinError(lightName)) || Boolean(lightIntensityError(lightName))"
                                 :loading="lightSaving[lightName] === true"
                                 @click="saveLightSettings(lightName)"
                               >
@@ -1210,6 +1252,7 @@ import { useTaskStore } from 'src/stores/tasks'
 import { useFirmwareSettingsStore } from 'src/stores/firmwareSettings'
 import { useFrontendSettingsStore } from 'src/stores/frontendSettings'
 import { versionToApiTarget } from 'src/generated/api/versioned.gen'
+import { useDeviceWakeup } from 'src/composables/useDeviceWakeup'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
 import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue'
@@ -1218,6 +1261,7 @@ import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import BaseMotorButtonBar from 'components/base/BaseMotorButtonBar.vue'
 import BaseSelect from 'components/base/BaseSelect.vue'
+import BaseSliderWithInput from 'components/base/BaseSliderWithInput.vue'
 import BasePage from 'components/base/BasePage.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
@@ -1246,6 +1290,7 @@ const cameraStore = useCameraStore()
 const taskStore = useTaskStore()
 const firmwareSettingsStore = useFirmwareSettingsStore()
 const frontendSettingsStore = useFrontendSettingsStore()
+const { wakeUpDevice } = useDeviceWakeup()
 const apiSdk = () => getApiSdk()
 void taskStore.ensureConnected()
 const { activeScanTaskId } = storeToRefs(taskStore)
@@ -1261,6 +1306,13 @@ const supportsTriggers = computed(() => {
   }
 
   return typeof sdk.getTriggers === 'function' && typeof sdk.triggerOnce === 'function'
+})
+const supportsLightIntensity = computed(() => {
+  const sdk = apiSdk() as {
+    pwmLight?: unknown
+  }
+
+  return typeof sdk.pwmLight === 'function'
 })
 
 const scannerAddress = computed(() => apiConfigStore.baseURL.replace(/\/$/, ''))
@@ -1950,6 +2002,20 @@ const lightStatuses = computed<Record<string, boolean | null>>(() => {
     Object.entries(current).map(([name, status]) => [name, typeof status?.is_on === 'boolean' ? status.is_on : null])
   )
 })
+const idleStatusLabel = computed(() => {
+  const motorStates = Object.values(motors.value ?? {})
+  const lightStates = Object.values(lights.value ?? {})
+
+  const hasMotorData = motorStates.length > 0
+  const hasLightData = lightStates.length > 0
+  if (!hasMotorData && !hasLightData) {
+    return 'Unknown'
+  }
+
+  const anyMotorBusyNow = motorStates.some((motor) => motor?.busy === true)
+  const anyLightOnNow = lightStates.some((light) => light?.is_on === true)
+  return anyMotorBusyNow || anyLightOnNow ? 'Active' : 'Idle'
+})
 const lightForms = reactive<Record<string, LightForm>>({})
 const lightSaving = reactive<Record<string, boolean>>({})
 const lightFormDirty = reactive<Record<string, boolean>>({})
@@ -2045,7 +2111,7 @@ const endstopRows = computed<EndstopRow[]>(() => {
     })
     .filter((row): row is EndstopRow => row !== null)
 })
-const showMotorDeviceSettings = computed(() => isNextApiTarget.value && endstopRows.value.length > 0)
+const showMotorBehaviorSettings = computed(() => isNextApiTarget.value && endstopRows.value.length > 0)
 
 const triggerRows = computed<TriggerRow[]>(() => {
   if (!supportsTriggers.value) {
@@ -2107,7 +2173,7 @@ type MotorForm = {
 
 type MotorDeviceSettingsForm = {
   startup_mode: ScannerStartupMode
-  motors_timeout: number | null
+  idle_timeout: number | null
   calibrate_mode: ScannerCalibrateMode
 }
 
@@ -2117,6 +2183,8 @@ type DeviceMetadataForm = {
 
 type LightForm = {
   pins: string
+  intensity: number
+  supports_pwm: boolean
 }
 
 type AddMotorForm = {
@@ -2182,7 +2250,8 @@ const calibrateModeOptions = [
 ] as const
 const motorDeviceSettingDescriptions = {
   startup_mode: 'Defines whether the motor drivers start enabled or stay idle after boot.',
-  motors_timeout: 'Time in seconds until idle motors are disabled automatically. Use 0 to keep them enabled.',
+  idle_timeout:
+    'Time in seconds until idle motors and lights are disabled automatically. Use 0 to keep them enabled.',
   calibrate_mode: 'Controls if and when motors are calibrated automatically via configured endstops.'
 } as const
 const defaultTriggerActiveLevel = (fieldDefaults.TriggerConfig?.active_level ?? 'active_high') as TriggerActiveLevel
@@ -2411,6 +2480,25 @@ function formatLightStatus(isOn: boolean) {
   return isOn ? 'On' : 'Off'
 }
 
+function clampLightIntensity(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return 100
+  }
+  return Math.max(0, Math.min(100, Math.round(value)))
+}
+
+function formatLightIntensity(value: number) {
+  return `${clampLightIntensity(value)}%`
+}
+
+function lightSupportsPwm(name: string) {
+  return lightForms[name]?.supports_pwm === true
+}
+
+function lightSupportsIntensityControl(name: string) {
+  return lightSupportsPwm(name) && supportsLightIntensity.value
+}
+
 function formatBooleanSetting(value: boolean | null | undefined) {
   if (typeof value !== 'boolean') {
     return 'n/a'
@@ -2421,11 +2509,16 @@ function formatBooleanSetting(value: boolean | null | undefined) {
 const awbCalibrationDefaults = fieldDefaults.AutoCalibrateAwbRequest ?? null
 
 function mapMotorDeviceSettingsForm(
-  config: Pick<ScannerDeviceConfigInput, 'startup_mode' | 'motors_timeout' | 'calibrate_mode'> | null | undefined
+  config: Pick<ScannerDeviceConfigInput, 'startup_mode' | 'idle_timeout' | 'motors_timeout' | 'calibrate_mode'> | null | undefined
 ): MotorDeviceSettingsForm {
   return {
     startup_mode: (config?.startup_mode ?? defaultStartupMode) as ScannerStartupMode,
-    motors_timeout: config?.motors_timeout ?? fieldDefaults.ScannerDeviceConfig?.motors_timeout ?? 0,
+    idle_timeout:
+      config?.idle_timeout ??
+      config?.motors_timeout ??
+      fieldDefaults.ScannerDeviceConfig?.idle_timeout ??
+      fieldDefaults.ScannerDeviceConfig?.motors_timeout ??
+      0,
     calibrate_mode: (config?.calibrate_mode ?? defaultCalibrateMode) as ScannerCalibrateMode
   }
 }
@@ -2640,9 +2733,16 @@ function mapMotorConfig(config: MotorConfig | null | undefined): MotorForm {
   }
 }
 
-function mapLightConfig(config: LightConfig | null | undefined): LightForm {
+function mapLightConfig(config: LightConfig | null | undefined, intensity?: unknown): LightForm {
+  const supportsPwm =
+    (config as (LightConfig & { supports_pwm?: boolean }) | null | undefined)?.supports_pwm ??
+    config?.pwm_support ??
+    false
+
   return {
-    pins: (config?.pins ?? []).join(', ')
+    pins: (config?.pins ?? []).join(', '),
+    intensity: clampLightIntensity(intensity),
+    supports_pwm: supportsPwm
   }
 }
 
@@ -2672,6 +2772,17 @@ const lightPinError = (name: string) => {
     return null
   }
   return validatePins(form.pins).error
+}
+
+const lightIntensityError = (name: string) => {
+  const form = lightForms[name]
+  if (!form || form.supports_pwm !== true || !supportsLightIntensity.value) {
+    return null
+  }
+  if (!Number.isInteger(form.intensity) || form.intensity < 0 || form.intensity > 100) {
+    return 'Intensity must be an integer from 0 to 100.'
+  }
+  return null
 }
 
 const endstopFormError = (name: string) => {
@@ -3237,15 +3348,22 @@ async function saveMotorSettings(name: string) {
 
 async function saveMotorDeviceSettings() {
   const form = motorDeviceSettingsForm.value
-  if (!form || !showMotorDeviceSettings.value || motorDeviceSettingsSaving.value) {
+  if (!form || !isNextApiTarget.value || motorDeviceSettingsSaving.value) {
     return
   }
 
   motorDeviceSettingsSaving.value = true
   try {
+    const target = resolveApiTarget(apiConfigStore.version)
     await updateConfigWithMutation((config) => {
       config.startup_mode = form.startup_mode
-      config.motors_timeout = form.motors_timeout ?? 0
+      if (target === 'next') {
+        config.idle_timeout = form.idle_timeout ?? 0
+        delete config.motors_timeout
+      } else {
+        config.motors_timeout = form.idle_timeout ?? 0
+        delete config.idle_timeout
+      }
       config.calibrate_mode = form.calibrate_mode
     })
 
@@ -3305,7 +3423,30 @@ async function saveLightSettings(name: string) {
       body: payload
     })
 
-    lightForms[name] = mapLightConfig(updated.data)
+    if (form.supports_pwm && supportsLightIntensity.value) {
+      const intensityValidationError = lightIntensityError(name)
+      if (intensityValidationError) {
+        return
+      }
+
+      const pwmLightFn = (apiSdk() as {
+        pwmLight?: (options: {
+          client?: unknown
+          path: { light_name: string }
+          body: { value: number }
+        }) => Promise<unknown>
+      }).pwmLight
+
+      if (typeof pwmLightFn === 'function') {
+        await pwmLightFn({
+          client: apiClient,
+          path: { light_name: name },
+          body: { value: clampLightIntensity(form.intensity) }
+        })
+      }
+    }
+
+    lightForms[name] = mapLightConfig(updated.data, form.intensity)
     lightFormDirty[name] = false
     await saveCurrentConfig()
   } catch (error) {
@@ -3600,7 +3741,10 @@ watch(
     })
 
     Object.entries(current).forEach(([name, status]) => {
-      const mapped = mapLightConfig(status?.settings)
+      const mapped = mapLightConfig(
+        status?.settings,
+        (status as { value?: number | null } | null | undefined)?.value
+      )
       if (!(name in lightForms) || lightFormDirty[name] !== true) {
         lightForms[name] = mapped
       }
@@ -3678,9 +3822,9 @@ watch(
 )
 
 watch(
-  [showMotorDeviceSettings, currentDeviceConfigSnapshot],
-  ([visible, config]) => {
-    if (!visible) {
+  [isNextApiTarget, currentDeviceConfigSnapshot],
+  ([isNext, config]) => {
+    if (!isNext) {
       motorDeviceSettingsForm.value = null
       motorDeviceSettingsDirty.value = false
       return
@@ -3781,6 +3925,7 @@ async function handleDownloadCameraReport() {
 }
 
 onMounted(async () => {
+  await wakeUpDevice()
   await loadVersionOptions()
   await loadDeviceConfigs()
   if (isNextApiTarget.value) {

@@ -590,6 +590,24 @@ export type LightConfig = {
      * Indicates whether this light hardware can handle PWM (otherwise only on/off).
      */
     pwm_support?: boolean;
+    /**
+     * Pwm Frequency
+     *
+     * PWM frequency for led driver.
+     */
+    pwm_frequency?: number;
+    /**
+     * Pwm Min
+     *
+     * Minimum pwm voltage for led driver.
+     */
+    pwm_min?: number;
+    /**
+     * Pwm Max
+     *
+     * Maximum pwm voltage for led driver.
+     */
+    pwm_max?: number;
 };
 
 /**
@@ -1045,6 +1063,10 @@ export type ScannerDevice = {
     endstops: {
         [key: string]: Endstop;
     } | null;
+    /**
+     * Idle Timeout
+     */
+    idle_timeout?: number;
     /**
      * Motors Timeout
      */
@@ -3345,6 +3367,29 @@ export type ReinitializeHardwareResponses = {
 };
 
 export type ReinitializeHardwareResponse = ReinitializeHardwareResponses[keyof ReinitializeHardwareResponses];
+
+export type WakeupDeviceData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/device/wakeup';
+};
+
+export type WakeupDeviceErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+};
+
+export type WakeupDeviceResponses = {
+    /**
+     * Successful Response
+     */
+    200: DeviceControlResponse;
+};
+
+export type WakeupDeviceResponse = WakeupDeviceResponses[keyof WakeupDeviceResponses];
 
 export type RebootData = {
     body?: never;
