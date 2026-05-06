@@ -2788,14 +2788,19 @@ async function fetchCurrentConfig(): Promise<ScannerDeviceConfigInput | null> {
 }
 
 async function persistConfig(config: ScannerDeviceConfigInput) {
+  const persistedModel =
+    typeof config.model === 'string' && config.model.trim().length > 0 ? config.model : 'custom'
+  const persistedShield =
+    typeof config.shield === 'string' && config.shield.trim().length > 0 ? config.shield : 'custom'
+
   return apiSdk().addConfigJson({
     client: apiClient,
     body: {
       config_data: {
         ...config,
         name: FRONTEND_CONFIG_LABEL,
-        model: 'custom',
-        shield: 'custom'
+        model: persistedModel,
+        shield: persistedShield
       },
       filename: { config_file: DEFAULT_CONFIG_FILENAME }
     }
