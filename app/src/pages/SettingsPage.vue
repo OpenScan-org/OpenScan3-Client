@@ -1863,10 +1863,6 @@ const selectedConfig = ref<string | null>(null)
 const configApplying = ref(false)
 const currentDeviceConfigSnapshot = ref<ScannerDeviceConfigInput | null>(null)
 const lastKnownConfigFile = ref<string | null>(localStorage.getItem(LAST_KNOWN_CONFIG_STORAGE_KEY))
-const currentShield = computed(() => (currentDeviceConfigSnapshot.value?.shield ?? null)?.toLowerCase() ?? null)
-const showMotorDeviceSettings = computed(
-  () => isNextApiTarget.value && (currentShield.value === 'custom' || currentShield.value === 'blackshield')
-)
 
 const setLastKnownConfig = (value: string | null) => {
   lastKnownConfigFile.value = value
@@ -2049,6 +2045,7 @@ const endstopRows = computed<EndstopRow[]>(() => {
     })
     .filter((row): row is EndstopRow => row !== null)
 })
+const showMotorDeviceSettings = computed(() => isNextApiTarget.value && endstopRows.value.length > 0)
 
 const triggerRows = computed<TriggerRow[]>(() => {
   if (!supportsTriggers.value) {
