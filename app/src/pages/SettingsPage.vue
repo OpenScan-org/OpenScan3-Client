@@ -802,16 +802,38 @@
                           <q-card flat bordered>
                             <q-card-section>
                               <div class="row items-center justify-between no-wrap">
-                                <div class="text-subtitle1">{{ lightName }}</div>
-                                <div class="column items-end text-caption text-grey-7">
-                                  <template v-if="lightStatuses[lightName] !== null && lightStatuses[lightName] !== undefined">
-                                    Status: {{ formatLightStatus(lightStatuses[lightName]) }}
-                                  </template>
-                                  <template v-else>Status unavailable</template>
-                                  <template v-if="lightSupportsIntensityControl(lightName)">
+                                <div class="column">
+                                  <div class="text-subtitle1">{{ lightName }}</div>
+                                  <div class="text-caption text-grey-7">
+                                    <template v-if="lightStatuses[lightName] !== null && lightStatuses[lightName] !== undefined">
+                                      Status: {{ formatLightStatus(lightStatuses[lightName]) }}
+                                    </template>
+                                    <template v-else>Status unavailable</template>
+                                  </div>
+                                  <div
+                                    v-if="lightSupportsIntensityControl(lightName)"
+                                    class="text-caption text-grey-7"
+                                  >
                                     Intensity: {{ formatLightIntensity(lightForms[lightName].intensity) }}
-                                  </template>
+                                  </div>
                                 </div>
+                                <BaseButtonSecondary
+                                  :icon="lightStatuses[lightName] ? 'lightbulb' : 'lightbulb_outline'"
+                                  :label="lightStatuses[lightName] ? 'Turn off' : 'Turn on'"
+                                  :disable="scanLocked || lightSaving[lightName] === true"
+                                  :loading="lightToggleBusy[lightName] === true"
+                                  @click="toggleLightPower(lightName)"
+                                >
+                                  <q-tooltip>
+                                    {{
+                                      scanLocked
+                                        ? scanLockedTooltip
+                                        : lightStatuses[lightName]
+                                          ? 'Turn this light off.'
+                                          : 'Turn this light on.'
+                                    }}
+                                  </q-tooltip>
+                                </BaseButtonSecondary>
                               </div>
                             </q-card-section>
                             <q-card-section class="q-pt-none" v-if="lightForms[lightName]">
@@ -848,7 +870,12 @@
                               <BaseButtonPrimary
                                 icon="save"
                                 label="Save"
-                                :disable="scanLocked || Boolean(lightPinError(lightName)) || Boolean(lightIntensityError(lightName))"
+                                :disable="
+                                  scanLocked ||
+                                  lightToggleBusy[lightName] === true ||
+                                  Boolean(lightPinError(lightName)) ||
+                                  Boolean(lightIntensityError(lightName))
+                                "
                                 :loading="lightSaving[lightName] === true"
                                 @click="saveLightSettings(lightName)"
                               >
@@ -2019,6 +2046,7 @@ const idleStatusLabel = computed(() => {
 const lightForms = reactive<Record<string, LightForm>>({})
 const lightSaving = reactive<Record<string, boolean>>({})
 const lightFormDirty = reactive<Record<string, boolean>>({})
+const lightToggleBusy = reactive<Record<string, boolean>>({})
 
 type EndstopRow = {
   name: string
@@ -2497,6 +2525,26 @@ function lightSupportsPwm(name: string) {
 
 function lightSupportsIntensityControl(name: string) {
   return lightSupportsPwm(name) && supportsLightIntensity.value
+}
+
+async function toggleLightPower(name: string) {
+  if (scanLocked.value || lightToggleBusy[name] === true) {
+    return
+  }
+
+  lightToggleBusy[name] = true
+  try {
+    await deviceStore.ensureConnected()
+    await apiSdk().toggleLight({
+      client: apiClient,
+      path: { light_name: name }
+    })
+    await deviceStore.refreshFromRest()
+  } catch (error) {
+    console.error(`Failed to toggle light "${name}".`, error)
+  } finally {
+    lightToggleBusy[name] = false
+  }
 }
 
 function formatBooleanSetting(value: boolean | null | undefined) {
@@ -3433,15 +3481,18 @@ async function saveLightSettings(name: string) {
         pwmLight?: (options: {
           client?: unknown
           path: { light_name: string }
-          body: { value: number }
+          query: { value: number }
+          throwOnError?: boolean
         }) => Promise<unknown>
       }).pwmLight
 
       if (typeof pwmLightFn === 'function') {
+        const intensity = clampLightIntensity(form.intensity)
         await pwmLightFn({
           client: apiClient,
           path: { light_name: name },
-          body: { value: clampLightIntensity(form.intensity) }
+          query: { value: intensity },
+          throwOnError: true
         })
       }
     }
@@ -3737,13 +3788,16 @@ watch(
         delete lightForms[name]
         delete lightSaving[name]
         delete lightFormDirty[name]
+        delete lightToggleBusy[name]
       }
     })
 
     Object.entries(current).forEach(([name, status]) => {
+      const runtimeIntensity = (status as { value?: number | null } | null | undefined)?.value
+      const fallbackIntensity = lightForms[name]?.intensity
       const mapped = mapLightConfig(
         status?.settings,
-        (status as { value?: number | null } | null | undefined)?.value
+        runtimeIntensity ?? fallbackIntensity
       )
       if (!(name in lightForms) || lightFormDirty[name] !== true) {
         lightForms[name] = mapped
@@ -3753,6 +3807,9 @@ watch(
       }
       if (!(name in lightFormDirty)) {
         lightFormDirty[name] = false
+      }
+      if (!(name in lightToggleBusy)) {
+        lightToggleBusy[name] = false
       }
     })
   },
