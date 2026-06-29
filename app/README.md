@@ -54,6 +54,12 @@ npm run build:zip
 ```
 This produces `dist/spa.zip`. Requires the `zip` command to be available on the system.
 
+### Build and create Debian package for updater deployment
+```bash
+npm run build:deb
+```
+This produces `dist/openscan3-client_<version>_all.deb`. The package installs the built SPA assets into `/usr/share/openscan3-client` and intentionally does not ship nginx configuration or services.
+
 ### Regenerate API client and schema helpers
 ```bash
 npm run api:gen
