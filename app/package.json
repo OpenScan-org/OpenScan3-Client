@@ -9,7 +9,9 @@
   "scripts": {
     "api:gen": "node scripts/generate-api.mjs",
     "build": "quasar build",
+    "build:deb": "quasar build && npm run deb:spa",
     "build:zip": "quasar build && npm run zip:spa",
+    "deb:spa": "sh scripts/package-deb.sh",
     "dev": "quasar dev",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
