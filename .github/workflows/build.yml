@@ -37,8 +37,11 @@ jobs:
           npm install -g @quasar/cli
           npm ci
 
-      - name: Build SPA zip
-        run: npm run build:zip
+      - name: Build SPA artifacts
+        run: |
+          npm run build
+          npm run zip:spa
+          npm run deb:spa
 
       - name: Compute release name
         id: version
@@ -67,4 +70,6 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.release_name }}
           name: ${{ steps.version.outputs.release_name }}
-          files: app/dist/spa.zip
+          files: |
+            app/dist/spa.zip
+            app/dist/*.deb
