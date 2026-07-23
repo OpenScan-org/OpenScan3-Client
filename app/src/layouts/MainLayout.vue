@@ -45,7 +45,20 @@
         <q-list class="col">
           <EssentialLink v-for="link in upperLinks" :key="link.title" v-bind="link" />
           <q-separator />
-          <EssentialLink v-for="link in lowerLinks" :key="link.title" v-bind="link" />
+          <q-item
+            clickable
+            class="update-link--paused text-grey-7"
+            aria-label="Updates are unavailable"
+            @click="updateInfoDialog = true"
+          >
+            <q-item-section avatar>
+              <q-icon name="system_update" />
+            </q-item-section>
+            <q-item-section>
+              <q-item-label class="text-strike">Update</q-item-label>
+            </q-item-section>
+            <q-tooltip>Updates are unavailable</q-tooltip>
+          </q-item>
         </q-list>
 
         <q-separator />
@@ -89,6 +102,24 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+
+    <q-dialog v-model="updateInfoDialog">
+      <q-card style="max-width: 480px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Stable release coming soon</div>
+          <q-space />
+          <q-btn v-close-popup icon="close" flat round dense aria-label="Close" />
+        </q-card-section>
+        <q-card-section>
+          OpenScan is moving from beta to its stable release. Updates are temporarily paused while we prepare the new version.
+          You can continue using your scanner as usual. Installing the stable release will require flashing a new system image.
+          We will provide instructions when it is ready.
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn v-close-popup flat color="primary" label="Close" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-layout>
 </template>
 
@@ -98,7 +129,6 @@ import EssentialLink from 'components/EssentialLink.vue';
 import type { EssentialLinkProps } from 'components/models';
 import { useDeviceStore } from 'src/stores/device';
 import { useTaskStore } from 'src/stores/tasks';
-import { useVersionStore } from 'src/stores/version';
 import PowerControls from 'components/PowerControls.vue';
 import TaskDrawerPanel from 'components/task/TaskDrawerPanel.vue';
 
@@ -135,23 +165,9 @@ const upperLinks: EssentialLinkProps[] = [
   },
 ];
 
-const versionStore = useVersionStore()
-void versionStore.initialize()
-
-const updateBadge = computed(() => versionStore.anyUpdateAvailable ? '!' : '')
-
-const lowerLinks = computed<EssentialLinkProps[]>(() => [
-  {
-    title: 'Update',
-    icon: 'system_update',
-    target: '_self',
-    link: '/admin/',
-    badge: updateBadge.value
-  }
-])
-
 const leftDrawerOpen = ref(true)
 const rightDrawerOpen = ref(false)
+const updateInfoDialog = ref(false)
 
 const deviceStore = useDeviceStore()
 void deviceStore.ensureConnected()
@@ -181,5 +197,8 @@ function toggleRightDrawer() {
   height: 40px;
 }
 
+.update-link--paused {
+  opacity: 0.7;
+}
 
 </style>
