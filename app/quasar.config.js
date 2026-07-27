@@ -94,7 +94,13 @@ export default configure(function (/* ctx */) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
     devServer: {
       // https: true
-      open: true // opens browser window automatically
+      open: true, // opens browser window automatically
+      watch: {
+        // Use polling so development still works on hosts with a low inotify
+        // watch limit (otherwise Vite can terminate with EMFILE).
+        usePolling: true,
+        interval: 500
+      }
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
