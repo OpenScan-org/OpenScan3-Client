@@ -89,6 +89,7 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+
   </q-layout>
 </template>
 
@@ -98,7 +99,6 @@ import EssentialLink from 'components/EssentialLink.vue';
 import type { EssentialLinkProps } from 'components/models';
 import { useDeviceStore } from 'src/stores/device';
 import { useTaskStore } from 'src/stores/tasks';
-import { useVersionStore } from 'src/stores/version';
 import PowerControls from 'components/PowerControls.vue';
 import TaskDrawerPanel from 'components/task/TaskDrawerPanel.vue';
 
@@ -135,20 +135,13 @@ const upperLinks: EssentialLinkProps[] = [
   },
 ];
 
-const versionStore = useVersionStore()
-void versionStore.initialize()
-
-const updateBadge = computed(() => versionStore.anyUpdateAvailable ? '!' : '')
-
-const lowerLinks = computed<EssentialLinkProps[]>(() => [
+const lowerLinks: EssentialLinkProps[] = [
   {
     title: 'Update',
     icon: 'system_update',
-    target: '_self',
-    link: '/admin/',
-    badge: updateBadge.value
+    link: '/update'
   }
-])
+]
 
 const leftDrawerOpen = ref(true)
 const rightDrawerOpen = ref(false)
@@ -180,6 +173,5 @@ function toggleRightDrawer() {
 .main-logo {
   height: 40px;
 }
-
 
 </style>

@@ -3493,7 +3493,7 @@
           "develop"
         ],
         "summary": "Hello World Async",
-        "description": "Start the async hello world demo task.",
+        "description": "Start the async hello world progress demo task.",
         "operationId": "hello_world_async",
         "parameters": [
           {

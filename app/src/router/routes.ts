@@ -10,6 +10,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'scan/progress/:taskId?', component: () => import('pages/ScanProgressPage.vue') },
       { path: 'setup', component: () => import('pages/SetupPage.vue') },
       { path: 'settings', component: () => import('pages/SettingsPage.vue') },
+      { path: 'update', component: () => import('pages/UpdatePage.vue') },
       { path: 'logs', component: () => import('pages/LogsPage.vue') },
       { path: 'projects', component: () => import('pages/ProjectsPage.vue') },
       { path: 'donate', component: () => import('pages/DonationPage.vue') },
