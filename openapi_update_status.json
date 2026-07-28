@@ -1,0 +1,108 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenScan3 Update Status API",
+    "version": "1.0.0",
+    "description": "Stable update-progress endpoint, served independently of the versioned OpenScan API."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/update-status": {
+      "get": {
+        "tags": [
+          "system update"
+        ],
+        "summary": "Get update progress",
+        "description": "Returns the current or most recently completed update job and its log output.",
+        "operationId": "get_update_progress",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateProgressResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "UpdateProgressResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "finished",
+          "message",
+          "lines",
+          "job"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "description": "Whether the update job completed successfully."
+          },
+          "finished": {
+            "type": "boolean",
+            "description": "Whether the update job has reached a terminal state."
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable summary of the current update state."
+          },
+          "lines": {
+            "type": "array",
+            "description": "Update command output, ordered from oldest to newest.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "job": {
+            "$ref": "#/components/schemas/UpdateProgressJob"
+          }
+        }
+      },
+      "UpdateProgressJob": {
+        "type": "object",
+        "required": [
+          "error",
+          "status",
+          "unit",
+          "updated_at"
+        ],
+        "properties": {
+          "error": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Error reported by the update job, if any."
+          },
+          "status": {
+            "type": "string",
+            "examples": [
+              "update_running",
+              "update_completed"
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "description": "Systemd unit responsible for the update job."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+}
