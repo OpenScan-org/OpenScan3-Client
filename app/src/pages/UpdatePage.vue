@@ -85,6 +85,35 @@
             A restart is required to finish a previously installed update.
           </BaseBanner>
 
+          <q-card
+            v-if="installProgress"
+            flat
+            bordered
+            class="update-progress q-mb-lg"
+          >
+            <q-card-section>
+              <div class="row items-center no-wrap q-gutter-sm">
+                <q-spinner v-if="isInstalling" color="primary" size="24px" />
+                <q-icon v-else name="task_alt" color="positive" size="24px" />
+                <div class="text-subtitle1 text-weight-medium">
+                  {{
+                    isInstalling
+                      ? 'Installing updates'
+                      : 'Update installation finished'
+                  }}
+                </div>
+              </div>
+              <div v-if="installProgress.message" class="text-body2 q-mt-sm">
+                {{ installProgress.message }}
+              </div>
+              <pre
+                v-if="installProgress.lines.length"
+                class="update-progress__log"
+                >{{ installProgress.lines.join('\n') }}</pre
+              >
+            </q-card-section>
+          </q-card>
+
           <div class="row">
             <div class="col-12">
               <q-card flat bordered class="update-detail-card full-height">
@@ -108,10 +137,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      v-for="pkg in sortedPackages"
-                      :key="pkg.id"
-                    >
+                    <tr v-for="pkg in sortedPackages" :key="pkg.id">
                       <td>{{ packageLabel(pkg.id) }}</td>
                       <td class="version-cell">
                         {{ pkg.installed_version ?? '—' }}
@@ -207,15 +233,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import type * as latestSdk from 'src/generated/api/latest/sdk.gen';
 import type {
   OpenScanUpdatePackage,
-  UpdateInstallResponse,
   UpdateStatusResponse,
 } from 'src/generated/api/latest/types.gen';
-import { apiClient, getApiSdk, resolveApiTarget } from 'src/services/apiClient';
+import {
+  apiClient,
+  getApiBaseUrl,
+  getApiSdk,
+  resolveApiTarget,
+} from 'src/services/apiClient';
 import BaseBanner from 'components/base/BaseBanner.vue';
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue';
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue';
@@ -229,6 +259,12 @@ type UpdateSdk = Pick<
   'getUpdateStatus' | 'checkForUpdates' | 'applyUpdates'
 >;
 type UpdateAction = 'check' | 'install' | null;
+type UpdateProgress = {
+  job?: string | { status?: string };
+  finished?: boolean | string | { status?: string } | null;
+  message?: string;
+  lines?: string[];
+};
 
 const $q = useQuasar();
 const updateStatus = ref<UpdateStatusResponse | null>(null);
@@ -236,6 +272,10 @@ const statusLoading = ref(false);
 const activeAction = ref<UpdateAction>(null);
 const updateError = ref<string | null>(null);
 const showInstallConfirmation = ref(false);
+const installProgress = ref<Required<
+  Pick<UpdateProgress, 'message' | 'lines'>
+> | null>(null);
+let updatePollingCancelled = false;
 const cameraStore = useCameraStore();
 const frontendSettingsStore = useFrontendSettingsStore();
 
@@ -268,6 +308,7 @@ const canInstall = computed(
     updateStatus.value?.status === 'updates_available' &&
     !updateStatus.value.stale,
 );
+const isInstalling = computed(() => activeAction.value === 'install');
 const openScanUpdateCount = computed(
   () =>
     updateStatus.value?.openscan.packages.filter((pkg) => pkg.update_available)
@@ -279,7 +320,8 @@ const totalUpdateCount = computed(
 );
 const sortedPackages = computed(() =>
   [...(updateStatus.value?.openscan.packages ?? [])].sort(
-    (left, right) => Number(left.id === 'updater') - Number(right.id === 'updater'),
+    (left, right) =>
+      Number(left.id === 'updater') - Number(right.id === 'updater'),
   ),
 );
 const lastCheckedLabel = computed(() =>
@@ -383,6 +425,66 @@ function formatCheckedAt(value: string | null) {
   }).format(date);
 }
 
+function updateProgressUrl() {
+  return new URL('/update-status', getApiBaseUrl()).toString();
+}
+
+function jobStatus(progress: UpdateProgress) {
+  return typeof progress.job === 'string' ? progress.job : progress.job?.status;
+}
+
+function isUpdateRunning(progress: UpdateProgress) {
+  return (
+    jobStatus(progress) === 'update_running' || progress.finished === false
+  );
+}
+
+function isUpdateFinished(progress: UpdateProgress) {
+  return !isUpdateRunning(progress) && progress.finished != null;
+}
+
+function updateFailed(progress: UpdateProgress) {
+  const finishedStatus =
+    typeof progress.finished === 'string'
+      ? progress.finished
+      : typeof progress.finished === 'object' && progress.finished
+        ? progress.finished.status
+        : undefined;
+  return /(?:fail|error|cancel)/i.test(finishedStatus ?? '');
+}
+
+function waitForNextUpdatePoll() {
+  return new Promise<void>((resolve) => window.setTimeout(resolve, 2_000));
+}
+
+async function pollUpdateProgress(): Promise<UpdateProgress | null> {
+  let lastProgress: UpdateProgress | null = null;
+
+  while (!updatePollingCancelled) {
+    try {
+      const response = await fetch(updateProgressUrl(), { cache: 'no-store' });
+      if (!response.ok)
+        throw new Error(`Update status returned ${response.status}`);
+
+      const progress = (await response.json()) as UpdateProgress;
+      lastProgress = progress;
+      installProgress.value = {
+        message: progress.message ?? '',
+        lines: Array.isArray(progress.lines) ? progress.lines : [],
+      };
+      if (isUpdateFinished(progress)) return progress;
+    } catch (error) {
+      // nginx and the updater may be restarted by the update itself. Keep
+      // polling instead of presenting a temporary connection error as failure.
+      console.debug('Update progress endpoint temporarily unavailable.', error);
+    }
+
+    await waitForNextUpdatePoll();
+  }
+
+  return lastProgress;
+}
+
 async function loadStatus() {
   if (!updatesSupported.value) return;
 
@@ -420,15 +522,31 @@ async function installUpdates() {
   showInstallConfirmation.value = false;
   activeAction.value = 'install';
   updateError.value = null;
+  installProgress.value = { message: 'Starting update…', lines: [] };
+  updatePollingCancelled = false;
   try {
-    const result = unwrapResponse<UpdateInstallResponse>(
-      await updateSdk().applyUpdates({ client: apiClient }),
-    );
-    if (result.status !== 'completed') {
+    const result = unwrapResponse<{
+      status?: string;
+      reboot_required?: boolean;
+    }>(await updateSdk().applyUpdates({ client: apiClient }));
+    if (result.status === 'install_blocked') {
       updateError.value =
-        result.status === 'install_blocked'
-          ? 'The update could not start because the device is currently busy.'
-          : 'The update installation failed. Please try again or inspect the device logs.';
+        'The update could not start because the device is currently busy.';
+      installProgress.value = null;
+      return;
+    }
+    if (result.status === 'install_failed') {
+      updateError.value =
+        'The update installation failed. Please try again or inspect the device logs.';
+      return;
+    }
+
+    const progress = await pollUpdateProgress();
+    if (updatePollingCancelled) return;
+    if (updateFailed(progress ?? {})) {
+      updateError.value =
+        progress?.message ??
+        'The update installation failed. Please try again or inspect the device logs.';
       return;
     }
 
@@ -452,6 +570,10 @@ onMounted(() => {
   if (!cameraStore.cameras.length) {
     void cameraStore.fetchCameras();
   }
+});
+
+onBeforeUnmount(() => {
+  updatePollingCancelled = true;
 });
 </script>
 
@@ -522,6 +644,24 @@ onMounted(() => {
 .update-detail-card {
   border-color: #dde3ea;
   border-radius: 10px;
+}
+
+.update-progress {
+  border-color: #cfe4f2;
+  background: #f8fcff;
+}
+
+.update-progress__log {
+  max-height: 240px;
+  margin: 16px 0 0;
+  padding: 12px;
+  overflow: auto;
+  color: #d7e3ee;
+  background: #17212b;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
 }
 
 .update-actions {
