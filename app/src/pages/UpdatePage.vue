@@ -49,11 +49,11 @@
                       class="status-orb"
                       :class="`status-orb--${updateStatus.status}`"
                     >
-                      <q-icon :name="statusIcon" size="34px" />
+                      <q-spinner v-if="isInstalling" color="primary" size="34px" />
+                      <q-icon v-else :name="statusIcon" size="34px" />
                     </div>
                     <div class="q-ml-md">
-                      <div class="text-overline">Update status</div>
-                      <div class="text-h4 text-weight-bold q-mt-xs">
+                      <div class="text-h4 text-weight-bold">
                         {{ statusHeadline }}
                       </div>
                       <div class="text-body1 q-mt-sm">{{ statusMessage }}</div>
@@ -85,15 +85,43 @@
             A restart is required to finish a previously installed update.
           </BaseBanner>
 
+          <BaseSection
+            v-if="installProgress"
+            :title="
+              isInstalling
+                ? 'Installing updates'
+                : 'Update installation finished'
+            "
+            :description="installProgress.message"
+            class="update-progress q-mb-lg"
+          >
+            <template #header-action>
+              <q-spinner v-if="isInstalling" color="primary" size="24px" />
+              <q-icon v-else name="task_alt" color="positive" size="24px" />
+            </template>
+            <pre
+              v-if="installProgress.lines.length"
+              class="update-progress__log"
+              >{{ installProgress.lines.join('\n') }}</pre
+            >
+          </BaseSection>
+
           <div class="row">
             <div class="col-12">
-              <q-card flat bordered class="update-detail-card full-height">
-                <q-card-section class="q-pb-sm">
-                  <div class="text-h6">OpenScan components</div>
-                  <div class="text-body2 text-grey-7">
-                    Versions supplied by the last update check.
-                  </div>
-                </q-card-section>
+              <BaseSection
+                title="OpenScan components"
+                :description="`Versions supplied by the last update check at ${lastCheckedLabel}.`"
+                class="update-detail-card full-height"
+              >
+                <template #header-action>
+                  <BaseButtonPrimary
+                    icon="search"
+                    label="Check for updates"
+                    :loading="activeAction === 'check'"
+                    :disable="isBusy"
+                    @click="checkForUpdates"
+                  />
+                </template>
                 <q-markup-table
                   v-if="sortedPackages.length"
                   flat
@@ -108,10 +136,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      v-for="pkg in sortedPackages"
-                      :key="pkg.id"
-                    >
+                    <tr v-for="pkg in sortedPackages" :key="pkg.id">
                       <td>{{ packageLabel(pkg.id) }}</td>
                       <td class="version-cell">
                         {{ pkg.installed_version ?? '—' }}
@@ -129,36 +154,13 @@
                     </tr>
                   </tbody>
                 </q-markup-table>
-                <q-card-section v-else class="text-body2 text-grey-7"
-                  >No OpenScan component version details are
-                  available.</q-card-section
-                >
-              </q-card>
+                <div v-else class="text-body2 text-grey-7">
+                  No OpenScan component version details are available.
+                </div>
+              </BaseSection>
             </div>
           </div>
 
-          <div class="update-actions q-mt-lg">
-            <div>
-              <div class="text-weight-medium">Ready to check again?</div>
-              <div class="text-body2 text-grey-7">
-                Finish active scans before installing updates.
-              </div>
-              <div class="update-check-time q-mt-sm">
-                <q-icon name="schedule" size="17px" />
-                <span
-                  >Last update check:
-                  <strong>{{ lastCheckedLabel }}</strong></span
-                >
-              </div>
-            </div>
-            <BaseButtonPrimary
-              icon="search"
-              label="Check for updates"
-              :loading="activeAction === 'check'"
-              :disable="isBusy"
-              @click="checkForUpdates"
-            />
-          </div>
         </template>
       </template>
     </div>
@@ -207,28 +209,48 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import type * as latestSdk from 'src/generated/api/latest/sdk.gen';
 import type {
   OpenScanUpdatePackage,
-  UpdateInstallResponse,
   UpdateStatusResponse,
 } from 'src/generated/api/latest/types.gen';
-import { apiClient, getApiSdk, resolveApiTarget } from 'src/services/apiClient';
+import {
+  apiClient,
+  getApiBaseUrl,
+  getApiSdk,
+  resolveApiTarget,
+} from 'src/services/apiClient';
 import BaseBanner from 'components/base/BaseBanner.vue';
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue';
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue';
+import BaseSection from 'components/base/BaseSection.vue';
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue';
 import BasePage from 'components/base/BasePage.vue';
 import { useCameraStore } from 'src/stores/camera';
 import { useFrontendSettingsStore } from 'src/stores/frontendSettings';
+import { useUpdatesStore } from 'src/stores/updates';
 
 type UpdateSdk = Pick<
   typeof latestSdk,
   'getUpdateStatus' | 'checkForUpdates' | 'applyUpdates'
 >;
 type UpdateAction = 'check' | 'install' | null;
+type UpdateProgressJob = {
+  error: string | null;
+  status: string;
+  unit: string;
+  updated_at: string;
+};
+
+type UpdateProgress = {
+  ok: boolean;
+  finished: boolean;
+  message: string;
+  lines: string[];
+  job: UpdateProgressJob;
+};
 
 const $q = useQuasar();
 const updateStatus = ref<UpdateStatusResponse | null>(null);
@@ -236,8 +258,11 @@ const statusLoading = ref(false);
 const activeAction = ref<UpdateAction>(null);
 const updateError = ref<string | null>(null);
 const showInstallConfirmation = ref(false);
+const installProgress = ref<UpdateProgress | null>(null);
+let updatePollingCancelled = false;
 const cameraStore = useCameraStore();
 const frontendSettingsStore = useFrontendSettingsStore();
+const updatesStore = useUpdatesStore();
 
 const selectedCamera = computed(
   () =>
@@ -268,6 +293,7 @@ const canInstall = computed(
     updateStatus.value?.status === 'updates_available' &&
     !updateStatus.value.stale,
 );
+const isInstalling = computed(() => activeAction.value === 'install');
 const openScanUpdateCount = computed(
   () =>
     updateStatus.value?.openscan.packages.filter((pkg) => pkg.update_available)
@@ -279,7 +305,8 @@ const totalUpdateCount = computed(
 );
 const sortedPackages = computed(() =>
   [...(updateStatus.value?.openscan.packages ?? [])].sort(
-    (left, right) => Number(left.id === 'updater') - Number(right.id === 'updater'),
+    (left, right) =>
+      Number(left.id === 'updater') - Number(right.id === 'updater'),
   ),
 );
 const lastCheckedLabel = computed(() =>
@@ -302,16 +329,19 @@ const statusTitle = computed(() => {
 const statusHeadline = computed(() => {
   const status = updateStatus.value;
   if (!status) return '';
+  if (isInstalling.value) return 'Update in progress';
   if (status.stale) return 'Update information needs refreshing';
   if (status.status === 'updates_available') {
     return `Updates for ${totalUpdateCount.value} ${pluralize(totalUpdateCount.value, 'package')} available`;
   }
-  if (status.status === 'up_to_date') return 'Your software is up to date';
+  if (status.status === 'up_to_date') return 'All good';
   return statusTitle.value;
 });
 const statusMessage = computed(() => {
   const status = updateStatus.value;
   if (!status) return '';
+  if (isInstalling.value)
+    return 'Updates are being installed. Do not turn off your OpenScan device.';
   if (status.stale)
     return 'The saved update information may be outdated. Check again before installing updates.';
   if (status.status === 'updates_available') {
@@ -383,6 +413,99 @@ function formatCheckedAt(value: string | null) {
   }).format(date);
 }
 
+function updateProgressUrl() {
+  return new URL('/update-status', getApiBaseUrl()).toString();
+}
+
+function parseUpdateProgress(value: unknown): UpdateProgress {
+  if (!value || typeof value !== 'object') {
+    throw new Error('Update progress response is not an object.');
+  }
+
+  const progress = value as Record<string, unknown>;
+  const job = progress.job;
+  if (
+    typeof progress.ok !== 'boolean' ||
+    typeof progress.finished !== 'boolean' ||
+    typeof progress.message !== 'string' ||
+    !Array.isArray(progress.lines) ||
+    !progress.lines.every((line) => typeof line === 'string') ||
+    !job ||
+    typeof job !== 'object'
+  ) {
+    throw new Error('Update progress response has an unexpected shape.');
+  }
+
+  const jobRecord = job as Record<string, unknown>;
+  if (
+    (jobRecord.error !== null && typeof jobRecord.error !== 'string') ||
+    typeof jobRecord.status !== 'string' ||
+    typeof jobRecord.unit !== 'string' ||
+    typeof jobRecord.updated_at !== 'string'
+  ) {
+    throw new Error('Update progress job has an unexpected shape.');
+  }
+
+  return {
+    ok: progress.ok,
+    finished: progress.finished,
+    message: progress.message,
+    lines: progress.lines,
+    job: {
+      error: jobRecord.error,
+      status: jobRecord.status,
+      unit: jobRecord.unit,
+      updated_at: jobRecord.updated_at,
+    },
+  };
+}
+
+function jobStatus(progress: UpdateProgress) {
+  return progress.job.status;
+}
+
+function isUpdateRunning(progress: UpdateProgress) {
+  return jobStatus(progress) === 'update_running' || !progress.finished;
+}
+
+function isUpdateFinished(progress: UpdateProgress) {
+  return !isUpdateRunning(progress) && progress.finished;
+}
+
+function updateFailed(progress: UpdateProgress) {
+  return /(?:fail|error|cancel)/i.test(progress.job.status) ||
+    progress.ok === false;
+}
+
+function waitForNextUpdatePoll() {
+  return new Promise<void>((resolve) => window.setTimeout(resolve, 2_000));
+}
+
+async function pollUpdateProgress(): Promise<UpdateProgress | null> {
+  let lastProgress: UpdateProgress | null = null;
+
+  while (!updatePollingCancelled) {
+    try {
+      const response = await fetch(updateProgressUrl(), { cache: 'no-store' });
+      if (!response.ok)
+        throw new Error(`Update status returned ${response.status}`);
+
+      const progress = parseUpdateProgress(await response.json());
+      lastProgress = progress;
+      installProgress.value = progress;
+      if (isUpdateFinished(progress)) return progress;
+    } catch (error) {
+      // nginx and the updater may be restarted by the update itself. Keep
+      // polling instead of presenting a temporary connection error as failure.
+      console.debug('Update progress endpoint temporarily unavailable.', error);
+    }
+
+    await waitForNextUpdatePoll();
+  }
+
+  return lastProgress;
+}
+
 async function loadStatus() {
   if (!updatesSupported.value) return;
 
@@ -392,6 +515,7 @@ async function loadStatus() {
     updateStatus.value = unwrapResponse<UpdateStatusResponse>(
       await updateSdk().getUpdateStatus({ client: apiClient }),
     );
+    updatesStore.applyStatus(updateStatus.value);
   } catch (error) {
     console.error('Could not load update status.', error);
     updateError.value =
@@ -408,6 +532,7 @@ async function checkForUpdates() {
     updateStatus.value = unwrapResponse<UpdateStatusResponse>(
       await updateSdk().checkForUpdates({ client: apiClient }),
     );
+    updatesStore.applyStatus(updateStatus.value);
   } catch (error) {
     console.error('Could not check for updates.', error);
     updateError.value = 'Could not check for updates. Please try again.';
@@ -420,15 +545,31 @@ async function installUpdates() {
   showInstallConfirmation.value = false;
   activeAction.value = 'install';
   updateError.value = null;
+  installProgress.value = null;
+  updatePollingCancelled = false;
   try {
-    const result = unwrapResponse<UpdateInstallResponse>(
-      await updateSdk().applyUpdates({ client: apiClient }),
-    );
-    if (result.status !== 'completed') {
+    const result = unwrapResponse<{
+      status?: string;
+      reboot_required?: boolean;
+    }>(await updateSdk().applyUpdates({ client: apiClient }));
+    if (result.status === 'install_blocked') {
       updateError.value =
-        result.status === 'install_blocked'
-          ? 'The update could not start because the device is currently busy.'
-          : 'The update installation failed. Please try again or inspect the device logs.';
+        'The update could not start because the device is currently busy.';
+      installProgress.value = null;
+      return;
+    }
+    if (result.status === 'install_failed') {
+      updateError.value =
+        'The update installation failed. Please try again or inspect the device logs.';
+      return;
+    }
+
+    const progress = await pollUpdateProgress();
+    if (updatePollingCancelled) return;
+    if (progress && updateFailed(progress)) {
+      updateError.value =
+        progress?.message ??
+        'The update installation failed. Please try again or inspect the device logs.';
       return;
     }
 
@@ -452,6 +593,10 @@ onMounted(() => {
   if (!cameraStore.cameras.length) {
     void cameraStore.fetchCameras();
   }
+});
+
+onBeforeUnmount(() => {
+  updatePollingCancelled = true;
 });
 </script>
 
@@ -506,14 +651,6 @@ onMounted(() => {
   color: var(--q-positive);
 }
 
-.update-check-time {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 0.875rem;
-  color: #64748b;
-}
-
 .install-button {
   min-width: 190px;
   min-height: 54px;
@@ -524,15 +661,22 @@ onMounted(() => {
   border-radius: 10px;
 }
 
-.update-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 20px 22px;
-  background: #f5f8fb;
-  border: 1px solid #e0e8f0;
-  border-radius: 10px;
+.update-progress {
+  border-color: #cfe4f2;
+  background: #f8fcff;
+}
+
+.update-progress__log {
+  max-height: 240px;
+  margin: 16px 0 0;
+  padding: 12px;
+  overflow: auto;
+  color: #d7e3ee;
+  background: #17212b;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 0.75rem;
+  white-space: pre-wrap;
 }
 
 .version-cell {
@@ -542,12 +686,6 @@ onMounted(() => {
 }
 
 @media (max-width: 599px) {
-  .update-page__header,
-  .update-actions {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
   .update-hero :deep(.q-card__section) {
     padding: 20px;
   }
