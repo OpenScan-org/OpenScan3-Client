@@ -359,7 +359,7 @@ const statusMessage = computed(() => {
     return messages.join(' ');
   }
   if (status.status === 'up_to_date')
-    return 'Your OpenScan and system packages are current.';
+    return 'Your OpenScan and system packages are up to date.';
   if (status.status === 'check_failed')
     return 'The device could not complete its last update check. Check again before installing updates.';
   if (status.status === 'status_unavailable')
