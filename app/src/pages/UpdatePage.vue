@@ -230,6 +230,7 @@ import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBack
 import BasePage from 'components/base/BasePage.vue';
 import { useCameraStore } from 'src/stores/camera';
 import { useFrontendSettingsStore } from 'src/stores/frontendSettings';
+import { useUpdatesStore } from 'src/stores/updates';
 
 type UpdateSdk = Pick<
   typeof latestSdk,
@@ -261,6 +262,7 @@ const installProgress = ref<UpdateProgress | null>(null);
 let updatePollingCancelled = false;
 const cameraStore = useCameraStore();
 const frontendSettingsStore = useFrontendSettingsStore();
+const updatesStore = useUpdatesStore();
 
 const selectedCamera = computed(
   () =>
@@ -513,6 +515,7 @@ async function loadStatus() {
     updateStatus.value = unwrapResponse<UpdateStatusResponse>(
       await updateSdk().getUpdateStatus({ client: apiClient }),
     );
+    updatesStore.applyStatus(updateStatus.value);
   } catch (error) {
     console.error('Could not load update status.', error);
     updateError.value =
@@ -529,6 +532,7 @@ async function checkForUpdates() {
     updateStatus.value = unwrapResponse<UpdateStatusResponse>(
       await updateSdk().checkForUpdates({ client: apiClient }),
     );
+    updatesStore.applyStatus(updateStatus.value);
   } catch (error) {
     console.error('Could not check for updates.', error);
     updateError.value = 'Could not check for updates. Please try again.';
