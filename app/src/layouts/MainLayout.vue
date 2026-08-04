@@ -131,6 +131,7 @@ import { useDeviceStore } from 'src/stores/device';
 import { useTaskStore } from 'src/stores/tasks';
 import PowerControls from 'components/PowerControls.vue';
 import TaskDrawerPanel from 'components/task/TaskDrawerPanel.vue';
+import { useUpdatesStore } from 'src/stores/updates';
 
 const upperLinks: EssentialLinkProps[] = [
   {
@@ -165,6 +166,15 @@ const upperLinks: EssentialLinkProps[] = [
   },
 ];
 
+const lowerLinks = computed<EssentialLinkProps[]>(() => [
+  {
+    title: 'Update',
+    icon: 'system_update',
+    link: '/update',
+    badge: updatesStore.updatesAvailable ? 'Updates available' : ''
+  }
+])
+
 const leftDrawerOpen = ref(true)
 const rightDrawerOpen = ref(false)
 const updateInfoDialog = ref(false)
@@ -174,6 +184,9 @@ void deviceStore.ensureConnected()
 
 const taskStore = useTaskStore()
 void taskStore.ensureConnected()
+
+const updatesStore = useUpdatesStore()
+updatesStore.startPolling()
 
 const runningTaskCount = computed(() => taskStore.runningTasks.length)
 const pausedTaskCount = computed(() => taskStore.tasks.filter((task) => task.status === 'paused').length)

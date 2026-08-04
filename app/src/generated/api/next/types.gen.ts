@@ -923,6 +923,44 @@ export type MotorStatusResponse = {
 };
 
 /**
+ * OpenScanUpdatePackage
+ *
+ * One optional OpenScan component update for the details view.
+ */
+export type OpenScanUpdatePackage = {
+    /**
+     * Id
+     */
+    id: 'firmware' | 'client' | 'updater' | 'system_config' | 'camera_stack';
+    /**
+     * Installed Version
+     */
+    installed_version: string | null;
+    /**
+     * Available Version
+     */
+    available_version: string | null;
+    /**
+     * Update Available
+     */
+    update_available: boolean;
+};
+
+/**
+ * OpenScanUpdateSummary
+ */
+export type OpenScanUpdateSummary = {
+    /**
+     * Updates Available
+     */
+    updates_available: boolean;
+    /**
+     * Packages
+     */
+    packages: Array<OpenScanUpdatePackage>;
+};
+
+/**
  * PathMethod
  */
 export type PathMethod = 'fibonacci';
@@ -1363,6 +1401,24 @@ export type StackingTaskStatus = {
 };
 
 /**
+ * SystemUpdateSummary
+ */
+export type SystemUpdateSummary = {
+    /**
+     * Updates Available
+     */
+    updates_available: boolean;
+    /**
+     * Count
+     */
+    count: number;
+    /**
+     * Reboot Required After Install
+     */
+    reboot_required_after_install: boolean;
+};
+
+/**
  * Task
  *
  * Represents a background task.
@@ -1555,6 +1611,52 @@ export type TriggerStatusResponse = {
      * Last Duration Ms
      */
     last_duration_ms?: number | null;
+};
+
+/**
+ * UpdateInstallResponse
+ *
+ * Result of a synchronous user-requested update installation.
+ */
+export type UpdateInstallResponse = {
+    /**
+     * Status
+     */
+    status: 'completed' | 'install_failed' | 'install_blocked';
+    /**
+     * Reboot Required
+     */
+    reboot_required: boolean;
+};
+
+/**
+ * UpdateStatusResponse
+ *
+ * Cached, user-facing software update status.
+ */
+export type UpdateStatusResponse = {
+    /**
+     * Status
+     */
+    status: 'unknown' | 'up_to_date' | 'updates_available' | 'status_unavailable' | 'check_failed';
+    /**
+     * Checked At
+     */
+    checked_at: string | null;
+    /**
+     * Stale
+     */
+    stale: boolean;
+    /**
+     * Release Channel
+     */
+    release_channel: 'stable' | 'nightly' | 'unknown';
+    openscan: OpenScanUpdateSummary;
+    system: SystemUpdateSummary;
+    /**
+     * Reboot Required
+     */
+    reboot_required: boolean;
 };
 
 /**
@@ -2680,6 +2782,96 @@ export type UpdateSettingResponses = {
 };
 
 export type UpdateSettingResponse = UpdateSettingResponses[keyof UpdateSettingResponses];
+
+export type GetUpdateStatusData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/system/update/status';
+};
+
+export type GetUpdateStatusErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+};
+
+export type GetUpdateStatusResponses = {
+    /**
+     * Successful Response
+     */
+    200: UpdateStatusResponse;
+};
+
+export type GetUpdateStatusResponse = GetUpdateStatusResponses[keyof GetUpdateStatusResponses];
+
+export type CheckForUpdatesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/system/update/check';
+};
+
+export type CheckForUpdatesErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+};
+
+export type CheckForUpdatesResponses = {
+    /**
+     * Successful Response
+     */
+    200: UpdateStatusResponse;
+};
+
+export type CheckForUpdatesResponse = CheckForUpdatesResponses[keyof CheckForUpdatesResponses];
+
+export type ApplyUpdatesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/system/update/apply';
+};
+
+export type ApplyUpdatesErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+};
+
+export type ApplyUpdatesResponses = {
+    /**
+     * Successful Response
+     */
+    200: UpdateInstallResponse;
+};
+
+export type ApplyUpdatesResponse = ApplyUpdatesResponses[keyof ApplyUpdatesResponses];
+
+export type RepairOpenscan3Data = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/system/repair/openscan3';
+};
+
+export type RepairOpenscan3Errors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+};
+
+export type RepairOpenscan3Responses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
 
 export type GetProjectsData = {
     body?: never;
@@ -4673,6 +4865,12 @@ export type GetCameraReportData = {
          * Format
          */
         format?: 'json' | 'text';
+        /**
+         * Release Cameras
+         *
+         * Temporarily release OpenScan camera controllers so rpicam/libcamera probes can acquire cameras.
+         */
+        release_cameras?: boolean;
     };
     url: '/develop/camera-report';
 };

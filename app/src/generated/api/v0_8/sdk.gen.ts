@@ -1249,7 +1249,7 @@ export const cropImage = <ThrowOnError extends boolean = false>(options: Options
 /**
  * Hello World Async
  *
- * Start the async hello world demo task.
+ * Start the async hello world progress demo task.
  */
 export const helloWorldAsync = <ThrowOnError extends boolean = false>(options: Options<HelloWorldAsyncData, ThrowOnError>) => (options.client ?? client).post<HelloWorldAsyncResponses, HelloWorldAsyncErrors, ThrowOnError>({
     responseType: 'json',
