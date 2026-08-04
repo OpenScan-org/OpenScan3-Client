@@ -39,7 +39,10 @@
           <q-card
             flat
             class="update-hero q-mb-lg"
-            :class="`update-hero--${updateStatus.status}`"
+            :class="[
+              `update-hero--${updateStatus.status}`,
+              { 'update-hero--installing': isInstalling },
+            ]"
           >
             <q-card-section class="q-pa-lg">
               <div class="row items-start q-col-gutter-lg">
@@ -88,7 +91,7 @@
           <BaseSection
             v-if="installProgress"
             :title="
-              isInstalling
+              isInstalling && !installProgress.finished
                 ? 'Installing updates'
                 : 'Update installation finished'
             "
@@ -106,7 +109,7 @@
             >
           </BaseSection>
 
-          <div class="row">
+          <div v-if="!isInstalling" class="row">
             <div class="col-12">
               <BaseSection
                 title="OpenScan components"
@@ -210,7 +213,6 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { useQuasar } from 'quasar';
 import type * as latestSdk from 'src/generated/api/latest/sdk.gen';
 import type {
   OpenScanUpdatePackage,
@@ -252,7 +254,6 @@ type UpdateProgress = {
   job: UpdateProgressJob;
 };
 
-const $q = useQuasar();
 const updateStatus = ref<UpdateStatusResponse | null>(null);
 const statusLoading = ref(false);
 const activeAction = ref<UpdateAction>(null);
@@ -340,6 +341,8 @@ const statusHeadline = computed(() => {
 const statusMessage = computed(() => {
   const status = updateStatus.value;
   if (!status) return '';
+  if (isInstalling.value && installProgress.value?.finished)
+    return 'The update has completed. Reloading the interface…';
   if (isInstalling.value)
     return 'Updates are being installed. Do not turn off your OpenScan device.';
   if (status.stale)
@@ -359,7 +362,7 @@ const statusMessage = computed(() => {
     return messages.join(' ');
   }
   if (status.status === 'up_to_date')
-    return 'Your OpenScan and system packages are current.';
+    return 'Your OpenScan and system packages are up to date.';
   if (status.status === 'check_failed')
     return 'The device could not complete its last update check. Check again before installing updates.';
   if (status.status === 'status_unavailable')
@@ -481,6 +484,10 @@ function waitForNextUpdatePoll() {
   return new Promise<void>((resolve) => window.setTimeout(resolve, 2_000));
 }
 
+function waitForInterfaceReload() {
+  return new Promise<void>((resolve) => window.setTimeout(resolve, 1_500));
+}
+
 async function pollUpdateProgress(): Promise<UpdateProgress | null> {
   let lastProgress: UpdateProgress | null = null;
 
@@ -573,13 +580,8 @@ async function installUpdates() {
       return;
     }
 
-    $q.notify({
-      type: 'positive',
-      message: result.reboot_required
-        ? 'Updates installed. Restart the device to finish the update.'
-        : 'Updates installed successfully.',
-    });
-    await loadStatus();
+    await waitForInterfaceReload();
+    window.location.reload();
   } catch (error) {
     console.error('Could not install updates.', error);
     updateError.value = 'Could not install updates. Please try again.';
@@ -624,6 +626,11 @@ onBeforeUnmount(() => {
   background: #f0faf6;
   border-color: #c6e7da;
   box-shadow: 0 6px 18px rgb(6 126 97 / 8%);
+}
+
+.update-hero--installing {
+  background: #edf8ff;
+  border-color: #a9d9f7;
 }
 
 .update-hero--check_failed,
