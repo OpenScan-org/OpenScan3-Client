@@ -24,13 +24,5 @@ void versionStore.initialize()
         <div>{{ apiConfigStore.version }}</div>
       </div>
     </div>
-    <q-banner class="bg-blue-1 text-primary q-mt-md" rounded>
-      <div class="text-weight-medium">Stable release coming soon</div>
-      <div class="q-mt-xs">
-        OpenScan is moving from beta to its stable release. Updates are temporarily paused while we prepare the new version.
-        You can continue using your scanner as usual. Installing the stable release will require flashing a new system image.
-        We will provide instructions when it is ready.
-      </div>
-    </q-banner>
   </BaseSection>
 </template>
