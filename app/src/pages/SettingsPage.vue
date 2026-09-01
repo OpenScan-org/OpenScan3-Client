@@ -978,6 +978,18 @@
                                   <q-tooltip>{{ cameraSettingDescription('AF') }}</q-tooltip>
                                 </q-toggle>
                               </div>
+                              <div class="col-auto">
+                                <BaseButtonSecondary
+                                  icon="screen_rotation"
+                                  label="Camera orientation"
+                                  :disable="scanLocked || !selectedCamera"
+                                  @click="cameraOrientationDialog = true"
+                                >
+                                  <q-tooltip>
+                                    {{ scanLocked ? scanLockedTooltip : 'Adjust camera rotation and mirroring.' }}
+                                  </q-tooltip>
+                                </BaseButtonSecondary>
+                              </div>
                             </div>
                           </div>
                         </template>
@@ -1041,11 +1053,7 @@
     </div>
   </BasePage>
 
-  <q-dialog v-model="addMotorDialog" persistent>
-    <q-card style="min-width: 520px">
-      <q-card-section>
-        <div class="text-h6">Add Motor</div>
-      </q-card-section>
+  <BaseDialog v-model="addMotorDialog" title="Add Motor" persistent width="min(92vw, 520px)">
       <q-card-section class="q-pt-none">
         <div class="row q-col-gutter-sm">
           <div class="col-12">
@@ -1093,7 +1101,7 @@
           </div>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+    <template #actions>
         <BaseButtonSecondary label="Cancel" @click="addMotorDialog = false" />
         <BaseButtonPrimary
           label="Add motor"
@@ -1102,15 +1110,10 @@
           :loading="addMotorSaving"
           @click="handleAddMotor"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    </template>
+  </BaseDialog>
 
-  <q-dialog v-model="addLightDialog" persistent>
-    <q-card style="min-width: 420px">
-      <q-card-section>
-        <div class="text-h6">Add Light</div>
-      </q-card-section>
+  <BaseDialog v-model="addLightDialog" title="Add Light" persistent width="min(92vw, 420px)">
       <q-card-section class="q-pt-none">
         <div class="row q-col-gutter-sm">
           <div class="col-12">
@@ -1129,7 +1132,7 @@
           </div>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+    <template #actions>
         <BaseButtonSecondary label="Cancel" @click="addLightDialog = false" />
         <BaseButtonPrimary
           label="Add light"
@@ -1138,15 +1141,10 @@
           :loading="addLightSaving"
           @click="handleAddLight"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    </template>
+  </BaseDialog>
 
-  <q-dialog v-model="addCameraDialog" persistent>
-    <q-card style="min-width: 420px">
-      <q-card-section>
-        <div class="text-h6">Add Camera</div>
-      </q-card-section>
+  <BaseDialog v-model="addCameraDialog" title="Add Camera" persistent width="min(92vw, 420px)">
       <q-card-section class="q-pt-none">
         <div class="row q-col-gutter-sm">
           <div class="col-12">
@@ -1160,7 +1158,7 @@
           </div>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+    <template #actions>
         <BaseButtonSecondary label="Cancel" @click="addCameraDialog = false" />
         <BaseButtonPrimary
           label="Add camera"
@@ -1169,15 +1167,10 @@
           :loading="addCameraSaving"
           @click="handleAddCamera"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    </template>
+  </BaseDialog>
 
-  <q-dialog v-model="addEndstopDialog" persistent>
-    <q-card style="min-width: 480px">
-      <q-card-section>
-        <div class="text-h6">Add Endstop</div>
-      </q-card-section>
+  <BaseDialog v-model="addEndstopDialog" title="Add Endstop" persistent width="min(92vw, 480px)">
       <q-card-section class="q-pt-none">
         <div class="row q-col-gutter-sm">
           <div class="col-12">
@@ -1207,7 +1200,7 @@
           </div>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+    <template #actions>
         <BaseButtonSecondary label="Cancel" @click="addEndstopDialog = false" />
         <BaseButtonPrimary
           label="Add endstop"
@@ -1216,15 +1209,10 @@
           :loading="addEndstopSaving"
           @click="handleAddEndstop"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    </template>
+  </BaseDialog>
 
-  <q-dialog v-model="addTriggerDialog" persistent>
-    <q-card style="min-width: 480px">
-      <q-card-section>
-        <div class="text-h6">Add Trigger</div>
-      </q-card-section>
+  <BaseDialog v-model="addTriggerDialog" title="Add Trigger" persistent width="min(92vw, 480px)">
       <q-card-section class="q-pt-none">
         <div class="row q-col-gutter-sm">
           <div class="col-12">
@@ -1254,7 +1242,7 @@
           </div>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+    <template #actions>
         <BaseButtonSecondary label="Cancel" @click="addTriggerDialog = false" />
         <BaseButtonPrimary
           label="Add trigger"
@@ -1263,9 +1251,13 @@
           :loading="addTriggerSaving"
           @click="handleAddTrigger"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    </template>
+  </BaseDialog>
+
+  <CameraOrientationDialog
+    v-model="cameraOrientationDialog"
+    :camera-name="selectedSettingsCamera"
+  />
 </template>
 
 <script setup lang="ts">
@@ -1290,7 +1282,9 @@ import BaseMotorButtonBar from 'components/base/BaseMotorButtonBar.vue'
 import BaseSelect from 'components/base/BaseSelect.vue'
 import BaseSliderWithInput from 'components/base/BaseSliderWithInput.vue'
 import BasePage from 'components/base/BasePage.vue'
+import BaseDialog from 'components/base/BaseDialog.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
+import CameraOrientationDialog from 'components/camera/CameraOrientationDialog.vue'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import { fieldDefaults } from 'src/generated/api/fieldDefaults'
 import type {
@@ -1965,6 +1959,7 @@ const TURNTABLE_MOTOR = 'turntable'
 const selectedCamera = ref<string | null>(null)
 const cameraAwbCalibrating = ref(false)
 const homeBusy = ref(false)
+const cameraOrientationDialog = ref(false)
 
 const selectedSettingsCamera = computed(() => selectedCamera.value ?? cameraStore.selectedCamera)
 const backgroundCameraPreviewEnabledModel = computed({

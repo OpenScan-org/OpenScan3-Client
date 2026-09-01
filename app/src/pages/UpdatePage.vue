@@ -168,20 +168,11 @@
       </template>
     </div>
 
-    <q-dialog v-model="showInstallConfirmation">
-      <q-card style="max-width: 500px">
-        <q-card-section class="row items-center q-pb-none">
-          <div class="text-h6">Install updates?</div>
-          <q-space />
-          <q-btn
-            v-close-popup
-            icon="close"
-            flat
-            round
-            dense
-            aria-label="Close"
-          />
-        </q-card-section>
+    <BaseDialog
+      v-model="showInstallConfirmation"
+      title="Install updates?"
+      width="min(92vw, 500px)"
+    >
         <q-card-section>
           OpenScan services may restart and this page may disconnect
           temporarily. Do not switch off the device during installation.
@@ -195,7 +186,7 @@
             Nightly builds are intended for testing and may be unstable.
           </BaseBanner>
         </q-card-section>
-        <q-card-actions align="right" class="q-gutter-sm">
+      <template #actions>
           <BaseButtonSecondary
             label="Cancel"
             @click="showInstallConfirmation = false"
@@ -205,9 +196,8 @@
             label="Install updates"
             @click="installUpdates"
           />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+      </template>
+    </BaseDialog>
   </BasePage>
 </template>
 
@@ -227,6 +217,7 @@ import {
 import BaseBanner from 'components/base/BaseBanner.vue';
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue';
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue';
+import BaseDialog from 'components/base/BaseDialog.vue';
 import BaseSection from 'components/base/BaseSection.vue';
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue';
 import BasePage from 'components/base/BasePage.vue';

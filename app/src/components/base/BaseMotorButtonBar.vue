@@ -8,6 +8,7 @@ import homePositionMiniImage from 'src/assets/setup-wizard/home-position-mini.jp
 import BaseButtonIconPrimary from './BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from './BaseButtonIconSecondary.vue'
 import BaseMotorManualCalibration from './BaseMotorManualCalibration.vue'
+import BaseDialog from './BaseDialog.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -229,12 +230,13 @@ function handleManualCalibrated() {
       {{ calibrateTooltip }}
     </q-tooltip>
   </BaseButtonIconSecondary>
-  <q-dialog v-model="manualCalibrationDialogVisible" persistent>
-    <q-card class="base-motor-button-bar__manual-dialog">
-      <q-card-section class="row items-center justify-between">
-        <div class="text-subtitle1">Manual Calibration</div>
-        <q-btn icon="close" flat round dense @click="manualCalibrationDialogVisible = false" />
-      </q-card-section>
+  <BaseDialog
+    v-model="manualCalibrationDialogVisible"
+    title="Manual Calibration"
+    persistent
+    width="min(92vw, 480px)"
+    card-class="base-motor-button-bar__manual-dialog"
+  >
       <q-card-section>
         <BaseMotorManualCalibration
           :motor-name="props.motorName"
@@ -247,12 +249,11 @@ function handleManualCalibrated() {
           @calibrated="handleManualCalibrated"
         />
       </q-card-section>
-    </q-card>
-  </q-dialog>
+  </BaseDialog>
 </template>
 
 <style scoped>
 .base-motor-button-bar__manual-dialog {
-  width: min(92vw, 480px);
+  max-height: 90vh;
 }
 </style>

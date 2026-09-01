@@ -90,7 +90,22 @@
             button-tooltip="Restart camera"
             :button-disable="restartBusy || !selectedCameraNameModel || props.scanning"
             @button-click="handleRestartCamera"
-          />
+          >
+            <template #before-primary>
+              <BaseButtonIconSecondary
+                class="q-mr-xs"
+                icon="screen_rotation"
+                size="sm"
+                :disable="!selectedCameraNameModel || props.scanning"
+                aria-label="Adjust camera orientation"
+                @click="cameraOrientationDialogVisible = true"
+              >
+                <q-tooltip anchor="bottom middle" self="top middle">
+                  Adjust camera orientation
+                </q-tooltip>
+              </BaseButtonIconSecondary>
+            </template>
+          </SelectWithButton>
         </div>
       </div>
     </div>
@@ -128,14 +143,17 @@
       </div>
     </div>
   </q-card>
-  <q-dialog v-model="fullPreviewDialogVisible">
-    <q-card class="full-preview-dialog">
-      <q-card-section class="full-preview-dialog__header">
-        <div class="full-preview-dialog__title">
-          {{ props.camera?.label ?? 'HQ preview' }}
-        </div>
-        <q-btn icon="close" flat round dense @click="fullPreviewDialogVisible = false" />
-      </q-card-section>
+  <CameraOrientationDialog
+    v-model="cameraOrientationDialogVisible"
+    :camera-name="selectedCameraNameModel || null"
+  />
+  <BaseDialog
+    v-model="fullPreviewDialogVisible"
+    :title="props.camera?.label ?? 'HQ preview'"
+    width="fit-content"
+    max-width="90vw"
+    card-class="full-preview-dialog"
+  >
       <q-card-section class="full-preview-dialog__controls">
         <div class="camera-view__toolbar full-preview-dialog__toolbar">
           <div class="camera-view__toolbar-layout">
@@ -260,20 +278,21 @@
           No high quality preview available.
         </div>
       </q-card-section>
-    </q-card>
-  </q-dialog>
+  </BaseDialog>
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, unref, watch } from 'vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
+import BaseDialog from 'components/base/BaseDialog.vue'
 import BaseMotorButtonBar from 'components/base/BaseMotorButtonBar.vue'
 import SelectWithButton from 'components/common/SelectWithButton.vue'
 import CameraFastPreview, { type CameraFastPreviewExposed } from './camera/CameraFastPreview.vue'
 import CameraHeatmapOverlay from './camera/CameraHeatmapOverlay.vue'
 import CameraHistogram from './camera/CameraHistogram.vue'
 import CameraHQPreview, { type CameraHQPreviewExposed } from './camera/CameraHQPreview.vue'
+import CameraOrientationDialog from './camera/CameraOrientationDialog.vue'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
 import { apiClient, getApiSdk } from 'src/services/apiClient'
@@ -368,6 +387,7 @@ const turntableControlsBusy = ref(false)
 const restartBusy = ref(false)
 let hqRefreshTimeout: ReturnType<typeof setTimeout> | null = null
 const fullPreviewDialogVisible = ref(false)
+const cameraOrientationDialogVisible = ref(false)
 const fullPreviewImageRef = ref<HTMLImageElement | null>(null)
 const fullPreviewImageLoaded = ref(false)
 
@@ -659,19 +679,6 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.full-preview-dialog__header {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-}
-
-.full-preview-dialog__title {
-  font-size: 1rem;
-  font-weight: 600;
 }
 
 .full-preview-dialog__body {
