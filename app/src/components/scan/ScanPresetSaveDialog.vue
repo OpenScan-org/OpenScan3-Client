@@ -1,12 +1,12 @@
 <template>
-  <q-dialog
+  <BaseDialog
     :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
+    title="Save preset"
     persistent
+    width="min(92vw, 400px)"
+    @update:model-value="$emit('update:modelValue', $event)"
   >
-    <q-card class="q-pa-md" style="min-width: 320px; max-width: 400px">
       <q-card-section class="q-pt-none">
-        <div class="text-h6">Save preset</div>
         <div class="text-body2 text-grey-7">
           Choose a descriptive name for the current scan configuration.
         </div>
@@ -23,7 +23,7 @@
         />
       </q-card-section>
 
-      <q-card-actions align="right">
+    <template #actions>
         <q-btn flat label="Cancel" color="primary" @click="$emit('update:modelValue', false)" />
         <q-btn
           label="Save"
@@ -31,13 +31,13 @@
           :disable="!presetName.trim()"
           @click="save"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    </template>
+  </BaseDialog>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import BaseDialog from 'components/base/BaseDialog.vue'
 
 const props = defineProps<{
   modelValue: boolean

@@ -65,15 +65,14 @@
     </q-tab-panels>
   </BaseSection>
 
-  <q-dialog v-model="focusPreviewDialogVisible" persistent>
-    <q-card class="focus-preview-dialog">
-      <q-card-section class="focus-preview-dialog__header">
-        <div class="focus-preview-dialog__title">
-          {{ cameraLabel || cameraName || 'Focus stacking preview' }}
-        </div>
-        <q-btn icon="close" flat round dense @click="focusPreviewDialogVisible = false" />
-      </q-card-section>
-
+  <BaseDialog
+    v-model="focusPreviewDialogVisible"
+    :title="cameraLabel || cameraName || 'Focus stacking preview'"
+    persistent
+    width="min(1180px, 96vw)"
+    max-width="96vw"
+    card-class="focus-preview-dialog"
+  >
       <q-card-section class="focus-preview-dialog__controls">
         <div class="focus-preview-dialog__motor-bar">
           <q-btn-group unelevated rounded>
@@ -226,8 +225,7 @@
           </div>
         </div>
       </q-card-section>
-    </q-card>
-  </q-dialog>
+  </BaseDialog>
 </template>
 
 <script setup lang="ts">
@@ -240,6 +238,7 @@ import BaseSection from 'components/base/BaseSection.vue'
 import BaseMotorButtonBar from 'components/base/BaseMotorButtonBar.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
+import BaseDialog from 'components/base/BaseDialog.vue'
 import CameraHeatmapOverlay from 'components/camera/CameraHeatmapOverlay.vue'
 import { apiClient, buildApiUrl, getApiSdk } from 'src/services/apiClient'
 
@@ -533,23 +532,6 @@ onBeforeUnmount(() => {
 .focus-stacking-preview-action {
   display: flex;
   justify-content: flex-end;
-}
-
-.focus-preview-dialog {
-  width: min(1180px, 96vw);
-  max-width: 96vw;
-}
-
-.focus-preview-dialog__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-}
-
-.focus-preview-dialog__title {
-  font-size: 1rem;
-  font-weight: 600;
 }
 
 .focus-preview-dialog__controls {

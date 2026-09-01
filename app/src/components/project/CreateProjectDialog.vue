@@ -1,15 +1,12 @@
 <template>
-  <q-dialog
+  <BaseDialog
     :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
-    :no-backdrop-dismiss="true"
+    title="Create New Project"
     :max-width="maxWidth"
+    :card-style="cardStyle"
+    no-backdrop-dismiss
+    @update:model-value="$emit('update:modelValue', $event)"
   >
-    <q-card :style="cardStyle">
-      <q-card-section class="row items-center">
-        <span class="q-ml-sm">Create New Project</span>
-      </q-card-section>
-
       <q-card-section>
         <div class="row items-end q-gutter-sm">
           <q-input
@@ -38,7 +35,7 @@
         </q-input>
       </q-card-section>
 
-      <q-card-actions align="right">
+    <template #actions>
         <q-btn flat label="Cancel" color="primary" v-close-popup />
         <q-btn
           label="Create"
@@ -46,9 +43,8 @@
           @click="confirm"
           :disable="!projectName.trim()"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    </template>
+  </BaseDialog>
 </template>
 
 <script setup lang="ts">
@@ -56,6 +52,7 @@ import { ref, watch, computed } from 'vue'
 import { generateDashedName } from 'src/utils/randomName'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import { useQuasar } from 'quasar'
+import BaseDialog from 'components/base/BaseDialog.vue'
 
 interface Props {
   modelValue: boolean
