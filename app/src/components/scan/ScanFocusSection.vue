@@ -161,9 +161,9 @@
               <div v-if="!minPreview.imageUrl" class="focus-preview-panel__placeholder text-grey-6">
                 No preview image
               </div>
-              <q-inner-loading :showing="minPreview.loading">
+              <div v-if="minPreview.loading" class="focus-preview-panel__spinner">
                 <q-spinner-dots color="primary" size="36px" />
-              </q-inner-loading>
+              </div>
             </div>
 
             <BaseSliderWithInput
@@ -203,9 +203,9 @@
               <div v-if="!maxPreview.imageUrl" class="focus-preview-panel__placeholder text-grey-6">
                 No preview image
               </div>
-              <q-inner-loading :showing="maxPreview.loading">
+              <div v-if="maxPreview.loading" class="focus-preview-panel__spinner">
                 <q-spinner-dots color="primary" size="36px" />
-              </q-inner-loading>
+              </div>
             </div>
 
             <BaseSliderWithInput
@@ -240,6 +240,7 @@ import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseDialog from 'components/base/BaseDialog.vue'
 import CameraHeatmapOverlay from 'components/camera/CameraHeatmapOverlay.vue'
+import type * as latestSdk from 'src/generated/api/latest/sdk.gen'
 import { apiClient, buildApiUrl, getApiSdk } from 'src/services/apiClient'
 
 type FocusMode = 'autofocus' | 'manual' | 'stacking'
@@ -290,6 +291,7 @@ const handleManualFocusInput = (value: number) => {
 }
 
 const apiSdk = () => getApiSdk()
+type FocusPreviewSdk = Pick<typeof latestSdk, 'updateCameraNameSettings'>
 const ROTOR_MOTOR = 'rotor'
 const TURNTABLE_MOTOR = 'turntable'
 const focusPreviewDialogVisible = ref(false)
@@ -379,7 +381,7 @@ async function capturePreview(target: FocusPreviewState, focusValue: number) {
   }
 
   try {
-    await apiSdk().updateCameraNameSettings({
+    await (apiSdk() as unknown as FocusPreviewSdk).updateCameraNameSettings({
       client: apiClient,
       path: { name: props.cameraName },
       body: {
@@ -602,6 +604,15 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.focus-preview-panel__spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
 .focus-preview-panel__error {
