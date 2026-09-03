@@ -37,9 +37,9 @@
             {{ hasError ?? 'No preview available.' }}
           </div>
         </div>
-        <q-inner-loading :showing="isLoading">
+        <div v-if="isLoading" class="hq-preview__spinner">
           <q-spinner-dots color="primary" size="42px" />
-        </q-inner-loading>
+        </div>
       </div>
     </div>
   </div>
@@ -244,6 +244,15 @@ defineExpose<CameraHQPreviewExposed>({
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+.hq-preview__spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
 .hq-preview__placeholder {

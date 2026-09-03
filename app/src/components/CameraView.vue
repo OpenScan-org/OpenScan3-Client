@@ -268,9 +268,9 @@
                 :image-element="fullPreviewImageElement"
                 :image-loaded="fullPreviewImageLoaded"
               />
-              <q-inner-loading :showing="hqPhotoLoading">
+              <div v-if="hqPhotoLoading" class="full-preview-dialog__spinner">
                 <q-spinner-dots color="primary" size="42px" />
-              </q-inner-loading>
+              </div>
             </div>
           </div>
         </template>
@@ -730,6 +730,15 @@ onBeforeUnmount(() => {
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+.full-preview-dialog__spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
 .full-preview-dialog__placeholder {
