@@ -176,6 +176,45 @@ const collectMetadata = (schema, schemas) => {
   return { descriptions, defaults };
 };
 
+const constraintKeys = [
+  'exclusiveMaximum',
+  'exclusiveMinimum',
+  'maxItems',
+  'maxLength',
+  'maximum',
+  'minItems',
+  'minLength',
+  'minimum',
+  'multipleOf',
+  'pattern'
+];
+
+const collectConstraints = (schema, schemas) => {
+  if (!schema || typeof schema !== 'object') {
+    return {};
+  }
+
+  if (schema.$ref) {
+    const refName = schema.$ref.split('/').at(-1);
+    return collectConstraints(schemas[refName], schemas);
+  }
+
+  const constraints = Object.fromEntries(
+    constraintKeys
+      .filter((key) => schema[key] !== undefined)
+      .map((key) => [key, schema[key]])
+  );
+
+  if (Array.isArray(schema.prefixItems)) {
+    const items = schema.prefixItems.map((item) => collectConstraints(item, schemas));
+    if (items.some((item) => Object.keys(item).length > 0)) {
+      constraints.items = items;
+    }
+  }
+
+  return constraints;
+};
+
 const generateMetadataFiles = (openapiPath, outputDir) => {
   const rawSpec = readFileSync(openapiPath, 'utf-8');
   const spec = JSON.parse(rawSpec);
@@ -196,8 +235,18 @@ const generateMetadataFiles = (openapiPath, outputDir) => {
         acc.defaults[schemaName] = sortObject(cleanedDefaults);
       }
 
+      if (schema.properties) {
+        for (const [propertyName, propertySchema] of Object.entries(schema.properties)) {
+          const constraints = collectConstraints(propertySchema, schemas);
+          if (Object.keys(constraints).length > 0) {
+            acc.constraints[schemaName] ??= {};
+            acc.constraints[schemaName][propertyName] = constraints;
+          }
+        }
+      }
+
       return acc;
-    }, { descriptions: {}, defaults: {} });
+    }, { descriptions: {}, defaults: {}, constraints: {} });
 
   mkdirSync(outputDir, { recursive: true });
 
@@ -208,9 +257,11 @@ const generateMetadataFiles = (openapiPath, outputDir) => {
   const descriptionsContent = `/* eslint-disable */\n${generatorComment}\n\nexport const fieldDescriptions = ${JSON.stringify(sortObject(processed.descriptions), null, 2)} as const;\n\nexport type FieldDescriptions = typeof fieldDescriptions;\n\nexport const getFieldDescription = <S extends keyof FieldDescriptions, F extends keyof FieldDescriptions[S]>\n  (schema: S, field: F) => fieldDescriptions[schema][field];\n`;
 
   const defaultsContent = `/* eslint-disable */\n${generatorComment}\n\nexport const fieldDefaults = ${JSON.stringify(sortObject(processed.defaults), null, 2)} as const;\n\nexport type FieldDefaults = typeof fieldDefaults;\n\nexport const getFieldDefault = <S extends keyof FieldDefaults, F extends keyof FieldDefaults[S]>\n  (schema: S, field: F) => fieldDefaults[schema][field];\n`;
+  const constraintsContent = `/* eslint-disable */\n${generatorComment}\n\nexport const fieldConstraints = ${JSON.stringify(sortObject(processed.constraints), null, 2)} as const;\n\nexport type FieldConstraints = typeof fieldConstraints;\n\nexport const getFieldConstraints = <S extends keyof FieldConstraints, F extends keyof FieldConstraints[S]>\n  (schema: S, field: F) => fieldConstraints[schema][field];\n`;
 
   writeFileSync(descriptionsOutputPath, descriptionsContent);
   writeFileSync(defaultsOutputPath, defaultsContent);
+  writeFileSync(path.resolve(outputDir, 'fieldConstraints.ts'), constraintsContent);
 };
 
 const generateVersionedRegistry = (targets) => {
