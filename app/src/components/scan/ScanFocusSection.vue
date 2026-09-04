@@ -41,13 +41,13 @@
           <BaseRangeWithInput
             v-model="focusRangeModel"
             label="Focus Range"
-            :min="0"
-            :max="15"
+            :min="focusRangeMin"
+            :max="focusRangeMax"
             :step="0.1"
             :markers="true"
             :marker-labels="[5, 10, 15]"
-            :input-min="0"
-            :input-max="15"
+            :input-min="focusRangeMin"
+            :input-max="focusRangeMax"
             :tooltip="focusRangeDescription"
           />
         </div>
@@ -169,11 +169,11 @@
             <BaseSliderWithInput
               v-model="minFocusValueModel"
               label="Min Focus (diopters)"
-              :slider-min="0"
-              :slider-max="15"
+              :slider-min="focusRangeMin"
+              :slider-max="focusRangeMax"
               :slider-step="0.1"
-              :input-min="0"
-              :input-max="15"
+              :input-min="focusRangeMin"
+              :input-max="focusRangeMax"
               :disabled="!cameraName"
               @update:model-value="handleMinFocusSliderChange"
             />
@@ -211,11 +211,11 @@
             <BaseSliderWithInput
               v-model="maxFocusValueModel"
               label="Max Focus (diopters)"
-              :slider-min="0"
-              :slider-max="15"
+              :slider-min="focusRangeMin"
+              :slider-max="focusRangeMax"
               :slider-step="0.1"
-              :input-min="0"
-              :input-max="15"
+              :input-min="focusRangeMin"
+              :input-max="focusRangeMax"
               :disabled="!cameraName"
               @update:model-value="handleMaxFocusSliderChange"
             />
@@ -241,6 +241,7 @@ import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseDialog from 'components/base/BaseDialog.vue'
 import CameraHeatmapOverlay from 'components/camera/CameraHeatmapOverlay.vue'
 import type * as latestSdk from 'src/generated/api/latest/sdk.gen'
+import { fieldConstraints } from 'src/generated/api/fieldConstraints'
 import { apiClient, buildApiUrl, getApiSdk } from 'src/services/apiClient'
 
 type FocusMode = 'autofocus' | 'manual' | 'stacking'
@@ -292,6 +293,10 @@ const handleManualFocusInput = (value: number) => {
 
 const apiSdk = () => getApiSdk()
 type FocusPreviewSdk = Pick<typeof latestSdk, 'updateCameraNameSettings'>
+const focusRangeConstraints = fieldConstraints.ScanSetting.focus_range
+const focusRangeItemConstraints = focusRangeConstraints.items ?? []
+const focusRangeMin = focusRangeItemConstraints[0]?.minimum ?? 0
+const focusRangeMax = focusRangeItemConstraints[1]?.maximum ?? 15
 const ROTOR_MOTOR = 'rotor'
 const TURNTABLE_MOTOR = 'turntable'
 const focusPreviewDialogVisible = ref(false)
@@ -332,7 +337,7 @@ const motorControlsDisabled = computed(() => motorControlsBusy.value || refreshi
 const minFocusValueModel = computed({
   get: () => props.focusRange.min,
   set: (value: number) => {
-    const clamped = Math.max(0, Math.min(value, props.focusRange.max))
+    const clamped = Math.max(focusRangeMin, Math.min(value, props.focusRange.max))
     emit('update:focusRange', { ...props.focusRange, min: clamped })
   }
 })
@@ -340,7 +345,7 @@ const minFocusValueModel = computed({
 const maxFocusValueModel = computed({
   get: () => props.focusRange.max,
   set: (value: number) => {
-    const clamped = Math.min(15, Math.max(value, props.focusRange.min))
+    const clamped = Math.min(focusRangeMax, Math.max(value, props.focusRange.min))
     emit('update:focusRange', { ...props.focusRange, max: clamped })
   }
 })

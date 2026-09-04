@@ -11,3 +11,7 @@ All notable user-facing changes to OpenScan3 Client are documented here.
 ### Changed
 
 - Improved the focus stacking and hq preview by removing the loading overlay while keeping the spinner visible, making focus changes easier to judge visually. (Thanks agryson!)
+
+### Fixed
+
+- Focus stacking now allows setting a focus value of 0 in the frontend.
