@@ -825,7 +825,9 @@ export const pauseScan = <ThrowOnError extends boolean = false>(options: Options
 /**
  * Resume Scan
  *
- * Resume a paused, cancelled or failed scan and return the resulting Task
+ * Resume a paused or interrupted scan, or restart a cancelled or failed scan.
+ *
+ * Return the resulting Task.
  *
  * Args:
  * project_name: The name of the project
@@ -1209,7 +1211,7 @@ export const pauseTask = <ThrowOnError extends boolean = false>(options: Options
 /**
  * Resume a Task
  *
- * Resumes a paused task.
+ * Resumes a paused or interrupted task.
  *
  * Args:
  * task_id: The ID of the task to resume.
@@ -1739,7 +1741,7 @@ export const pauseFocusStacking = <ThrowOnError extends boolean = false>(options
 /**
  * Resume Focus Stacking
  *
- * Resume a paused focus stacking task.
+ * Resume a paused or interrupted focus stacking task.
  */
 export const resumeFocusStacking = <ThrowOnError extends boolean = false>(options: Options<ResumeFocusStackingData, ThrowOnError>) => (options.client ?? client).patch<ResumeFocusStackingResponses, ResumeFocusStackingErrors, ThrowOnError>({
     responseType: 'json',

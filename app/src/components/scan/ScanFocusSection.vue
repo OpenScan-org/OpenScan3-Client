@@ -52,6 +52,13 @@
           />
         </div>
 
+        <q-checkbox
+          v-model="autoStartFocusStackingModel"
+          class="q-mt-sm"
+          label="Start focus stacking automatically after the scan"
+          dense
+        />
+
         <div class="q-mt-sm focus-stacking-preview-action">
           <q-btn
             outline
@@ -251,6 +258,7 @@ const props = defineProps<{
   manualFocusValue: number
   focusStacks: number
   focusRange: { min: number; max: number }
+  autoStartFocusStacking: boolean
   cameraName?: string | null
   cameraLabel?: string | null
   afDescription: string
@@ -264,6 +272,7 @@ const emit = defineEmits<{
   (e: 'update:manualFocusValue', value: number): void
   (e: 'update:focusStacks', value: number): void
   (e: 'update:focusRange', value: { min: number; max: number }): void
+  (e: 'update:autoStartFocusStacking', value: boolean): void
   (e: 'manual-focus-input', value: number): void
 }>()
 
@@ -285,6 +294,11 @@ const focusStacksModel = computed({
 const focusRangeModel = computed({
   get: () => props.focusRange,
   set: (value: { min: number; max: number }) => emit('update:focusRange', value)
+})
+
+const autoStartFocusStackingModel = computed({
+  get: () => props.autoStartFocusStacking,
+  set: (value: boolean) => emit('update:autoStartFocusStacking', value)
 })
 
 const handleManualFocusInput = (value: number) => {

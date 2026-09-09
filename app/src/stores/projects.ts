@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { apiClient, getApiSdk } from 'src/services/apiClient';
+import { apiClient, getApiSdk, resolveApiTarget } from 'src/services/apiClient';
 import { type Project } from 'src/generated/api';
 
 function unwrapPayload(payload: unknown): unknown {
@@ -84,9 +84,21 @@ export const useProjectsStore = defineStore('projects', {
     },
     async createProject(name: string, description?: string) {
       try {
-        const response = await getApiSdk().newProject({
+        const projectApi = getApiSdk() as unknown as {
+          newProject: (options: {
+            client: typeof apiClient
+            path: { project_name: string }
+            body?: { project_description?: string }
+            query?: { project_description?: string }
+            throwOnError: true
+          }) => Promise<unknown>
+        }
+        const request = resolveApiTarget() === 'next'
+          ? { body: { project_description: description || '' } }
+          : { query: { project_description: description || '' } }
+        const response = await projectApi.newProject({
           path: { project_name: name },
-          query: { project_description: description || '' },
+          ...request,
           client: apiClient,
           throwOnError: true
         });
