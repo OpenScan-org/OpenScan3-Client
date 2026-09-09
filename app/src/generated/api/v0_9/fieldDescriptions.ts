@@ -10,6 +10,7 @@ export const fieldDescriptions = {
   },
   "Body_create_task_tasks__task_name__post": {
     "args": "Positional arguments for the task",
+    "depends_on": "Optional task ID that must complete successfully before this task runs",
     "kwargs": "Keyword arguments for the task"
   },
   "CameraSettings": {
@@ -121,6 +122,7 @@ export const fieldDescriptions = {
     "uptime_seconds": "Current system uptime in seconds, if available."
   },
   "Task": {
+    "depends_on": "Task ID that must complete successfully before this task may run.",
     "is_blocking": "Whether this task is blocking and should run in a separate thread",
     "is_exclusive": "Whether this task is exclusive and should not run concurrently",
     "run_args": "Positional arguments the task was started with.",

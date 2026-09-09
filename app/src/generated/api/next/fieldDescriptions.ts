@@ -10,6 +10,7 @@ export const fieldDescriptions = {
   },
   "Body_create_task_tasks__task_name__post": {
     "args": "Positional arguments for the task",
+    "depends_on": "Optional task ID that must complete successfully before this task runs",
     "kwargs": "Keyword arguments for the task"
   },
   "CameraSettings": {
@@ -107,6 +108,14 @@ export const fieldDescriptions = {
     "status": "The final, persistent status of the scan, mirroring the associated Task status.",
     "total_size_bytes": "Total size of all files belonging to the scan, in bytes."
   },
+  "ScanMetadata": {
+    "cart_coordinates": "Cartesian coordinates, derived from polar_coordinates.",
+    "polar_coordinates": "The polar coordinates of the camera when the photo was taken.",
+    "project_name": "The name of the project this scan belongs to.",
+    "scan_index": "The sequential index of the scan within the project.",
+    "stack_index": "The sequential index of the photo within the focus stack.",
+    "step": "The sequential index of the photo within the scan."
+  },
   "ScannerDeviceConfig": {
     "scan_radius_mm": "Distance in millimeters between the camera lens and the turntable center point."
   },
@@ -134,6 +143,7 @@ export const fieldDescriptions = {
     "uptime_seconds": "Current system uptime in seconds, if available."
   },
   "Task": {
+    "depends_on": "Task ID that must complete successfully before this task may run.",
     "is_blocking": "Whether this task is blocking and should run in a separate thread",
     "is_exclusive": "Whether this task is exclusive and should not run concurrently",
     "run_args": "Positional arguments the task was started with.",

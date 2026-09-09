@@ -124,10 +124,19 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "A JPEG snapshot or an MJPEG stream, depending on `mode`.",
             "content": {
-              "application/json": {
-                "schema": {}
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "multipart/x-mixed-replace": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
               }
             }
           },
@@ -195,10 +204,54 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "The requested photo bytes, or metadata with a payload URL when `with_metadata=true`.",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoMetadataResponse"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/x-adobe-dng": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/x-canon-cr2": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/x-canon-cr3": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/x-canon-crw": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/x-npy": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
               }
             }
           },
@@ -247,10 +300,49 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "The cached photo payload bytes.",
             "content": {
-              "application/json": {
-                "schema": {}
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/x-adobe-dng": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/x-canon-cr2": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/x-canon-cr3": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/x-canon-crw": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/x-npy": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
               }
             }
           },
@@ -1772,7 +1864,7 @@
           "projects"
         ],
         "summary": "New Project",
-        "description": "Create a new project\n\nArgs:\n    project_name: The name of the project to create\n    project_description: Optional description for the project\n\nReturns:\n    Project: The newly created project if successful, None if not",
+        "description": "Create a new project\n\nArgs:\n    project_name: The name of the project to create\n    request: JSON payload containing the optional project description\n\nReturns:\n    Project: The newly created project if successful, None if not",
         "operationId": "new_project",
         "parameters": [
           {
@@ -1783,25 +1875,18 @@
               "type": "string",
               "title": "Project Name"
             }
-          },
-          {
-            "name": "project_description",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": "",
-              "title": "Project Description"
-            }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectCreateRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1893,10 +1978,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "The project thumbnail as a JPEG file.",
             "content": {
-              "application/json": {
-                "schema": {}
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
               }
             }
           },
@@ -1921,9 +2009,9 @@
         "tags": [
           "projects"
         ],
-        "summary": "Add Scan With Description",
-        "description": "Add a new scan to a project and return the created Task\n\nArgs:\n    project_name: The name of the project to add the scan to\n    camera_name: The name of the camera to use for the scan\n    scan_settings: The settings for the scan\n    scan_description: Optional description for the scan\n\nReturns:\n    Task: The Task representing the started scan",
-        "operationId": "add_scan_with_description",
+        "summary": "Add Scan",
+        "description": "Add a new scan to a project and return the created Task\n\nArgs:\n    project_name: The name of the project to add the scan to\n    request: JSON payload containing the camera, scan settings, and optional description\n\nReturns:\n    Task: The Task representing the started scan",
+        "operationId": "add_scan",
         "parameters": [
           {
             "name": "project_name",
@@ -1933,32 +2021,6 @@
               "type": "string",
               "title": "Project Name"
             }
-          },
-          {
-            "name": "camera_name",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Camera Name"
-            }
-          },
-          {
-            "name": "scan_description",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "default": "",
-              "title": "Scan Description"
-            }
           }
         ],
         "requestBody": {
@@ -1966,7 +2028,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ScanSetting"
+                "$ref": "#/components/schemas/ScanCreateRequest"
               }
             }
           }
@@ -2030,6 +2092,22 @@
                 }
               ],
               "title": "Token Override"
+            }
+          },
+          {
+            "name": "depends_on",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Depends On"
             }
           }
         ],
@@ -2182,11 +2260,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "Photo metadata and data, or the raw file when `file_only=true`.",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PhotoResponse"
+                }
+              },
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }
@@ -2641,10 +2725,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "A ZIP stream containing the requested project files.",
             "content": {
-              "application/json": {
-                "schema": {}
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
               }
             }
           },
@@ -2685,10 +2772,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "A ZIP stream containing the reconstructed project model.",
             "content": {
-              "application/json": {
-                "schema": {}
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
               }
             }
           },
@@ -2753,10 +2843,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "A ZIP stream containing the requested scans.",
             "content": {
-              "application/json": {
-                "schema": {}
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
               }
             }
           },
@@ -2807,7 +2900,7 @@
           "openscan"
         ],
         "summary": "Tail Logs",
-        "description": "Show or follow current logs.\n\nWhen follow=false (default), returns the last N lines of the selected log.\nWhen follow=true (text mode only!), streams new lines as they are written (like `tail -f`).\n\nArgs:\n    format: \"text\" for openscan_firmware.log, \"json\" for openscan_detailed_log.json.\n    lines: Number of last lines to return initially.\n    follow: If true, stream appended log lines in text mode.\n    poll_interval: Poll interval (seconds) when following in text mode.\n\nReturns:\n    A response with the requested log content.",
+        "description": "Show or follow current logs.\n\nWhen follow=false (default), returns the last N lines of the selected log.\nWhen follow=true (text mode only!), streams new lines as they are written (like `tail -f`).\n\nArgs:\n    format: \"text\" for openscan_firmware.log, \"json\" for JSON Lines from openscan_detailed_log.json.\n    lines: Number of last lines to return initially.\n    follow: If true, stream appended log lines in text mode.\n    poll_interval: Poll interval (seconds) when following in text mode.\n\nReturns:\n    A response with the requested log content.",
         "operationId": "tail_logs",
         "parameters": [
           {
@@ -2853,10 +2946,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "Plain-text log output, or JSON Lines when `format=json`.",
             "content": {
-              "application/json": {
-                "schema": {}
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/x-ndjson": {
+                "schema": {
+                  "type": "string"
+                }
               }
             }
           },
@@ -2886,10 +2986,13 @@
         "operationId": "download_logs_archive",
         "responses": {
           "200": {
-            "description": "Successful Response",
+            "description": "ZIP archive containing the available log files.",
             "content": {
-              "application/json": {
-                "schema": {}
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
               }
             }
           },
@@ -2937,7 +3040,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/AvailableConfigsResponse"
+                }
               }
             }
           },
@@ -3553,7 +3658,7 @@
           "tasks"
         ],
         "summary": "Create Task",
-        "description": "Create and start a new background task with optional parameters.\n\nThe request body accepts:\n- **args**: List of positional arguments (e.g., `[\"project_name\", 0]`)\n- **kwargs**: Dictionary of keyword arguments (e.g., `{\"num_batches\": 5}`)\n\nArgs:\n    task_name: The name of the task to create, as registered in the TaskManager.\n    args: Positional arguments to pass to the task's run method.\n    kwargs: Keyword arguments to pass to the task's run method.\n\nReturns:\n    The created task object.\n\nExamples:\n    ```json\n    // No parameters\n    {}\n\n    // With positional args\n    {\n        \"args\": [\"MyProject\", 0]\n    }\n\n    // With keyword args\n    {\n        \"kwargs\": {\"num_calibration_batches\": 5}\n    }\n\n    // With both\n    {\n        \"args\": [\"MyProject\", 0],\n        \"kwargs\": {\"num_calibration_batches\": 5}\n    }\n    ```",
+        "description": "Create and start an experimental or custom background task.\n\nDomain-owned tasks such as scans, focus stacking, and cloud uploads must\nbe started through their project-specific endpoints. Those endpoints also\npersist the task reference and maintain the corresponding domain status.\n\nThe request body accepts:\n- **depends_on**: Optional ID of a prerequisite task\n- **args**: List of positional arguments (e.g., `[\"project_name\", 0]`)\n- **kwargs**: Dictionary of keyword arguments (e.g., `{\"num_batches\": 5}`)\n\nArgs:\n    task_name: The name of the task to create, as registered in the TaskManager.\n    args: Positional arguments to pass to the task's run method.\n    kwargs: Keyword arguments to pass to the task's run method.\n\nReturns:\n    The created task object.\n\nExamples:\n    ```json\n    // No parameters\n    {}\n\n    // With positional args\n    {\n        \"args\": [\"MyProject\", 0]\n    }\n\n    // With keyword args\n    {\n        \"kwargs\": {\"num_calibration_batches\": 5}\n    }\n\n    // With both\n    {\n        \"args\": [\"MyProject\", 0],\n        \"kwargs\": {\"num_calibration_batches\": 5}\n    }\n    ```",
         "operationId": "create_task",
         "parameters": [
           {
@@ -5065,6 +5170,22 @@
               "type": "integer",
               "title": "Scan Index"
             }
+          },
+          {
+            "name": "depends_on",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Depends On"
+            }
           }
         ],
         "responses": {
@@ -5302,6 +5423,78 @@
         ],
         "title": "AutoCalibrateAwbResponse"
       },
+      "AvailableConfigResponse": {
+        "properties": {
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "shield": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shield"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filename",
+          "path"
+        ],
+        "title": "AvailableConfigResponse"
+      },
+      "AvailableConfigsResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "configs": {
+            "items": {
+              "$ref": "#/components/schemas/AvailableConfigResponse"
+            },
+            "type": "array",
+            "title": "Configs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "configs"
+        ],
+        "title": "AvailableConfigsResponse"
+      },
       "Body_add_config_json_device_configurations__post": {
         "properties": {
           "config_data": {
@@ -5333,6 +5526,18 @@
             "title": "Kwargs",
             "description": "Keyword arguments for the task",
             "default": {}
+          },
+          "depends_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Depends On",
+            "description": "Optional task ID that must complete successfully before this task runs"
           }
         },
         "type": "object",
@@ -5350,6 +5555,30 @@
           "degrees"
         ],
         "title": "Body_move_motor_by_degree_motors__motor_name__angle_patch"
+      },
+      "CameraMetadata": {
+        "properties": {
+          "camera_name": {
+            "type": "string",
+            "title": "Camera Name"
+          },
+          "camera_settings": {
+            "$ref": "#/components/schemas/CameraSettings"
+          },
+          "raw_metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Raw Metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "camera_name",
+          "camera_settings",
+          "raw_metadata"
+        ],
+        "title": "CameraMetadata",
+        "description": "Represents metadata from a camera."
       },
       "CameraSettings": {
         "properties": {
@@ -6785,6 +7014,60 @@
         ],
         "title": "PersistedEndstopConfig"
       },
+      "PhotoMetadataResponse": {
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": [
+              "jpeg",
+              "raw",
+              "dng",
+              "rgb_array",
+              "yuv_array"
+            ],
+            "title": "Format"
+          },
+          "media_type": {
+            "type": "string",
+            "title": "Media Type"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "camera_metadata": {
+            "$ref": "#/components/schemas/CameraMetadata"
+          },
+          "scan_metadata": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScanMetadata"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "payload_url": {
+            "type": "string",
+            "title": "Payload Url"
+          },
+          "expires_in_s": {
+            "type": "integer",
+            "title": "Expires In S"
+          }
+        },
+        "type": "object",
+        "required": [
+          "format",
+          "media_type",
+          "filename",
+          "camera_metadata",
+          "payload_url",
+          "expires_in_s"
+        ],
+        "title": "PhotoMetadataResponse"
+      },
       "PhotoResponse": {
         "properties": {
           "project_name": {
@@ -6931,6 +7214,18 @@
         "title": "Project",
         "description": "Represents a scan project stored on disk and optionally processed in the cloud."
       },
+      "ProjectCreateRequest": {
+        "properties": {
+          "project_description": {
+            "type": "string",
+            "title": "Project Description",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "ProjectCreateRequest",
+        "description": "JSON payload for creating a project."
+      },
       "Scan": {
         "properties": {
           "project_name": {
@@ -7063,6 +7358,95 @@
         ],
         "title": "Scan",
         "description": "Represents a single scan session within a project."
+      },
+      "ScanCreateRequest": {
+        "properties": {
+          "camera_name": {
+            "type": "string",
+            "title": "Camera Name"
+          },
+          "scan_settings": {
+            "$ref": "#/components/schemas/ScanSetting"
+          },
+          "scan_description": {
+            "type": "string",
+            "title": "Scan Description",
+            "default": ""
+          },
+          "depends_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Depends On"
+          }
+        },
+        "type": "object",
+        "required": [
+          "camera_name",
+          "scan_settings"
+        ],
+        "title": "ScanCreateRequest",
+        "description": "JSON payload for adding and starting a scan."
+      },
+      "ScanMetadata": {
+        "properties": {
+          "step": {
+            "type": "integer",
+            "title": "Step",
+            "description": "The sequential index of the photo within the scan."
+          },
+          "polar_coordinates": {
+            "$ref": "#/components/schemas/PolarPoint3D",
+            "description": "The polar coordinates of the camera when the photo was taken."
+          },
+          "project_name": {
+            "type": "string",
+            "title": "Project Name",
+            "description": "The name of the project this scan belongs to."
+          },
+          "scan_index": {
+            "type": "integer",
+            "title": "Scan Index",
+            "description": "The sequential index of the scan within the project."
+          },
+          "stack_index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stack Index",
+            "description": "The sequential index of the photo within the focus stack."
+          },
+          "cart_coordinates": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CartesianPoint3D"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Cartesian coordinates, derived from polar_coordinates."
+          }
+        },
+        "type": "object",
+        "required": [
+          "step",
+          "polar_coordinates",
+          "project_name",
+          "scan_index"
+        ],
+        "title": "ScanMetadata",
+        "description": "Represents metadata from a scan for a photo."
       },
       "ScanSetting": {
         "properties": {
@@ -7540,6 +7924,18 @@
             ],
             "title": "Completed At"
           },
+          "depends_on": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Depends On",
+            "description": "Task ID that must complete successfully before this task may run."
+          },
           "run_args": {
             "items": {},
             "type": "array",
@@ -7753,6 +8149,7 @@
           "status": {
             "type": "string",
             "enum": [
+              "installing",
               "completed",
               "install_failed",
               "install_blocked"
@@ -7770,7 +8167,7 @@
           "reboot_required"
         ],
         "title": "UpdateInstallResponse",
-        "description": "Result of a synchronous user-requested update installation."
+        "description": "Acceptance or result of a user-requested update installation."
       },
       "UpdateStatusResponse": {
         "properties": {

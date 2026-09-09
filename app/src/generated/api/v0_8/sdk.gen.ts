@@ -1161,6 +1161,7 @@ export const resumeTask = <ThrowOnError extends boolean = false>(options: Option
  * Create and start a new background task with optional parameters.
  *
  * The request body accepts:
+ * - **depends_on**: Optional ID of a prerequisite task
  * - **args**: List of positional arguments (e.g., `["project_name", 0]`)
  * - **kwargs**: Dictionary of keyword arguments (e.g., `{"num_batches": 5}`)
  *
