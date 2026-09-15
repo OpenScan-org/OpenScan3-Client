@@ -17,6 +17,7 @@ export type ApiTarget = (typeof apiTargets)[number];
 export const versionToApiTarget = {
   'latest': 'latest',
   'next': 'next',
+  'vnext': 'next',
   'v0.8': 'v0_8',
   'v0.9': 'v0_9',
 } as const satisfies Record<string, ApiTarget>;
