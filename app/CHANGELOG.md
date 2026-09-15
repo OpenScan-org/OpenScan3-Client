@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 
 ## Unreleased
 
+## 0.8.0 - 2026-09-15
+
 ### Added
 
 - Added a camera orientation dialog that can be opened from the camera settings and scan page, allowing camera orientation to be adjusted outside the setup wizard.
