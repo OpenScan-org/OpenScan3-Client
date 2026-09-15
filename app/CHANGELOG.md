@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 ### Changed
 
 - Improved the focus stacking and hq preview by removing the loading overlay while keeping the spinner visible, making focus changes easier to judge visually. (Thanks agryson!)
-- Added selectable absolute angle, fine, medium and coarse movement levels to the motor controls.
+- Added configurable fine, medium and coarse movement steps to the frontend settings, with the selected levels available in the motor controls.
 
 ### Fixed
 

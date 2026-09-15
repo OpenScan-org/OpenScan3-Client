@@ -2,6 +2,8 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useDeviceStore } from 'src/stores/device'
+import { useFrontendSettingsStore } from 'src/stores/frontendSettings'
+import type { MovementStepLevel } from 'src/stores/frontendSettings'
 import { apiClient, getApiSdk } from 'src/services/apiClient'
 import homePositionClassicImage from 'src/assets/setup-wizard/home-position-classic.jpg'
 import homePositionMiniImage from 'src/assets/setup-wizard/home-position-mini.jpg'
@@ -41,39 +43,39 @@ const emit = defineEmits<{
   (e: 'busy-change', payload: boolean): void
 }>()
 
-type MotorStepLevel = 'fine' | 'medium' | 'coarse'
-
 const MIN_ABSOLUTE_ANGLE = 0
 const MAX_ABSOLUTE_ANGLE = 360
 
-const motorStepLevels: Record<string, [number, number, number]> = {
-  turntable: [15, 30, 90],
-  rotor: [5, 15, 30]
-}
-
 const $q = useQuasar()
 const deviceStore = useDeviceStore()
+const frontendSettingsStore = useFrontendSettingsStore()
 const apiSdk = () => getApiSdk()
 const moveBusy = ref(false)
 const absoluteMoveBusy = ref(false)
 const calibrateBusy = ref(false)
 const manualCalibrationDialogVisible = ref(false)
-const selectedStepLevel = ref<MotorStepLevel>('fine')
+const selectedStepLevel = ref<MovementStepLevel>('fine')
 const absoluteAngle = ref<number | null>(null)
 const absoluteAngleInputRef = ref<{ focus: () => void } | null>(null)
 
 const baseStep = computed(() => Math.abs(props.stepDegrees))
+const configuredMotorSteps = computed(() => {
+  if (props.motorName === 'turntable' || props.motorName === 'rotor') {
+    return frontendSettingsStore.movementStepSettings[props.motorName]
+  }
+  return null
+})
 const stepLevelOptions = computed(() => {
-  const configuredSteps = motorStepLevels[props.motorName] ?? [
-    baseStep.value,
-    baseStep.value * 2,
-    baseStep.value * 5
-  ]
+  const configuredSteps = configuredMotorSteps.value ?? {
+    fine: baseStep.value,
+    medium: baseStep.value * 2,
+    coarse: baseStep.value * 5
+  }
 
   return [
-    { value: 'fine' as const, label: 'Fine', degrees: configuredSteps[0] },
-    { value: 'medium' as const, label: 'Medium', degrees: configuredSteps[1] },
-    { value: 'coarse' as const, label: 'Coarse', degrees: configuredSteps[2] }
+    { value: 'fine' as const, label: 'Fine', degrees: configuredSteps.fine },
+    { value: 'medium' as const, label: 'Medium', degrees: configuredSteps.medium },
+    { value: 'coarse' as const, label: 'Coarse', degrees: configuredSteps.coarse }
   ]
 })
 const selectedStepOption = computed(
@@ -277,7 +279,7 @@ function handleManualCalibrated() {
   emit('calibrated')
 }
 
-function selectStepLevel(level: MotorStepLevel) {
+function selectStepLevel(level: MovementStepLevel) {
   selectedStepLevel.value = level
 }
 

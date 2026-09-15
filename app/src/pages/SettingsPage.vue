@@ -57,6 +57,79 @@
                       />
                     </div>
                     <div class="col-12">
+                      <div class="text-subtitle2 q-mt-sm">
+                        Motor Step Size
+                        <q-tooltip>
+                          Configure the fine, medium and coarse movement steps used by the motor controls.
+                        </q-tooltip>
+                      </div>
+                      <div class="frontend-settings__movement-grid">
+                        <div class="frontend-settings__movement-name">Rotor</div>
+                        <q-input
+                          v-model.number="movementStepForm.rotor.fine"
+                          type="number"
+                          label="Fine"
+                          suffix="°"
+                          min="1"
+                          max="360"
+                          step="1"
+                          @blur="saveMovementStepSetting('rotor', 'fine')"
+                        />
+                        <q-input
+                          v-model.number="movementStepForm.rotor.medium"
+                          type="number"
+                          label="Medium"
+                          suffix="°"
+                          min="1"
+                          max="360"
+                          step="1"
+                          @blur="saveMovementStepSetting('rotor', 'medium')"
+                        />
+                        <q-input
+                          v-model.number="movementStepForm.rotor.coarse"
+                          type="number"
+                          label="Coarse"
+                          suffix="°"
+                          min="1"
+                          max="360"
+                          step="1"
+                          @blur="saveMovementStepSetting('rotor', 'coarse')"
+                        />
+
+                        <div class="frontend-settings__movement-name">Turntable</div>
+                        <q-input
+                          v-model.number="movementStepForm.turntable.fine"
+                          type="number"
+                          label="Fine"
+                          suffix="°"
+                          min="1"
+                          max="360"
+                          step="1"
+                          @blur="saveMovementStepSetting('turntable', 'fine')"
+                        />
+                        <q-input
+                          v-model.number="movementStepForm.turntable.medium"
+                          type="number"
+                          label="Medium"
+                          suffix="°"
+                          min="1"
+                          max="360"
+                          step="1"
+                          @blur="saveMovementStepSetting('turntable', 'medium')"
+                        />
+                        <q-input
+                          v-model.number="movementStepForm.turntable.coarse"
+                          type="number"
+                          label="Coarse"
+                          suffix="°"
+                          min="1"
+                          max="360"
+                          step="1"
+                          @blur="saveMovementStepSetting('turntable', 'coarse')"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-12">
                       <div class="row justify-end q-gutter-sm">
                         <BaseButtonSecondary
                           icon="restart_alt"
@@ -1269,7 +1342,11 @@ import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
 import { useTaskStore } from 'src/stores/tasks'
 import { useFirmwareSettingsStore } from 'src/stores/firmwareSettings'
-import { useFrontendSettingsStore } from 'src/stores/frontendSettings'
+import {
+  useFrontendSettingsStore,
+  type ConfigurableMotorName,
+  type MovementStepLevel
+} from 'src/stores/frontendSettings'
 import { versionToApiTarget } from 'src/generated/api/versioned.gen'
 import { useDeviceWakeup } from 'src/composables/useDeviceWakeup'
 import BaseSection from 'components/base/BaseSection.vue'
@@ -1957,6 +2034,17 @@ const { cameras, motors, lights, status: deviceStatus } = storeToRefs(deviceStor
 const ROTOR_MOTOR = 'rotor'
 const TURNTABLE_MOTOR = 'turntable'
 
+type EditableMotorMovementStepSettings = {
+  [MotorName in ConfigurableMotorName]: {
+    [Level in MovementStepLevel]: number | null
+  }
+}
+
+const movementStepForm = reactive<EditableMotorMovementStepSettings>({
+  turntable: { ...frontendSettingsStore.movementStepSettings.turntable },
+  rotor: { ...frontendSettingsStore.movementStepSettings.rotor }
+})
+
 const selectedCamera = ref<string | null>(null)
 const cameraAwbCalibrating = ref(false)
 const homeBusy = ref(false)
@@ -2419,12 +2507,23 @@ function motorHasHome(name: string) {
 
 function motorStepDegrees(name: string) {
   if (name === TURNTABLE_MOTOR) {
-    return 20
+    return frontendSettingsStore.movementStepSettings.turntable.fine
   }
   if (name === ROTOR_MOTOR) {
-    return 10
+    return frontendSettingsStore.movementStepSettings.rotor.fine
   }
   return 10
+}
+
+function saveMovementStepSetting(motorName: ConfigurableMotorName, level: MovementStepLevel) {
+  const value = movementStepForm[motorName][level]
+  if (value === null || !Number.isFinite(value) || value < 1 || value > 360) {
+    movementStepForm[motorName][level] = frontendSettingsStore.movementStepSettings[motorName][level]
+    return
+  }
+
+  frontendSettingsStore.setMovementStep(motorName, level, value)
+  movementStepForm[motorName][level] = frontendSettingsStore.movementStepSettings[motorName][level]
 }
 
 function motorNegativeIcon(name: string) {
@@ -4035,5 +4134,17 @@ watch(
 
 .settings-section-actions {
   min-height: 40px;
+}
+
+.frontend-settings__movement-grid {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) repeat(3, minmax(0, 1fr));
+  gap: 8px 12px;
+  align-items: end;
+}
+
+.frontend-settings__movement-name {
+  padding-bottom: 8px;
+  color: #000;
 }
 </style>
