@@ -74,6 +74,12 @@ export type BodyCreateTaskTasksTaskNamePost = {
     kwargs?: {
         [key: string]: unknown;
     };
+    /**
+     * Depends On
+     *
+     * Optional task ID that must complete successfully before this task runs
+     */
+    depends_on?: string | null;
 };
 
 /**
@@ -1205,6 +1211,12 @@ export type Task = {
      * Completed At
      */
     completed_at?: string | null;
+    /**
+     * Depends On
+     *
+     * Task ID that must complete successfully before this task may run.
+     */
+    depends_on?: string | null;
     /**
      * Run Args
      *
@@ -2431,6 +2443,10 @@ export type AddScanWithDescriptionData = {
          * Scan Description
          */
         scan_description?: string | null;
+        /**
+         * Depends On
+         */
+        depends_on?: string | null;
     };
     url: '/projects/{project_name}/scan';
 };
@@ -2470,6 +2486,10 @@ export type UploadProjectToCloudData = {
          * Token Override
          */
         token_override?: string | null;
+        /**
+         * Depends On
+         */
+        depends_on?: string | null;
     };
     url: '/projects/{project_name}/upload';
 };
@@ -4108,7 +4128,12 @@ export type StartFocusStackingData = {
          */
         scan_index: number;
     };
-    query?: never;
+    query?: {
+        /**
+         * Depends On
+         */
+        depends_on?: string | null;
+    };
     url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/start';
 };
 

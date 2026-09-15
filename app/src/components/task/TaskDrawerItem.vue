@@ -1,5 +1,10 @@
 <template>
-  <q-card flat bordered class="task-drawer-item">
+  <q-card
+    flat
+    bordered
+    class="task-drawer-item"
+    :style="{ borderLeftColor: statusBorderColor }"
+  >
     <q-card-section class="q-pa-sm">
       <div class="row items-center justify-between q-mb-xs">
         <div class="row items-center q-gutter-xs">
@@ -104,12 +109,23 @@ const emit = defineEmits<{ dismiss: [] }>()
 
 const taskStore = useTaskStore()
 
+const STATUS_BORDER_COLORS: Record<string, string> = {
+  blue: '#2196f3',
+  orange: '#ff9800',
+  green: '#4caf50',
+  grey: '#9e9e9e',
+  'grey-5': '#9e9e9e',
+  'grey-6': '#757575',
+  negative: 'var(--q-negative)'
+}
+
 const title = computed(() => getTaskTitle(props.task))
 const subtitle = computed(() => getTaskSubtitle(props.task))
 const projectName = computed(() => getTaskProjectName(props.task))
 const projectRoute = computed(() => projectName.value ? getProjectRoute(projectName.value) : undefined)
 const statusColor = computed(() => getTaskStatusColor(props.task.status))
 const statusIcon = computed(() => getTaskStatusIcon(props.task.status))
+const statusBorderColor = computed(() => STATUS_BORDER_COLORS[statusColor.value] ?? 'var(--q-primary)')
 
 const hasProgress = computed(() =>
   props.task.progress?.current !== undefined && props.task.progress?.total !== undefined
@@ -213,7 +229,9 @@ const displayEta = computed(() => {
 })
 
 const canPause = computed(() => props.task.status === 'running')
-const canResume = computed(() => props.task.status === 'paused')
+const canResume = computed(() =>
+  (props.task.status === 'paused' || props.task.status === 'interrupted') && !props.task.depends_on
+)
 const canCancel = computed(() =>
   props.task.status === 'running' || props.task.status === 'paused' || props.task.status === 'pending'
 )
@@ -222,7 +240,7 @@ const showControls = computed(() => canPause.value || canResume.value || canCanc
 
 <style scoped>
 .task-drawer-item {
-  border-left: 3px solid var(--q-primary);
+  border-left: 3px solid;
 }
 
 .eta-flash {

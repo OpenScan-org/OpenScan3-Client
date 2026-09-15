@@ -49,6 +49,46 @@ export type AutoCalibrateAwbResponse = {
 };
 
 /**
+ * AvailableConfigResponse
+ */
+export type AvailableConfigResponse = {
+    /**
+     * Filename
+     */
+    filename: string;
+    /**
+     * Path
+     */
+    path: string;
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Model
+     */
+    model?: string | null;
+    /**
+     * Shield
+     */
+    shield?: string | null;
+};
+
+/**
+ * AvailableConfigsResponse
+ */
+export type AvailableConfigsResponse = {
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Configs
+     */
+    configs: Array<AvailableConfigResponse>;
+};
+
+/**
  * Body_add_config_json_device_configurations__post
  */
 export type BodyAddConfigJsonDeviceConfigurationsPost = {
@@ -74,6 +114,12 @@ export type BodyCreateTaskTasksTaskNamePost = {
     kwargs?: {
         [key: string]: unknown;
     };
+    /**
+     * Depends On
+     *
+     * Optional task ID that must complete successfully before this task runs
+     */
+    depends_on?: string | null;
 };
 
 /**
@@ -84,6 +130,25 @@ export type BodyMoveMotorByDegreeMotorsMotorNameAnglePatch = {
      * Degrees
      */
     degrees: number;
+};
+
+/**
+ * CameraMetadata
+ *
+ * Represents metadata from a camera.
+ */
+export type CameraMetadata = {
+    /**
+     * Camera Name
+     */
+    camera_name: string;
+    camera_settings: CameraSettings;
+    /**
+     * Raw Metadata
+     */
+    raw_metadata: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -988,6 +1053,34 @@ export type PersistedEndstopConfig = {
 };
 
 /**
+ * PhotoMetadataResponse
+ */
+export type PhotoMetadataResponse = {
+    /**
+     * Format
+     */
+    format: 'jpeg' | 'raw' | 'dng' | 'rgb_array' | 'yuv_array';
+    /**
+     * Media Type
+     */
+    media_type: string;
+    /**
+     * Filename
+     */
+    filename: string;
+    camera_metadata: CameraMetadata;
+    scan_metadata?: ScanMetadata | null;
+    /**
+     * Payload Url
+     */
+    payload_url: string;
+    /**
+     * Expires In S
+     */
+    expires_in_s: number;
+};
+
+/**
  * PhotoResponse
  */
 export type PhotoResponse = {
@@ -1098,6 +1191,18 @@ export type Project = {
 };
 
 /**
+ * ProjectCreateRequest
+ *
+ * JSON payload for creating a project.
+ */
+export type ProjectCreateRequest = {
+    /**
+     * Project Description
+     */
+    project_description?: string;
+};
+
+/**
  * Scan
  *
  * Represents a single scan session within a project.
@@ -1180,6 +1285,67 @@ export type Scan = {
      */
     task_id?: string | null;
     stacking_task_status?: StackingTaskStatus | null;
+};
+
+/**
+ * ScanCreateRequest
+ *
+ * JSON payload for adding and starting a scan.
+ */
+export type ScanCreateRequest = {
+    /**
+     * Camera Name
+     */
+    camera_name: string;
+    scan_settings: ScanSetting;
+    /**
+     * Scan Description
+     */
+    scan_description?: string;
+    /**
+     * Depends On
+     */
+    depends_on?: string | null;
+};
+
+/**
+ * ScanMetadata
+ *
+ * Represents metadata from a scan for a photo.
+ */
+export type ScanMetadata = {
+    /**
+     * Step
+     *
+     * The sequential index of the photo within the scan.
+     */
+    step: number;
+    /**
+     * The polar coordinates of the camera when the photo was taken.
+     */
+    polar_coordinates: PolarPoint3d;
+    /**
+     * Project Name
+     *
+     * The name of the project this scan belongs to.
+     */
+    project_name: string;
+    /**
+     * Scan Index
+     *
+     * The sequential index of the scan within the project.
+     */
+    scan_index: number;
+    /**
+     * Stack Index
+     *
+     * The sequential index of the photo within the focus stack.
+     */
+    stack_index?: number | null;
+    /**
+     * Cartesian coordinates, derived from polar_coordinates.
+     */
+    cart_coordinates?: CartesianPoint3d | null;
 };
 
 /**
@@ -1471,6 +1637,12 @@ export type Task = {
      */
     completed_at?: string | null;
     /**
+     * Depends On
+     *
+     * Task ID that must complete successfully before this task may run.
+     */
+    depends_on?: string | null;
+    /**
      * Run Args
      *
      * Positional arguments the task was started with.
@@ -1616,13 +1788,13 @@ export type TriggerStatusResponse = {
 /**
  * UpdateInstallResponse
  *
- * Result of a synchronous user-requested update installation.
+ * Acceptance or result of a user-requested update installation.
  */
 export type UpdateInstallResponse = {
     /**
      * Status
      */
-    status: 'completed' | 'install_failed' | 'install_blocked';
+    status: 'installing' | 'completed' | 'install_failed' | 'install_blocked';
     /**
      * Reboot Required
      */
@@ -1774,10 +1946,12 @@ export type GetPreviewError = GetPreviewErrors[keyof GetPreviewErrors];
 
 export type GetPreviewResponses = {
     /**
-     * Successful Response
+     * A JPEG snapshot or an MJPEG stream, depending on `mode`.
      */
-    200: unknown;
+    200: Blob | File;
 };
+
+export type GetPreviewResponse = GetPreviewResponses[keyof GetPreviewResponses];
 
 export type GetPhotoData = {
     body?: never;
@@ -1815,10 +1989,12 @@ export type GetPhotoError = GetPhotoErrors[keyof GetPhotoErrors];
 
 export type GetPhotoResponses = {
     /**
-     * Successful Response
+     * The requested photo bytes, or metadata with a payload URL when `with_metadata=true`.
      */
-    200: unknown;
+    200: PhotoMetadataResponse;
 };
+
+export type GetPhotoResponse = GetPhotoResponses[keyof GetPhotoResponses];
 
 export type GetPhotoPayloadData = {
     body?: never;
@@ -1851,10 +2027,12 @@ export type GetPhotoPayloadError = GetPhotoPayloadErrors[keyof GetPhotoPayloadEr
 
 export type GetPhotoPayloadResponses = {
     /**
-     * Successful Response
+     * The cached photo payload bytes.
      */
-    200: unknown;
+    200: Blob | File;
 };
+
+export type GetPhotoPayloadResponse = GetPhotoPayloadResponses[keyof GetPhotoPayloadResponses];
 
 export type RestartCameraData = {
     body?: never;
@@ -2969,19 +3147,14 @@ export type GetProjectResponses = {
 export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
 
 export type NewProjectData = {
-    body?: never;
+    body: ProjectCreateRequest;
     path: {
         /**
          * Project Name
          */
         project_name: string;
     };
-    query?: {
-        /**
-         * Project Description
-         */
-        project_description?: string | null;
-    };
+    query?: never;
     url: '/projects/{project_name}';
 };
 
@@ -3034,33 +3207,26 @@ export type GetProjectThumbnailError = GetProjectThumbnailErrors[keyof GetProjec
 
 export type GetProjectThumbnailResponses = {
     /**
-     * Successful Response
+     * The project thumbnail as a JPEG file.
      */
-    200: unknown;
+    200: Blob | File;
 };
 
-export type AddScanWithDescriptionData = {
-    body: ScanSetting;
+export type GetProjectThumbnailResponse = GetProjectThumbnailResponses[keyof GetProjectThumbnailResponses];
+
+export type AddScanData = {
+    body: ScanCreateRequest;
     path: {
         /**
          * Project Name
          */
         project_name: string;
     };
-    query: {
-        /**
-         * Camera Name
-         */
-        camera_name: string;
-        /**
-         * Scan Description
-         */
-        scan_description?: string | null;
-    };
+    query?: never;
     url: '/projects/{project_name}/scan';
 };
 
-export type AddScanWithDescriptionErrors = {
+export type AddScanErrors = {
     /**
      * Not found
      */
@@ -3071,16 +3237,16 @@ export type AddScanWithDescriptionErrors = {
     422: HttpValidationError;
 };
 
-export type AddScanWithDescriptionError = AddScanWithDescriptionErrors[keyof AddScanWithDescriptionErrors];
+export type AddScanError = AddScanErrors[keyof AddScanErrors];
 
-export type AddScanWithDescriptionResponses = {
+export type AddScanResponses = {
     /**
      * Successful Response
      */
     200: Task;
 };
 
-export type AddScanWithDescriptionResponse = AddScanWithDescriptionResponses[keyof AddScanWithDescriptionResponses];
+export type AddScanResponse = AddScanResponses[keyof AddScanResponses];
 
 export type UploadProjectToCloudData = {
     body?: never;
@@ -3095,6 +3261,10 @@ export type UploadProjectToCloudData = {
          * Token Override
          */
         token_override?: string | null;
+        /**
+         * Depends On
+         */
+        depends_on?: string | null;
     };
     url: '/projects/{project_name}/upload';
 };
@@ -3210,7 +3380,7 @@ export type GetScanPhotoError = GetScanPhotoErrors[keyof GetScanPhotoErrors];
 
 export type GetScanPhotoResponses = {
     /**
-     * Successful Response
+     * Photo metadata and data, or the raw file when `file_only=true`.
      */
     200: PhotoResponse;
 };
@@ -3526,10 +3696,12 @@ export type DownloadProjectError = DownloadProjectErrors[keyof DownloadProjectEr
 
 export type DownloadProjectResponses = {
     /**
-     * Successful Response
+     * A ZIP stream containing the requested project files.
      */
-    200: unknown;
+    200: Blob | File;
 };
+
+export type DownloadProjectResponse = DownloadProjectResponses[keyof DownloadProjectResponses];
 
 export type DownloadProjectModelData = {
     body?: never;
@@ -3558,10 +3730,12 @@ export type DownloadProjectModelError = DownloadProjectModelErrors[keyof Downloa
 
 export type DownloadProjectModelResponses = {
     /**
-     * Successful Response
+     * A ZIP stream containing the reconstructed project model.
      */
-    200: unknown;
+    200: Blob | File;
 };
+
+export type DownloadProjectModelResponse = DownloadProjectModelResponses[keyof DownloadProjectModelResponses];
 
 export type DownloadScansData = {
     body?: never;
@@ -3601,10 +3775,12 @@ export type DownloadScansError = DownloadScansErrors[keyof DownloadScansErrors];
 
 export type DownloadScansResponses = {
     /**
-     * Successful Response
+     * A ZIP stream containing the requested scans.
      */
-    200: unknown;
+    200: Blob | File;
 };
+
+export type DownloadScansResponse = DownloadScansResponses[keyof DownloadScansResponses];
 
 export type GetSoftwareInfoData = {
     body?: never;
@@ -3668,10 +3844,12 @@ export type TailLogsError = TailLogsErrors[keyof TailLogsErrors];
 
 export type TailLogsResponses = {
     /**
-     * Successful Response
+     * Plain-text log output, or JSON Lines when `format=json`.
      */
-    200: unknown;
+    200: string;
 };
+
+export type TailLogsResponse = TailLogsResponses[keyof TailLogsResponses];
 
 export type DownloadLogsArchiveData = {
     body?: never;
@@ -3689,10 +3867,12 @@ export type DownloadLogsArchiveErrors = {
 
 export type DownloadLogsArchiveResponses = {
     /**
-     * Successful Response
+     * ZIP archive containing the available log files.
      */
-    200: unknown;
+    200: Blob | File;
 };
+
+export type DownloadLogsArchiveResponse = DownloadLogsArchiveResponses[keyof DownloadLogsArchiveResponses];
 
 export type GetDeviceInfoData = {
     body?: never;
@@ -3735,8 +3915,10 @@ export type ListConfigFilesResponses = {
     /**
      * Successful Response
      */
-    200: unknown;
+    200: AvailableConfigsResponse;
 };
+
+export type ListConfigFilesResponse = ListConfigFilesResponses[keyof ListConfigFilesResponses];
 
 export type GetCurrentConfigData = {
     body?: never;
@@ -5293,7 +5475,12 @@ export type StartFocusStackingData = {
          */
         scan_index: number;
     };
-    query?: never;
+    query?: {
+        /**
+         * Depends On
+         */
+        depends_on?: string | null;
+    };
     url: '/projects/{project_name}/scans/{scan_index}/focus-stacking/start';
 };
 

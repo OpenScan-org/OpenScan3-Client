@@ -77,6 +77,7 @@
             :camera="selectedCamera"
             :camera-options="cameraStore.cameraOptions"
             v-model:selectedCameraName="selectedCameraName"
+            v-model:autoStartFocusStacking="autoStartFocusStacking"
             @scan-settings-change="handleScanSettingsChange"
             @focus-mode-change="handleFocusModeChange"
             @update:photoCount="value => (photoCount = value)"
@@ -141,6 +142,7 @@ const showSavePresetDialog = ref(false)
 const presetDialogInitialName = ref('')
 const lastScanSettings = ref<ScanSetting | null>(null)
 const focusStackingModeActive = ref(false)
+const autoStartFocusStacking = ref(false)
 const isRestoringFromHiddenPreset = ref(false)
 const canPersistHiddenPreset = ref(false)
 let hiddenPresetPersistTimeout: ReturnType<typeof setTimeout> | null = null
@@ -366,6 +368,49 @@ const onCreateProject = async (data: { name: string; description?: string }) => 
   }
 }
 
+const getScanIndexFromTask = (task: Task): number | null => {
+  const candidates: unknown[] = [
+    Array.isArray(task.run_args) ? task.run_args[0] : null,
+    task.run_kwargs
+  ]
+
+  for (const candidate of candidates) {
+    if (isRecord(candidate) && typeof candidate.index === 'number' && Number.isInteger(candidate.index)) {
+      return candidate.index
+    }
+  }
+
+  return null
+}
+
+const startScanTask = async (scanSettings: ScanSetting) => {
+  const sdk = apiSdk()
+
+  if ('addScanWithDescription' in sdk) {
+    return await sdk.addScanWithDescription({
+      client: apiClient,
+      path: { project_name: selectedProject.value },
+      query: { camera_name: selectedCameraName.value },
+      body: scanSettings,
+      throwOnError: true
+    })
+  }
+
+  if ('addScan' in sdk) {
+    return await sdk.addScan({
+      client: apiClient,
+      path: { project_name: selectedProject.value },
+      body: {
+        camera_name: selectedCameraName.value,
+        scan_settings: scanSettings
+      },
+      throwOnError: true
+    })
+  }
+
+  throw new Error('The selected API version does not provide a scan endpoint')
+}
+
 const performStartScan = async () => {
   if (!scanSettingsSectionRef.value) {
     return
@@ -376,19 +421,37 @@ const performStartScan = async () => {
   const scanSettings = scanSettingsSectionRef.value.getScanSettings()
 
   try {
-    const taskResponse = await apiSdk().addScanWithDescription({
-      client: apiClient,
-      path: { project_name: selectedProject.value },
-      query: { camera_name: selectedCameraName.value },
-      body: scanSettings,
-      throwOnError: true
-    })
+    const taskResponse = await startScanTask(scanSettings)
     const task = taskResponse.data as Task | null
     if (!task?.id || typeof task.id !== 'string' || !task.id.trim()) {
       throw new Error('Scan start response does not contain a valid task id')
     }
 
     taskStore.applyTaskUpdate(task)
+
+    if (autoStartFocusStacking.value && focusStackingModeActive.value) {
+      try {
+        const scanIndex = getScanIndexFromTask(task)
+        if (scanIndex === null) {
+          throw new Error('Scan start response does not contain a valid scan index')
+        }
+
+        const stackingTaskResponse = await apiSdk().startFocusStacking({
+          client: apiClient,
+          path: { project_name: selectedProject.value, scan_index: scanIndex },
+          query: { depends_on: task.id },
+          throwOnError: true
+        })
+        const stackingTask = stackingTaskResponse.data as Task | null
+        if (!stackingTask?.id || typeof stackingTask.id !== 'string' || !stackingTask.id.trim()) {
+          throw new Error('Focus stacking start response does not contain a valid task id')
+        }
+        taskStore.applyTaskUpdate(stackingTask)
+      } catch (error) {
+        console.error(`Focus stacking could not be scheduled for project "${selectedProject.value}". ${formatApiError(error)}`, error)
+      }
+    }
+
     await router.push(`/scan/progress/${task.id}`)
 
     // Refresh projects list after starting scan (in case a new project was created)

@@ -40,6 +40,7 @@
         v-model:manualFocusValue="manualFocusValue"
         v-model:focusStacks="focusStacks"
         v-model:focusRange="focusRange"
+        v-model:autoStartFocusStacking="autoStartFocusStackingModel"
         :camera-name="cameraName"
         :camera-label="camera?.label ?? cameraName ?? ''"
         :af-description="cameraSettingDescription('AF')"
@@ -87,6 +88,7 @@ const props = defineProps<{
   } | null
   cameraOptions?: CameraOption[]
   selectedCameraName?: string
+  autoStartFocusStacking: boolean
 }>()
 
 const emit = defineEmits<{
@@ -94,6 +96,7 @@ const emit = defineEmits<{
   (e: 'update:photoCount', value: number): void
   (e: 'scan-settings-change', value: ScanSetting): void
   (e: 'focus-mode-change', value: FocusMode): void
+  (e: 'update:autoStartFocusStacking', value: boolean): void
 }>()
 
 const deviceStore = useDeviceStore()
@@ -270,6 +273,11 @@ const cameraOptions = computed<CameraOption[]>(() => props.cameraOptions ?? [])
 const selectedCameraNameModel = computed({
   get: () => props.selectedCameraName ?? '',
   set: value => emit('update:selectedCameraName', value)
+})
+
+const autoStartFocusStackingModel = computed({
+  get: () => props.autoStartFocusStacking,
+  set: (value: boolean) => emit('update:autoStartFocusStacking', value)
 })
 
 const photoCount = computed(() => points.value * (enableFocusStacking.value ? focusStacks.value : 1))

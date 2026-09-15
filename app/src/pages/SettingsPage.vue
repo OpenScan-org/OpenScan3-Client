@@ -1633,8 +1633,11 @@ const tokenStatusExpanded = ref(false)
 function normalizeApiVersion(version: string | null | undefined) {
   const raw = (version ?? '').trim()
   if (!raw) return ''
-  if (/^v(latest|next)$/i.test(raw)) {
-    return raw.toLowerCase().replace(/^v/, '')
+  if (/^vnext$/i.test(raw)) {
+    return 'vnext'
+  }
+  if (/^vlatest$/i.test(raw)) {
+    return 'latest'
   }
   const prefixed = raw.startsWith('v') ? raw : `v${raw}`
   return prefixed.replace(/_/g, '.')
@@ -1645,19 +1648,25 @@ function collectSupportedVersions() {
 }
 
 function sortVersions(values: string[]) {
-  const special = ['latest', 'next']
-  const specials = values
-    .map((v) => v.toLowerCase())
-    .filter((v) => special.includes(v))
-  const numeric = values
-    .map((v) => (v.toLowerCase().startsWith('v') ? v.slice(1) : v))
-    .filter((v) => !special.includes(v.toLowerCase()))
-    .sort((a, b) => {
-      const aNum = Number(a.replace(/^v/i, ''))
-      const bNum = Number(b.replace(/^v/i, ''))
-      return bNum - aNum
-    })
-  return [...new Set([...specials, ...numeric])]
+  const uniqueValues = [...new Set(values)]
+  return uniqueValues.sort((a, b) => {
+    const normalizedA = a.toLowerCase()
+    const normalizedB = b.toLowerCase()
+    const rankA = ['next', 'vnext'].includes(normalizedA) ? 0 : normalizedA === 'latest' ? 1 : 2
+    const rankB = ['next', 'vnext'].includes(normalizedB) ? 0 : normalizedB === 'latest' ? 1 : 2
+
+    if (rankA !== rankB) {
+      return rankA - rankB
+    }
+
+    if (rankA < 2) {
+      return 0
+    }
+
+    const aNum = Number(normalizedA.replace(/^v/i, ''))
+    const bNum = Number(normalizedB.replace(/^v/i, ''))
+    return bNum - aNum
+  })
 }
 
 async function loadVersionOptions() {
