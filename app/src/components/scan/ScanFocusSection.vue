@@ -76,32 +76,33 @@
       <q-card-section class="focus-preview-dialog__controls">
         <div class="focus-preview-dialog__motor-bar">
           <q-btn-group unelevated rounded>
-            <BaseMotorButtonBar
-              :motor-name="TURNTABLE_MOTOR"
-              :step-degrees="20"
-              negative-icon="keyboard_arrow_left"
-              positive-icon="keyboard_arrow_right"
-              negative-tooltip="Rotate turntable left"
-              positive-tooltip="Rotate turntable right"
-              :show-calibrate="false"
-              :disable="motorControlsDisabled"
-              :refresh-after-move="true"
-              @busy-change="handleTurntableBusyChange"
-              @moved="handleMotorMoved"
-            />
-            <BaseMotorButtonBar
-              :motor-name="ROTOR_MOTOR"
-              :step-degrees="10"
-              negative-icon="keyboard_arrow_up"
-              positive-icon="keyboard_arrow_down"
-              negative-tooltip="Move rotor up"
-              positive-tooltip="Move rotor down"
-              :disable="motorControlsDisabled"
-              :refresh-after-move="true"
-              @busy-change="handleRotorBusyChange"
-              @moved="handleMotorMoved"
-              @calibrated="handleMotorMoved"
-            />
+              <BaseMotorButtonBar
+                :motor-name="TURNTABLE_MOTOR"
+                :step-degrees="20"
+                negative-icon="keyboard_arrow_left"
+                positive-icon="keyboard_arrow_right"
+                negative-tooltip="Rotate turntable left"
+                positive-tooltip="Rotate turntable right"
+                :show-calibrate="false"
+                :disable="motorControlsDisabled"
+                :refresh-after-move="true"
+                @busy-change="handleTurntableBusyChange"
+                @moved="handleMotorMoved"
+              />
+              <span class="focus-preview-dialog__motor-divider" aria-hidden="true" />
+              <BaseMotorButtonBar
+                :motor-name="ROTOR_MOTOR"
+                :step-degrees="10"
+                negative-icon="keyboard_arrow_up"
+                positive-icon="keyboard_arrow_down"
+                negative-tooltip="Move rotor up"
+                positive-tooltip="Move rotor down"
+                :disable="motorControlsDisabled"
+                :refresh-after-move="true"
+                @busy-change="handleRotorBusyChange"
+                @moved="handleMotorMoved"
+                @calibrated="handleMotorMoved"
+              />
             <BaseButtonIconSecondary
               class="focus-preview-dialog__home"
               icon="home"
@@ -551,6 +552,12 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
+}
+
+.focus-preview-dialog__motor-divider {
+  align-self: center;
+  height: 24px;
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .focus-preview-dialog__overlay-button {

@@ -5,32 +5,33 @@
         <div class="camera-view__toolbar-left">
           <div class="camera-view__toolbar-motor">
             <q-btn-group unelevated rounded>
-              <BaseMotorButtonBar
-                :motor-name="TURNTABLE_MOTOR"
-                :step-degrees="20"
-                negative-icon="keyboard_arrow_left"
-                positive-icon="keyboard_arrow_right"
-                negative-tooltip="Rotate turntable left"
-                positive-tooltip="Rotate turntable right"
-                :show-calibrate="false"
-                :disable="props.scanning || motorControlsBusy"
-                :refresh-after-move="true"
-                @busy-change="handleTurntableBusyChange"
-                @moved="handleMotorMoved"
-              />
-              <BaseMotorButtonBar
-                :motor-name="ROTOR_MOTOR"
-                :step-degrees="10"
-                negative-icon="keyboard_arrow_up"
-                positive-icon="keyboard_arrow_down"
-                negative-tooltip="Move rotor up"
-                positive-tooltip="Move rotor down"
-                :disable="props.scanning || motorControlsBusy"
-                :refresh-after-move="true"
-                @busy-change="handleRotorBusyChange"
-                @moved="handleMotorMoved"
-                @calibrated="handleRotorCalibrated"
-              />
+                <BaseMotorButtonBar
+                  :motor-name="TURNTABLE_MOTOR"
+                  :step-degrees="20"
+                  negative-icon="keyboard_arrow_left"
+                  positive-icon="keyboard_arrow_right"
+                  negative-tooltip="Rotate turntable left"
+                  positive-tooltip="Rotate turntable right"
+                  :show-calibrate="false"
+                  :disable="props.scanning || motorControlsBusy"
+                  :refresh-after-move="true"
+                  @busy-change="handleTurntableBusyChange"
+                  @moved="handleMotorMoved"
+                />
+                <span class="camera-view__motor-divider" aria-hidden="true" />
+                <BaseMotorButtonBar
+                  :motor-name="ROTOR_MOTOR"
+                  :step-degrees="10"
+                  negative-icon="keyboard_arrow_up"
+                  positive-icon="keyboard_arrow_down"
+                  negative-tooltip="Move rotor up"
+                  positive-tooltip="Move rotor down"
+                  :disable="props.scanning || motorControlsBusy"
+                  :refresh-after-move="true"
+                  @busy-change="handleRotorBusyChange"
+                  @moved="handleMotorMoved"
+                  @calibrated="handleRotorCalibrated"
+                />
               <BaseButtonIconSecondary
                 class="camera-view__toolbar-home"
                 icon="home"
@@ -160,32 +161,33 @@
             <div class="camera-view__toolbar-left">
               <div class="camera-view__toolbar-motor">
                 <q-btn-group unelevated rounded>
-                  <BaseMotorButtonBar
-                    :motor-name="TURNTABLE_MOTOR"
-                    :step-degrees="20"
-                    negative-icon="keyboard_arrow_left"
-                    positive-icon="keyboard_arrow_right"
-                    negative-tooltip="Rotate turntable left"
-                    positive-tooltip="Rotate turntable right"
-                    :show-calibrate="false"
-                    :disable="props.scanning || motorControlsBusy"
-                    :refresh-after-move="true"
-                    @busy-change="handleTurntableBusyChange"
-                    @moved="handleMotorMoved"
-                  />
-                  <BaseMotorButtonBar
-                    :motor-name="ROTOR_MOTOR"
-                    :step-degrees="10"
-                    negative-icon="keyboard_arrow_up"
-                    positive-icon="keyboard_arrow_down"
-                    negative-tooltip="Move rotor up"
-                    positive-tooltip="Move rotor down"
-                    :disable="props.scanning || motorControlsBusy"
-                    :refresh-after-move="true"
-                    @busy-change="handleRotorBusyChange"
-                    @moved="handleMotorMoved"
-                    @calibrated="handleRotorCalibrated"
-                  />
+                    <BaseMotorButtonBar
+                      :motor-name="TURNTABLE_MOTOR"
+                      :step-degrees="20"
+                      negative-icon="keyboard_arrow_left"
+                      positive-icon="keyboard_arrow_right"
+                      negative-tooltip="Rotate turntable left"
+                      positive-tooltip="Rotate turntable right"
+                      :show-calibrate="false"
+                      :disable="props.scanning || motorControlsBusy"
+                      :refresh-after-move="true"
+                      @busy-change="handleTurntableBusyChange"
+                      @moved="handleMotorMoved"
+                    />
+                    <span class="camera-view__motor-divider" aria-hidden="true" />
+                    <BaseMotorButtonBar
+                      :motor-name="ROTOR_MOTOR"
+                      :step-degrees="10"
+                      negative-icon="keyboard_arrow_up"
+                      positive-icon="keyboard_arrow_down"
+                      negative-tooltip="Move rotor up"
+                      positive-tooltip="Move rotor down"
+                      :disable="props.scanning || motorControlsBusy"
+                      :refresh-after-move="true"
+                      @busy-change="handleRotorBusyChange"
+                      @moved="handleMotorMoved"
+                      @calibrated="handleRotorCalibrated"
+                    />
                   <BaseButtonIconSecondary
                     class="camera-view__toolbar-home"
                     icon="home"
@@ -603,6 +605,12 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8px;
   margin-right: 16px;
+}
+
+.camera-view__motor-divider {
+  align-self: center;
+  height: 24px;
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .camera-view__toolbar-actions {
