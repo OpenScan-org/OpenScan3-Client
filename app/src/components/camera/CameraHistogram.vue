@@ -16,9 +16,7 @@
       <canvas ref="histogramCanvas" class="histogram" />
     </div>
 
-    <q-dialog v-model="histogramInfoDialog">
-      <q-card class="histogram-info-dialog">
-        <q-card-section class="text-h6">Histogram for photogrammetry</q-card-section>
+    <BaseDialog v-model="histogramInfoDialog" title="Histogram for photogrammetry" width="min(92vw, 560px)">
         <q-card-section class="text-body2">
           <p>
             The RGB curves represent how many pixels fall into each brightness bucket. Shadows accumulate
@@ -30,15 +28,18 @@
             or crushed blacks.
           </p>
         </q-card-section>
-        <q-card-actions align="right">
+      <template #actions>
           <q-btn flat label="Close" color="primary" v-close-popup />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+      </template>
+    </BaseDialog>
 
-    <q-dialog v-model="histogramViewDialog" persistent>
-      <q-card class="histogram-view-dialog" :style="histogramDialogStyle">
-        <q-card-section class="text-h6">Histogram</q-card-section>
+    <BaseDialog
+      v-model="histogramViewDialog"
+      title="Histogram"
+      persistent
+      width="min(90vw, 720px)"
+      :card-style="histogramDialogStyle"
+    >
         <q-card-section>
           <canvas ref="histogramCanvasDialog" class="histogram-dialog__canvas" />
         </q-card-section>
@@ -47,11 +48,10 @@
           shadows on the left, mid-tones in the center, highlights on the right. Keep the curves away from
           the edges to preserve texture and avoid clipping.
         </q-card-section>
-        <q-card-actions align="right">
+      <template #actions>
           <q-btn flat label="Close" color="primary" v-close-popup />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+      </template>
+    </BaseDialog>
   </div>
 </template>
 
@@ -59,6 +59,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { useCameraStore } from 'src/stores/camera'
+import BaseDialog from 'components/base/BaseDialog.vue'
 
 const $q = useQuasar()
 
@@ -302,10 +303,6 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 120px;
   background: var(--histogram-canvas-bg, rgba(248, 250, 252, 0.95));
-}
-
-.histogram-view-dialog {
-  width: min(90vw, 720px);
 }
 
 .histogram-dialog__canvas {

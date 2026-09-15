@@ -5,32 +5,33 @@
         <div class="camera-view__toolbar-left">
           <div class="camera-view__toolbar-motor">
             <q-btn-group unelevated rounded>
-              <BaseMotorButtonBar
-                :motor-name="TURNTABLE_MOTOR"
-                :step-degrees="20"
-                negative-icon="keyboard_arrow_left"
-                positive-icon="keyboard_arrow_right"
-                negative-tooltip="Rotate turntable left"
-                positive-tooltip="Rotate turntable right"
-                :show-calibrate="false"
-                :disable="props.scanning || motorControlsBusy"
-                :refresh-after-move="true"
-                @busy-change="handleTurntableBusyChange"
-                @moved="handleMotorMoved"
-              />
-              <BaseMotorButtonBar
-                :motor-name="ROTOR_MOTOR"
-                :step-degrees="10"
-                negative-icon="keyboard_arrow_up"
-                positive-icon="keyboard_arrow_down"
-                negative-tooltip="Move rotor up"
-                positive-tooltip="Move rotor down"
-                :disable="props.scanning || motorControlsBusy"
-                :refresh-after-move="true"
-                @busy-change="handleRotorBusyChange"
-                @moved="handleMotorMoved"
-                @calibrated="handleRotorCalibrated"
-              />
+                <BaseMotorButtonBar
+                  :motor-name="TURNTABLE_MOTOR"
+                  :step-degrees="20"
+                  negative-icon="keyboard_arrow_left"
+                  positive-icon="keyboard_arrow_right"
+                  negative-tooltip="Rotate turntable left"
+                  positive-tooltip="Rotate turntable right"
+                  :show-calibrate="false"
+                  :disable="props.scanning || motorControlsBusy"
+                  :refresh-after-move="true"
+                  @busy-change="handleTurntableBusyChange"
+                  @moved="handleMotorMoved"
+                />
+                <span class="camera-view__motor-divider" aria-hidden="true" />
+                <BaseMotorButtonBar
+                  :motor-name="ROTOR_MOTOR"
+                  :step-degrees="10"
+                  negative-icon="keyboard_arrow_up"
+                  positive-icon="keyboard_arrow_down"
+                  negative-tooltip="Move rotor up"
+                  positive-tooltip="Move rotor down"
+                  :disable="props.scanning || motorControlsBusy"
+                  :refresh-after-move="true"
+                  @busy-change="handleRotorBusyChange"
+                  @moved="handleMotorMoved"
+                  @calibrated="handleRotorCalibrated"
+                />
               <BaseButtonIconSecondary
                 class="camera-view__toolbar-home"
                 icon="home"
@@ -90,7 +91,22 @@
             button-tooltip="Restart camera"
             :button-disable="restartBusy || !selectedCameraNameModel || props.scanning"
             @button-click="handleRestartCamera"
-          />
+          >
+            <template #before-primary>
+              <BaseButtonIconSecondary
+                class="q-mr-xs"
+                icon="screen_rotation"
+                size="sm"
+                :disable="!selectedCameraNameModel || props.scanning"
+                aria-label="Adjust camera orientation"
+                @click="cameraOrientationDialogVisible = true"
+              >
+                <q-tooltip anchor="bottom middle" self="top middle">
+                  Adjust camera orientation
+                </q-tooltip>
+              </BaseButtonIconSecondary>
+            </template>
+          </SelectWithButton>
         </div>
       </div>
     </div>
@@ -128,46 +144,50 @@
       </div>
     </div>
   </q-card>
-  <q-dialog v-model="fullPreviewDialogVisible">
-    <q-card class="full-preview-dialog">
-      <q-card-section class="full-preview-dialog__header">
-        <div class="full-preview-dialog__title">
-          {{ props.camera?.label ?? 'HQ preview' }}
-        </div>
-        <q-btn icon="close" flat round dense @click="fullPreviewDialogVisible = false" />
-      </q-card-section>
+  <CameraOrientationDialog
+    v-model="cameraOrientationDialogVisible"
+    :camera-name="selectedCameraNameModel || null"
+  />
+  <BaseDialog
+    v-model="fullPreviewDialogVisible"
+    :title="props.camera?.label ?? 'HQ preview'"
+    width="fit-content"
+    max-width="90vw"
+    card-class="full-preview-dialog"
+  >
       <q-card-section class="full-preview-dialog__controls">
         <div class="camera-view__toolbar full-preview-dialog__toolbar">
           <div class="camera-view__toolbar-layout">
             <div class="camera-view__toolbar-left">
               <div class="camera-view__toolbar-motor">
                 <q-btn-group unelevated rounded>
-                  <BaseMotorButtonBar
-                    :motor-name="TURNTABLE_MOTOR"
-                    :step-degrees="20"
-                    negative-icon="keyboard_arrow_left"
-                    positive-icon="keyboard_arrow_right"
-                    negative-tooltip="Rotate turntable left"
-                    positive-tooltip="Rotate turntable right"
-                    :show-calibrate="false"
-                    :disable="props.scanning || motorControlsBusy"
-                    :refresh-after-move="true"
-                    @busy-change="handleTurntableBusyChange"
-                    @moved="handleMotorMoved"
-                  />
-                  <BaseMotorButtonBar
-                    :motor-name="ROTOR_MOTOR"
-                    :step-degrees="10"
-                    negative-icon="keyboard_arrow_up"
-                    positive-icon="keyboard_arrow_down"
-                    negative-tooltip="Move rotor up"
-                    positive-tooltip="Move rotor down"
-                    :disable="props.scanning || motorControlsBusy"
-                    :refresh-after-move="true"
-                    @busy-change="handleRotorBusyChange"
-                    @moved="handleMotorMoved"
-                    @calibrated="handleRotorCalibrated"
-                  />
+                    <BaseMotorButtonBar
+                      :motor-name="TURNTABLE_MOTOR"
+                      :step-degrees="20"
+                      negative-icon="keyboard_arrow_left"
+                      positive-icon="keyboard_arrow_right"
+                      negative-tooltip="Rotate turntable left"
+                      positive-tooltip="Rotate turntable right"
+                      :show-calibrate="false"
+                      :disable="props.scanning || motorControlsBusy"
+                      :refresh-after-move="true"
+                      @busy-change="handleTurntableBusyChange"
+                      @moved="handleMotorMoved"
+                    />
+                    <span class="camera-view__motor-divider" aria-hidden="true" />
+                    <BaseMotorButtonBar
+                      :motor-name="ROTOR_MOTOR"
+                      :step-degrees="10"
+                      negative-icon="keyboard_arrow_up"
+                      positive-icon="keyboard_arrow_down"
+                      negative-tooltip="Move rotor up"
+                      positive-tooltip="Move rotor down"
+                      :disable="props.scanning || motorControlsBusy"
+                      :refresh-after-move="true"
+                      @busy-change="handleRotorBusyChange"
+                      @moved="handleMotorMoved"
+                      @calibrated="handleRotorCalibrated"
+                    />
                   <BaseButtonIconSecondary
                     class="camera-view__toolbar-home"
                     icon="home"
@@ -250,9 +270,9 @@
                 :image-element="fullPreviewImageElement"
                 :image-loaded="fullPreviewImageLoaded"
               />
-              <q-inner-loading :showing="hqPhotoLoading">
+              <div v-if="hqPhotoLoading" class="full-preview-dialog__spinner">
                 <q-spinner-dots color="primary" size="42px" />
-              </q-inner-loading>
+              </div>
             </div>
           </div>
         </template>
@@ -260,20 +280,21 @@
           No high quality preview available.
         </div>
       </q-card-section>
-    </q-card>
-  </q-dialog>
+  </BaseDialog>
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, unref, watch } from 'vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
+import BaseDialog from 'components/base/BaseDialog.vue'
 import BaseMotorButtonBar from 'components/base/BaseMotorButtonBar.vue'
 import SelectWithButton from 'components/common/SelectWithButton.vue'
 import CameraFastPreview, { type CameraFastPreviewExposed } from './camera/CameraFastPreview.vue'
 import CameraHeatmapOverlay from './camera/CameraHeatmapOverlay.vue'
 import CameraHistogram from './camera/CameraHistogram.vue'
 import CameraHQPreview, { type CameraHQPreviewExposed } from './camera/CameraHQPreview.vue'
+import CameraOrientationDialog from './camera/CameraOrientationDialog.vue'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
 import { apiClient, getApiSdk } from 'src/services/apiClient'
@@ -368,6 +389,7 @@ const turntableControlsBusy = ref(false)
 const restartBusy = ref(false)
 let hqRefreshTimeout: ReturnType<typeof setTimeout> | null = null
 const fullPreviewDialogVisible = ref(false)
+const cameraOrientationDialogVisible = ref(false)
 const fullPreviewImageRef = ref<HTMLImageElement | null>(null)
 const fullPreviewImageLoaded = ref(false)
 
@@ -585,6 +607,12 @@ onBeforeUnmount(() => {
   margin-right: 16px;
 }
 
+.camera-view__motor-divider {
+  align-self: center;
+  height: 24px;
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+}
+
 .camera-view__toolbar-actions {
   flex: 1 1 auto;
   display: flex;
@@ -661,19 +689,6 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-.full-preview-dialog__header {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-}
-
-.full-preview-dialog__title {
-  font-size: 1rem;
-  font-weight: 600;
-}
-
 .full-preview-dialog__body {
   flex: 1 1 auto;
   min-height: 0;
@@ -723,6 +738,15 @@ onBeforeUnmount(() => {
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+.full-preview-dialog__spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
 .full-preview-dialog__placeholder {

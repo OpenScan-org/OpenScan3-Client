@@ -82,12 +82,18 @@ export const fieldDefaults = {
     "downloaded": false,
     "uploaded": false
   },
+  "ProjectCreateRequest": {
+    "project_description": ""
+  },
   "Scan": {
     "current_step": 0,
     "duration": 0,
     "stacked_size_bytes": 0,
     "status": "pending",
     "total_size_bytes": 0
+  },
+  "ScanCreateRequest": {
+    "scan_description": ""
   },
   "ScannerDeviceConfig": {
     "calibrate_mode": "calibrate_manual",

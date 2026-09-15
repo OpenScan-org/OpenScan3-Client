@@ -40,6 +40,7 @@
         v-model:manualFocusValue="manualFocusValue"
         v-model:focusStacks="focusStacks"
         v-model:focusRange="focusRange"
+        v-model:autoStartFocusStacking="autoStartFocusStackingModel"
         :camera-name="cameraName"
         :camera-label="camera?.label ?? cameraName ?? ''"
         :af-description="cameraSettingDescription('AF')"
@@ -72,6 +73,7 @@ import { type CameraSettings as CameraSettingsModel, type ScanSetting } from 'sr
 import { apiClient, getApiSdk } from 'src/services/apiClient'
 import { useCameraStore } from 'src/stores/camera'
 import { useDeviceStore } from 'src/stores/device'
+import { fieldConstraints } from 'src/generated/api/fieldConstraints'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import { fieldDefaults } from 'src/generated/api/fieldDefaults'
 
@@ -86,6 +88,7 @@ const props = defineProps<{
   } | null
   cameraOptions?: CameraOption[]
   selectedCameraName?: string
+  autoStartFocusStacking: boolean
 }>()
 
 const emit = defineEmits<{
@@ -93,6 +96,7 @@ const emit = defineEmits<{
   (e: 'update:photoCount', value: number): void
   (e: 'scan-settings-change', value: ScanSetting): void
   (e: 'focus-mode-change', value: FocusMode): void
+  (e: 'update:autoStartFocusStacking', value: boolean): void
 }>()
 
 const deviceStore = useDeviceStore()
@@ -123,6 +127,8 @@ const pauseBeforeCaptureMs = ref(0)
 const focusStacks = ref<number>(2)
 const enableFocusStacking = ref(false)
 const focusRange = ref({ min: 10.0, max: 15.0 })
+const focusRangeConstraints = fieldConstraints.ScanSetting.focus_range
+const focusRangeItemConstraints = focusRangeConstraints.items ?? []
 
 type FocusMode = 'autofocus' | 'manual' | 'stacking'
 
@@ -267,6 +273,11 @@ const cameraOptions = computed<CameraOption[]>(() => props.cameraOptions ?? [])
 const selectedCameraNameModel = computed({
   get: () => props.selectedCameraName ?? '',
   set: value => emit('update:selectedCameraName', value)
+})
+
+const autoStartFocusStackingModel = computed({
+  get: () => props.autoStartFocusStacking,
+  set: (value: boolean) => emit('update:autoStartFocusStacking', value)
 })
 
 const photoCount = computed(() => points.value * (enableFocusStacking.value ? focusStacks.value : 1))
@@ -473,7 +484,21 @@ function getScanSettings() {
   if (pauseBeforeCaptureMs.value !== undefined) settings.pause_before_capture_ms = pauseBeforeCaptureMs.value
   if (enableFocusStacking.value) {
     if (focusStacks.value !== undefined) settings.focus_stacks = focusStacks.value
-    if (focusRange.value.min !== 0 && focusRange.value.max !== 0) settings.focus_range = [focusRange.value.min, focusRange.value.max]
+    const { min, max } = focusRange.value
+    const isWithinConstraint = (
+      value: number,
+      constraint: { minimum?: number; maximum?: number } | undefined
+    ) => Number.isFinite(value) &&
+      (constraint?.minimum === undefined || value >= constraint.minimum) &&
+      (constraint?.maximum === undefined || value <= constraint.maximum)
+
+    if (
+      isWithinConstraint(min, focusRangeItemConstraints[0]) &&
+      isWithinConstraint(max, focusRangeItemConstraints[1]) &&
+      min <= max
+    ) {
+      settings.focus_range = [min, max]
+    }
   }
 
   return settings

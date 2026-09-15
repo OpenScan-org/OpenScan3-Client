@@ -249,6 +249,8 @@ interface ProjectProp {
     projectScans?: Scan[]
 }
 
+const thumbnailMissing = ref(false)
+
 const handleBulkDeleteSelected = (data: { project_name: string; scan_indices: number[] }) => {
     if (!data.scan_indices.length) {
         return
@@ -694,10 +696,22 @@ const handleCancelScan = async (data: { project_name: string; scan_index: number
 
 const handleStackScan = async (data: { project_name: string; scan_index: number }) => {
     try {
-        await apiSdk().startFocusStacking({ path: { project_name: data.project_name, scan_index: data.scan_index }, client: apiClient })
+        const taskResponse = await apiSdk().startFocusStacking({
+            path: { project_name: data.project_name, scan_index: data.scan_index },
+            client: apiClient,
+            throwOnError: true
+        })
+        const task = taskResponse.data
+        if (task?.id) {
+            taskStore.applyTaskUpdate(task)
+        }
         emit('reload')
     } catch (error) {
         console.error('Could not start focus stacking.', error)
+        $q.notify({
+            type: 'negative',
+            message: 'Could not start focus stacking. See the console for details.'
+        })
     }
 }
 

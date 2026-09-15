@@ -163,62 +163,7 @@
           </div>
           <div v-else-if="step.id === 'orientation'">
             <div class="text-subtitle1 q-mb-sm">Camera orientation</div>
-            <p class="q-mb-md">
-              Adjust the camera orientation and mirroring so that the preview matches your physical setup.
-            </p>
-
-            <div class="orientation-preview-wrapper q-mb-md">
-              <div
-                v-if="orientationCamera"
-                class="row q-gutter-sm items-center justify-center no-wrap q-mb-sm"
-              >
-                <BaseButtonSecondary
-                  icon="rotate_left"
-                  label="Rotate left"
-                  :loading="orientationAction === 'left'"
-                  :disable="isOrientationUpdating"
-                  size="md"
-                  @click="handleRotateLeft"
-                />
-                <BaseButtonSecondary
-                  icon="flip"
-                  label="Mirror vertically"
-                  :loading="orientationAction === 'mirror'"
-                  :disable="isOrientationUpdating"
-                  size="md"
-                  @click="handleToggleMirror"
-                />
-                <BaseButtonSecondary
-                  icon="rotate_right"
-                  label="Rotate right"
-                  :loading="orientationAction === 'right'"
-                  :disable="isOrientationUpdating"
-                  size="md"
-                  @click="handleRotateRight"
-                />
-              </div>
-
-              <div class="orientation-preview-inner">
-                <CameraFastPreview
-                  :camera="orientationCamera"
-                  :active="!!orientationCamera"
-                  :enable-crop="false"
-                >
-                  <template #placeholder>
-                    <div class="text-caption text-grey-6">
-                      Camera preview will appear once a camera is available.
-                    </div>
-                  </template>
-                </CameraFastPreview>
-
-                <div
-                  v-if="isOrientationUpdating"
-                  class="orientation-preview-overlay"
-                >
-                  <BaseSpinner size="md" />
-                </div>
-              </div>
-            </div>
+            <CameraOrientationPanel :camera-name="orientationCamera?.value ?? null" />
           </div>
           <div v-else-if="step.id === 'test-scan'">
             <div class="setup-finish-section q-pa-lg">
@@ -304,12 +249,47 @@
           </div>
         </template>
           </BaseWizard>
-          <q-dialog v-model="rotorImageDialogVisible">
-            <q-card class="rotor-image-dialog">
-              <q-card-section class="rotor-image-dialog__header row items-center justify-between">
-                <div class="text-subtitle1">{{ rotorDialogTitle }}</div>
-                <q-btn icon="close" flat round dense @click="rotorImageDialogVisible = false" />
-              </q-card-section>
+          <BaseDialog
+            v-model="noCameraDialogVisible"
+            title="No camera found"
+            persistent
+            width="min(92vw, 560px)"
+            card-class="no-camera-dialog"
+          >
+            <q-card-section>
+              <p class="text-body1 q-mb-md">
+                OpenScan could not detect a camera when the setup wizard started.
+              </p>
+              <div class="text-subtitle2 q-mb-sm">Please check the camera cable:</div>
+              <ul class="no-camera-dialog__tips q-mb-md">
+                <li>Make sure the contact surfaces of the camera ribbon are oriented correctly.</li>
+                <li>Push the connectors firmly into place on both ends.</li>
+                <li>Make sure the correct OpenScan3 image for your camera model is flashed.</li>
+              </ul>
+              <p class="text-body2 text-grey-7 q-mb-none">
+                If the camera is still not detected, download a camera report and include it when asking for support.
+              </p>
+            </q-card-section>
+            <template #actions>
+              <BaseButtonSecondary
+                icon="download"
+                label="Camera report"
+                :loading="cameraReportDownloadLoading"
+                :disable="cameraReportDownloadLoading"
+                @click="handleDownloadCameraReport"
+              />
+              <BaseButtonPrimary
+                label="Continue anyway"
+                @click="noCameraDialogVisible = false"
+              />
+            </template>
+          </BaseDialog>
+          <BaseDialog
+            v-model="rotorImageDialogVisible"
+            :title="rotorDialogTitle"
+            width="min(90vw, 640px)"
+            card-class="rotor-image-dialog"
+          >
               <q-card-section class="rotor-image-dialog__body">
                 <img
                   v-if="rotorDirectionImageSrc"
@@ -321,8 +301,7 @@
                   {{ rotorDirectionHint }}
                 </div>
               </q-card-section>
-            </q-card>
-          </q-dialog>
+          </BaseDialog>
         </div>
       </div>
     </div>
@@ -332,27 +311,28 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import BasePage from 'components/base/BasePage.vue'
 import BaseWizard from 'components/base/BaseWizard.vue'
+import BaseDialog from 'components/base/BaseDialog.vue'
 import BaseList from 'components/base/BaseList.vue'
 import BaseListItem from 'components/base/BaseListItem.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseMotorManualCalibration from 'components/base/BaseMotorManualCalibration.vue'
-import BaseSpinner from 'components/base/BaseSpinner.vue'
 import homePositionClassicImage from 'src/assets/setup-wizard/home-position-classic.jpg'
 import homePositionMiniImage from 'src/assets/setup-wizard/home-position-mini.jpg'
 import rotorDirectionClassicImage from 'src/assets/setup-wizard/rotor-direction-classic.jpg'
 import rotorDirectionMiniImage from 'src/assets/setup-wizard/rotor-direction-mini.jpg'
 import { useDeviceStore } from 'src/stores/device'
-import CameraFastPreview from 'components/camera/CameraFastPreview.vue'
+import CameraOrientationPanel from 'components/camera/CameraOrientationPanel.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import { useCameraStore } from 'src/stores/camera'
 import {
   type DeviceConfigRequest
 } from 'src/generated/api'
 import { apiClient, getApiSdk } from 'src/services/apiClient'
+import { downloadCameraReport } from 'src/utils/cameraReport'
 
 const steps = [
   { id: 'connection', label: 'Model', caption: 'Select the device model.' },
@@ -366,6 +346,7 @@ const activeStepId = ref(steps[0].id)
 
 const deviceStore = useDeviceStore()
 const cameraStore = useCameraStore()
+const route = useRoute()
 const router = useRouter()
 const apiSdk = () => getApiSdk()
 
@@ -382,6 +363,11 @@ const configOptions = ref<DeviceConfigFile[]>([])
 const loadingConfigs = ref(false)
 const selectedConfigPath = ref<string | null>(null)
 const isApplyingConfig = ref(false)
+const noCameraDialogVisible = ref(false)
+const cameraReportDownloadLoading = ref(false)
+const isNoCameraSimulation = computed(
+  () => import.meta.env.DEV && route.query.simulate === 'no-camera'
+)
 
 const isConnectionStep = computed(() => activeStepId.value === 'connection')
 const isHardwareStep = computed(() => activeStepId.value === 'hardware')
@@ -437,8 +423,6 @@ const orientationCamera = computed(() => {
   return options.find((c) => c.value === selectedName) ?? options[0] ?? null
 })
 
-const orientationAction = ref<'left' | 'right' | 'mirror' | null>(null)
-const isOrientationUpdating = computed(() => orientationAction.value !== null)
 const rotorImageDialogVisible = ref(false)
 
 const deviceModel = computed(() => deviceStore.device?.model ?? null)
@@ -550,9 +534,37 @@ async function loadConfigs() {
   }
 }
 
+async function loadCamerasForSetup() {
+  if (isNoCameraSimulation.value) {
+    noCameraDialogVisible.value = true
+    return
+  }
+
+  await cameraStore.fetchCameras()
+  if (!cameraStore.cameras.length) {
+    noCameraDialogVisible.value = true
+  }
+}
+
+async function handleDownloadCameraReport() {
+  if (cameraReportDownloadLoading.value) {
+    return
+  }
+
+  cameraReportDownloadLoading.value = true
+  try {
+    await downloadCameraReport()
+  } catch (error) {
+    console.error('Camera report could not be downloaded.', error)
+    $q.notify({ type: 'negative', message: 'Camera report could not be downloaded.' })
+  } finally {
+    cameraReportDownloadLoading.value = false
+  }
+}
+
 onMounted(() => {
   void loadConfigs()
-  void cameraStore.fetchCameras()
+  void loadCamerasForSetup()
 })
 
 async function handleNext(goNext: () => void) {
@@ -689,86 +701,6 @@ async function handleReverseRotorDirection() {
   } finally {
     isReversingRotorDirection.value = false
   }
-}
-
-const ROTATE_RIGHT_MAP: Record<number, number> = {
-  1: 6,
-  6: 3,
-  3: 8,
-  8: 1,
-  2: 7,
-  7: 4,
-  4: 5,
-  5: 2
-}
-
-const MIRROR_MAP: Record<number, number> = {
-  1: 2,
-  2: 1,
-  3: 4,
-  4: 3,
-  5: 6,
-  6: 5,
-  7: 8,
-  8: 7
-}
-
-function getSafeOrientationFlag(): number | null {
-  const flag = orientationCamera.value?.orientationFlag ?? null
-  if (!flag || flag < 1 || flag > 8) {
-    return 1
-  }
-  return flag
-}
-
-async function applyOrientationFlag(nextFlag: number) {
-  if (!orientationCamera.value) return
-
-  try {
-    // Mark orientation update as in progress; specific action is set by caller
-    await apiSdk().updateCameraNameSettings({
-      client: apiClient,
-      path: { name: orientationCamera.value.value },
-      body: { orientation_flag: nextFlag }
-    })
-  } catch (error) {
-    console.error('Failed to update orientation flag', error)
-    $q.notify({ type: 'negative', message: 'Failed to update orientation flag' })
-  }
-}
-
-function nextFlagWithMap(map: Record<number, number>): number {
-  const current = getSafeOrientationFlag() ?? 1
-  return map[current] ?? 1
-}
-
-function handleRotateRight() {
-  const next = nextFlagWithMap(ROTATE_RIGHT_MAP)
-  orientationAction.value = 'right'
-  void applyOrientationFlag(next).finally(() => {
-    orientationAction.value = null
-  })
-}
-
-function handleRotateLeft() {
-  // inverse mapping of ROTATE_RIGHT_MAP
-  const inverse: Record<number, number> = {}
-  Object.entries(ROTATE_RIGHT_MAP).forEach(([from, to]) => {
-    inverse[to as unknown as number] = Number(from)
-  })
-  const next = nextFlagWithMap(inverse)
-  orientationAction.value = 'left'
-  void applyOrientationFlag(next).finally(() => {
-    orientationAction.value = null
-  })
-}
-
-function handleToggleMirror() {
-  const next = nextFlagWithMap(MIRROR_MAP)
-  orientationAction.value = 'mirror'
-  void applyOrientationFlag(next).finally(() => {
-    orientationAction.value = null
-  })
 }
 
 async function handleFinishSetup() {
@@ -927,7 +859,7 @@ function navigateTo(path: string) {
 }
 
 .rotor-image-dialog {
-  max-width: min(90vw, 640px);
+  max-height: 90vh;
 }
 
 .rotor-image-dialog__body {
@@ -940,22 +872,12 @@ function navigateTo(path: string) {
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
 }
 
-.orientation-preview-wrapper {
-  max-width: 480px;
-  margin: 0 auto;
+.no-camera-dialog__tips {
+  padding-left: 24px;
 }
 
-.orientation-preview-inner {
-  position: relative;
+.no-camera-dialog__tips li + li {
+  margin-top: 8px;
 }
 
-.orientation-preview-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.35);
-  pointer-events: none;
-}
 </style>

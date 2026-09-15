@@ -89,6 +89,7 @@ const onSecondaryButtonClick = () => {
       v-if="props.showPrimaryButton || props.showSecondaryButton"
       class="col-auto select-with-button__button row no-wrap items-center"
     >
+      <slot name="before-primary" />
       <BaseButtonIconSecondary
         v-if="props.showPrimaryButton"
         :icon="props.buttonIcon"

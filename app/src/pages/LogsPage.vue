@@ -74,11 +74,12 @@
       </template>
     </BaseSection>
 
-    <q-dialog v-if="!showDisconnectedSkeleton" v-model="feedbackDialog">
-      <q-card style="min-width: 480px; max-width: 90vw">
-        <q-card-section class="q-pb-xs">
-          <div class="text-h6">Submit feedback</div>
-        </q-card-section>
+    <BaseDialog
+      v-if="!showDisconnectedSkeleton"
+      v-model="feedbackDialog"
+      title="Submit feedback"
+      width="min(92vw, 480px)"
+    >
         <q-card-section class="q-pt-none">
           <q-input
             v-model="feedbackText"
@@ -89,16 +90,17 @@
           />
         </q-card-section>
         <q-separator />
-        <q-card-actions align="right" class="row q-col-gutter-sm">
+      <template #actions>
+        <div class="row q-col-gutter-sm">
           <div class="col-12 col-md-auto">
             <BaseButtonSecondary label="Cancel" @click="feedbackDialog = false" />
           </div>
           <div class="col-12 col-md-auto">
             <BaseButtonPrimary label="Open email" icon="email" @click="submitFeedback" />
           </div>
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+        </div>
+      </template>
+    </BaseDialog>
   </BasePage>
 </template>
 
@@ -106,6 +108,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
+import BaseDialog from 'components/base/BaseDialog.vue'
 import BasePage from 'components/base/BasePage.vue'
 import BaseSection from 'components/base/BaseSection.vue'
 import LogsWorkspace from 'components/common/LogsWorkspace.vue'

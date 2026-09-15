@@ -41,12 +41,12 @@ npm run build
 ```
 
 ### Release process
-All merges into `main` are treated as releases. Before pushing or opening a PR, bump the version in `app/package.json` via:
+Releases follow a Gitflow-style process. Create `release/v<version>` from `develop`, update the frontend version in `app/package.json` and its lockfile, and move the relevant entries from `Unreleased` to the matching version in `app/CHANGELOG.md`:
 ```bash
 cd app
-npm version <patch|minor|major>
+npm version <version> --no-git-tag-version
 ```
-This keeps the automated GitHub release workflow from failing because of duplicated tags _with_ existing releases and ensures `spa.zip` is versioned correctly.
+Merge the release branch into `main` and back into `develop`. Then run the `Build SPA` workflow manually on the release commit in `main`. It creates a GitHub release named `v<frontend-version>+api<api-version>` and attaches the versioned SPA and Debian artifacts.
 
 ### Build and create spa.zip for deployment
 ```bash

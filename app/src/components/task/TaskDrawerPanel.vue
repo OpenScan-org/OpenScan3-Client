@@ -22,11 +22,14 @@
           :label="`Active (${activeTasks.length})`"
         >
           <div class="q-gutter-y-sm q-pa-xs">
-            <TaskDrawerItem
-              v-for="task in activeTasks"
-              :key="task.id"
-              :task="task"
-            />
+            <div
+              v-for="entry in activeTasks"
+              :key="entry.task.id"
+              class="task-drawer-entry"
+              :class="{ 'task-drawer-entry--dependent': entry.indented }"
+            >
+              <TaskDrawerItem :task="entry.task" />
+            </div>
           </div>
         </q-expansion-item>
 
@@ -37,13 +40,18 @@
           :label="`Completed (${completedTasks.length})`"
         >
           <div class="q-gutter-y-sm q-pa-xs">
-            <TaskDrawerItem
-              v-for="task in completedTasks"
-              :key="task.id"
-              :task="task"
-              dismissable
-              @dismiss="taskStore.dismissTask(task.id)"
-            />
+            <div
+              v-for="entry in completedTasks"
+              :key="entry.task.id"
+              class="task-drawer-entry"
+              :class="{ 'task-drawer-entry--dependent': entry.indented }"
+            >
+              <TaskDrawerItem
+                :task="entry.task"
+                dismissable
+                @dismiss="taskStore.dismissTask(entry.task.id)"
+              />
+            </div>
           </div>
         </q-expansion-item>
 
@@ -54,13 +62,18 @@
           :label="`Cancelled / Error (${failedTasks.length})`"
         >
           <div class="q-gutter-y-sm q-pa-xs">
-            <TaskDrawerItem
-              v-for="task in failedTasks"
-              :key="task.id"
-              :task="task"
-              dismissable
-              @dismiss="taskStore.dismissTask(task.id)"
-            />
+            <div
+              v-for="entry in failedTasks"
+              :key="entry.task.id"
+              class="task-drawer-entry"
+              :class="{ 'task-drawer-entry--dependent': entry.indented }"
+            >
+              <TaskDrawerItem
+                :task="entry.task"
+                dismissable
+                @dismiss="taskStore.dismissTask(entry.task.id)"
+              />
+            </div>
           </div>
           <div class="q-mt-sm q-px-xs">
             <q-btn
@@ -194,21 +207,94 @@ const sortByTime = (a: Task, b: Task) => {
   return bTime - aTime
 }
 
-const activeTasks = computed(() =>
-  tasks.value.filter((t) => isTaskActive(t)).sort(sortByTime)
+type ActiveTaskEntry = {
+  task: Task
+  indented: boolean
+}
+
+const activeTaskPriority = (task: Task) => {
+  if (task.status === 'running') return 0
+  if (task.status === 'paused') return 1
+  return 2
+}
+
+const compareActiveTasks = (a: Task, b: Task) =>
+  activeTaskPriority(a) - activeTaskPriority(b) || sortByTime(a, b)
+
+const groupTasksByDependencies = (source: Task[], compare: (a: Task, b: Task) => number): ActiveTaskEntry[] => {
+  const groupedTasks = source.filter((task): task is Task & { id: string } => typeof task.id === 'string')
+  const tasksById = new Map(groupedTasks.map((task) => [task.id, task]))
+  const childrenByParentId = new Map<string, typeof groupedTasks>()
+
+  for (const task of groupedTasks) {
+    if (!task.depends_on || !tasksById.has(task.depends_on)) {
+      continue
+    }
+
+    const children = childrenByParentId.get(task.depends_on) ?? []
+    children.push(task)
+    childrenByParentId.set(task.depends_on, children)
+  }
+
+  const roots = groupedTasks
+    .filter((task) => !task.depends_on || !tasksById.has(task.depends_on))
+    .sort(compare)
+  const ordered: ActiveTaskEntry[] = []
+  const visited = new Set<string>()
+
+  const appendTask = (task: Task & { id: string }, indented: boolean) => {
+    if (visited.has(task.id)) {
+      return
+    }
+
+    visited.add(task.id)
+    ordered.push({ task, indented })
+
+    const children = childrenByParentId.get(task.id) ?? []
+    children.sort(compare).forEach((child) => appendTask(child, true))
+  }
+
+  roots.forEach((task) => appendTask(task, false))
+
+  // Keep malformed or cyclic dependency data visible instead of dropping it.
+  groupedTasks
+    .filter((task) => !visited.has(task.id))
+    .sort(compare)
+    .forEach((task) => appendTask(task, false))
+
+  return ordered
+}
+
+const activeTasks = computed<ActiveTaskEntry[]>(() =>
+  groupTasksByDependencies(
+    tasks.value.filter((task) => isTaskActive(task)),
+    compareActiveTasks
+  )
 )
 
 const completedTasks = computed(() =>
-  tasks.value.filter((t) => t.status === 'completed').sort(sortByTime)
+  groupTasksByDependencies(
+    tasks.value.filter((task) => task.status === 'completed'),
+    sortByTime
+  )
 )
 
 const failedTasks = computed(() =>
-  tasks.value.filter((t) => t.status === 'cancelled' || t.status === 'error' || t.status === 'interrupted').sort(sortByTime)
+  groupTasksByDependencies(
+    tasks.value.filter((task) => task.status === 'cancelled' || task.status === 'error' || task.status === 'interrupted'),
+    sortByTime
+  )
 )
 
 function dismissAllFailedTasks() {
-  for (const task of [...failedTasks.value]) {
-    taskStore.dismissTask(task.id)
+  for (const entry of [...failedTasks.value]) {
+    taskStore.dismissTask(entry.task.id)
   }
 }
 </script>
+
+<style scoped>
+.task-drawer-entry--dependent {
+  margin-left: 8px;
+}
+</style>

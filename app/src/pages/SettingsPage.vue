@@ -57,6 +57,79 @@
                       />
                     </div>
                     <div class="col-12">
+                      <div class="text-subtitle2 q-mt-sm">
+                        Motor Step Size
+                        <q-tooltip>
+                          Configure the fine, medium and coarse movement steps used by the motor controls.
+                        </q-tooltip>
+                      </div>
+                      <div class="frontend-settings__movement-grid">
+                        <div class="frontend-settings__movement-name">Rotor</div>
+                        <q-input
+                          v-model.number="movementStepForm.rotor.fine"
+                          type="number"
+                          label="Fine"
+                          suffix="°"
+                          min="1"
+                          max="360"
+                          step="1"
+                          @blur="saveMovementStepSetting('rotor', 'fine')"
+                        />
+                        <q-input
+                          v-model.number="movementStepForm.rotor.medium"
+                          type="number"
+                          label="Medium"
+                          suffix="°"
+                          min="1"
+                          max="360"
+                          step="1"
+                          @blur="saveMovementStepSetting('rotor', 'medium')"
+                        />
+                        <q-input
+                          v-model.number="movementStepForm.rotor.coarse"
+                          type="number"
+                          label="Coarse"
+                          suffix="°"
+                          min="1"
+                          max="360"
+                          step="1"
+                          @blur="saveMovementStepSetting('rotor', 'coarse')"
+                        />
+
+                        <div class="frontend-settings__movement-name">Turntable</div>
+                        <q-input
+                          v-model.number="movementStepForm.turntable.fine"
+                          type="number"
+                          label="Fine"
+                          suffix="°"
+                          min="1"
+                          max="360"
+                          step="1"
+                          @blur="saveMovementStepSetting('turntable', 'fine')"
+                        />
+                        <q-input
+                          v-model.number="movementStepForm.turntable.medium"
+                          type="number"
+                          label="Medium"
+                          suffix="°"
+                          min="1"
+                          max="360"
+                          step="1"
+                          @blur="saveMovementStepSetting('turntable', 'medium')"
+                        />
+                        <q-input
+                          v-model.number="movementStepForm.turntable.coarse"
+                          type="number"
+                          label="Coarse"
+                          suffix="°"
+                          min="1"
+                          max="360"
+                          step="1"
+                          @blur="saveMovementStepSetting('turntable', 'coarse')"
+                        />
+                      </div>
+                    </div>
+                    <div class="col-12">
                       <div class="row justify-end q-gutter-sm">
                         <BaseButtonSecondary
                           icon="restart_alt"
@@ -978,6 +1051,18 @@
                                   <q-tooltip>{{ cameraSettingDescription('AF') }}</q-tooltip>
                                 </q-toggle>
                               </div>
+                              <div class="col-auto">
+                                <BaseButtonSecondary
+                                  icon="screen_rotation"
+                                  label="Camera orientation"
+                                  :disable="scanLocked || !selectedCamera"
+                                  @click="cameraOrientationDialog = true"
+                                >
+                                  <q-tooltip>
+                                    {{ scanLocked ? scanLockedTooltip : 'Adjust camera rotation and mirroring.' }}
+                                  </q-tooltip>
+                                </BaseButtonSecondary>
+                              </div>
                             </div>
                           </div>
                         </template>
@@ -997,7 +1082,7 @@
                         </BaseButtonSecondary>
                         <BaseButtonSecondary
                           v-if="isNextApiTarget"
-                          icon="description"
+                          icon="download"
                           label="Camera report"
                           :loading="cameraReportDownloadLoading"
                           :disable="cameraReportDownloadLoading"
@@ -1041,11 +1126,7 @@
     </div>
   </BasePage>
 
-  <q-dialog v-model="addMotorDialog" persistent>
-    <q-card style="min-width: 520px">
-      <q-card-section>
-        <div class="text-h6">Add Motor</div>
-      </q-card-section>
+  <BaseDialog v-model="addMotorDialog" title="Add Motor" persistent width="min(92vw, 520px)">
       <q-card-section class="q-pt-none">
         <div class="row q-col-gutter-sm">
           <div class="col-12">
@@ -1093,7 +1174,7 @@
           </div>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+    <template #actions>
         <BaseButtonSecondary label="Cancel" @click="addMotorDialog = false" />
         <BaseButtonPrimary
           label="Add motor"
@@ -1102,15 +1183,10 @@
           :loading="addMotorSaving"
           @click="handleAddMotor"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    </template>
+  </BaseDialog>
 
-  <q-dialog v-model="addLightDialog" persistent>
-    <q-card style="min-width: 420px">
-      <q-card-section>
-        <div class="text-h6">Add Light</div>
-      </q-card-section>
+  <BaseDialog v-model="addLightDialog" title="Add Light" persistent width="min(92vw, 420px)">
       <q-card-section class="q-pt-none">
         <div class="row q-col-gutter-sm">
           <div class="col-12">
@@ -1129,7 +1205,7 @@
           </div>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+    <template #actions>
         <BaseButtonSecondary label="Cancel" @click="addLightDialog = false" />
         <BaseButtonPrimary
           label="Add light"
@@ -1138,15 +1214,10 @@
           :loading="addLightSaving"
           @click="handleAddLight"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    </template>
+  </BaseDialog>
 
-  <q-dialog v-model="addCameraDialog" persistent>
-    <q-card style="min-width: 420px">
-      <q-card-section>
-        <div class="text-h6">Add Camera</div>
-      </q-card-section>
+  <BaseDialog v-model="addCameraDialog" title="Add Camera" persistent width="min(92vw, 420px)">
       <q-card-section class="q-pt-none">
         <div class="row q-col-gutter-sm">
           <div class="col-12">
@@ -1160,7 +1231,7 @@
           </div>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+    <template #actions>
         <BaseButtonSecondary label="Cancel" @click="addCameraDialog = false" />
         <BaseButtonPrimary
           label="Add camera"
@@ -1169,15 +1240,10 @@
           :loading="addCameraSaving"
           @click="handleAddCamera"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    </template>
+  </BaseDialog>
 
-  <q-dialog v-model="addEndstopDialog" persistent>
-    <q-card style="min-width: 480px">
-      <q-card-section>
-        <div class="text-h6">Add Endstop</div>
-      </q-card-section>
+  <BaseDialog v-model="addEndstopDialog" title="Add Endstop" persistent width="min(92vw, 480px)">
       <q-card-section class="q-pt-none">
         <div class="row q-col-gutter-sm">
           <div class="col-12">
@@ -1207,7 +1273,7 @@
           </div>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+    <template #actions>
         <BaseButtonSecondary label="Cancel" @click="addEndstopDialog = false" />
         <BaseButtonPrimary
           label="Add endstop"
@@ -1216,15 +1282,10 @@
           :loading="addEndstopSaving"
           @click="handleAddEndstop"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    </template>
+  </BaseDialog>
 
-  <q-dialog v-model="addTriggerDialog" persistent>
-    <q-card style="min-width: 480px">
-      <q-card-section>
-        <div class="text-h6">Add Trigger</div>
-      </q-card-section>
+  <BaseDialog v-model="addTriggerDialog" title="Add Trigger" persistent width="min(92vw, 480px)">
       <q-card-section class="q-pt-none">
         <div class="row q-col-gutter-sm">
           <div class="col-12">
@@ -1254,7 +1315,7 @@
           </div>
         </div>
       </q-card-section>
-      <q-card-actions align="right">
+    <template #actions>
         <BaseButtonSecondary label="Cancel" @click="addTriggerDialog = false" />
         <BaseButtonPrimary
           label="Add trigger"
@@ -1263,21 +1324,29 @@
           :loading="addTriggerSaving"
           @click="handleAddTrigger"
         />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    </template>
+  </BaseDialog>
+
+  <CameraOrientationDialog
+    v-model="cameraOrientationDialog"
+    :camera-name="selectedSettingsCamera"
+  />
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { apiClient, buildApiUrl, getApiSdk, resolveApiTarget, updateApiClientConfig } from 'src/services/apiClient'
+import { apiClient, getApiSdk, resolveApiTarget, updateApiClientConfig } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
 import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
 import { useTaskStore } from 'src/stores/tasks'
 import { useFirmwareSettingsStore } from 'src/stores/firmwareSettings'
-import { useFrontendSettingsStore } from 'src/stores/frontendSettings'
+import {
+  useFrontendSettingsStore,
+  type ConfigurableMotorName,
+  type MovementStepLevel
+} from 'src/stores/frontendSettings'
 import { versionToApiTarget } from 'src/generated/api/versioned.gen'
 import { useDeviceWakeup } from 'src/composables/useDeviceWakeup'
 import BaseSection from 'components/base/BaseSection.vue'
@@ -1290,9 +1359,12 @@ import BaseMotorButtonBar from 'components/base/BaseMotorButtonBar.vue'
 import BaseSelect from 'components/base/BaseSelect.vue'
 import BaseSliderWithInput from 'components/base/BaseSliderWithInput.vue'
 import BasePage from 'components/base/BasePage.vue'
+import BaseDialog from 'components/base/BaseDialog.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
+import CameraOrientationDialog from 'components/camera/CameraOrientationDialog.vue'
 import { fieldDescriptions, getFieldDescription } from 'src/generated/api/fieldDescriptions'
 import { fieldDefaults } from 'src/generated/api/fieldDefaults'
+import { downloadCameraReport } from 'src/utils/cameraReport'
 import type {
   AutoCalibrateAwbResponse,
   CameraSettings,
@@ -1561,8 +1633,11 @@ const tokenStatusExpanded = ref(false)
 function normalizeApiVersion(version: string | null | undefined) {
   const raw = (version ?? '').trim()
   if (!raw) return ''
-  if (/^v(latest|next)$/i.test(raw)) {
-    return raw.toLowerCase().replace(/^v/, '')
+  if (/^vnext$/i.test(raw)) {
+    return 'vnext'
+  }
+  if (/^vlatest$/i.test(raw)) {
+    return 'latest'
   }
   const prefixed = raw.startsWith('v') ? raw : `v${raw}`
   return prefixed.replace(/_/g, '.')
@@ -1573,19 +1648,25 @@ function collectSupportedVersions() {
 }
 
 function sortVersions(values: string[]) {
-  const special = ['latest', 'next']
-  const specials = values
-    .map((v) => v.toLowerCase())
-    .filter((v) => special.includes(v))
-  const numeric = values
-    .map((v) => (v.toLowerCase().startsWith('v') ? v.slice(1) : v))
-    .filter((v) => !special.includes(v.toLowerCase()))
-    .sort((a, b) => {
-      const aNum = Number(a.replace(/^v/i, ''))
-      const bNum = Number(b.replace(/^v/i, ''))
-      return bNum - aNum
-    })
-  return [...new Set([...specials, ...numeric])]
+  const uniqueValues = [...new Set(values)]
+  return uniqueValues.sort((a, b) => {
+    const normalizedA = a.toLowerCase()
+    const normalizedB = b.toLowerCase()
+    const rankA = ['next', 'vnext'].includes(normalizedA) ? 0 : normalizedA === 'latest' ? 1 : 2
+    const rankB = ['next', 'vnext'].includes(normalizedB) ? 0 : normalizedB === 'latest' ? 1 : 2
+
+    if (rankA !== rankB) {
+      return rankA - rankB
+    }
+
+    if (rankA < 2) {
+      return 0
+    }
+
+    const aNum = Number(normalizedA.replace(/^v/i, ''))
+    const bNum = Number(normalizedB.replace(/^v/i, ''))
+    return bNum - aNum
+  })
 }
 
 async function loadVersionOptions() {
@@ -1962,9 +2043,21 @@ const { cameras, motors, lights, status: deviceStatus } = storeToRefs(deviceStor
 const ROTOR_MOTOR = 'rotor'
 const TURNTABLE_MOTOR = 'turntable'
 
+type EditableMotorMovementStepSettings = {
+  [MotorName in ConfigurableMotorName]: {
+    [Level in MovementStepLevel]: number | null
+  }
+}
+
+const movementStepForm = reactive<EditableMotorMovementStepSettings>({
+  turntable: { ...frontendSettingsStore.movementStepSettings.turntable },
+  rotor: { ...frontendSettingsStore.movementStepSettings.rotor }
+})
+
 const selectedCamera = ref<string | null>(null)
 const cameraAwbCalibrating = ref(false)
 const homeBusy = ref(false)
+const cameraOrientationDialog = ref(false)
 
 const selectedSettingsCamera = computed(() => selectedCamera.value ?? cameraStore.selectedCamera)
 const backgroundCameraPreviewEnabledModel = computed({
@@ -2423,12 +2516,23 @@ function motorHasHome(name: string) {
 
 function motorStepDegrees(name: string) {
   if (name === TURNTABLE_MOTOR) {
-    return 20
+    return frontendSettingsStore.movementStepSettings.turntable.fine
   }
   if (name === ROTOR_MOTOR) {
-    return 10
+    return frontendSettingsStore.movementStepSettings.rotor.fine
   }
   return 10
+}
+
+function saveMovementStepSetting(motorName: ConfigurableMotorName, level: MovementStepLevel) {
+  const value = movementStepForm[motorName][level]
+  if (value === null || !Number.isFinite(value) || value < 1 || value > 360) {
+    movementStepForm[motorName][level] = frontendSettingsStore.movementStepSettings[motorName][level]
+    return
+  }
+
+  frontendSettingsStore.setMovementStep(motorName, level, value)
+  movementStepForm[motorName][level] = frontendSettingsStore.movementStepSettings[motorName][level]
 }
 
 function motorNegativeIcon(name: string) {
@@ -3956,24 +4060,7 @@ async function handleDownloadCameraReport() {
 
   cameraReportDownloadLoading.value = true
   try {
-    const response = await fetch(buildApiUrl('develop/camera-report?format=text'), {
-      cache: 'no-store'
-    })
-    if (!response.ok) {
-      throw new Error(`Camera report request failed with status ${response.status}`)
-    }
-
-    const reportText = await response.text()
-    const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    const anchor = document.createElement('a')
-    anchor.href = url
-    anchor.download = `camera-report-${timestamp}.txt`
-    document.body.appendChild(anchor)
-    anchor.click()
-    document.body.removeChild(anchor)
-    URL.revokeObjectURL(url)
+    await downloadCameraReport()
   } catch (error) {
     console.error('Camera report could not be downloaded.', error)
   } finally {
@@ -4056,5 +4143,17 @@ watch(
 
 .settings-section-actions {
   min-height: 40px;
+}
+
+.frontend-settings__movement-grid {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) repeat(3, minmax(0, 1fr));
+  gap: 8px 12px;
+  align-items: end;
+}
+
+.frontend-settings__movement-name {
+  padding-bottom: 8px;
+  color: #000;
 }
 </style>

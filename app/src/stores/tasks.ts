@@ -364,10 +364,38 @@ export const useTaskStore = defineStore('tasks', {
       if (!normalizedTaskId) {
         return null
       }
-      const taskResponse = await apiSdk().resumeTask({ client: apiClient, path: { task_id: normalizedTaskId } })
-      const task = (taskResponse?.data ?? taskResponse) as Task
-      this.applyTaskUpdate(task)
-      return task
+
+      const resumedTaskIds = new Set<string>()
+      const resumeTaskAndDependents = async (currentTaskId: string): Promise<Task | null> => {
+        if (resumedTaskIds.has(currentTaskId)) {
+          return null
+        }
+        resumedTaskIds.add(currentTaskId)
+
+        const taskResponse = await apiSdk().resumeTask({ client: apiClient, path: { task_id: currentTaskId } })
+        const task = (taskResponse?.data ?? taskResponse) as Task
+        this.applyTaskUpdate(task)
+
+        const dependents = this.tasks
+          .filter((candidate) =>
+            candidate.depends_on === currentTaskId
+            && (candidate.status === 'paused' || candidate.status === 'interrupted')
+            && typeof candidate.id === 'string'
+          )
+          .sort((a, b) => new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime())
+
+        for (const dependent of dependents) {
+          try {
+            await resumeTaskAndDependents(dependent.id as string)
+          } catch (error) {
+            console.error(`Could not resume dependent task "${dependent.id}".`, error)
+          }
+        }
+
+        return task
+      }
+
+      return await resumeTaskAndDependents(normalizedTaskId)
     },
     async cancel(taskId: string) {
       const normalizedTaskId = this.normalizeTaskId(taskId)

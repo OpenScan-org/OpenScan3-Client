@@ -41,16 +41,23 @@
           <BaseRangeWithInput
             v-model="focusRangeModel"
             label="Focus Range"
-            :min="0"
-            :max="15"
+            :min="focusRangeMin"
+            :max="focusRangeMax"
             :step="0.1"
             :markers="true"
             :marker-labels="[5, 10, 15]"
-            :input-min="0"
-            :input-max="15"
+            :input-min="focusRangeMin"
+            :input-max="focusRangeMax"
             :tooltip="focusRangeDescription"
           />
         </div>
+
+        <q-checkbox
+          v-model="autoStartFocusStackingModel"
+          class="q-mt-sm"
+          label="Start focus stacking automatically after the scan"
+          dense
+        />
 
         <div class="q-mt-sm focus-stacking-preview-action">
           <q-btn
@@ -65,44 +72,44 @@
     </q-tab-panels>
   </BaseSection>
 
-  <q-dialog v-model="focusPreviewDialogVisible" persistent>
-    <q-card class="focus-preview-dialog">
-      <q-card-section class="focus-preview-dialog__header">
-        <div class="focus-preview-dialog__title">
-          {{ cameraLabel || cameraName || 'Focus stacking preview' }}
-        </div>
-        <q-btn icon="close" flat round dense @click="focusPreviewDialogVisible = false" />
-      </q-card-section>
-
+  <BaseDialog
+    v-model="focusPreviewDialogVisible"
+    :title="cameraLabel || cameraName || 'Focus stacking preview'"
+    persistent
+    width="min(1180px, 96vw)"
+    max-width="96vw"
+    card-class="focus-preview-dialog"
+  >
       <q-card-section class="focus-preview-dialog__controls">
         <div class="focus-preview-dialog__motor-bar">
           <q-btn-group unelevated rounded>
-            <BaseMotorButtonBar
-              :motor-name="TURNTABLE_MOTOR"
-              :step-degrees="20"
-              negative-icon="keyboard_arrow_left"
-              positive-icon="keyboard_arrow_right"
-              negative-tooltip="Rotate turntable left"
-              positive-tooltip="Rotate turntable right"
-              :show-calibrate="false"
-              :disable="motorControlsDisabled"
-              :refresh-after-move="true"
-              @busy-change="handleTurntableBusyChange"
-              @moved="handleMotorMoved"
-            />
-            <BaseMotorButtonBar
-              :motor-name="ROTOR_MOTOR"
-              :step-degrees="10"
-              negative-icon="keyboard_arrow_up"
-              positive-icon="keyboard_arrow_down"
-              negative-tooltip="Move rotor up"
-              positive-tooltip="Move rotor down"
-              :disable="motorControlsDisabled"
-              :refresh-after-move="true"
-              @busy-change="handleRotorBusyChange"
-              @moved="handleMotorMoved"
-              @calibrated="handleMotorMoved"
-            />
+              <BaseMotorButtonBar
+                :motor-name="TURNTABLE_MOTOR"
+                :step-degrees="20"
+                negative-icon="keyboard_arrow_left"
+                positive-icon="keyboard_arrow_right"
+                negative-tooltip="Rotate turntable left"
+                positive-tooltip="Rotate turntable right"
+                :show-calibrate="false"
+                :disable="motorControlsDisabled"
+                :refresh-after-move="true"
+                @busy-change="handleTurntableBusyChange"
+                @moved="handleMotorMoved"
+              />
+              <span class="focus-preview-dialog__motor-divider" aria-hidden="true" />
+              <BaseMotorButtonBar
+                :motor-name="ROTOR_MOTOR"
+                :step-degrees="10"
+                negative-icon="keyboard_arrow_up"
+                positive-icon="keyboard_arrow_down"
+                negative-tooltip="Move rotor up"
+                positive-tooltip="Move rotor down"
+                :disable="motorControlsDisabled"
+                :refresh-after-move="true"
+                @busy-change="handleRotorBusyChange"
+                @moved="handleMotorMoved"
+                @calibrated="handleMotorMoved"
+              />
             <BaseButtonIconSecondary
               class="focus-preview-dialog__home"
               icon="home"
@@ -162,19 +169,19 @@
               <div v-if="!minPreview.imageUrl" class="focus-preview-panel__placeholder text-grey-6">
                 No preview image
               </div>
-              <q-inner-loading :showing="minPreview.loading">
+              <div v-if="minPreview.loading" class="focus-preview-panel__spinner">
                 <q-spinner-dots color="primary" size="36px" />
-              </q-inner-loading>
+              </div>
             </div>
 
             <BaseSliderWithInput
               v-model="minFocusValueModel"
               label="Min Focus (diopters)"
-              :slider-min="0"
-              :slider-max="15"
+              :slider-min="focusRangeMin"
+              :slider-max="focusRangeMax"
               :slider-step="0.1"
-              :input-min="0"
-              :input-max="15"
+              :input-min="focusRangeMin"
+              :input-max="focusRangeMax"
               :disabled="!cameraName"
               @update:model-value="handleMinFocusSliderChange"
             />
@@ -204,19 +211,19 @@
               <div v-if="!maxPreview.imageUrl" class="focus-preview-panel__placeholder text-grey-6">
                 No preview image
               </div>
-              <q-inner-loading :showing="maxPreview.loading">
+              <div v-if="maxPreview.loading" class="focus-preview-panel__spinner">
                 <q-spinner-dots color="primary" size="36px" />
-              </q-inner-loading>
+              </div>
             </div>
 
             <BaseSliderWithInput
               v-model="maxFocusValueModel"
               label="Max Focus (diopters)"
-              :slider-min="0"
-              :slider-max="15"
+              :slider-min="focusRangeMin"
+              :slider-max="focusRangeMax"
               :slider-step="0.1"
-              :input-min="0"
-              :input-max="15"
+              :input-min="focusRangeMin"
+              :input-max="focusRangeMax"
               :disabled="!cameraName"
               @update:model-value="handleMaxFocusSliderChange"
             />
@@ -226,8 +233,7 @@
           </div>
         </div>
       </q-card-section>
-    </q-card>
-  </q-dialog>
+  </BaseDialog>
 </template>
 
 <script setup lang="ts">
@@ -240,7 +246,10 @@ import BaseSection from 'components/base/BaseSection.vue'
 import BaseMotorButtonBar from 'components/base/BaseMotorButtonBar.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
+import BaseDialog from 'components/base/BaseDialog.vue'
 import CameraHeatmapOverlay from 'components/camera/CameraHeatmapOverlay.vue'
+import type * as latestSdk from 'src/generated/api/latest/sdk.gen'
+import { fieldConstraints } from 'src/generated/api/fieldConstraints'
 import { apiClient, buildApiUrl, getApiSdk } from 'src/services/apiClient'
 
 type FocusMode = 'autofocus' | 'manual' | 'stacking'
@@ -250,6 +259,7 @@ const props = defineProps<{
   manualFocusValue: number
   focusStacks: number
   focusRange: { min: number; max: number }
+  autoStartFocusStacking: boolean
   cameraName?: string | null
   cameraLabel?: string | null
   afDescription: string
@@ -263,6 +273,7 @@ const emit = defineEmits<{
   (e: 'update:manualFocusValue', value: number): void
   (e: 'update:focusStacks', value: number): void
   (e: 'update:focusRange', value: { min: number; max: number }): void
+  (e: 'update:autoStartFocusStacking', value: boolean): void
   (e: 'manual-focus-input', value: number): void
 }>()
 
@@ -286,11 +297,21 @@ const focusRangeModel = computed({
   set: (value: { min: number; max: number }) => emit('update:focusRange', value)
 })
 
+const autoStartFocusStackingModel = computed({
+  get: () => props.autoStartFocusStacking,
+  set: (value: boolean) => emit('update:autoStartFocusStacking', value)
+})
+
 const handleManualFocusInput = (value: number) => {
   emit('manual-focus-input', value)
 }
 
 const apiSdk = () => getApiSdk()
+type FocusPreviewSdk = Pick<typeof latestSdk, 'updateCameraNameSettings'>
+const focusRangeConstraints = fieldConstraints.ScanSetting.focus_range
+const focusRangeItemConstraints = focusRangeConstraints.items ?? []
+const focusRangeMin = focusRangeItemConstraints[0]?.minimum ?? 0
+const focusRangeMax = focusRangeItemConstraints[1]?.maximum ?? 15
 const ROTOR_MOTOR = 'rotor'
 const TURNTABLE_MOTOR = 'turntable'
 const focusPreviewDialogVisible = ref(false)
@@ -331,7 +352,7 @@ const motorControlsDisabled = computed(() => motorControlsBusy.value || refreshi
 const minFocusValueModel = computed({
   get: () => props.focusRange.min,
   set: (value: number) => {
-    const clamped = Math.max(0, Math.min(value, props.focusRange.max))
+    const clamped = Math.max(focusRangeMin, Math.min(value, props.focusRange.max))
     emit('update:focusRange', { ...props.focusRange, min: clamped })
   }
 })
@@ -339,7 +360,7 @@ const minFocusValueModel = computed({
 const maxFocusValueModel = computed({
   get: () => props.focusRange.max,
   set: (value: number) => {
-    const clamped = Math.min(15, Math.max(value, props.focusRange.min))
+    const clamped = Math.min(focusRangeMax, Math.max(value, props.focusRange.min))
     emit('update:focusRange', { ...props.focusRange, max: clamped })
   }
 })
@@ -380,7 +401,7 @@ async function capturePreview(target: FocusPreviewState, focusValue: number) {
   }
 
   try {
-    await apiSdk().updateCameraNameSettings({
+    await (apiSdk() as unknown as FocusPreviewSdk).updateCameraNameSettings({
       client: apiClient,
       path: { name: props.cameraName },
       body: {
@@ -535,23 +556,6 @@ onBeforeUnmount(() => {
   justify-content: flex-end;
 }
 
-.focus-preview-dialog {
-  width: min(1180px, 96vw);
-  max-width: 96vw;
-}
-
-.focus-preview-dialog__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-}
-
-.focus-preview-dialog__title {
-  font-size: 1rem;
-  font-weight: 600;
-}
-
 .focus-preview-dialog__controls {
   padding: 0 16px 12px;
 }
@@ -562,6 +566,12 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
+}
+
+.focus-preview-dialog__motor-divider {
+  align-self: center;
+  height: 24px;
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .focus-preview-dialog__overlay-button {
@@ -620,6 +630,15 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.focus-preview-panel__spinner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
 }
 
 .focus-preview-panel__error {
