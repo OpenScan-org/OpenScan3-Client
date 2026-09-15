@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 
 - Improved the focus stacking and hq preview by removing the loading overlay while keeping the spinner visible, making focus changes easier to judge visually. (Thanks agryson!)
 - Enabled resuming interrupted tasks from the task drawer.
+- Added configurable fine, medium and coarse movement steps to the frontend settings, with the selected levels available in the motor controls.
 
 ### Fixed
 
