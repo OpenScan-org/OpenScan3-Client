@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 
 ## Unreleased
 
+### Added
+
+- Added an AWB Auto-Lock button to the scan page.
+
 ## 0.8.0 - 2026-09-15
 
 ### Added

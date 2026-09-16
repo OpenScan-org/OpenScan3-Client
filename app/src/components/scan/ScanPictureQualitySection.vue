@@ -74,31 +74,43 @@
           </div>
 
           <div class="col-12">
-            <BaseSliderWithInput
-              v-model="awbgRedValue"
-              label="AWBG Red"
-              :slider-min="0"
-              :slider-max="32"
-              :slider-step="1"
-              :input-min="0"
-              :input-max="32"
-              :tooltip="cameraSettingDescription('awbg_red')"
-              @update:model-value="handleAwbgRedInput"
-            />
-          </div>
-
-          <div class="col-12">
-            <BaseSliderWithInput
-              v-model="awbgBlueValue"
-              label="AWBG Blue"
-              :slider-min="0"
-              :slider-max="32"
-              :slider-step="1"
-              :input-min="0"
-              :input-max="32"
-              :tooltip="cameraSettingDescription('awbg_blue')"
-              @update:model-value="handleAwbgBlueInput"
-            />
+            <div class="awb-control">
+              <div class="awb-slider-stack q-gutter-y-sm">
+                <BaseSliderWithInput
+                  v-model="awbgRedValue"
+                  label="AWBG Red"
+                  :slider-min="0"
+                  :slider-max="32"
+                  :slider-step="1"
+                  :input-min="0"
+                  :input-max="32"
+                  :tooltip="cameraSettingDescription('awbg_red')"
+                  @update:model-value="handleAwbgRedInput"
+                />
+                <BaseSliderWithInput
+                  v-model="awbgBlueValue"
+                  label="AWBG Blue"
+                  :slider-min="0"
+                  :slider-max="32"
+                  :slider-step="1"
+                  :input-min="0"
+                  :input-max="32"
+                  :tooltip="cameraSettingDescription('awbg_blue')"
+                  @update:model-value="handleAwbgBlueInput"
+                />
+              </div>
+              <BaseButtonSecondary
+                class="awb-auto-button"
+                icon="auto_awesome"
+                :loading="awbCalibrating"
+                :disable="awbCalibrating"
+                @click="calibrateAwb"
+              >
+                <q-tooltip>
+                  Run automatic white balance calibration and lock the gains.
+                </q-tooltip>
+              </BaseButtonSecondary>
+            </div>
           </div>
 
           <div class="col-12">
@@ -127,10 +139,12 @@ import { debounce } from 'quasar';
 
 import BaseSection from 'components/base/BaseSection.vue';
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue';
+import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue';
 import BaseSliderWithInput from 'components/base/BaseSliderWithInput.vue';
 import { useDeviceStore } from 'src/stores/device';
 import { apiClient, getApiSdk } from 'src/services/apiClient';
 import {
+  type AutoCalibrateAwbResponse,
   type CameraSettings as CameraSettingsModel,
 } from 'src/generated/api';
 import {
@@ -210,6 +224,8 @@ const gainValue = ref<number>(defaultGain);
 const awbgRedValue = ref<number>(defaultAwbg);
 const awbgBlueValue = ref<number>(defaultAwbg);
 const jpegQualityValue = ref<number>(defaultJpegQuality);
+const awbCalibrating = ref(false);
+const awbCalibrationDefaults = fieldDefaults.AutoCalibrateAwbRequest ?? null;
 
 const orientationFlagValue = ref<number>(1);
 const pendingLocalValues = ref<Partial<Record<NumericCameraSettingKey, number>>>({});
@@ -499,6 +515,36 @@ const handleAwbgBlueInput = (value: number) => {
   debouncedPersistAwbgBlue(value);
 };
 
+async function calibrateAwb() {
+  if (!props.camera?.value || awbCalibrating.value) {
+    return;
+  }
+
+  awbCalibrating.value = true;
+  try {
+    const response = await apiSdk().autoCalibrateAwb({
+      client: apiClient,
+      path: { camera_name: props.camera.value },
+      body: awbCalibrationDefaults ? { ...awbCalibrationDefaults } : undefined,
+    });
+
+    const result = ((response?.data ?? response) as AutoCalibrateAwbResponse | undefined) ?? null;
+    if (!result) {
+      return;
+    }
+
+    awbgRedValue.value = result.red_gain;
+    awbgBlueValue.value = result.blue_gain;
+    markLocalInput('awbg_red', result.red_gain);
+    markLocalInput('awbg_blue', result.blue_gain);
+    await apiSdk().saveDeviceConfig({ client: apiClient });
+  } catch (error) {
+    console.error('Camera AWB calibration failed.', error);
+  } finally {
+    awbCalibrating.value = false;
+  }
+}
+
 async function persistOrientationFlag(value: number) {
   if (!props.camera?.value) {
     return;
@@ -592,5 +638,21 @@ defineExpose({ resetToDefaults, applyCameraSettings, getCameraSettingsSnapshot }
 <style scoped>
 .camera-settings :deep(.base-section + .base-section) {
   margin-top: 8px;
+}
+
+.awb-control {
+  position: relative;
+}
+
+.awb-slider-stack :deep(.slider-track) {
+  margin-right: 40px;
+}
+
+.awb-auto-button {
+  position: absolute;
+  top: calc(50% - 8px);
+  right: 0;
+  transform: translateY(-50%);
+  background: white;
 }
 </style>
