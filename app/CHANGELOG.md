@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 ### Added
 
 - Added an AWB Auto-Lock button to the scan page.
+- Added an experimental scan wizard that starts by helping users choose or create a project before opening the scan settings.
 
 ### Changed
 

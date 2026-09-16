@@ -120,6 +120,11 @@ const upperLinks: EssentialLinkProps[] = [
     link: '/scan'
   },
   {
+    title: 'Scan wizard',
+    icon: 'auto_awesome',
+    link: '/scan/wizard'
+  },
+  {
     title: 'Settings',
     icon: 'settings',
     link: '/settings'
