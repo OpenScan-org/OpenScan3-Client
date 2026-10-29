@@ -16,6 +16,20 @@ export const fieldConstraints = {
       "exclusiveMinimum": 0
     }
   },
+  "AutoCalibrateExposureRequest": {
+    "warmup_frames": {
+      "minimum": 0
+    },
+    "stable_frames": {
+      "minimum": 1
+    },
+    "timeout_s": {
+      "exclusiveMinimum": 0
+    },
+    "relative_tolerance": {
+      "exclusiveMinimum": 0
+    }
+  },
   "CloudSettings": {
     "host": {
       "maxLength": 2083,
@@ -97,6 +111,11 @@ export const fieldConstraints = {
     },
     "stacked_size_bytes": {
       "minimum": 0
+    }
+  },
+  "ScanAnalysisRequest": {
+    "camera_name": {
+      "minLength": 1
     }
   },
   "ScannerDeviceConfig": {

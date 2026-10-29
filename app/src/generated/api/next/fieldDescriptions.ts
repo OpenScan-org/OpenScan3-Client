@@ -8,6 +8,10 @@ export const fieldDescriptions = {
     "timeout_s": "Maximum time budget for the calibration loop in seconds.",
     "warmup_frames": "Number of frames to discard before reading AWB metadata."
   },
+  "AutoCalibrateExposureRequest": {
+    "tolerance_us": "Absolute exposure stability tolerance in microseconds; overrides relative tolerance.",
+    "use_photo_config": "Temporarily calibrate in the current still configuration instead of preview mode."
+  },
   "Body_create_task_tasks__task_name__post": {
     "args": "Positional arguments for the task",
     "depends_on": "Optional task ID that must complete successfully before this task runs",
@@ -36,6 +40,17 @@ export const fieldDescriptions = {
     "split_size": "Maximum upload part size in bytes. The cloud currently accepts up to 200 MB per chunk.",
     "token": "API token identifying the device or user.",
     "user": "HTTP basic auth username for the cloud API."
+  },
+  "CropRecommendation": {
+    "bbox": "Detected object bounding box as x, y, width, height.",
+    "bbox_normalized": "Detected object bounding box relative to the full analysis frame.",
+    "coordinate_system": "Coordinate system used by bbox and rect.",
+    "crop_height": "Percentage of image height that can be cropped.",
+    "crop_width": "Percentage of image width that can be cropped.",
+    "frame_size": "Width and height of the full oriented analysis frame.",
+    "rect": "Centered crop rectangle as x, y, width, height.",
+    "rect_normalized": "Centered crop rectangle relative to the full analysis frame.",
+    "support_exclusion": "Geometry based exclusion of a lower turntable support."
   },
   "DiskUsage": {
     "free": "Free bytes remaining on the filesystem.",
@@ -88,6 +103,13 @@ export const fieldDescriptions = {
     "step_pin": "GPIO pin used to emit step pulses.",
     "steps_per_rotation": "Number of steps for a full motor rotation."
   },
+  "PositionAnalysis": {
+    "horizontal_assessment": "Qualitative guidance for horizontal object centering.",
+    "horizontal_imbalance": "Relative imbalance between the left and right image areas.",
+    "overall_status": "Overall qualitative assessment of object placement.",
+    "vertical_assessment": "Qualitative guidance for vertical alignment and holder setup.",
+    "vertical_imbalance": "Relative imbalance between the upper and lower image areas."
+  },
   "Project": {
     "created": "Creation timestamp of the project.",
     "description": "Description of the project.",
@@ -107,6 +129,26 @@ export const fieldDescriptions = {
     "stacked_size_bytes": "Total size of focus-stacked JPEG files in scanXX/stacked, in bytes.",
     "status": "The final, persistent status of the scan, mirroring the associated Task status.",
     "total_size_bytes": "Total size of all files belonging to the scan, in bytes."
+  },
+  "ScanAnalysisRequest": {
+    "camera_name": "Name of the camera used for the analysis capture.",
+    "crop": "Optional normalized x, y, width, height crop in the oriented full analysis frame.",
+    "debug_images": "Include compact ROI debug images in the result.",
+    "depends_on": "Optional task ID that must complete successfully before this task runs."
+  },
+  "ScanAnalysisResult": {
+    "camera_settings": "Previous and recommended camera settings. The recommended settings are active after a successful analysis and the previous settings can be used for reset.",
+    "debug_images": "Optional diagnostic images requested with debug_images.",
+    "focus_analysis": "Regional ISP focus measurements and a preliminary autofocus or focus-stacking assessment.",
+    "sift_analysis": "SIFT feature matching metrics from a small turntable rotation.",
+    "sift_benchmark": "Temporary paths to unscaled SIFT benchmark frames."
+  },
+  "ScanAnalysisTaskResponse": {
+    "depends_on": "Task ID that must complete successfully before this task may run.",
+    "is_blocking": "Whether this task is blocking and should run in a separate thread",
+    "is_exclusive": "Whether this task is exclusive and should not run concurrently",
+    "run_args": "Positional arguments the task was started with.",
+    "run_kwargs": "Keyword arguments the task was started with."
   },
   "ScanMetadata": {
     "cart_coordinates": "Cartesian coordinates, derived from polar_coordinates.",

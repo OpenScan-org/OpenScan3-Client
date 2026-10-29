@@ -49,6 +49,54 @@ export type AutoCalibrateAwbResponse = {
 };
 
 /**
+ * AutoCalibrateExposureRequest
+ */
+export type AutoCalibrateExposureRequest = {
+    /**
+     * Warmup Frames
+     */
+    warmup_frames?: number;
+    /**
+     * Stable Frames
+     */
+    stable_frames?: number;
+    /**
+     * Timeout S
+     */
+    timeout_s?: number;
+    /**
+     * Tolerance Us
+     *
+     * Absolute exposure stability tolerance in microseconds; overrides relative tolerance.
+     */
+    tolerance_us?: number | null;
+    /**
+     * Use Photo Config
+     *
+     * Temporarily calibrate in the current still configuration instead of preview mode.
+     */
+    use_photo_config?: boolean;
+    /**
+     * Relative Tolerance
+     */
+    relative_tolerance?: number;
+};
+
+/**
+ * AutoCalibrateExposureResponse
+ */
+export type AutoCalibrateExposureResponse = {
+    /**
+     * Shutter Ms
+     */
+    shutter_ms: number;
+    /**
+     * Analogue Gain
+     */
+    analogue_gain: number;
+};
+
+/**
  * AvailableConfigResponse
  */
 export type AvailableConfigResponse = {
@@ -259,6 +307,20 @@ export type CameraSettings = {
 };
 
 /**
+ * CameraSettingsResult
+ *
+ * Camera settings before and after scan analysis.
+ */
+export type CameraSettingsResult = {
+    previous: CameraSettings;
+    recommended: CameraSettings;
+    /**
+     * Applied
+     */
+    applied: boolean;
+};
+
+/**
  * CameraStatusResponse
  */
 export type CameraStatusResponse = {
@@ -271,6 +333,14 @@ export type CameraStatusResponse = {
      * Busy
      */
     busy: boolean;
+    /**
+     * Restart Required
+     */
+    restart_required?: boolean;
+    /**
+     * Last Error
+     */
+    last_error?: string | null;
     settings: CameraSettings;
 };
 
@@ -413,6 +483,72 @@ export type CloudStatusResponse = {
      * Message
      */
     message?: string | null;
+};
+
+/**
+ * CropRecommendation
+ *
+ * Recommended crop values for the detected object extent.
+ */
+export type CropRecommendation = {
+    /**
+     * Coordinate System
+     *
+     * Coordinate system used by bbox and rect.
+     */
+    coordinate_system?: 'oriented_full_analysis_frame' | null;
+    /**
+     * Frame Size
+     *
+     * Width and height of the full oriented analysis frame.
+     */
+    frame_size?: {
+        [key: string]: number;
+    } | null;
+    /**
+     * Bbox
+     *
+     * Detected object bounding box as x, y, width, height.
+     */
+    bbox: Array<number> | null;
+    /**
+     * Bbox Normalized
+     *
+     * Detected object bounding box relative to the full analysis frame.
+     */
+    bbox_normalized?: Array<number> | null;
+    /**
+     * Rect
+     *
+     * Centered crop rectangle as x, y, width, height.
+     */
+    rect: Array<number> | null;
+    /**
+     * Rect Normalized
+     *
+     * Centered crop rectangle relative to the full analysis frame.
+     */
+    rect_normalized?: Array<number> | null;
+    /**
+     * Crop Width
+     *
+     * Percentage of image width that can be cropped.
+     */
+    crop_width: number | null;
+    /**
+     * Crop Height
+     *
+     * Percentage of image height that can be cropped.
+     */
+    crop_height: number | null;
+    /**
+     * Support Exclusion
+     *
+     * Geometry based exclusion of a lower turntable support.
+     */
+    support_exclusion?: {
+        [key: string]: unknown;
+    } | null;
 };
 
 /**
@@ -988,6 +1124,21 @@ export type MotorStatusResponse = {
 };
 
 /**
+ * NormalizedCrop
+ *
+ * Crop rectangle as normalized ``x, y, width, height`` values.
+ *
+ * A root model keeps the existing compact JSON representation as an array
+ * while moving validation out of the task implementation.
+ */
+export type NormalizedCrop = [
+    number,
+    number,
+    number,
+    number
+];
+
+/**
  * OpenScanUpdatePackage
  *
  * One optional OpenScan component update for the details view.
@@ -1118,6 +1269,14 @@ export type PhotoResponse = {
 
 /**
  * PolarPoint3D
+ *
+ * PolarPoint3D represents a point in spherical coordinates
+ * theta: polar angle (0° to 180°), where:
+ * - 0° is the North Pole
+ * - 90° is the Equator
+ * - 180° is the South Pole
+ * fi: azimuthal angle (0° to 360°), rotation around z-axis
+ * r: radius, default is 1 for unit sphere
  */
 export type PolarPoint3d = {
     /**
@@ -1132,6 +1291,48 @@ export type PolarPoint3d = {
      * R
      */
     r?: number;
+};
+
+/**
+ * PositionAnalysis
+ *
+ * Indicators for uneven object placement in the image.
+ */
+export type PositionAnalysis = {
+    /**
+     * Vertical Imbalance
+     *
+     * Relative imbalance between the upper and lower image areas.
+     */
+    vertical_imbalance: number;
+    /**
+     * Horizontal Imbalance
+     *
+     * Relative imbalance between the left and right image areas.
+     */
+    horizontal_imbalance: number;
+    /**
+     * Vertical Assessment
+     *
+     * Qualitative guidance for vertical alignment and holder setup.
+     */
+    vertical_assessment: {
+        [key: string]: string;
+    };
+    /**
+     * Horizontal Assessment
+     *
+     * Qualitative guidance for horizontal object centering.
+     */
+    horizontal_assessment: {
+        [key: string]: string;
+    };
+    /**
+     * Overall Status
+     *
+     * Overall qualitative assessment of object placement.
+     */
+    overall_status: 'good' | 'warning';
 };
 
 /**
@@ -1285,6 +1486,149 @@ export type Scan = {
      */
     task_id?: string | null;
     stacking_task_status?: StackingTaskStatus | null;
+};
+
+/**
+ * ScanAnalysisRequest
+ *
+ * Parameters for a scan setup analysis capture.
+ */
+export type ScanAnalysisRequest = {
+    /**
+     * Camera Name
+     *
+     * Name of the camera used for the analysis capture.
+     */
+    camera_name: string;
+    /**
+     * Depends On
+     *
+     * Optional task ID that must complete successfully before this task runs.
+     */
+    depends_on?: string | null;
+    /**
+     * Debug Images
+     *
+     * Include compact ROI debug images in the result.
+     */
+    debug_images?: boolean;
+    /**
+     * Optional normalized x, y, width, height crop in the oriented full analysis frame.
+     */
+    crop?: NormalizedCrop | null;
+};
+
+/**
+ * ScanAnalysisResult
+ *
+ * Public result of the scan setup analysis.
+ */
+export type ScanAnalysisResult = {
+    /**
+     * Analysis Type
+     */
+    analysis_type: 'scan_analysis';
+    crop_recommendation?: CropRecommendation | null;
+    position_analysis: PositionAnalysis;
+    /**
+     * Previous and recommended camera settings. The recommended settings are active after a successful analysis and the previous settings can be used for reset.
+     */
+    camera_settings?: CameraSettingsResult | null;
+    /**
+     * SIFT feature matching metrics from a small turntable rotation.
+     */
+    sift_analysis?: SiftAnalysis | null;
+    /**
+     * Focus Analysis
+     *
+     * Regional ISP focus measurements and a preliminary autofocus or focus-stacking assessment.
+     */
+    focus_analysis?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Temporary paths to unscaled SIFT benchmark frames.
+     */
+    sift_benchmark?: SiftBenchmark | null;
+    /**
+     * Debug Images
+     *
+     * Optional diagnostic images requested with debug_images.
+     */
+    debug_images?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
+ * ScanAnalysisTaskResponse
+ *
+ * Task envelope with the typed scan analysis result.
+ */
+export type ScanAnalysisTaskResponse = {
+    /**
+     * Id
+     */
+    id?: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Task Type
+     */
+    task_type: string;
+    /**
+     * Is Exclusive
+     *
+     * Whether this task is exclusive and should not run concurrently
+     */
+    is_exclusive?: boolean;
+    /**
+     * Is Blocking
+     *
+     * Whether this task is blocking and should run in a separate thread
+     */
+    is_blocking?: boolean;
+    status?: TaskStatus;
+    progress?: TaskProgress;
+    result?: ScanAnalysisResult | null;
+    /**
+     * Error
+     */
+    error?: string | null;
+    /**
+     * Created At
+     */
+    created_at?: string;
+    /**
+     * Started At
+     */
+    started_at?: string | null;
+    /**
+     * Completed At
+     */
+    completed_at?: string | null;
+    /**
+     * Depends On
+     *
+     * Task ID that must complete successfully before this task may run.
+     */
+    depends_on?: string | null;
+    /**
+     * Run Args
+     *
+     * Positional arguments the task was started with.
+     */
+    run_args?: Array<unknown>;
+    /**
+     * Run Kwargs
+     *
+     * Keyword arguments the task was started with.
+     */
+    run_kwargs?: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -1508,6 +1852,195 @@ export type ScannerDeviceConfig = {
  * ScannerStartupMode
  */
 export type ScannerStartupMode = 'startup_idle' | 'startup_enabled';
+
+/**
+ * SiftAnalysis
+ *
+ * Feature and match quality metrics for the SIFT comparison pair.
+ */
+export type SiftAnalysis = {
+    /**
+     * Turntable Angle
+     */
+    turntable_angle: number;
+    /**
+     * Feature Count
+     */
+    feature_count: {
+        [key: string]: number;
+    };
+    /**
+     * Tentative Match Count
+     */
+    tentative_match_count: number;
+    /**
+     * Mutual Match Count
+     */
+    mutual_match_count: number;
+    /**
+     * Matchable Feature Count
+     */
+    matchable_feature_count: {
+        [key: string]: number;
+    };
+    /**
+     * Matchable Feature Ratio
+     */
+    matchable_feature_ratio: {
+        [key: string]: number;
+    };
+    /**
+     * Unmatched Feature Count
+     */
+    unmatched_feature_count: {
+        [key: string]: number;
+    };
+    /**
+     * Geometric Inlier Count
+     */
+    geometric_inlier_count: number | null;
+    /**
+     * Geometric Outlier Count
+     */
+    geometric_outlier_count: number | null;
+    /**
+     * Geometric Inlier Ratio
+     */
+    geometric_inlier_ratio: number | null;
+    spatial_distribution: SiftSpatialDistribution;
+    quality?: SiftQuality | null;
+};
+
+/**
+ * SiftBenchmark
+ *
+ * Paths to the unscaled RGB frames used for SIFT benchmarking.
+ */
+export type SiftBenchmark = {
+    /**
+     * First Image
+     */
+    first_image: string;
+    /**
+     * Second Image
+     */
+    second_image: string;
+};
+
+/**
+ * SiftGridImageMetrics
+ *
+ * Per-cell SIFT metrics for one image in the comparison pair.
+ */
+export type SiftGridImageMetrics = {
+    /**
+     * Feature Counts
+     */
+    feature_counts: Array<Array<number>>;
+    /**
+     * Matchable Feature Counts
+     */
+    matchable_feature_counts: Array<Array<number>>;
+    /**
+     * Geometric Inlier Counts
+     */
+    geometric_inlier_counts: Array<Array<number>> | null;
+};
+
+/**
+ * SiftGridSize
+ *
+ * Dimensions of the spatial SIFT analysis grid.
+ */
+export type SiftGridSize = {
+    /**
+     * Rows
+     */
+    rows: number;
+    /**
+     * Columns
+     */
+    columns: number;
+};
+
+/**
+ * SiftQuality
+ *
+ * Initial heuristic quality assessment for the SIFT comparison.
+ */
+export type SiftQuality = {
+    /**
+     * Overall Status
+     */
+    overall_status: 'good' | 'warning' | 'poor';
+    /**
+     * Feature Quality
+     */
+    feature_quality: 'good' | 'warning' | 'poor';
+    /**
+     * Spatial Coverage
+     */
+    spatial_coverage: 'good' | 'warning' | 'poor';
+    /**
+     * Matching Quality
+     */
+    matching_quality: 'good' | 'warning' | 'poor';
+    /**
+     * Metrics
+     */
+    metrics: {
+        [key: string]: unknown;
+    };
+    /**
+     * Thresholds
+     */
+    thresholds: {
+        [key: string]: number | number;
+    };
+    /**
+     * Warnings
+     */
+    warnings: Array<SiftQualityWarning>;
+};
+
+/**
+ * SiftQualityWarning
+ *
+ * Structured warning from the qualitative SIFT assessment.
+ */
+export type SiftQualityWarning = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Severity
+     */
+    severity: 'warning' | 'error';
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Images
+     */
+    images?: Array<'first' | 'second'> | null;
+    /**
+     * Cells
+     */
+    cells?: Array<Array<number>> | null;
+};
+
+/**
+ * SiftSpatialDistribution
+ *
+ * Spatial distribution of SIFT features and matches in both images.
+ */
+export type SiftSpatialDistribution = {
+    grid_size: SiftGridSize;
+    first: SiftGridImageMetrics;
+    second: SiftGridImageMetrics;
+};
 
 /**
  * SoftwareInfoResponse
@@ -2099,6 +2632,40 @@ export type AutoCalibrateAwbResponses = {
 };
 
 export type AutoCalibrateAwbResponse2 = AutoCalibrateAwbResponses[keyof AutoCalibrateAwbResponses];
+
+export type AutoCalibrateExposureData = {
+    body?: AutoCalibrateExposureRequest;
+    path: {
+        /**
+         * Camera Name
+         */
+        camera_name: string;
+    };
+    query?: never;
+    url: '/cameras/{camera_name}/exposure-calibration';
+};
+
+export type AutoCalibrateExposureErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AutoCalibrateExposureError = AutoCalibrateExposureErrors[keyof AutoCalibrateExposureErrors];
+
+export type AutoCalibrateExposureResponses = {
+    /**
+     * Successful Response
+     */
+    200: AutoCalibrateExposureResponse;
+};
+
+export type AutoCalibrateExposureResponse2 = AutoCalibrateExposureResponses[keyof AutoCalibrateExposureResponses];
 
 export type GetCameraNameSettingsData = {
     body?: never;
@@ -5603,3 +6170,28 @@ export type CancelFocusStackingResponses = {
 };
 
 export type CancelFocusStackingResponse = CancelFocusStackingResponses[keyof CancelFocusStackingResponses];
+
+export type StartScanAnalysisData = {
+    body: ScanAnalysisRequest;
+    path?: never;
+    query?: never;
+    url: '/scan-analysis';
+};
+
+export type StartScanAnalysisErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type StartScanAnalysisError = StartScanAnalysisErrors[keyof StartScanAnalysisErrors];
+
+export type StartScanAnalysisResponses = {
+    /**
+     * Successful Response
+     */
+    202: ScanAnalysisTaskResponse;
+};
+
+export type StartScanAnalysisResponse = StartScanAnalysisResponses[keyof StartScanAnalysisResponses];
