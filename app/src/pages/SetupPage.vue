@@ -260,17 +260,31 @@
               <p class="text-body1 q-mb-md">
                 OpenScan could not detect a camera when the setup wizard started.
               </p>
-              <div class="text-subtitle2 q-mb-sm">Please check the camera cable:</div>
+              <p class="text-body2 q-mb-md">
+                Shut down the scanner and disconnect its power supply before checking the camera cable.
+              </p>
+              <div class="text-subtitle2 q-mb-sm">With the scanner powered off:</div>
               <ul class="no-camera-dialog__tips q-mb-md">
                 <li>Make sure the contact surfaces of the camera ribbon are oriented correctly.</li>
                 <li>Push the connectors firmly into place on both ends.</li>
-                <li>Make sure the correct OpenScan3 image for your camera model is flashed.</li>
               </ul>
+              <p class="text-body2 q-mb-md">
+                Reconnect the power supply and start the scanner again after checking the cable.
+              </p>
               <p class="text-body2 text-grey-7 q-mb-none">
                 If the camera is still not detected, download a camera report and include it when asking for support.
               </p>
             </q-card-section>
             <template #actions>
+              <PowerControls v-slot="{ confirmShutdown, shuttingDown }">
+                <BaseButtonPrimary
+                  icon="power_settings_new"
+                  label="Shut down"
+                  :loading="shuttingDown"
+                  :disable="shuttingDown"
+                  @click="confirmShutdown"
+                />
+              </PowerControls>
               <BaseButtonSecondary
                 icon="download"
                 label="Camera report"
@@ -278,7 +292,7 @@
                 :disable="cameraReportDownloadLoading"
                 @click="handleDownloadCameraReport"
               />
-              <BaseButtonPrimary
+              <BaseButtonSecondary
                 label="Continue anyway"
                 @click="noCameraDialogVisible = false"
               />
@@ -315,6 +329,7 @@ import { useRoute, useRouter } from 'vue-router'
 import BasePage from 'components/base/BasePage.vue'
 import BaseWizard from 'components/base/BaseWizard.vue'
 import BaseDialog from 'components/base/BaseDialog.vue'
+import PowerControls from 'components/PowerControls.vue'
 import BaseList from 'components/base/BaseList.vue'
 import BaseListItem from 'components/base/BaseListItem.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
