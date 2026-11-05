@@ -83,6 +83,15 @@ export const fieldDescriptions = {
     "enable_cloud": "Enable integrations with OpenScan Cloud services.",
     "qr_wifi_scan_enabled": "Automatically scan for WiFi QR codes on startup when no WiFi or Ethernet connection is active."
   },
+  "FocusPositionResult": {
+    "autofocus_position": "Measured LensPosition of the autofocus capture in diopters; null if unavailable.",
+    "regions": "Crop-overlapping ISP regions keyed by region index."
+  },
+  "FocusRegionResult": {
+    "autofocus": "AF ISP focus value relative to the region's best measurement; not absolute sharpness.",
+    "manual": "Relative ISP focus values keyed by requested lens position in diopters. Missing or unnormalizable values are null.",
+    "weight": "Region crop-overlap weight, normalized per position."
+  },
   "LightConfig": {
     "pin": "Single GPIO pin controlling the light output.",
     "pins": "Multiple GPIO pins driving grouped light outputs.",
@@ -139,7 +148,7 @@ export const fieldDescriptions = {
   "ScanAnalysisResult": {
     "camera_settings": "Previous and recommended camera settings. The recommended settings are active after a successful analysis and the previous settings can be used for reset.",
     "debug_images": "Optional diagnostic images requested with debug_images.",
-    "focus_analysis": "Regional ISP focus measurements and a preliminary autofocus or focus-stacking assessment.",
+    "focus_analysis": "Crop-weighted regional ISP focus profiles normalized to the best measurement per region, including AF. Null if statistics are unavailable.",
     "sift_analysis": "SIFT feature matching metrics from a small turntable rotation.",
     "sift_benchmark": "Temporary paths to unscaled SIFT benchmark frames."
   },
@@ -183,6 +192,12 @@ export const fieldDescriptions = {
     "runtime_dir": "Absolute path used for runtime state files.",
     "runtime_disk": "Disk usage snapshot for the runtime directory filesystem.",
     "uptime_seconds": "Current system uptime in seconds, if available."
+  },
+  "StackingOption": {
+    "coverage": "Mean crop-weighted relative ISP sharpness over sampled views; not a thresholded area percentage.",
+    "estimated": "True if any selected focus value requires interpolation at any sampled region/view.",
+    "gain": "Mean score minus mean AF score; null when AF measurements are incomplete.",
+    "worst_coverage": "Lowest sampled-view crop-weighted relative sharpness score."
   },
   "Task": {
     "depends_on": "Task ID that must complete successfully before this task may run.",

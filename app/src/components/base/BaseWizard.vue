@@ -131,9 +131,7 @@ function isDone(stepId: string) {
           :is-active="step.id === activeId"
         />
       </div>
-    </q-step>
-
-      <template #navigation>
+      <q-stepper-navigation>
         <slot
           name="navigation"
           :is-first-step="isFirstStep"
@@ -154,7 +152,8 @@ function isDone(stepId: string) {
             />
           </div>
         </slot>
-      </template>
+      </q-stepper-navigation>
+    </q-step>
     </q-stepper>
   </div>
 </template>

@@ -545,7 +545,7 @@ watch(
   (newOrientation, previousOrientation) => {
     if (!orientationInitialized.value) {
       orientationInitialized.value = true
-    } else if (previousOrientation && newOrientation !== previousOrientation) {
+    } else if (props.enableCrop && previousOrientation && newOrientation !== previousOrientation) {
       resetCropToFullCoverage()
     }
 
@@ -636,37 +636,6 @@ defineExpose<CameraFastPreviewExposed>({
   cursor: default;
 }
 
-.crop-dim {
-  position: absolute;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(8px) saturate(50%);
-  pointer-events: none;
-}
-
-.crop-box {
-  position: absolute;
-  border: 2px solid var(--q-primary);
-  pointer-events: auto;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding: 8px;
-  color: white;
-  font-size: 0.75rem;
-}
-
-.crop-box__label {
-  background: rgba(0, 0, 0, 0.4);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.crop-handle {
-  position: absolute;
-  border-radius: 50%;
-  background: var(--q-primary);
-  border: 2px solid rgba(0, 0, 0, 0.5);
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-}
 </style>
+
+<style scoped src="./cameraCrop.css"></style>

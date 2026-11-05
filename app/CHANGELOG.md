@@ -10,6 +10,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 
 - Added an AWB Auto-Lock button to the scan page.
 - Added an experimental scan wizard that starts by helping users choose or create a project before opening the scan settings.
+- Added a second scan wizard step with a fast camera preview and motor controls for positioning the object before cropping.
+- Added rectangle selection in the scan wizard with centring feedback and a pedestal check hint for vertically offset objects.
+- The scan wizard now applies the selected crop and starts scan analysis, showing task progress and allowing retries on errors.
+- Added actionable feature quality feedback and a scan quality slider that chooses photo counts and focus stacking from the analysis, starts the scan and opens scan progress.
+- Added an enabled-by-default option in the scan wizard to queue focus stack processing after the scan.
+- Added expandable analysis debug values and an explicit autofocus fallback so inconclusive focus measurements no longer block the scan wizard.
+- Added an Ultra scan quality level with a larger photo budget and selection of calculated focus stack options using mean and worst-view sharpness scores.
+- Added a SIFT feature check before scan quality selection, with feature distribution maps, understandable quality ratings and suggestions for improving weak results.
+- Matched the scan wizard crop rectangle to the scan page and added independent resizing of all four edges with mouse, touch and keyboard controls.
+- Unified the motor control toolbar across the scan wizard, scan page and full preview, including the return-to-home button.
+- Removed nested scan wizard cards and placed navigation inside each wizard step so content and actions share one area.
 
 ### Changed
 

@@ -158,6 +158,16 @@ export const fieldConstraints = {
       ]
     }
   },
+  "StackingOption": {
+    "focus_range": {
+      "maxItems": 2,
+      "minItems": 2
+    },
+    "focus_stacks": {
+      "maximum": 10,
+      "minimum": 2
+    }
+  },
   "TriggerConfig": {
     "pin": {
       "minimum": 0

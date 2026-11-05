@@ -959,6 +959,70 @@ export type FirmwareSettings = {
 };
 
 /**
+ * FocusAnalysisResult
+ */
+export type FocusAnalysisResult = {
+    /**
+     * Positions
+     */
+    positions: Array<FocusPositionResult>;
+    /**
+     * Stacking Options
+     */
+    stacking_options: Array<StackingOption>;
+};
+
+/**
+ * FocusPositionResult
+ */
+export type FocusPositionResult = {
+    /**
+     * Turntable Offset
+     */
+    turntable_offset: number;
+    /**
+     * Autofocus Position
+     *
+     * Measured LensPosition of the autofocus capture in diopters; null if unavailable.
+     */
+    autofocus_position: number | null;
+    /**
+     * Regions
+     *
+     * Crop-overlapping ISP regions keyed by region index.
+     */
+    regions: {
+        [key: string]: FocusRegionResult;
+    };
+};
+
+/**
+ * FocusRegionResult
+ */
+export type FocusRegionResult = {
+    /**
+     * Weight
+     *
+     * Region crop-overlap weight, normalized per position.
+     */
+    weight: number;
+    /**
+     * Autofocus
+     *
+     * AF ISP focus value relative to the region's best measurement; not absolute sharpness.
+     */
+    autofocus: number | null;
+    /**
+     * Manual
+     *
+     * Relative ISP focus values keyed by requested lens position in diopters. Missing or unnormalizable values are null.
+     */
+    manual: {
+        [key: string]: number | null;
+    };
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -1539,13 +1603,9 @@ export type ScanAnalysisResult = {
      */
     sift_analysis?: SiftAnalysis | null;
     /**
-     * Focus Analysis
-     *
-     * Regional ISP focus measurements and a preliminary autofocus or focus-stacking assessment.
+     * Crop-weighted regional ISP focus profiles normalized to the best measurement per region, including AF. Null if statistics are unavailable.
      */
-    focus_analysis?: {
-        [key: string]: unknown;
-    } | null;
+    focus_analysis?: FocusAnalysisResult | null;
     /**
      * Temporary paths to unscaled SIFT benchmark frames.
      */
@@ -2086,6 +2146,47 @@ export type SoftwareInfoResponse = {
      * Current system uptime in seconds, if available.
      */
     uptime_seconds?: number | null;
+};
+
+/**
+ * StackingOption
+ */
+export type StackingOption = {
+    /**
+     * Focus Range
+     */
+    focus_range: [
+        number,
+        number
+    ];
+    /**
+     * Focus Stacks
+     */
+    focus_stacks: number;
+    /**
+     * Coverage
+     *
+     * Mean crop-weighted relative ISP sharpness over sampled views; not a thresholded area percentage.
+     */
+    coverage: number;
+    /**
+     * Worst Coverage
+     *
+     * Lowest sampled-view crop-weighted relative sharpness score.
+     */
+    worst_coverage: number;
+    /**
+     * Gain
+     *
+     * Mean score minus mean AF score; null when AF measurements are incomplete.
+     */
+    gain: number | null;
+    /**
+     * Estimated
+     *
+     * True if any selected focus value requires interpolation at any sampled region/view.
+     */
+    estimated: boolean;
 };
 
 /**
