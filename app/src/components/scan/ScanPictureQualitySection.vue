@@ -3,17 +3,31 @@
     <div v-if="camera" class="camera-settings">
       <BaseSectionGroup>
         <BaseSection title="Picture Quality">
-          <BaseSliderWithInput
-            v-model="shutterValue"
-            label="Shutter"
-            :slider-min="sliderMinMs"
-            :slider-max="sliderMaxMs"
-            :slider-step="sliderStepMs"
-            :input-min="sliderMinMs"
-            :input-max="sliderMaxMs"
-            :tooltip="cameraSettingDescription('shutter')"
-            @update:model-value="handleShutterInput"
-          />
+          <div class="camera-auto-control">
+            <BaseSliderWithInput
+              v-model="shutterValue"
+              label="Shutter"
+              :slider-min="sliderMinMs"
+              :slider-max="sliderMaxMs"
+              :slider-step="sliderStepMs"
+              :input-min="sliderMinMs"
+              :input-max="sliderMaxMs"
+              :disabled="exposureCalibrating"
+              :tooltip="cameraSettingDescription('shutter')"
+              @update:model-value="handleShutterInput"
+            />
+            <BaseButtonSecondary
+              v-if="supportsAutoExposure"
+              class="camera-auto-button"
+              icon="auto_awesome"
+              aria-label="Auto shutter"
+              :loading="exposureCalibrating"
+              :disable="exposureCalibrating || awbCalibrating"
+              @click="calibrateExposure"
+            >
+              <q-tooltip>Auto shutter: calibrate exposure and lock analogue gain at 1.0.</q-tooltip>
+            </BaseButtonSecondary>
+          </div>
 
           <div class="col-12">
             <BaseSliderWithInput
@@ -62,6 +76,7 @@
           <div class="col-12">
             <BaseSliderWithInput
               v-model="gainValue"
+              :disabled="exposureCalibrating"
               label="Gain"
               :slider-min="0"
               :slider-max="5"
@@ -74,7 +89,7 @@
           </div>
 
           <div class="col-12">
-            <div class="awb-control">
+            <div class="camera-auto-control">
               <div class="awb-slider-stack q-gutter-y-sm">
                 <BaseSliderWithInput
                   v-model="awbgRedValue"
@@ -100,10 +115,10 @@
                 />
               </div>
               <BaseButtonSecondary
-                class="awb-auto-button"
+                class="camera-auto-button"
                 icon="auto_awesome"
                 :loading="awbCalibrating"
-                :disable="awbCalibrating"
+                :disable="awbCalibrating || exposureCalibrating"
                 @click="calibrateAwb"
               >
                 <q-tooltip>
@@ -135,13 +150,14 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { debounce } from 'quasar';
+import { debounce, useQuasar } from 'quasar';
 
 import BaseSection from 'components/base/BaseSection.vue';
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue';
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue';
 import BaseSliderWithInput from 'components/base/BaseSliderWithInput.vue';
 import { useDeviceStore } from 'src/stores/device';
+import { useDeviceWakeup } from 'src/composables/useDeviceWakeup';
 import { apiClient, getApiSdk } from 'src/services/apiClient';
 import {
   type AutoCalibrateAwbResponse,
@@ -180,6 +196,8 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const deviceStore = useDeviceStore();
+const $q = useQuasar();
+const { wakeUpDevice } = useDeviceWakeup();
 const apiSdk = () => getApiSdk();
 void deviceStore.ensureConnected();
 
@@ -225,6 +243,8 @@ const awbgRedValue = ref<number>(defaultAwbg);
 const awbgBlueValue = ref<number>(defaultAwbg);
 const jpegQualityValue = ref<number>(defaultJpegQuality);
 const awbCalibrating = ref(false);
+const exposureCalibrating = ref(false);
+const supportsAutoExposure = computed(() => 'autoCalibrateExposure' in apiSdk());
 const awbCalibrationDefaults = fieldDefaults.AutoCalibrateAwbRequest ?? null;
 
 const orientationFlagValue = ref<number>(1);
@@ -515,8 +535,41 @@ const handleAwbgBlueInput = (value: number) => {
   debouncedPersistAwbgBlue(value);
 };
 
+async function calibrateExposure() {
+  const cameraName = props.camera?.value;
+  const sdk = apiSdk();
+  if (!cameraName || exposureCalibrating.value || awbCalibrating.value || !('autoCalibrateExposure' in sdk)) return;
+
+  exposureCalibrating.value = true;
+  debouncedPersistShutter.cancel();
+  debouncedPersistGain.cancel();
+  try {
+    await wakeUpDevice();
+    const response = await sdk.autoCalibrateExposure({
+      client: apiClient,
+      path: { camera_name: cameraName },
+      body: {},
+      throwOnError: true,
+    });
+    const result = response.data;
+    if (!result) throw new Error('No exposure calibration result was returned.');
+    if (props.camera?.value === cameraName) {
+      shutterValue.value = result.shutter_ms;
+      gainValue.value = result.analogue_gain;
+      markLocalInput('shutter', result.shutter_ms);
+      markLocalInput('gain', result.analogue_gain);
+    }
+    await deviceStore.refreshFromRest();
+  } catch (error) {
+    console.error('Camera exposure calibration failed.', error);
+    $q.notify({ type: 'negative', message: 'Could not calibrate exposure. Please try again.' });
+  } finally {
+    exposureCalibrating.value = false;
+  }
+}
+
 async function calibrateAwb() {
-  if (!props.camera?.value || awbCalibrating.value) {
+  if (!props.camera?.value || awbCalibrating.value || exposureCalibrating.value) {
     return;
   }
 
@@ -640,15 +693,15 @@ defineExpose({ resetToDefaults, applyCameraSettings, getCameraSettingsSnapshot }
   margin-top: 8px;
 }
 
-.awb-control {
+.camera-auto-control {
   position: relative;
 }
 
-.awb-slider-stack :deep(.slider-track) {
+.camera-auto-control :deep(.slider-track) {
   margin-right: 40px;
 }
 
-.awb-auto-button {
+.camera-auto-button {
   position: absolute;
   top: calc(50% - 8px);
   right: 0;
