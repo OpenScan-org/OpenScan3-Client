@@ -102,8 +102,20 @@ import { useTaskStore } from 'src/stores/tasks';
 import PowerControls from 'components/PowerControls.vue';
 import TaskDrawerPanel from 'components/task/TaskDrawerPanel.vue';
 import { useUpdatesStore } from 'src/stores/updates';
+import { useApiConfigStore } from 'src/stores/apiConfig';
+import { getApiSdk } from 'src/services/apiClient';
 
-const upperLinks: EssentialLinkProps[] = [
+const apiConfigStore = useApiConfigStore();
+const showScanWizard = computed(() => {
+  const version = apiConfigStore.version.trim().toLowerCase().replace(/^v/, '');
+  if (version === 'next') return true;
+  // For the unnumbered stable alias, check the selected SDK's capabilities.
+  if (version === 'latest') return 'startScanAnalysis' in getApiSdk();
+  const parts = version.match(/^(\d+)\.(\d+)(?:\.\d+)?$/);
+  return !!parts && (Number(parts[1]) > 0 || Number(parts[2]) > 9);
+});
+
+const navigationLinks: EssentialLinkProps[] = [
   {
     title: 'Dashboard',
     icon: 'dashboard',
@@ -140,6 +152,10 @@ const upperLinks: EssentialLinkProps[] = [
     link: '/about'
   },
 ];
+
+const upperLinks = computed(() => navigationLinks.filter(link =>
+  link.link !== '/scan/wizard' || showScanWizard.value
+));
 
 const lowerLinks = computed<EssentialLinkProps[]>(() => [
   {
