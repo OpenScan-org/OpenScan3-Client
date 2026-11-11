@@ -1,4 +1,4 @@
-import type { ScanAnalysisResult, StackingOption } from '../generated/api/next/types.gen'
+import type { ScanAnalysisResult, ScanSetting, StackingOption } from '../generated/api/next/types.gen'
 
 export type QualityLevel = 0 | 1 | 2 | 3
 export const QUALITY_LABELS = { 0: 'Fast', 1: 'Balanced', 2: 'Detailed', 3: 'Ultra' }
@@ -23,6 +23,15 @@ export type FocusRecommendation = {
   autofocus: FocusScores | null
   options: StackingOption[]
   reason?: string
+}
+
+export function buildWizardScanSettings(plan: ScanWizardPlan, defaults: Omit<ScanSetting, 'focus_range'>): ScanSetting {
+  return {
+    ...defaults,
+    points: plan.points,
+    focus_stacks: plan.focusStacks,
+    focus_range: plan.focusStacks > 1 && plan.focusRange ? [...plan.focusRange] : undefined
+  }
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>

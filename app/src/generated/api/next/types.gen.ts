@@ -313,11 +313,10 @@ export type CameraSettings = {
  */
 export type CameraSettingsResult = {
     previous: CameraSettings;
-    recommended: CameraSettings;
     /**
-     * Applied
+     * Settings active after successful analysis, including restoration of temporary SIFT focus changes.
      */
-    applied: boolean;
+    applied: CameraSettings;
 };
 
 /**
@@ -1595,7 +1594,7 @@ export type ScanAnalysisResult = {
     crop_recommendation?: CropRecommendation | null;
     position_analysis: PositionAnalysis;
     /**
-     * Previous and recommended camera settings. The recommended settings are active after a successful analysis and the previous settings can be used for reset.
+     * Camera settings before analysis and applied after successful completion. The previous settings can be used for reset.
      */
     camera_settings?: CameraSettingsResult | null;
     /**
@@ -1925,38 +1924,60 @@ export type SiftAnalysis = {
     turntable_angle: number;
     /**
      * Feature Count
+     *
+     * All SIFT features detected after cropping and limiting the longest side to 1280 pixels.
      */
     feature_count: {
         [key: string]: number;
     };
     /**
+     * Feature Density
+     *
+     * Detected features per megapixel of the actual analysis crop, after limiting resolution. No foreground/background segmentation is applied.
+     */
+    feature_density: {
+        [key: string]: number;
+    };
+    /**
      * Tentative Match Count
+     *
+     * Unique ratio-test candidate pairs from the two strongest-per-cell samples; searched against full descriptor pools.
      */
     tentative_match_count: number;
     /**
      * Mutual Match Count
+     *
+     * Unique sampled candidate pairs passing ratio tests in both directions.
      */
     mutual_match_count: number;
     /**
      * Matchable Feature Count
+     *
+     * Mutually matched features among each image's selected sample of min(feature_count, 1000).
      */
     matchable_feature_count: {
         [key: string]: number;
     };
     /**
      * Matchable Feature Ratio
+     *
+     * Matched fraction of each image's strongest grid-balanced sample, not of all detected features.
      */
     matchable_feature_ratio: {
         [key: string]: number;
     };
     /**
      * Unmatched Feature Count
+     *
+     * Unmatched selected features; untested features are excluded.
      */
     unmatched_feature_count: {
         [key: string]: number;
     };
     /**
      * Geometric Inlier Count
+     *
+     * Unique sampled mutual pairs surviving geometric verification.
      */
     geometric_inlier_count: number | null;
     /**
@@ -1995,14 +2016,20 @@ export type SiftBenchmark = {
 export type SiftGridImageMetrics = {
     /**
      * Feature Counts
+     *
+     * All detected features per cell in the analysis crop (maximum 1280 pixels on its longest side).
      */
     feature_counts: Array<Array<number>>;
     /**
      * Matchable Feature Counts
+     *
+     * Mutually matched selected features per cell; the sample contains up to 1000 strongest grid-balanced features per image.
      */
     matchable_feature_counts: Array<Array<number>>;
     /**
      * Geometric Inlier Counts
+     *
+     * Selected features per cell surviving geometric verification.
      */
     geometric_inlier_counts: Array<Array<number>> | null;
 };
@@ -2031,20 +2058,32 @@ export type SiftGridSize = {
 export type SiftQuality = {
     /**
      * Overall Status
+     *
+     * Worst core assessment: density, geometrically usable sample fraction, and geometric consistency. Spatial crop coverage is rated separately.
      */
-    overall_status: 'good' | 'warning' | 'poor';
+    overall_status: 'bad' | 'okay' | 'good' | 'great' | 'insufficient_data';
     /**
      * Feature Quality
      */
-    feature_quality: 'good' | 'warning' | 'poor';
+    feature_quality: 'bad' | 'okay' | 'good' | 'great' | 'insufficient_data';
     /**
      * Spatial Coverage
+     *
+     * Distribution of geometrically verified selected features within the rectangular crop, including background. Insufficient data suppresses positive ratings.
      */
-    spatial_coverage: 'good' | 'warning' | 'poor';
+    spatial_coverage: 'bad' | 'okay' | 'good' | 'great' | 'insufficient_data';
     /**
      * Matching Quality
+     *
+     * Geometrically verified fraction of each strongest-feature sample; requires at least 150 features per image and 50 mutual pairs.
      */
-    matching_quality: 'good' | 'warning' | 'poor';
+    matching_quality: 'bad' | 'okay' | 'good' | 'great' | 'insufficient_data';
+    /**
+     * Geometry Quality
+     *
+     * Geometric inlier-ratio assessment; insufficient_data when the evidence or geometric model is unavailable.
+     */
+    geometry_quality: 'bad' | 'okay' | 'good' | 'great' | 'insufficient_data';
     /**
      * Metrics
      */

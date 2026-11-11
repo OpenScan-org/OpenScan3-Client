@@ -25,6 +25,11 @@ const pointerId = ref<number | null>(null)
 const displayedCrop = computed(() => draft.value ?? crop.value)
 // Allow a 10% deviation from the image centre on each axis.
 const CENTER_TOLERANCE = 0.1
+const horizontalHints = ['left', 'right']
+const verticalHints = ['above', 'below']
+// Invisible alternatives reserve the tallest feedback at the current width,
+// including narrow layouts and enlarged text, without clipping the tips.
+const feedbackSizes = horizontalHints.flatMap(horizontal => verticalHints.map(vertical => [horizontal, vertical]))
 const offset = computed(() => crop.value ? {
   x: crop.value.x + crop.value.width / 2 - 0.5,
   y: crop.value.y + crop.value.height / 2 - 0.5
@@ -34,12 +39,18 @@ const hints = computed(() => {
   if (!value) return []
   const messages: string[] = []
   if (Math.abs(value.x) > CENTER_TOLERANCE) {
-    messages.push(`Your object is ${value.x < 0 ? 'left' : 'right'} of the image centre. Check that it is centred on the turntable.`)
+    messages.push(horizontalHints[value.x < 0 ? 0 : 1])
   }
   if (Math.abs(value.y) > CENTER_TOLERANCE) {
-    messages.push(`Your object is ${value.y < 0 ? 'above' : 'below'} the image centre. Check that you are using the correct turntable pedestal.`)
+    messages.push(verticalHints[value.y < 0 ? 0 : 1])
   }
   return messages
+})
+const positioningAdvice = computed(() => {
+  const horizontal = hints.value.some(hint => horizontalHints.includes(hint))
+  const vertical = hints.value.some(hint => verticalHints.includes(hint))
+  if (horizontal && vertical) return 'Centre the object on the turntable. You may be using the wrong pedestal; check that you selected the correct height.'
+  return horizontal ? 'Centre the object on the turntable.' : 'You may be using the wrong turntable pedestal. Check that you selected the correct height.'
 })
 const boxStyle = computed(() => {
   const box = displayedCrop.value
@@ -155,7 +166,6 @@ onBeforeUnmount(cancel)
         <div v-for="(style, side) in dimStyles" :key="side" class="crop-dim" :style="style" />
         <span class="wizard-crop-preview__centre" aria-hidden="true" />
         <div v-if="displayedCrop" class="crop-box wizard-crop-preview__box" :style="boxStyle">
-          <div class="crop-box__label">{{ (displayedCrop.width * 100).toFixed(0) }}% × {{ (displayedCrop.height * 100).toFixed(0) }}%</div>
           <span class="wizard-crop-preview__box-centre" />
           <button
             v-for="side in edges"
@@ -171,25 +181,57 @@ onBeforeUnmount(cancel)
         </div>
       </div>
     </div>
-    <div v-if="crop && !start" class="q-mt-md" aria-live="polite">
+    <div class="wizard-crop-preview__feedback q-mt-md">
       <BaseBanner
-        :background-class="hints.length ? 'bg-amber-2' : 'bg-green-1'"
-        :text-class="hints.length ? 'text-black' : 'text-positive'"
+        v-for="(messages, index) in feedbackSizes"
+        :key="index"
+        class="wizard-crop-preview__feedback-panel wizard-crop-preview__feedback-size"
+        aria-hidden="true"
       >
-        <template v-if="hints.length">
-          <div v-for="hint in hints" :key="hint">{{ hint }}</div>
-          <div class="q-mt-xs">You can continue if this position is intentional.</div>
+        <div class="text-subtitle2">Object is {{ messages.join(' and ') }} centre.</div>
+        <div>Centre the object on the turntable. You may be using the wrong pedestal; check that you selected the correct height.</div>
+      </BaseBanner>
+      <BaseBanner
+        class="wizard-crop-preview__feedback-panel"
+        :background-class="!crop || start ? 'bg-grey-2' : hints.length ? 'bg-amber-2' : 'bg-green-1'"
+        :text-class="crop && !start && !hints.length ? 'text-positive' : 'text-black'"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <template v-if="start">
+          <div class="text-subtitle2">Adjust the rectangle</div>
+          <div>Finish adjusting the rectangle to check your object's position.</div>
         </template>
-        <template v-else>Your object is centred in the image.</template>
+        <template v-else-if="!crop">
+          <div class="text-subtitle2">Mark your scan object</div>
+          <div>Draw a rectangle around your object to check its position.</div>
+        </template>
+        <template v-else-if="hints.length">
+          <div class="text-subtitle2">Object is {{ hints.join(' and ') }} centre.</div>
+          <div>{{ positioningAdvice }}</div>
+        </template>
+        <template v-else>
+          <div class="text-subtitle2">Your object is centred in the image.</div>
+          <div>You can now continue with the analysis.</div>
+        </template>
       </BaseBanner>
     </div>
   </div>
 </template>
 
 <style scoped>
+#wizard-crop-instructions { width: 70%; margin-left: auto; margin-right: auto; }
+.wizard-crop-preview__feedback { display: grid; width: 70%; margin-left: auto; margin-right: auto; }
+.wizard-crop-preview__feedback-panel { grid-area: 1 / 1; align-self: start; }
+.wizard-crop-preview__feedback-size { visibility: hidden; pointer-events: none; }
+@media (max-width: 599px) {
+  #wizard-crop-instructions { width: 100%; }
+  .wizard-crop-preview__feedback { width: 100%; }
+}
 .wizard-crop-preview {
   position: relative;
-  width: 50%;
+  width: 25%;
   margin: 0 auto;
   border-radius: 12px;
   overflow: hidden;
@@ -207,7 +249,6 @@ onBeforeUnmount(cancel)
   pointer-events: none;
   padding: 0;
 }
-.wizard-crop-preview__box .crop-box__label { position: absolute; left: 8px; top: 8px; white-space: nowrap; }
 .wizard-crop-preview__edge {
   position: absolute;
   display: block;

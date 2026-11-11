@@ -126,7 +126,7 @@ export const restartCamera = <ThrowOnError extends boolean = false>(options: Opt
  * AutoCalibrateAwbResponse: Locked gains after the calibration.
  *
  * Raises:
- * HTTPException: When the controller is busy, unsupported, or calibration fails.
+ * HTTPException: When calibration is already pending, unsupported, or fails.
  */
 export const autoCalibrateAwb = <ThrowOnError extends boolean = false>(options: Options<AutoCalibrateAwbData, ThrowOnError>) => (options.client ?? client).post<AutoCalibrateAwbResponses, AutoCalibrateAwbErrors, ThrowOnError>({
     responseType: 'json',

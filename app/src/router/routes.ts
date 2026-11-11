@@ -8,6 +8,7 @@ const routes: RouteRecordRaw[] = [
       { path: '', component: () => import('pages/IndexPage.vue') },
       { path: 'scan', component: () => import('pages/ScanPage.vue') },
       { path: 'scan/wizard', component: () => import('pages/ScanWizardPage.vue') },
+      { path: 'scan/wizard/debug/readiness', component: () => import('pages/ScanReadinessDebugPage.vue') },
       { path: 'scan/progress/:taskId?', component: () => import('pages/ScanProgressPage.vue') },
       { path: 'setup', component: () => import('pages/SetupPage.vue') },
       { path: 'settings', component: () => import('pages/SettingsPage.vue') },
