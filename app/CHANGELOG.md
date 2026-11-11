@@ -8,7 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 
 ### Added
 
-- Added an AWB Auto-Lock button to the scan page.
+- Added AWB Auto-Lock and automatic shutter calibration buttons to the scan page.
+- Added an experimental scan wizard with project selection, automatic exposure, interactive cropping, scan readiness feedback and quality presets with autofocus or focus stacking, including automatic stack processing, transfer to manual scan settings and shareable SVG exports containing a photo and analysis JSON.
 
 ### Changed
 

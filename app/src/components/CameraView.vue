@@ -4,44 +4,12 @@
       <div class="camera-view__toolbar-layout">
         <div class="camera-view__toolbar-left">
           <div class="camera-view__toolbar-motor">
-            <q-btn-group unelevated rounded>
-                <BaseMotorButtonBar
-                  :motor-name="TURNTABLE_MOTOR"
-                  :step-degrees="20"
-                  negative-icon="keyboard_arrow_left"
-                  positive-icon="keyboard_arrow_right"
-                  negative-tooltip="Rotate turntable left"
-                  positive-tooltip="Rotate turntable right"
-                  :show-calibrate="false"
-                  :disable="props.scanning || motorControlsBusy"
-                  :refresh-after-move="true"
-                  @busy-change="handleTurntableBusyChange"
-                  @moved="handleMotorMoved"
-                />
-                <span class="camera-view__motor-divider" aria-hidden="true" />
-                <BaseMotorButtonBar
-                  :motor-name="ROTOR_MOTOR"
-                  :step-degrees="10"
-                  negative-icon="keyboard_arrow_up"
-                  positive-icon="keyboard_arrow_down"
-                  negative-tooltip="Move rotor up"
-                  positive-tooltip="Move rotor down"
-                  :disable="props.scanning || motorControlsBusy"
-                  :refresh-after-move="true"
-                  @busy-change="handleRotorBusyChange"
-                  @moved="handleMotorMoved"
-                  @calibrated="handleRotorCalibrated"
-                />
-              <BaseButtonIconSecondary
-                class="camera-view__toolbar-home"
-                icon="home"
-                size="sm"
-                :disable="homeBusy || props.scanning || motorControlsBusy"
-                @click="handleMoveHome"
-              >
-                <q-tooltip anchor="bottom middle" self="top middle">Return to home position</q-tooltip>
-              </BaseButtonIconSecondary>
-            </q-btn-group>
+            <CameraMotorControls
+              :disable="props.scanning || motorControlsBusy"
+              @busy-change="inlineMotorBusy = $event"
+              @moved="handleMotorMoved"
+              @calibrated="handleRotorCalibrated"
+            />
           </div>
         </div>
         <div class="camera-view__toolbar-actions">
@@ -160,44 +128,12 @@
           <div class="camera-view__toolbar-layout">
             <div class="camera-view__toolbar-left">
               <div class="camera-view__toolbar-motor">
-                <q-btn-group unelevated rounded>
-                    <BaseMotorButtonBar
-                      :motor-name="TURNTABLE_MOTOR"
-                      :step-degrees="20"
-                      negative-icon="keyboard_arrow_left"
-                      positive-icon="keyboard_arrow_right"
-                      negative-tooltip="Rotate turntable left"
-                      positive-tooltip="Rotate turntable right"
-                      :show-calibrate="false"
-                      :disable="props.scanning || motorControlsBusy"
-                      :refresh-after-move="true"
-                      @busy-change="handleTurntableBusyChange"
-                      @moved="handleMotorMoved"
-                    />
-                    <span class="camera-view__motor-divider" aria-hidden="true" />
-                    <BaseMotorButtonBar
-                      :motor-name="ROTOR_MOTOR"
-                      :step-degrees="10"
-                      negative-icon="keyboard_arrow_up"
-                      positive-icon="keyboard_arrow_down"
-                      negative-tooltip="Move rotor up"
-                      positive-tooltip="Move rotor down"
-                      :disable="props.scanning || motorControlsBusy"
-                      :refresh-after-move="true"
-                      @busy-change="handleRotorBusyChange"
-                      @moved="handleMotorMoved"
-                      @calibrated="handleRotorCalibrated"
-                    />
-                  <BaseButtonIconSecondary
-                    class="camera-view__toolbar-home"
-                    icon="home"
-                    size="sm"
-                    :disable="homeBusy || props.scanning || motorControlsBusy"
-                    @click="handleMoveHome"
-                  >
-                    <q-tooltip anchor="bottom middle" self="top middle">Return to home position</q-tooltip>
-                  </BaseButtonIconSecondary>
-                </q-btn-group>
+                <CameraMotorControls
+                  :disable="props.scanning || motorControlsBusy"
+                  @busy-change="fullPreviewMotorBusy = $event"
+                  @moved="handleMotorMoved"
+                  @calibrated="handleRotorCalibrated"
+                />
               </div>
             </div>
             <div class="camera-view__toolbar-actions">
@@ -288,14 +224,13 @@ import { computed, onBeforeUnmount, ref, unref, watch } from 'vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseDialog from 'components/base/BaseDialog.vue'
-import BaseMotorButtonBar from 'components/base/BaseMotorButtonBar.vue'
+import CameraMotorControls from './camera/CameraMotorControls.vue'
 import SelectWithButton from 'components/common/SelectWithButton.vue'
 import CameraFastPreview, { type CameraFastPreviewExposed } from './camera/CameraFastPreview.vue'
 import CameraHeatmapOverlay from './camera/CameraHeatmapOverlay.vue'
 import CameraHistogram from './camera/CameraHistogram.vue'
 import CameraHQPreview, { type CameraHQPreviewExposed } from './camera/CameraHQPreview.vue'
 import CameraOrientationDialog from './camera/CameraOrientationDialog.vue'
-import { useDeviceStore } from 'src/stores/device'
 import { useCameraStore } from 'src/stores/camera'
 import { apiClient, getApiSdk } from 'src/services/apiClient'
 
@@ -331,29 +266,6 @@ function downloadHqPhoto() {
   URL.revokeObjectURL(url)
 }
 
-async function handleMoveHome() {
-  if (homeBusy.value) {
-    return
-  }
-
-  homeBusy.value = true
-  try {
-    await deviceStore.ensureConnected()
-    await apiSdk().moveToPosition({
-      client: apiClient,
-      body: {
-        theta: 90,
-        fi: 0,
-        r: 1
-      }
-    })
-    scheduleHqRefresh()
-  } catch (error) {
-    console.error('Failed to move to home position', error)
-  } finally {
-    homeBusy.value = false
-  }
-}
 
 interface CameraViewProps {
   scanning: boolean
@@ -373,7 +285,6 @@ const emit = defineEmits<{
   (e: 'update:selectedCameraName', value: string): void
 }>()
 
-const deviceStore = useDeviceStore()
 const cameraStore = useCameraStore()
 const apiSdk = () => getApiSdk()
 
@@ -383,9 +294,8 @@ const stackRef = ref<HTMLElement | null>(null)
 const stackHeight = ref<number | null>(null)
 let stackResizeObserver: ResizeObserver | null = null
 const heatmapEnabled = ref(false)
-const homeBusy = ref(false)
-const rotorControlsBusy = ref(false)
-const turntableControlsBusy = ref(false)
+const inlineMotorBusy = ref(false)
+const fullPreviewMotorBusy = ref(false)
 const restartBusy = ref(false)
 let hqRefreshTimeout: ReturnType<typeof setTimeout> | null = null
 const fullPreviewDialogVisible = ref(false)
@@ -393,9 +303,7 @@ const cameraOrientationDialogVisible = ref(false)
 const fullPreviewImageRef = ref<HTMLImageElement | null>(null)
 const fullPreviewImageLoaded = ref(false)
 
-const ROTOR_MOTOR = 'rotor'
-const TURNTABLE_MOTOR = 'turntable'
-const motorControlsBusy = computed(() => rotorControlsBusy.value || turntableControlsBusy.value)
+const motorControlsBusy = computed(() => inlineMotorBusy.value || fullPreviewMotorBusy.value)
 
 const cameraOptionsList = computed<CameraOption[]>(() => props.cameraOptions ?? [])
 const showFastPreview = computed(() => !props.scanning && props.camera !== null)
@@ -472,13 +380,6 @@ function handleRotorCalibrated() {
   scheduleHqRefresh(800)
 }
 
-function handleRotorBusyChange(isBusy: boolean) {
-  rotorControlsBusy.value = isBusy
-}
-
-function handleTurntableBusyChange(isBusy: boolean) {
-  turntableControlsBusy.value = isBusy
-}
 
 const hqPreviewImageElement = computed(() => unref(hqPreviewRef.value?.previewImage) ?? null)
 const hqPreviewImageLoaded = computed(() => unref(hqPreviewRef.value?.imageLoaded) ?? false)
@@ -607,11 +508,6 @@ onBeforeUnmount(() => {
   margin-right: 16px;
 }
 
-.camera-view__motor-divider {
-  align-self: center;
-  height: 24px;
-  border-left: 1px solid rgba(255, 255, 255, 0.8);
-}
 
 .camera-view__toolbar-actions {
   flex: 1 1 auto;

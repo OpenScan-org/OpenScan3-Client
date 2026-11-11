@@ -105,6 +105,10 @@ export type Camera = {
      * Path
      */
     path: string;
+    /**
+     * Scanner Model
+     */
+    scanner_model?: string | null;
     settings: CameraSettings;
 };
 
@@ -228,6 +232,14 @@ export type CameraStatusResponse = {
      * Busy
      */
     busy: boolean;
+    /**
+     * Restart Required
+     */
+    restart_required?: boolean;
+    /**
+     * Last Error
+     */
+    last_error?: string | null;
     settings: CameraSettings;
 };
 
@@ -788,6 +800,14 @@ export type PhotoResponse = {
 
 /**
  * PolarPoint3D
+ *
+ * PolarPoint3D represents a point in spherical coordinates
+ * theta: polar angle (0° to 180°), where:
+ * - 0° is the North Pole
+ * - 90° is the Equator
+ * - 180° is the South Pole
+ * fi: azimuthal angle (0° to 360°), rotation around z-axis
+ * r: radius, default is 1 for unit sphere
  */
 export type PolarPoint3d = {
     /**

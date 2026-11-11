@@ -8,6 +8,10 @@ export const fieldDescriptions = {
     "timeout_s": "Maximum time budget for the calibration loop in seconds.",
     "warmup_frames": "Number of frames to discard before reading AWB metadata."
   },
+  "AutoCalibrateExposureRequest": {
+    "tolerance_us": "Absolute exposure stability tolerance in microseconds; overrides relative tolerance.",
+    "use_photo_config": "Temporarily calibrate in the current still configuration instead of preview mode."
+  },
   "Body_create_task_tasks__task_name__post": {
     "args": "Positional arguments for the task",
     "depends_on": "Optional task ID that must complete successfully before this task runs",
@@ -30,12 +34,26 @@ export const fieldDescriptions = {
     "saturation": "Image color saturation from 0 to 32",
     "shutter": "Shutter speed in milliseconds."
   },
+  "CameraSettingsResult": {
+    "applied": "Settings active after successful analysis, including restoration of temporary SIFT focus changes."
+  },
   "CloudSettings": {
     "host": "Base URL of the cloud service.",
     "password": "HTTP basic auth password for the cloud API.",
     "split_size": "Maximum upload part size in bytes. The cloud currently accepts up to 200 MB per chunk.",
     "token": "API token identifying the device or user.",
     "user": "HTTP basic auth username for the cloud API."
+  },
+  "CropRecommendation": {
+    "bbox": "Detected object bounding box as x, y, width, height.",
+    "bbox_normalized": "Detected object bounding box relative to the full analysis frame.",
+    "coordinate_system": "Coordinate system used by bbox and rect.",
+    "crop_height": "Percentage of image height that can be cropped.",
+    "crop_width": "Percentage of image width that can be cropped.",
+    "frame_size": "Width and height of the full oriented analysis frame.",
+    "rect": "Centered crop rectangle as x, y, width, height.",
+    "rect_normalized": "Centered crop rectangle relative to the full analysis frame.",
+    "support_exclusion": "Geometry based exclusion of a lower turntable support."
   },
   "DiskUsage": {
     "free": "Free bytes remaining on the filesystem.",
@@ -68,6 +86,15 @@ export const fieldDescriptions = {
     "enable_cloud": "Enable integrations with OpenScan Cloud services.",
     "qr_wifi_scan_enabled": "Automatically scan for WiFi QR codes on startup when no WiFi or Ethernet connection is active."
   },
+  "FocusPositionResult": {
+    "autofocus_position": "Measured LensPosition of the autofocus capture in diopters; null if unavailable.",
+    "regions": "Crop-overlapping ISP regions keyed by region index."
+  },
+  "FocusRegionResult": {
+    "autofocus": "AF ISP focus value relative to the region's best measurement; not absolute sharpness.",
+    "manual": "Relative ISP focus values keyed by requested lens position in diopters. Missing or unnormalizable values are null.",
+    "weight": "Region crop-overlap weight, normalized per position."
+  },
   "LightConfig": {
     "pin": "Single GPIO pin controlling the light output.",
     "pins": "Multiple GPIO pins driving grouped light outputs.",
@@ -88,6 +115,13 @@ export const fieldDescriptions = {
     "step_pin": "GPIO pin used to emit step pulses.",
     "steps_per_rotation": "Number of steps for a full motor rotation."
   },
+  "PositionAnalysis": {
+    "horizontal_assessment": "Qualitative guidance for horizontal object centering.",
+    "horizontal_imbalance": "Relative imbalance between the left and right image areas.",
+    "overall_status": "Overall qualitative assessment of object placement.",
+    "vertical_assessment": "Qualitative guidance for vertical alignment and holder setup.",
+    "vertical_imbalance": "Relative imbalance between the upper and lower image areas."
+  },
   "Project": {
     "created": "Creation timestamp of the project.",
     "description": "Description of the project.",
@@ -107,6 +141,26 @@ export const fieldDescriptions = {
     "stacked_size_bytes": "Total size of focus-stacked JPEG files in scanXX/stacked, in bytes.",
     "status": "The final, persistent status of the scan, mirroring the associated Task status.",
     "total_size_bytes": "Total size of all files belonging to the scan, in bytes."
+  },
+  "ScanAnalysisRequest": {
+    "camera_name": "Name of the camera used for the analysis capture.",
+    "crop": "Optional normalized x, y, width, height crop in the oriented full analysis frame.",
+    "debug_images": "Include compact ROI debug images in the result.",
+    "depends_on": "Optional task ID that must complete successfully before this task runs."
+  },
+  "ScanAnalysisResult": {
+    "camera_settings": "Camera settings before analysis and applied after successful completion. The previous settings can be used for reset.",
+    "debug_images": "Optional diagnostic images requested with debug_images.",
+    "focus_analysis": "Crop-weighted regional ISP focus profiles normalized to the best measurement per region, including AF. Null if statistics are unavailable.",
+    "sift_analysis": "SIFT feature matching metrics from a small turntable rotation.",
+    "sift_benchmark": "Temporary paths to unscaled SIFT benchmark frames."
+  },
+  "ScanAnalysisTaskResponse": {
+    "depends_on": "Task ID that must complete successfully before this task may run.",
+    "is_blocking": "Whether this task is blocking and should run in a separate thread",
+    "is_exclusive": "Whether this task is exclusive and should not run concurrently",
+    "run_args": "Positional arguments the task was started with.",
+    "run_kwargs": "Keyword arguments the task was started with."
   },
   "ScanMetadata": {
     "cart_coordinates": "Cartesian coordinates, derived from polar_coordinates.",
@@ -133,6 +187,27 @@ export const fieldDescriptions = {
     "pause_before_capture_ms": "Pause in milliseconds before capture to let vibrations settle.",
     "points": "Number of points in scanning path."
   },
+  "SiftAnalysis": {
+    "feature_count": "All SIFT features detected after cropping and limiting the longest side to 1280 pixels.",
+    "feature_density": "Detected features per megapixel of the actual analysis crop, after limiting resolution. No foreground/background segmentation is applied.",
+    "geometric_inlier_count": "Unique sampled mutual pairs surviving geometric verification.",
+    "matchable_feature_count": "Mutually matched features among each image's selected sample of min(feature_count, 1000).",
+    "matchable_feature_ratio": "Matched fraction of each image's strongest grid-balanced sample, not of all detected features.",
+    "mutual_match_count": "Unique sampled candidate pairs passing ratio tests in both directions.",
+    "tentative_match_count": "Unique ratio-test candidate pairs from the two strongest-per-cell samples; searched against full descriptor pools.",
+    "unmatched_feature_count": "Unmatched selected features; untested features are excluded."
+  },
+  "SiftGridImageMetrics": {
+    "feature_counts": "All detected features per cell in the analysis crop (maximum 1280 pixels on its longest side).",
+    "geometric_inlier_counts": "Selected features per cell surviving geometric verification.",
+    "matchable_feature_counts": "Mutually matched selected features per cell; the sample contains up to 1000 strongest grid-balanced features per image."
+  },
+  "SiftQuality": {
+    "geometry_quality": "Geometric inlier-ratio assessment; insufficient_data when the evidence or geometric model is unavailable.",
+    "matching_quality": "Geometrically verified fraction of each strongest-feature sample; requires at least 150 features per image and 50 mutual pairs.",
+    "overall_status": "Worst core assessment: density, geometrically usable sample fraction, and geometric consistency. Spatial crop coverage is rated separately.",
+    "spatial_coverage": "Distribution of geometrically verified selected features within the rectangular crop, including background. Insufficient data suppresses positive ratings."
+  },
   "SoftwareInfoResponse": {
     "firmware_version": "Currently running firmware version string.",
     "last_shutdown_was_unclean": "Indicates whether the previous shutdown finished cleanly.",
@@ -141,6 +216,12 @@ export const fieldDescriptions = {
     "runtime_dir": "Absolute path used for runtime state files.",
     "runtime_disk": "Disk usage snapshot for the runtime directory filesystem.",
     "uptime_seconds": "Current system uptime in seconds, if available."
+  },
+  "StackingOption": {
+    "coverage": "Mean crop-weighted relative ISP sharpness over sampled views; not a thresholded area percentage.",
+    "estimated": "True if any selected focus value requires interpolation at any sampled region/view.",
+    "gain": "Mean score minus mean AF score; null when AF measurements are incomplete.",
+    "worst_coverage": "Lowest sampled-view crop-weighted relative sharpness score."
   },
   "Task": {
     "depends_on": "Task ID that must complete successfully before this task may run.",

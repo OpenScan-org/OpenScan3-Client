@@ -595,6 +595,9 @@ onMounted(async () => {
     await nextTick()
     if (scanSettingsSectionRef.value && scanTemplateStore.scanSettings) {
       scanSettingsSectionRef.value.applySettings(scanTemplateStore.scanSettings, scanTemplateStore.cameraSettings)
+      if (scanTemplateStore.autoStartFocusStacking !== null) {
+        autoStartFocusStacking.value = scanTemplateStore.autoStartFocusStacking
+      }
       scanTemplateStore.clearTemplate()
     }
   }
