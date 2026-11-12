@@ -1,0 +1,42 @@
+[
+  {
+    "id": "github-issues",
+    "category": "Get Involved",
+    "title": "Found a bug or have an idea?",
+    "body": "Share your feedback on GitHub and help shape the future of OpenScan3.",
+    "linkLabel": "Report an issue",
+    "url": "https://github.com/OpenScan-org/OpenScan3/issues"
+  },
+  {
+    "id": "getting-started",
+    "category": "Tip",
+    "title": "New to OpenScan?",
+    "body": "It's all about the object surface. Find practical scanning tips in the documentation.",
+    "linkLabel": "Read the documentation",
+    "url": "https://openscan-org.github.io/OpenScan-Doc/photogrammetry/basics/"
+  },
+  {
+    "id": "supporters",
+    "category": "Community",
+    "title": "Thank you, supporters!",
+    "body": "Your support helps us develop and improve OpenScan. Learn more about supporting us on Patreon.",
+    "linkLabel": "Support the project",
+    "url": "https://www.patreon.com/OpenScan"
+  },
+  {
+    "id": "macro-addon-diy",
+    "category": "Blog",
+    "title": "OpenScan Macro Add-on",
+    "body": "The DIY kit is now available! Explore the kit, design details, 3D-print settings and assembly guide.",
+    "linkLabel": "Read the blog post",
+    "url": "https://blog.openscan.eu/posts/openscan-macro-details/"
+  },
+  {
+    "id": "discord-community",
+    "category": "Community",
+    "title": "Join us on Discord",
+    "body": "Ask questions, share scans, get help and meet the OpenScan community.",
+    "linkLabel": "Join the community",
+    "url": "https://discord.gg/PR9Hg6wZNZ"
+  }
+]

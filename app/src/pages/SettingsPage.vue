@@ -57,6 +57,13 @@
                       />
                     </div>
                     <div class="col-12">
+                      <q-toggle
+                        v-model="fromOpenScanEnabledModel"
+                        label="Show dashboard tips and links"
+                        left-label
+                      />
+                    </div>
+                    <div class="col-12">
                       <div class="text-subtitle2 q-mt-sm">
                         Motor Step Size
                         <q-tooltip>
@@ -2063,6 +2070,10 @@ const selectedSettingsCamera = computed(() => selectedCamera.value ?? cameraStor
 const backgroundCameraPreviewEnabledModel = computed({
   get: () => frontendSettingsStore.backgroundCameraPreviewEnabled,
   set: (value: boolean) => frontendSettingsStore.setBackgroundCameraPreviewEnabled(value)
+})
+const fromOpenScanEnabledModel = computed({
+  get: () => frontendSettingsStore.fromOpenScanEnabled,
+  set: (value: boolean) => frontendSettingsStore.setFromOpenScanEnabled(value)
 })
 
 const backgroundPreviewUrl = computed(() => {

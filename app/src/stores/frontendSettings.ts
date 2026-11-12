@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 
 type FrontendSettingsState = {
   backgroundCameraPreviewEnabled: boolean
+  fromOpenScanEnabled: boolean
   movementStepSettings: MotorMovementStepSettings
 }
 
@@ -30,6 +31,7 @@ function loadInitialState(): FrontendSettingsState {
     if (!raw) {
       return {
         backgroundCameraPreviewEnabled: true,
+        fromOpenScanEnabled: true,
         movementStepSettings: createDefaultMovementStepSettings()
       }
     }
@@ -39,12 +41,14 @@ function loadInitialState(): FrontendSettingsState {
     }
     return {
       backgroundCameraPreviewEnabled: parsed?.backgroundCameraPreviewEnabled ?? true,
+      fromOpenScanEnabled: parsed?.fromOpenScanEnabled ?? true,
       movementStepSettings: normalizeMovementStepSettings(parsed?.movementStepSettings)
     }
   } catch (error) {
     console.warn('Failed to load frontend settings.', error)
     return {
       backgroundCameraPreviewEnabled: true,
+      fromOpenScanEnabled: true,
       movementStepSettings: createDefaultMovementStepSettings()
     }
   }
@@ -86,6 +90,10 @@ export const useFrontendSettingsStore = defineStore('frontendSettings', {
   actions: {
     setBackgroundCameraPreviewEnabled(enabled: boolean) {
       this.backgroundCameraPreviewEnabled = enabled
+      persistState(this.$state)
+    },
+    setFromOpenScanEnabled(enabled: boolean) {
+      this.fromOpenScanEnabled = enabled
       persistState(this.$state)
     },
     setMovementStep(motorName: ConfigurableMotorName, level: MovementStepLevel, value: number) {
