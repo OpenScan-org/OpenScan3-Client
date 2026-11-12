@@ -20,13 +20,21 @@ export const useUpdatesStore = defineStore('updates', {
   state: () => ({
     updatesAvailable: false,
     loading: false,
-    lastFetchedAt: null as number | null
+    lastFetchedAt: null as number | null,
+    installedVersions: {
+      firmware: null as string | null,
+      client: null as string | null
+    }
   }),
 
   actions: {
     applyStatus(status: UpdateStatusResponse) {
       this.updatesAvailable = status.status === 'updates_available'
       this.lastFetchedAt = Date.now()
+      const firmwareVersion = status.openscan.packages.find((pkg) => pkg.id === 'firmware')?.installed_version
+      const clientVersion = status.openscan.packages.find((pkg) => pkg.id === 'client')?.installed_version
+      if (firmwareVersion) this.installedVersions.firmware = firmwareVersion
+      if (clientVersion) this.installedVersions.client = clientVersion
     },
 
     async refresh() {

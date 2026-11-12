@@ -7,6 +7,9 @@ import { useDeviceStore } from 'src/stores/device'
 import { useFrontendSettingsStore } from 'src/stores/frontendSettings'
 import { useProjectsStore } from 'src/stores/projects'
 import { useTaskStore } from 'src/stores/tasks'
+import { useUpdatesStore } from 'src/stores/updates'
+import { useVersionStore } from 'src/stores/version'
+import { formatComponentVersion } from 'src/utils/versionDisplay'
 import BaseButtonIconPrimary from 'components/base/BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import BasePage from 'components/base/BasePage.vue'
@@ -25,6 +28,8 @@ const deviceStore = useDeviceStore()
 const frontendSettingsStore = useFrontendSettingsStore()
 const projectsStore = useProjectsStore()
 const taskStore = useTaskStore()
+const updatesStore = useUpdatesStore()
+const versionStore = useVersionStore()
 const apiSdk = () => getApiSdk()
 
 const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
@@ -58,6 +63,19 @@ const isLightOn = computed(() => {
   const name = firstLightName.value
   return !!(name && deviceStore.lights[name]?.is_on)
 })
+const firmwareDisplayVersion = computed(() => {
+  const version = updatesStore.installedVersions.firmware ?? versionStore.firmwareVersion
+  return version
+    ? formatComponentVersion(version)
+    : versionStore.firmwareVersionLoading
+      ? '…'
+      : '—'
+})
+const frontendDisplayVersion = computed(() =>
+  formatComponentVersion(
+    updatesStore.installedVersions.client ?? versionStore.frontendVersion,
+  ),
+)
 
 async function handleToggleLight() {
   if (scanLocked.value || isLightBusy.value) return
@@ -129,6 +147,7 @@ onMounted(() => {
   deviceStore.ensureConnected()
   projectsStore.fetchProjects()
   void taskStore.ensureConnected()
+  void versionStore.initialize()
 })
 </script>
 
@@ -251,6 +270,14 @@ onMounted(() => {
           </template>
         </div>
       </div>
+
+      <q-page-sticky position="bottom" expand :offset="[0, 0]">
+        <div class="dashboard-version-footer text-caption">
+          <span>Firmware {{ firmwareDisplayVersion }}</span>
+          <span class="dashboard-version-footer__separator">·</span>
+          <span>Frontend {{ frontendDisplayVersion }}</span>
+        </div>
+      </q-page-sticky>
     </div>
   </BasePage>
 </template>
@@ -263,6 +290,23 @@ onMounted(() => {
 .content-wrapper {
   position: relative;
   z-index: 1;
+  padding-bottom: 76px;
+}
+
+.dashboard-version-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px max(10px, env(safe-area-inset-bottom));
+  color: #757575;
+  font-size: 11px;
+}
+
+.dashboard-version-footer__separator {
+  color: #bdbdbd;
 }
 
 .joystick-grid {
