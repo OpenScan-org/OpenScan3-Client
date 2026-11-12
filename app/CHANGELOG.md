@@ -8,11 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/2.0.0/),
 
 ### Added
 
+- Added changelog previews for available frontend and firmware updates, plus a dashboard update notice with shortcuts to the changelog and updater.
 - Added AWB Auto-Lock and automatic shutter calibration buttons to the scan page.
 - Added an experimental scan wizard with project selection, automatic exposure, interactive cropping, scan readiness feedback and quality presets with autofocus or focus stacking, including automatic stack processing, transfer to manual scan settings and shareable SVG exports containing a photo and analysis JSON.
 
 ### Changed
 
+- Camera restarts now cancel pending photo requests and stop the preview stream until the restart completes.
 - Updated the missing-camera dialog with a shutdown button and instructions to disconnect power before checking the camera cable; removed the image-flashing tip.
 
 ## 0.8.0 - 2026-09-15

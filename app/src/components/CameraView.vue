@@ -359,6 +359,8 @@ async function handleRestartCamera() {
   }
 
   restartBusy.value = true
+  cameraStore.beginCameraRestart()
+  fastPreviewRef.value?.stopPreviewStream()
   try {
     await apiSdk().restartCamera({
       client: apiClient,
@@ -368,6 +370,8 @@ async function handleRestartCamera() {
   } catch (error) {
     console.error('Failed to restart camera', cameraName, error)
   } finally {
+    cameraStore.endCameraRestart()
+    fastPreviewRef.value?.resumePreviewStream()
     restartBusy.value = false
   }
 }

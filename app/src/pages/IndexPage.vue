@@ -7,11 +7,15 @@ import { useDeviceStore } from 'src/stores/device'
 import { useFrontendSettingsStore } from 'src/stores/frontendSettings'
 import { useProjectsStore } from 'src/stores/projects'
 import { useTaskStore } from 'src/stores/tasks'
+import { useUpdatesStore } from 'src/stores/updates'
+import { useVersionStore } from 'src/stores/version'
+import { formatComponentVersion } from 'src/utils/versionDisplay'
 import BaseButtonIconPrimary from 'components/base/BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import BasePage from 'components/base/BasePage.vue'
 import RecentProjectsList from 'src/components/project/RecentProjectsList.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
+import UpdateChangeNotes from 'components/update/UpdateChangeNotes.vue'
 import { apiClient, getApiSdk } from 'src/services/apiClient'
 import {
   type ToggleLightData,
@@ -25,6 +29,8 @@ const deviceStore = useDeviceStore()
 const frontendSettingsStore = useFrontendSettingsStore()
 const projectsStore = useProjectsStore()
 const taskStore = useTaskStore()
+const updatesStore = useUpdatesStore()
+const versionStore = useVersionStore()
 const apiSdk = () => getApiSdk()
 
 const showDisconnectedSkeleton = computed(() => deviceStore.hasConnectionIssue)
@@ -58,6 +64,19 @@ const isLightOn = computed(() => {
   const name = firstLightName.value
   return !!(name && deviceStore.lights[name]?.is_on)
 })
+const firmwareDisplayVersion = computed(() => {
+  const version = updatesStore.installedVersions.firmware ?? versionStore.firmwareVersion
+  return version
+    ? formatComponentVersion(version)
+    : versionStore.firmwareVersionLoading
+      ? '…'
+      : '—'
+})
+const frontendDisplayVersion = computed(() =>
+  formatComponentVersion(
+    updatesStore.installedVersions.client ?? versionStore.frontendVersion,
+  ),
+)
 
 async function handleToggleLight() {
   if (scanLocked.value || isLightBusy.value) return
@@ -129,6 +148,7 @@ onMounted(() => {
   deviceStore.ensureConnected()
   projectsStore.fetchProjects()
   void taskStore.ensureConnected()
+  void versionStore.initialize()
 })
 </script>
 
@@ -251,6 +271,38 @@ onMounted(() => {
           </template>
         </div>
       </div>
+
+      <q-page-sticky position="bottom" expand :offset="[0, 0]">
+        <div class="dashboard-version-footer text-caption">
+          <div v-if="updatesStore.updatesAvailable" class="dashboard-version-footer__update-row">
+            <span class="dashboard-version-footer__update">Update available</span>
+            <UpdateChangeNotes
+              :packages="updatesStore.packages"
+              :release-channel="updatesStore.releaseChannel"
+              combined
+              trigger-label="What's new"
+              trigger-size="xs"
+              show-updater-action
+              :show-placeholder="false"
+            />
+            <q-btn
+              flat
+              dense
+              no-caps
+              color="primary"
+              size="xs"
+              icon="system_update"
+              label="Go to updater"
+              to="/update"
+            />
+          </div>
+          <div class="dashboard-version-footer__versions">
+            <span>Firmware {{ firmwareDisplayVersion }}</span>
+            <span class="dashboard-version-footer__separator">·</span>
+            <span>Frontend {{ frontendDisplayVersion }}</span>
+          </div>
+        </div>
+      </q-page-sticky>
     </div>
   </BasePage>
 </template>
@@ -263,6 +315,46 @@ onMounted(() => {
 .content-wrapper {
   position: relative;
   z-index: 1;
+  padding-bottom: 76px;
+}
+
+.dashboard-version-footer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  padding: 10px 16px max(10px, env(safe-area-inset-bottom));
+  color: #757575;
+  font-size: 10px;
+  cursor: default;
+  user-select: none;
+}
+
+.dashboard-version-footer__update-row,
+.dashboard-version-footer__versions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dashboard-version-footer__versions {
+  white-space: nowrap;
+}
+
+.dashboard-version-footer__update {
+  color: var(--q-primary);
+  font-size: 12px;
+}
+
+.dashboard-version-footer__separator {
+  color: #bdbdbd;
+}
+
+:deep(.dashboard-version-footer__update-row .q-btn__content > span) {
+  font-size: 12px;
 }
 
 .joystick-grid {
