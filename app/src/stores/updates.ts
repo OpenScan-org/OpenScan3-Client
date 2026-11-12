@@ -21,6 +21,8 @@ export const useUpdatesStore = defineStore('updates', {
     updatesAvailable: false,
     loading: false,
     lastFetchedAt: null as number | null,
+    packages: [] as UpdateStatusResponse['openscan']['packages'],
+    releaseChannel: 'unknown' as UpdateStatusResponse['release_channel'],
     installedVersions: {
       firmware: null as string | null,
       client: null as string | null
@@ -31,6 +33,8 @@ export const useUpdatesStore = defineStore('updates', {
     applyStatus(status: UpdateStatusResponse) {
       this.updatesAvailable = status.status === 'updates_available'
       this.lastFetchedAt = Date.now()
+      this.packages = status.openscan.packages
+      this.releaseChannel = status.release_channel
       const firmwareVersion = status.openscan.packages.find((pkg) => pkg.id === 'firmware')?.installed_version
       const clientVersion = status.openscan.packages.find((pkg) => pkg.id === 'client')?.installed_version
       if (firmwareVersion) this.installedVersions.firmware = firmwareVersion

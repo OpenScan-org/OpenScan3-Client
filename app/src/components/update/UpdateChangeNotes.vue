@@ -6,8 +6,9 @@
       dense
       no-caps
       color="primary"
+      :size="triggerSize"
       :icon="combined ? 'library_books' : 'article'"
-      :label="buttonLabel"
+      :label="triggerLabel ?? buttonLabel"
       @click="openDialog"
     />
     <span v-else-if="showPlaceholder" class="text-grey-6">—</span>
@@ -157,6 +158,12 @@
       </q-card-section>
 
       <template #actions>
+        <BaseButtonPrimary
+          v-if="showUpdaterAction"
+          icon="system_update"
+          label="Go to updater"
+          @click="goToUpdater"
+        />
         <BaseButtonSecondary label="Close" @click="dialogOpen = false" />
       </template>
     </BaseDialog>
@@ -165,8 +172,10 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import type { OpenScanUpdatePackage } from 'src/generated/api/latest/types.gen';
 import BaseBanner from 'components/base/BaseBanner.vue';
+import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue';
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue';
 import BaseDialog from 'components/base/BaseDialog.vue';
 import {
@@ -181,13 +190,18 @@ const props = withDefaults(
     releaseChannel: string;
     combined?: boolean;
     showPlaceholder?: boolean;
+    triggerLabel?: string;
+    triggerSize?: string;
+    showUpdaterAction?: boolean;
   }>(),
   {
     combined: false,
     showPlaceholder: true,
+    showUpdaterAction: false,
   },
 );
 
+const router = useRouter();
 const dialogOpen = ref(false);
 const loading = ref(false);
 const changeNotes = ref<ChangeNotes[]>([]);
@@ -262,6 +276,11 @@ function groupedNotes(change: ChangeNotes) {
     groups.set(note.category, notes);
   }
   return [...groups].map(([category, notes]) => ({ category, notes }));
+}
+
+function goToUpdater() {
+  dialogOpen.value = false;
+  void router.push('/update');
 }
 
 async function openDialog() {

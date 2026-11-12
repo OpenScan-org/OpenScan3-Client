@@ -15,6 +15,7 @@ import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue
 import BasePage from 'components/base/BasePage.vue'
 import RecentProjectsList from 'src/components/project/RecentProjectsList.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
+import UpdateChangeNotes from 'components/update/UpdateChangeNotes.vue'
 import { apiClient, getApiSdk } from 'src/services/apiClient'
 import {
   type ToggleLightData,
@@ -273,9 +274,33 @@ onMounted(() => {
 
       <q-page-sticky position="bottom" expand :offset="[0, 0]">
         <div class="dashboard-version-footer text-caption">
-          <span>Firmware {{ firmwareDisplayVersion }}</span>
-          <span class="dashboard-version-footer__separator">·</span>
-          <span>Frontend {{ frontendDisplayVersion }}</span>
+          <div v-if="updatesStore.updatesAvailable" class="dashboard-version-footer__update-row">
+            <span class="dashboard-version-footer__update">Update available</span>
+            <UpdateChangeNotes
+              :packages="updatesStore.packages"
+              :release-channel="updatesStore.releaseChannel"
+              combined
+              trigger-label="What's new"
+              trigger-size="xs"
+              show-updater-action
+              :show-placeholder="false"
+            />
+            <q-btn
+              flat
+              dense
+              no-caps
+              color="primary"
+              size="xs"
+              icon="system_update"
+              label="Go to updater"
+              to="/update"
+            />
+          </div>
+          <div class="dashboard-version-footer__versions">
+            <span>Firmware {{ firmwareDisplayVersion }}</span>
+            <span class="dashboard-version-footer__separator">·</span>
+            <span>Frontend {{ frontendDisplayVersion }}</span>
+          </div>
         </div>
       </q-page-sticky>
     </div>
@@ -295,18 +320,41 @@ onMounted(() => {
 
 .dashboard-version-footer {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
+  gap: 2px;
   width: 100%;
   padding: 10px 16px max(10px, env(safe-area-inset-bottom));
   color: #757575;
-  font-size: 11px;
+  font-size: 10px;
+  cursor: default;
+  user-select: none;
+}
+
+.dashboard-version-footer__update-row,
+.dashboard-version-footer__versions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dashboard-version-footer__versions {
+  white-space: nowrap;
+}
+
+.dashboard-version-footer__update {
+  color: var(--q-primary);
+  font-size: 12px;
 }
 
 .dashboard-version-footer__separator {
   color: #bdbdbd;
+}
+
+:deep(.dashboard-version-footer__update-row .q-btn__content > span) {
+  font-size: 12px;
 }
 
 .joystick-grid {
