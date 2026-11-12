@@ -14,6 +14,7 @@ import BaseButtonIconPrimary from 'components/base/BaseButtonIconPrimary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
 import BasePage from 'components/base/BasePage.vue'
 import RecentProjectsList from 'src/components/project/RecentProjectsList.vue'
+import FromOpenScanCard from 'src/components/dashboard/FromOpenScanCard.vue'
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue'
 import UpdateChangeNotes from 'components/update/UpdateChangeNotes.vue'
 import { apiClient, getApiSdk } from 'src/services/apiClient'
@@ -153,7 +154,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <BasePage class="dashboard-page" :center-content="false">
+  <BasePage class="dashboard-page" :center-content="false" padding="0">
     <template #background>
       <BlurredSnapshotBackground
         v-if="backgroundPreviewUrl"
@@ -167,7 +168,7 @@ onMounted(() => {
       />
     </template>
 
-    <div class="content-wrapper q-pa-md">
+    <div class="content-wrapper">
       <div class="row q-col-gutter-md justify-center items-start">
         <div class="col-12 col-md-6">
           <q-card flat bordered class="playground-card">
@@ -255,7 +256,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="row q-col-gutter-md q-mt-md justify-center items-start">
+      <div class="row q-col-gutter-x-md q-mt-md justify-center items-start">
         <div class="col-12 col-md-6">
           <template v-if="showDisconnectedSkeleton">
             <q-card flat bordered class="q-pa-md">
@@ -272,37 +273,44 @@ onMounted(() => {
         </div>
       </div>
 
-      <q-page-sticky position="bottom" expand :offset="[0, 0]">
-        <div class="dashboard-version-footer text-caption">
-          <div v-if="updatesStore.updatesAvailable" class="dashboard-version-footer__update-row">
-            <span class="dashboard-version-footer__update">Update available</span>
-            <UpdateChangeNotes
-              :packages="updatesStore.packages"
-              :release-channel="updatesStore.releaseChannel"
-              combined
-              trigger-label="What's new"
-              trigger-size="xs"
-              show-updater-action
-              :show-placeholder="false"
-            />
-            <q-btn
-              flat
-              dense
-              no-caps
-              color="primary"
-              size="xs"
-              icon="system_update"
-              label="Go to updater"
-              to="/update"
-            />
-          </div>
-          <div class="dashboard-version-footer__versions">
-            <span>Firmware {{ firmwareDisplayVersion }}</span>
-            <span class="dashboard-version-footer__separator">·</span>
-            <span>Frontend {{ frontendDisplayVersion }}</span>
-          </div>
+      <div
+        v-if="frontendSettingsStore.fromOpenScanEnabled"
+        class="dashboard-notice-space row justify-center items-center"
+      >
+        <div class="col-12 col-md-6">
+          <FromOpenScanCard />
         </div>
-      </q-page-sticky>
+      </div>
+
+      <div class="dashboard-version-footer text-caption">
+        <div v-if="updatesStore.updatesAvailable" class="dashboard-version-footer__update-row">
+          <span class="dashboard-version-footer__update">Update available</span>
+          <UpdateChangeNotes
+            :packages="updatesStore.packages"
+            :release-channel="updatesStore.releaseChannel"
+            combined
+            trigger-label="What's new"
+            trigger-size="xs"
+            show-updater-action
+            :show-placeholder="false"
+          />
+          <q-btn
+            flat
+            dense
+            no-caps
+            color="primary"
+            size="xs"
+            icon="system_update"
+            label="Go to updater"
+            to="/update"
+          />
+        </div>
+        <div class="dashboard-version-footer__versions">
+          <span>Firmware {{ firmwareDisplayVersion }}</span>
+          <span class="dashboard-version-footer__separator">·</span>
+          <span>Frontend {{ frontendDisplayVersion }}</span>
+        </div>
+      </div>
     </div>
   </BasePage>
 </template>
@@ -310,12 +318,33 @@ onMounted(() => {
 <style scoped>
 .dashboard-page {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 56px);
+  min-height: calc(100dvh - 56px);
+}
+
+:deep(.base-page__content) {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .content-wrapper {
   position: relative;
   z-index: 1;
-  padding-bottom: 76px;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: 0;
+  padding: 48px 16px 0;
+}
+
+.dashboard-notice-space {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .dashboard-version-footer {
@@ -325,6 +354,7 @@ onMounted(() => {
   align-items: center;
   gap: 2px;
   width: 100%;
+  margin-top: auto;
   padding: 10px 16px max(10px, env(safe-area-inset-bottom));
   color: #757575;
   font-size: 10px;
