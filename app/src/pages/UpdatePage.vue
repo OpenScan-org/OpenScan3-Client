@@ -63,17 +63,29 @@
                     </div>
                   </div>
                 </div>
-                <div v-if="canInstall" class="col-12 col-sm-auto">
-                  <BaseButtonPrimary
-                    icon="system_update"
-                    label="Install updates"
-                    size="lg"
-                    :dense="false"
-                    class="install-button"
-                    :loading="activeAction === 'install'"
-                    :disable="isBusy"
-                    @click="showInstallConfirmation = true"
-                  />
+                <div
+                  v-if="canInstall || hasCombinedChangeNotes"
+                  class="col-12 col-sm-auto"
+                >
+                  <div class="row items-center q-gutter-sm">
+                    <UpdateChangeNotes
+                      :packages="updateStatus.openscan.packages"
+                      :release-channel="updateStatus.release_channel"
+                      combined
+                      :show-placeholder="false"
+                    />
+                    <BaseButtonPrimary
+                      v-if="canInstall"
+                      icon="system_update"
+                      label="Install updates"
+                      size="lg"
+                      :dense="false"
+                      class="install-button"
+                      :loading="activeAction === 'install'"
+                      :disable="isBusy"
+                      @click="showInstallConfirmation = true"
+                    />
+                  </div>
                 </div>
               </div>
             </q-card-section>
@@ -136,6 +148,9 @@
                       <th class="text-left">Component</th>
                       <th class="text-left">Installed</th>
                       <th class="text-left">Available</th>
+                      <th v-if="showChangeLogColumn" class="text-left">
+                        Changelog
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -152,6 +167,12 @@
                           color="positive"
                           size="18px"
                           class="q-ml-xs"
+                        />
+                      </td>
+                      <td v-if="showChangeLogColumn">
+                        <UpdateChangeNotes
+                          :packages="[pkg]"
+                          :release-channel="updateStatus.release_channel"
                         />
                       </td>
                     </tr>
@@ -219,11 +240,13 @@ import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue';
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue';
 import BaseDialog from 'components/base/BaseDialog.vue';
 import BaseSection from 'components/base/BaseSection.vue';
+import UpdateChangeNotes from 'components/update/UpdateChangeNotes.vue';
 import BlurredSnapshotBackground from 'components/background/BlurredSnapshotBackground.vue';
 import BasePage from 'components/base/BasePage.vue';
 import { useCameraStore } from 'src/stores/camera';
 import { useFrontendSettingsStore } from 'src/stores/frontendSettings';
 import { useUpdatesStore } from 'src/stores/updates';
+import { isUpdateChangeNotesMockEnabled } from 'src/services/updateChangeNotes';
 
 type UpdateSdk = Pick<
   typeof latestSdk,
@@ -274,6 +297,25 @@ const selectedCameraOrientationFlag = computed(
 );
 
 const updatesSupported = computed(() => resolveApiTarget() !== 'v0_8');
+const showChangeLogColumn = computed(
+  () =>
+    updateStatus.value?.release_channel === 'nightly' ||
+    isUpdateChangeNotesMockEnabled(),
+);
+const hasCombinedChangeNotes = computed(() => {
+  if (isUpdateChangeNotesMockEnabled()) return true;
+  const status = updateStatus.value;
+  return Boolean(
+    status?.release_channel === 'nightly' &&
+      status.openscan.packages.some(
+        (pkg) =>
+          pkg.update_available &&
+          pkg.installed_version &&
+          pkg.available_version &&
+          (pkg.id === 'firmware' || pkg.id === 'client'),
+      ),
+  );
+});
 const isBusy = computed(
   () => statusLoading.value || activeAction.value !== null,
 );
