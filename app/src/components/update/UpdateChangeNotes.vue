@@ -28,26 +28,31 @@
             v-if="changeNotes.some((change) => change.mock)"
             color="amber-3"
             text-color="grey-10"
-            label="Preview data"
+            :label="previewLabel"
             class="q-mb-sm"
           />
 
           <BaseBanner
-            v-for="change in changeNotes.filter((item) => item.error)"
-            :key="`${change.id}-error`"
+            v-for="error in combinedErrors"
+            :key="error.message"
             background-class="bg-amber-2"
             text-class="text-grey-9"
             class="q-mt-sm"
           >
-            {{ change.label }}: {{ change.error }}
-            <a
-              class="update-notes__link"
-              :href="change.sourceUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Open changelog on GitHub
-            </a>
+            {{ error.labels.join(' and ') }}: {{ error.message }}
+            <span class="q-ml-xs">
+              <a
+                v-for="(source, index) in error.sources"
+                :key="source.label"
+                class="update-notes__link"
+                :href="source.url"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span v-if="index"> · </span>
+                {{ source.label }} changelog
+              </a>
+            </span>
           </BaseBanner>
 
           <div
@@ -67,7 +72,7 @@
           </div>
 
           <div
-            v-if="!combinedGroupedNotes.length && !changeNotes.some((change) => change.error)"
+            v-if="!combinedGroupedNotes.length && !combinedErrors.length"
             class="text-body2 text-grey-7 q-mt-md"
           >
             No new changelog entries were found for these snapshots.
@@ -97,7 +102,7 @@
               v-if="change.mock"
               color="amber-3"
               text-color="grey-10"
-              label="Preview data"
+              :label="previewLabel"
               class="q-mb-sm"
             />
             <BaseBanner
@@ -165,7 +170,7 @@ import BaseBanner from 'components/base/BaseBanner.vue';
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue';
 import BaseDialog from 'components/base/BaseDialog.vue';
 import {
-  getNightlyUpdateChangeNotes,
+  getUpdateChangeNotes,
   isUpdateChangeNotesMockEnabled,
   type UpdateChangeNotes as ChangeNotes,
 } from 'src/services/updateChangeNotes';
@@ -193,13 +198,20 @@ const eligiblePackages = computed(() =>
     (pkg) =>
       isSupportedPackage(pkg) &&
       (isUpdateChangeNotesMockEnabled() ||
-        (props.releaseChannel === 'nightly' &&
+        ((props.releaseChannel === 'nightly' || props.releaseChannel === 'stable') &&
           pkg.update_available &&
           pkg.installed_version &&
           pkg.available_version)),
   ),
 );
 const canShowChangelog = computed(() => eligiblePackages.value.length > 0);
+const previewLabel = computed(() =>
+  changeNotes.value.some((change) => change.mockMode === 'offline')
+    ? 'Preview · GitHub unavailable'
+    : changeNotes.value.some((change) => change.mockMode === 'multi')
+      ? 'Preview · several stable versions'
+      : 'Preview data',
+);
 const buttonLabel = computed(() =>
   props.combined ? "What's changed" : 'Changelog',
 );
@@ -218,6 +230,24 @@ const combinedGroupedNotes = computed(() => {
     }
   }
   return [...groups].map(([category, entries]) => ({ category, entries }));
+});
+const combinedErrors = computed(() => {
+  const errors = new Map<
+    string,
+    { message: string; labels: string[]; sources: Array<{ label: string; url: string }> }
+  >();
+  for (const change of changeNotes.value) {
+    if (!change.error) continue;
+    const entry = errors.get(change.error) ?? {
+      message: change.error,
+      labels: [],
+      sources: [],
+    };
+    entry.labels.push(change.label);
+    entry.sources.push({ label: change.label, url: change.sourceUrl });
+    errors.set(change.error, entry);
+  }
+  return [...errors.values()];
 });
 
 function packageLabel(pkg: OpenScanUpdatePackage) {
@@ -240,7 +270,9 @@ async function openDialog() {
   loading.value = true;
   try {
     const results = await Promise.all(
-      eligiblePackages.value.map((pkg) => getNightlyUpdateChangeNotes(pkg)),
+      eligiblePackages.value.map((pkg) =>
+        getUpdateChangeNotes(pkg, props.releaseChannel),
+      ),
     );
     changeNotes.value = results.filter((result): result is ChangeNotes => result !== null);
   } finally {

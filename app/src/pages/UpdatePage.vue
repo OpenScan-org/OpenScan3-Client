@@ -246,7 +246,10 @@ import BasePage from 'components/base/BasePage.vue';
 import { useCameraStore } from 'src/stores/camera';
 import { useFrontendSettingsStore } from 'src/stores/frontendSettings';
 import { useUpdatesStore } from 'src/stores/updates';
-import { isUpdateChangeNotesMockEnabled } from 'src/services/updateChangeNotes';
+import {
+  invalidateStableChangeNotesCache,
+  isUpdateChangeNotesMockEnabled,
+} from 'src/services/updateChangeNotes';
 
 type UpdateSdk = Pick<
   typeof latestSdk,
@@ -300,13 +303,14 @@ const updatesSupported = computed(() => resolveApiTarget() !== 'v0_8');
 const showChangeLogColumn = computed(
   () =>
     updateStatus.value?.release_channel === 'nightly' ||
+    updateStatus.value?.release_channel === 'stable' ||
     isUpdateChangeNotesMockEnabled(),
 );
 const hasCombinedChangeNotes = computed(() => {
   if (isUpdateChangeNotesMockEnabled()) return true;
   const status = updateStatus.value;
   return Boolean(
-    status?.release_channel === 'nightly' &&
+    (status?.release_channel === 'nightly' || status?.release_channel === 'stable') &&
       status.openscan.packages.some(
         (pkg) =>
           pkg.update_available &&
@@ -573,6 +577,7 @@ async function checkForUpdates() {
       await updateSdk().checkForUpdates({ client: apiClient }),
     );
     updatesStore.applyStatus(updateStatus.value);
+    invalidateStableChangeNotesCache();
   } catch (error) {
     console.error('Could not check for updates.', error);
     updateError.value = 'Could not check for updates. Please try again.';
