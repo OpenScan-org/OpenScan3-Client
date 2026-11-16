@@ -276,8 +276,6 @@
                       </div>
                     </BaseSection>
 
-                    <BaseVersionInfoCard />
-
                     <BaseSection v-if="isNextApiTarget" title="Firmware Settings">
                       <div class="row q-col-gutter-sm" v-if="firmwareSettingsLoading">
                         <div class="col-12">
@@ -1379,7 +1377,6 @@ import { useDeviceWakeup } from 'src/composables/useDeviceWakeup'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
 import BaseSettingRow from 'components/base/BaseSettingRow.vue'
-import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
