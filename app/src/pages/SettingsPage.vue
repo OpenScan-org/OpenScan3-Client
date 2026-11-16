@@ -207,95 +207,70 @@
                             </BaseButtonSecondary>
                           </div>
                         </div>
-                        <div class="col-12 col-md-8 col-lg-6" v-if="isNextApiTarget && deviceMetadataForm">
-                          <q-input
-                            v-model.number="deviceMetadataForm.scan_radius_mm"
-                            type="number"
-                            min="0"
-                            step="1"
-                            label="Scan Radius (mm)"
-                            @update:model-value="markDeviceMetadataDirty"
+                        <div class="col-12" v-if="isNextApiTarget && deviceMetadataForm">
+                          <BaseSettingRow title="Scan Radius" :description="scanRadiusTooltip">
+                            <q-input
+                              v-model.number="deviceMetadataForm.scan_radius_mm"
+                              type="number"
+                              min="0"
+                              step="1"
+                              label="Scan Radius (mm)"
+                              @update:model-value="markDeviceMetadataDirty"
+                            />
+                          </BaseSettingRow>
+                        </div>
+                        <div class="col-12" v-if="motorDeviceSettingsForm">
+                          <BaseSettingRow
+                            title="Idle Timeout"
+                            :description="motorDeviceSettingDescriptions.idle_timeout"
                           >
-                            <q-tooltip max-width="320px">
-                              {{ scanRadiusTooltip }}
-                            </q-tooltip>
-                          </q-input>
-                        </div>
-                        <div class="col-12 col-md-auto" v-if="isNextApiTarget && deviceMetadataForm">
-                          <div class="row justify-end">
-                            <BaseButtonPrimary
-                              icon="save"
-                              label="Save"
-                              :disable="scanLocked || !deviceMetadataDirty"
-                              :loading="deviceMetadataSaving"
-                              @click="saveDeviceMetadataSettings"
-                            >
-                              <q-tooltip>
-                                {{
-                                  scanLocked
-                                    ? scanLockedTooltip
-                                    : 'Save the camera-to-object-center distance.'
-                                }}
-                              </q-tooltip>
-                            </BaseButtonPrimary>
-                          </div>
-                        </div>
-                        <div class="col-12 col-md-8 col-lg-6" v-if="motorDeviceSettingsForm">
-                          <q-input
-                            v-model.number="motorDeviceSettingsForm.idle_timeout"
-                            type="number"
-                            min="0"
-                            label="Idle Timeout (s)"
-                            @update:model-value="markMotorDeviceSettingsDirty"
-                          >
-                            <q-tooltip>{{ motorDeviceSettingDescriptions.idle_timeout }}</q-tooltip>
-                          </q-input>
-                          <div class="text-caption text-grey-7 q-mt-xs">
-                            Idle status: {{ idleStatusLabel }}
-                          </div>
-                        </div>
-                        <div class="col-12 col-md-auto" v-if="motorDeviceSettingsForm">
-                          <div class="row justify-end">
-                            <BaseButtonPrimary
-                              icon="save"
-                              label="Save"
-                              :disable="scanLocked || !motorDeviceSettingsDirty"
-                              :loading="motorDeviceSettingsSaving"
-                              @click="saveMotorDeviceSettings"
-                            >
-                              <q-tooltip>
-                                {{
-                                  scanLocked
-                                    ? scanLockedTooltip
-                                    : 'Save idle timeout for automatic motor and light shutdown.'
-                                }}
-                              </q-tooltip>
-                            </BaseButtonPrimary>
-                          </div>
+                            <div class="column items-end">
+                              <q-input
+                                v-model.number="motorDeviceSettingsForm.idle_timeout"
+                                type="number"
+                                min="0"
+                                label="Idle Timeout (s)"
+                                @update:model-value="markMotorDeviceSettingsDirty"
+                              />
+                              <div class="text-caption text-grey-7 q-mt-xs">
+                                Motor/light activity: {{ idleStatusLabel }}
+                              </div>
+                            </div>
+                          </BaseSettingRow>
                         </div>
                         <div class="col-12">
-                          <q-separator class="q-my-sm" />
-                          <div class="row items-center justify-between q-col-gutter-sm">
-                            <div class="col-12 col-md">
-                              <div class="text-subtitle2">Setup Wizard</div>
-                              <div class="text-caption text-grey-7">
-                                Repeat the initial setup for your device.
-                              </div>
-                            </div>
-                            <div class="col-12 col-md-auto">
-                              <div class="row justify-end">
-                                <BaseButtonSecondary
-                                  icon="restart_alt"
-                                  label="Rerun setup wizard"
-                                  :disable="scanLocked"
-                                  @click="handleRerunSetupWizard"
-                                >
-                                  <q-tooltip>
-                                    {{ scanLocked ? scanLockedTooltip : 'Start the device setup wizard again.' }}
-                                  </q-tooltip>
-                                </BaseButtonSecondary>
-                              </div>
-                            </div>
+                          <BaseSettingRow
+                            title="Setup Wizard"
+                            description="Repeat the initial setup for your device."
+                          >
+                            <BaseButtonSecondary
+                              icon="restart_alt"
+                              label="Rerun setup wizard"
+                              :disable="scanLocked"
+                              @click="handleRerunSetupWizard"
+                            >
+                              <q-tooltip>
+                                {{ scanLocked ? scanLockedTooltip : 'Start the device setup wizard again.' }}
+                              </q-tooltip>
+                            </BaseButtonSecondary>
+                          </BaseSettingRow>
+                        </div>
+                        <div
+                          v-if="isNextApiTarget && (deviceMetadataForm || motorDeviceSettingsForm)"
+                          class="col-12"
+                        >
+                          <div class="row justify-end q-mt-sm">
+                            <BaseButtonPrimary
+                              icon="save"
+                              label="Save"
+                              :disable="scanLocked || !deviceSettingsDirty"
+                              :loading="deviceSettingsSaving"
+                              @click="saveDeviceSettings"
+                            >
+                              <q-tooltip>
+                                {{ scanLocked ? scanLockedTooltip : 'Save device settings.' }}
+                              </q-tooltip>
+                            </BaseButtonPrimary>
                           </div>
                         </div>
                       </div>
@@ -1403,6 +1378,7 @@ import { versionToApiTarget } from 'src/generated/api/versioned.gen'
 import { useDeviceWakeup } from 'src/composables/useDeviceWakeup'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
+import BaseSettingRow from 'components/base/BaseSettingRow.vue'
 import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
@@ -1447,6 +1423,8 @@ const apiSdk = () => getApiSdk()
 void taskStore.ensureConnected()
 const { activeScanTaskId } = storeToRefs(taskStore)
 const scanLocked = computed(() => Boolean(activeScanTaskId.value))
+const deviceSettingsDirty = computed(() => deviceMetadataDirty.value || motorDeviceSettingsDirty.value)
+const deviceSettingsSaving = computed(() => deviceMetadataSaving.value || motorDeviceSettingsSaving.value)
 const rerunSetupDialogVisible = ref(false)
 const scanLockedTooltip = 'Unavailable while a scan is running.'
 
@@ -2733,7 +2711,7 @@ function mapMotorDeviceSettingsForm(
   }
 }
 
-const scanRadiusTooltip = `${getFieldDescription('ScannerDeviceConfig', 'scan_radius_mm')} In practice, this is the distance from the camera to the center of the object.`
+const scanRadiusTooltip = getFieldDescription('ScannerDeviceConfig', 'scan_radius_mm')
 
 function mapDeviceMetadataForm(
   config: Pick<ScannerDeviceConfigInput, 'scan_radius_mm'> | null | undefined
@@ -3606,6 +3584,19 @@ async function saveDeviceMetadataSettings() {
     console.error('Device metadata settings could not be saved.', error)
   } finally {
     deviceMetadataSaving.value = false
+  }
+}
+
+async function saveDeviceSettings() {
+  if (deviceSettingsSaving.value || scanLocked.value) {
+    return
+  }
+
+  if (motorDeviceSettingsDirty.value) {
+    await saveMotorDeviceSettings()
+  }
+  if (deviceMetadataDirty.value) {
+    await saveDeviceMetadataSettings()
   }
 }
 
