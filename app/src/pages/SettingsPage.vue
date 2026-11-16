@@ -1013,12 +1013,24 @@
                             </q-input>
                           </div>
                           <div class="col-12 col-sm-6">
-                            <q-input v-model.number="cameraForm.awbg_red" type="number" label="AWBG Red">
+                            <q-input
+                              :model-value="formatCameraSetting(cameraForm.awbg_red)"
+                              @update:model-value="updateCameraSetting('awbg_red', $event)"
+                              type="number"
+                              step="0.1"
+                              label="AWBG Red"
+                            >
                               <q-tooltip>{{ cameraSettingDescription('awbg_red') }}</q-tooltip>
                             </q-input>
                           </div>
                           <div class="col-12 col-sm-6">
-                            <q-input v-model.number="cameraForm.awbg_blue" type="number" label="AWBG Blue">
+                            <q-input
+                              :model-value="formatCameraSetting(cameraForm.awbg_blue)"
+                              @update:model-value="updateCameraSetting('awbg_blue', $event)"
+                              type="number"
+                              step="0.1"
+                              label="AWBG Blue"
+                            >
                               <q-tooltip>{{ cameraSettingDescription('awbg_blue') }}</q-tooltip>
                             </q-input>
                           </div>
@@ -1028,7 +1040,13 @@
                             </q-input>
                           </div>
                           <div class="col-12 col-sm-6">
-                            <q-input v-model.number="cameraForm.manual_focus" type="number" label="Manual Focus">
+                            <q-input
+                              :model-value="formatCameraSetting(cameraForm.manual_focus)"
+                              @update:model-value="updateCameraSetting('manual_focus', $event)"
+                              type="number"
+                              step="0.1"
+                              label="Manual Focus"
+                            >
                               <q-tooltip>{{ cameraSettingDescription('manual_focus') }}</q-tooltip>
                             </q-input>
                           </div>
@@ -2122,6 +2140,21 @@ const cameraLoading = ref(false)
 const cameraSaving = ref(false)
 const cameraReportDownloadLoading = ref(false)
 const cameraForm = reactive<{ [K in keyof CameraSettings]?: CameraSettings[K] | null }>({})
+type CameraDecimalSetting = 'awbg_red' | 'awbg_blue' | 'manual_focus'
+
+function formatCameraSetting(value: number | null | undefined) {
+  if (typeof value !== 'number') {
+    return value ?? null
+  }
+  if (!Number.isFinite(value)) return null
+
+  return Number(value.toFixed(3))
+}
+
+function updateCameraSetting(field: CameraDecimalSetting, value: string | number | null) {
+  const parsed = value === null || value === '' ? null : Number(value)
+  cameraForm[field] = parsed !== null && Number.isFinite(parsed) ? parsed : null
+}
 
 type CameraSettingsField = keyof (typeof fieldDescriptions)['CameraSettings']
 
