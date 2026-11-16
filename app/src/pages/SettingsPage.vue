@@ -273,6 +273,31 @@
                             </BaseButtonPrimary>
                           </div>
                         </div>
+                        <div class="col-12">
+                          <q-separator class="q-my-sm" />
+                          <div class="row items-center justify-between q-col-gutter-sm">
+                            <div class="col-12 col-md">
+                              <div class="text-subtitle2">Setup Wizard</div>
+                              <div class="text-caption text-grey-7">
+                                Repeat the initial setup for your device.
+                              </div>
+                            </div>
+                            <div class="col-12 col-md-auto">
+                              <div class="row justify-end">
+                                <BaseButtonSecondary
+                                  icon="restart_alt"
+                                  label="Rerun setup wizard"
+                                  :disable="scanLocked"
+                                  @click="handleRerunSetupWizard"
+                                >
+                                  <q-tooltip>
+                                    {{ scanLocked ? scanLockedTooltip : 'Start the device setup wizard again.' }}
+                                  </q-tooltip>
+                                </BaseButtonSecondary>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </BaseSection>
 
@@ -1133,6 +1158,25 @@
     </div>
   </BasePage>
 
+  <BaseDialog
+    v-model="rerunSetupDialogVisible"
+    title="Rerun setup wizard?"
+    width="min(92vw, 520px)"
+  >
+    <q-card-section class="q-pt-none text-body2">
+      Device settings will be reset. Your projects and scans will be kept.
+    </q-card-section>
+    <template #actions>
+      <q-btn flat label="Cancel" color="primary" @click="rerunSetupDialogVisible = false" />
+      <q-btn
+        flat
+        label="Reset and continue"
+        color="negative"
+        @click="confirmRerunSetupWizard"
+      />
+    </template>
+  </BaseDialog>
+
   <BaseDialog v-model="addMotorDialog" title="Add Motor" persistent width="min(92vw, 520px)">
       <q-card-section class="q-pt-none">
         <div class="row q-col-gutter-sm">
@@ -1342,6 +1386,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { apiClient, getApiSdk, resolveApiTarget, updateApiClientConfig } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
@@ -1392,6 +1437,7 @@ import type {
 } from 'src/generated/api'
 
 const apiConfigStore = useApiConfigStore()
+const router = useRouter()
 const cameraStore = useCameraStore()
 const taskStore = useTaskStore()
 const firmwareSettingsStore = useFirmwareSettingsStore()
@@ -1401,6 +1447,7 @@ const apiSdk = () => getApiSdk()
 void taskStore.ensureConnected()
 const { activeScanTaskId } = storeToRefs(taskStore)
 const scanLocked = computed(() => Boolean(activeScanTaskId.value))
+const rerunSetupDialogVisible = ref(false)
 const scanLockedTooltip = 'Unavailable while a scan is running.'
 
 const NEXT_COMPATIBLE_API_TARGETS = new Set(['latest', 'next', 'v0_9'])
@@ -4062,6 +4109,19 @@ async function handleReinitializeHardware() {
   } finally {
     reinitializeHardwareLoading.value = false
   }
+}
+
+function handleRerunSetupWizard() {
+  if (scanLocked.value) {
+    return
+  }
+
+  rerunSetupDialogVisible.value = true
+}
+
+function confirmRerunSetupWizard() {
+  rerunSetupDialogVisible.value = false
+  void router.push('/setup')
 }
 
 async function handleDownloadCameraReport() {
