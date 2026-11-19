@@ -5,6 +5,8 @@ import { type Camera } from 'src/generated/api';
 const CAMERA_SETTINGS_CHANGE = /^cameras\.([^.\s]+)\.settings(?:\.|$)/;
 const PHOTO_DEBOUNCE_MS = 800;
 let photoDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+let photoRequestController: AbortController | null = null;
+let photoRequestId = 0;
 
 function getCameraNamesWithSettingChanges(paths: string[] | null | undefined) {
   const affected = new Set<string>();
@@ -33,6 +35,7 @@ export const useCameraStore = defineStore('camera', {
     photoObjectUrl: null as string | null,
     photoLoading: false,
     photoError: null as string | null,
+    cameraRestarting: false,
   }),
   getters: {
     cameraOptions: (state) => state.cameras.map(camera => ({
@@ -83,7 +86,7 @@ export const useCameraStore = defineStore('camera', {
       this.selectedCamera = cameraName;
     },
     markPhotoStale() {
-      if (!this.selectedCamera) {
+      if (!this.selectedCamera || this.cameraRestarting) {
         return;
       }
       this.photoLoading = true;
@@ -132,6 +135,9 @@ export const useCameraStore = defineStore('camera', {
       }
     },
     debouncedFetchPhoto(cameraName: string) {
+      if (this.cameraRestarting) {
+        return;
+      }
       this.photoLoading = true;
       if (photoDebounceTimer) {
         clearTimeout(photoDebounceTimer);
@@ -143,7 +149,7 @@ export const useCameraStore = defineStore('camera', {
     },
     async fetchPhoto(cameraName?: string | null) {
       const name = cameraName ?? this.selectedCamera;
-      if (!name) {
+      if (!name || this.cameraRestarting) {
         return;
       }
 
@@ -154,22 +160,51 @@ export const useCameraStore = defineStore('camera', {
 
       this.photoLoading = true;
       this.photoError = null;
+      photoRequestController?.abort();
+      const controller = new AbortController();
+      const requestId = ++photoRequestId;
+      photoRequestController = controller;
 
       try {
-        const response = await fetch(url, { cache: 'no-store' });
+        const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+        if (requestId !== photoRequestId) {
+          return;
+        }
         if (!response.ok) {
           this.photoError = 'Photo could not be loaded.';
           return;
         }
 
         const blob = await response.blob();
+        if (requestId !== photoRequestId) {
+          return;
+        }
         this.setPhoto(blob);
       } catch (err) {
-        console.error(err);
-        this.photoError = 'Photo could not be loaded.';
+        if (!controller.signal.aborted) {
+          console.error(err);
+          this.photoError = 'Photo could not be loaded.';
+        }
       } finally {
-        this.photoLoading = false;
+        if (requestId === photoRequestId) {
+          photoRequestController = null;
+          this.photoLoading = false;
+        }
       }
+    },
+    beginCameraRestart() {
+      this.cameraRestarting = true;
+      if (photoDebounceTimer) {
+        clearTimeout(photoDebounceTimer);
+        photoDebounceTimer = null;
+      }
+      photoRequestId += 1;
+      photoRequestController?.abort();
+      photoRequestController = null;
+      this.photoLoading = false;
+    },
+    endCameraRestart() {
+      this.cameraRestarting = false;
     },
   },
 });

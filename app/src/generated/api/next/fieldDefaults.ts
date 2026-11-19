@@ -8,6 +8,13 @@ export const fieldDefaults = {
     "timeout_s": 2,
     "warmup_frames": 12
   },
+  "AutoCalibrateExposureRequest": {
+    "relative_tolerance": 0.01,
+    "stable_frames": 4,
+    "timeout_s": 4,
+    "use_photo_config": false,
+    "warmup_frames": 12
+  },
   "Body_create_task_tasks__task_name__post": {
     "args": [],
     "kwargs": {}
@@ -25,6 +32,9 @@ export const fieldDefaults = {
     "orientation_flag": 8,
     "saturation": 1,
     "shutter": 50
+  },
+  "CameraStatusResponse": {
+    "restart_required": false
   },
   "CloudSettings": {
     "host": "http://openscanfeedback.dnsuser.de:1334",
@@ -91,6 +101,14 @@ export const fieldDefaults = {
     "stacked_size_bytes": 0,
     "status": "pending",
     "total_size_bytes": 0
+  },
+  "ScanAnalysisRequest": {
+    "debug_images": false
+  },
+  "ScanAnalysisTaskResponse": {
+    "is_blocking": false,
+    "is_exclusive": false,
+    "status": "pending"
   },
   "ScanCreateRequest": {
     "scan_description": ""

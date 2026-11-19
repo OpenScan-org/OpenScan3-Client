@@ -49,6 +49,54 @@ export type AutoCalibrateAwbResponse = {
 };
 
 /**
+ * AutoCalibrateExposureRequest
+ */
+export type AutoCalibrateExposureRequest = {
+    /**
+     * Warmup Frames
+     */
+    warmup_frames?: number;
+    /**
+     * Stable Frames
+     */
+    stable_frames?: number;
+    /**
+     * Timeout S
+     */
+    timeout_s?: number;
+    /**
+     * Tolerance Us
+     *
+     * Absolute exposure stability tolerance in microseconds; overrides relative tolerance.
+     */
+    tolerance_us?: number | null;
+    /**
+     * Use Photo Config
+     *
+     * Temporarily calibrate in the current still configuration instead of preview mode.
+     */
+    use_photo_config?: boolean;
+    /**
+     * Relative Tolerance
+     */
+    relative_tolerance?: number;
+};
+
+/**
+ * AutoCalibrateExposureResponse
+ */
+export type AutoCalibrateExposureResponse = {
+    /**
+     * Shutter Ms
+     */
+    shutter_ms: number;
+    /**
+     * Analogue Gain
+     */
+    analogue_gain: number;
+};
+
+/**
  * AvailableConfigResponse
  */
 export type AvailableConfigResponse = {
@@ -259,6 +307,19 @@ export type CameraSettings = {
 };
 
 /**
+ * CameraSettingsResult
+ *
+ * Camera settings before and after scan analysis.
+ */
+export type CameraSettingsResult = {
+    previous: CameraSettings;
+    /**
+     * Settings active after successful analysis, including restoration of temporary SIFT focus changes.
+     */
+    applied: CameraSettings;
+};
+
+/**
  * CameraStatusResponse
  */
 export type CameraStatusResponse = {
@@ -271,6 +332,14 @@ export type CameraStatusResponse = {
      * Busy
      */
     busy: boolean;
+    /**
+     * Restart Required
+     */
+    restart_required?: boolean;
+    /**
+     * Last Error
+     */
+    last_error?: string | null;
     settings: CameraSettings;
 };
 
@@ -413,6 +482,72 @@ export type CloudStatusResponse = {
      * Message
      */
     message?: string | null;
+};
+
+/**
+ * CropRecommendation
+ *
+ * Recommended crop values for the detected object extent.
+ */
+export type CropRecommendation = {
+    /**
+     * Coordinate System
+     *
+     * Coordinate system used by bbox and rect.
+     */
+    coordinate_system?: 'oriented_full_analysis_frame' | null;
+    /**
+     * Frame Size
+     *
+     * Width and height of the full oriented analysis frame.
+     */
+    frame_size?: {
+        [key: string]: number;
+    } | null;
+    /**
+     * Bbox
+     *
+     * Detected object bounding box as x, y, width, height.
+     */
+    bbox: Array<number> | null;
+    /**
+     * Bbox Normalized
+     *
+     * Detected object bounding box relative to the full analysis frame.
+     */
+    bbox_normalized?: Array<number> | null;
+    /**
+     * Rect
+     *
+     * Centered crop rectangle as x, y, width, height.
+     */
+    rect: Array<number> | null;
+    /**
+     * Rect Normalized
+     *
+     * Centered crop rectangle relative to the full analysis frame.
+     */
+    rect_normalized?: Array<number> | null;
+    /**
+     * Crop Width
+     *
+     * Percentage of image width that can be cropped.
+     */
+    crop_width: number | null;
+    /**
+     * Crop Height
+     *
+     * Percentage of image height that can be cropped.
+     */
+    crop_height: number | null;
+    /**
+     * Support Exclusion
+     *
+     * Geometry based exclusion of a lower turntable support.
+     */
+    support_exclusion?: {
+        [key: string]: unknown;
+    } | null;
 };
 
 /**
@@ -823,6 +958,70 @@ export type FirmwareSettings = {
 };
 
 /**
+ * FocusAnalysisResult
+ */
+export type FocusAnalysisResult = {
+    /**
+     * Positions
+     */
+    positions: Array<FocusPositionResult>;
+    /**
+     * Stacking Options
+     */
+    stacking_options: Array<StackingOption>;
+};
+
+/**
+ * FocusPositionResult
+ */
+export type FocusPositionResult = {
+    /**
+     * Turntable Offset
+     */
+    turntable_offset: number;
+    /**
+     * Autofocus Position
+     *
+     * Measured LensPosition of the autofocus capture in diopters; null if unavailable.
+     */
+    autofocus_position: number | null;
+    /**
+     * Regions
+     *
+     * Crop-overlapping ISP regions keyed by region index.
+     */
+    regions: {
+        [key: string]: FocusRegionResult;
+    };
+};
+
+/**
+ * FocusRegionResult
+ */
+export type FocusRegionResult = {
+    /**
+     * Weight
+     *
+     * Region crop-overlap weight, normalized per position.
+     */
+    weight: number;
+    /**
+     * Autofocus
+     *
+     * AF ISP focus value relative to the region's best measurement; not absolute sharpness.
+     */
+    autofocus: number | null;
+    /**
+     * Manual
+     *
+     * Relative ISP focus values keyed by requested lens position in diopters. Missing or unnormalizable values are null.
+     */
+    manual: {
+        [key: string]: number | null;
+    };
+};
+
+/**
  * HTTPValidationError
  */
 export type HttpValidationError = {
@@ -988,6 +1187,21 @@ export type MotorStatusResponse = {
 };
 
 /**
+ * NormalizedCrop
+ *
+ * Crop rectangle as normalized ``x, y, width, height`` values.
+ *
+ * A root model keeps the existing compact JSON representation as an array
+ * while moving validation out of the task implementation.
+ */
+export type NormalizedCrop = [
+    number,
+    number,
+    number,
+    number
+];
+
+/**
  * OpenScanUpdatePackage
  *
  * One optional OpenScan component update for the details view.
@@ -1118,6 +1332,14 @@ export type PhotoResponse = {
 
 /**
  * PolarPoint3D
+ *
+ * PolarPoint3D represents a point in spherical coordinates
+ * theta: polar angle (0° to 180°), where:
+ * - 0° is the North Pole
+ * - 90° is the Equator
+ * - 180° is the South Pole
+ * fi: azimuthal angle (0° to 360°), rotation around z-axis
+ * r: radius, default is 1 for unit sphere
  */
 export type PolarPoint3d = {
     /**
@@ -1132,6 +1354,48 @@ export type PolarPoint3d = {
      * R
      */
     r?: number;
+};
+
+/**
+ * PositionAnalysis
+ *
+ * Indicators for uneven object placement in the image.
+ */
+export type PositionAnalysis = {
+    /**
+     * Vertical Imbalance
+     *
+     * Relative imbalance between the upper and lower image areas.
+     */
+    vertical_imbalance: number;
+    /**
+     * Horizontal Imbalance
+     *
+     * Relative imbalance between the left and right image areas.
+     */
+    horizontal_imbalance: number;
+    /**
+     * Vertical Assessment
+     *
+     * Qualitative guidance for vertical alignment and holder setup.
+     */
+    vertical_assessment: {
+        [key: string]: string;
+    };
+    /**
+     * Horizontal Assessment
+     *
+     * Qualitative guidance for horizontal object centering.
+     */
+    horizontal_assessment: {
+        [key: string]: string;
+    };
+    /**
+     * Overall Status
+     *
+     * Overall qualitative assessment of object placement.
+     */
+    overall_status: 'good' | 'warning';
 };
 
 /**
@@ -1285,6 +1549,145 @@ export type Scan = {
      */
     task_id?: string | null;
     stacking_task_status?: StackingTaskStatus | null;
+};
+
+/**
+ * ScanAnalysisRequest
+ *
+ * Parameters for a scan setup analysis capture.
+ */
+export type ScanAnalysisRequest = {
+    /**
+     * Camera Name
+     *
+     * Name of the camera used for the analysis capture.
+     */
+    camera_name: string;
+    /**
+     * Depends On
+     *
+     * Optional task ID that must complete successfully before this task runs.
+     */
+    depends_on?: string | null;
+    /**
+     * Debug Images
+     *
+     * Include compact ROI debug images in the result.
+     */
+    debug_images?: boolean;
+    /**
+     * Optional normalized x, y, width, height crop in the oriented full analysis frame.
+     */
+    crop?: NormalizedCrop | null;
+};
+
+/**
+ * ScanAnalysisResult
+ *
+ * Public result of the scan setup analysis.
+ */
+export type ScanAnalysisResult = {
+    /**
+     * Analysis Type
+     */
+    analysis_type: 'scan_analysis';
+    crop_recommendation?: CropRecommendation | null;
+    position_analysis: PositionAnalysis;
+    /**
+     * Camera settings before analysis and applied after successful completion. The previous settings can be used for reset.
+     */
+    camera_settings?: CameraSettingsResult | null;
+    /**
+     * SIFT feature matching metrics from a small turntable rotation.
+     */
+    sift_analysis?: SiftAnalysis | null;
+    /**
+     * Crop-weighted regional ISP focus profiles normalized to the best measurement per region, including AF. Null if statistics are unavailable.
+     */
+    focus_analysis?: FocusAnalysisResult | null;
+    /**
+     * Temporary paths to unscaled SIFT benchmark frames.
+     */
+    sift_benchmark?: SiftBenchmark | null;
+    /**
+     * Debug Images
+     *
+     * Optional diagnostic images requested with debug_images.
+     */
+    debug_images?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
+ * ScanAnalysisTaskResponse
+ *
+ * Task envelope with the typed scan analysis result.
+ */
+export type ScanAnalysisTaskResponse = {
+    /**
+     * Id
+     */
+    id?: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Task Type
+     */
+    task_type: string;
+    /**
+     * Is Exclusive
+     *
+     * Whether this task is exclusive and should not run concurrently
+     */
+    is_exclusive?: boolean;
+    /**
+     * Is Blocking
+     *
+     * Whether this task is blocking and should run in a separate thread
+     */
+    is_blocking?: boolean;
+    status?: TaskStatus;
+    progress?: TaskProgress;
+    result?: ScanAnalysisResult | null;
+    /**
+     * Error
+     */
+    error?: string | null;
+    /**
+     * Created At
+     */
+    created_at?: string;
+    /**
+     * Started At
+     */
+    started_at?: string | null;
+    /**
+     * Completed At
+     */
+    completed_at?: string | null;
+    /**
+     * Depends On
+     *
+     * Task ID that must complete successfully before this task may run.
+     */
+    depends_on?: string | null;
+    /**
+     * Run Args
+     *
+     * Positional arguments the task was started with.
+     */
+    run_args?: Array<unknown>;
+    /**
+     * Run Kwargs
+     *
+     * Keyword arguments the task was started with.
+     */
+    run_kwargs?: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -1510,6 +1913,235 @@ export type ScannerDeviceConfig = {
 export type ScannerStartupMode = 'startup_idle' | 'startup_enabled';
 
 /**
+ * SiftAnalysis
+ *
+ * Feature and match quality metrics for the SIFT comparison pair.
+ */
+export type SiftAnalysis = {
+    /**
+     * Turntable Angle
+     */
+    turntable_angle: number;
+    /**
+     * Feature Count
+     *
+     * All SIFT features detected after cropping and limiting the longest side to 1280 pixels.
+     */
+    feature_count: {
+        [key: string]: number;
+    };
+    /**
+     * Feature Density
+     *
+     * Detected features per megapixel of the actual analysis crop, after limiting resolution. No foreground/background segmentation is applied.
+     */
+    feature_density: {
+        [key: string]: number;
+    };
+    /**
+     * Tentative Match Count
+     *
+     * Unique ratio-test candidate pairs from the two strongest-per-cell samples; searched against full descriptor pools.
+     */
+    tentative_match_count: number;
+    /**
+     * Mutual Match Count
+     *
+     * Unique sampled candidate pairs passing ratio tests in both directions.
+     */
+    mutual_match_count: number;
+    /**
+     * Matchable Feature Count
+     *
+     * Mutually matched features among each image's selected sample of min(feature_count, 1000).
+     */
+    matchable_feature_count: {
+        [key: string]: number;
+    };
+    /**
+     * Matchable Feature Ratio
+     *
+     * Matched fraction of each image's strongest grid-balanced sample, not of all detected features.
+     */
+    matchable_feature_ratio: {
+        [key: string]: number;
+    };
+    /**
+     * Unmatched Feature Count
+     *
+     * Unmatched selected features; untested features are excluded.
+     */
+    unmatched_feature_count: {
+        [key: string]: number;
+    };
+    /**
+     * Geometric Inlier Count
+     *
+     * Unique sampled mutual pairs surviving geometric verification.
+     */
+    geometric_inlier_count: number | null;
+    /**
+     * Geometric Outlier Count
+     */
+    geometric_outlier_count: number | null;
+    /**
+     * Geometric Inlier Ratio
+     */
+    geometric_inlier_ratio: number | null;
+    spatial_distribution: SiftSpatialDistribution;
+    quality?: SiftQuality | null;
+};
+
+/**
+ * SiftBenchmark
+ *
+ * Paths to the unscaled RGB frames used for SIFT benchmarking.
+ */
+export type SiftBenchmark = {
+    /**
+     * First Image
+     */
+    first_image: string;
+    /**
+     * Second Image
+     */
+    second_image: string;
+};
+
+/**
+ * SiftGridImageMetrics
+ *
+ * Per-cell SIFT metrics for one image in the comparison pair.
+ */
+export type SiftGridImageMetrics = {
+    /**
+     * Feature Counts
+     *
+     * All detected features per cell in the analysis crop (maximum 1280 pixels on its longest side).
+     */
+    feature_counts: Array<Array<number>>;
+    /**
+     * Matchable Feature Counts
+     *
+     * Mutually matched selected features per cell; the sample contains up to 1000 strongest grid-balanced features per image.
+     */
+    matchable_feature_counts: Array<Array<number>>;
+    /**
+     * Geometric Inlier Counts
+     *
+     * Selected features per cell surviving geometric verification.
+     */
+    geometric_inlier_counts: Array<Array<number>> | null;
+};
+
+/**
+ * SiftGridSize
+ *
+ * Dimensions of the spatial SIFT analysis grid.
+ */
+export type SiftGridSize = {
+    /**
+     * Rows
+     */
+    rows: number;
+    /**
+     * Columns
+     */
+    columns: number;
+};
+
+/**
+ * SiftQuality
+ *
+ * Initial heuristic quality assessment for the SIFT comparison.
+ */
+export type SiftQuality = {
+    /**
+     * Overall Status
+     *
+     * Worst core assessment: density, geometrically usable sample fraction, and geometric consistency. Spatial crop coverage is rated separately.
+     */
+    overall_status: 'bad' | 'okay' | 'good' | 'great' | 'insufficient_data';
+    /**
+     * Feature Quality
+     */
+    feature_quality: 'bad' | 'okay' | 'good' | 'great' | 'insufficient_data';
+    /**
+     * Spatial Coverage
+     *
+     * Distribution of geometrically verified selected features within the rectangular crop, including background. Insufficient data suppresses positive ratings.
+     */
+    spatial_coverage: 'bad' | 'okay' | 'good' | 'great' | 'insufficient_data';
+    /**
+     * Matching Quality
+     *
+     * Geometrically verified fraction of each strongest-feature sample; requires at least 150 features per image and 50 mutual pairs.
+     */
+    matching_quality: 'bad' | 'okay' | 'good' | 'great' | 'insufficient_data';
+    /**
+     * Geometry Quality
+     *
+     * Geometric inlier-ratio assessment; insufficient_data when the evidence or geometric model is unavailable.
+     */
+    geometry_quality: 'bad' | 'okay' | 'good' | 'great' | 'insufficient_data';
+    /**
+     * Metrics
+     */
+    metrics: {
+        [key: string]: unknown;
+    };
+    /**
+     * Thresholds
+     */
+    thresholds: {
+        [key: string]: number | number;
+    };
+    /**
+     * Warnings
+     */
+    warnings: Array<SiftQualityWarning>;
+};
+
+/**
+ * SiftQualityWarning
+ *
+ * Structured warning from the qualitative SIFT assessment.
+ */
+export type SiftQualityWarning = {
+    /**
+     * Code
+     */
+    code: string;
+    /**
+     * Severity
+     */
+    severity: 'warning' | 'error';
+    /**
+     * Message
+     */
+    message: string;
+    /**
+     * Images
+     */
+    images?: Array<'first' | 'second'> | null;
+    /**
+     * Cells
+     */
+    cells?: Array<Array<number>> | null;
+};
+
+/**
+ * SiftSpatialDistribution
+ *
+ * Spatial distribution of SIFT features and matches in both images.
+ */
+export type SiftSpatialDistribution = {
+    grid_size: SiftGridSize;
+    first: SiftGridImageMetrics;
+    second: SiftGridImageMetrics;
+};
+
+/**
  * SoftwareInfoResponse
  *
  * Information block served by /next/openscan.
@@ -1553,6 +2185,47 @@ export type SoftwareInfoResponse = {
      * Current system uptime in seconds, if available.
      */
     uptime_seconds?: number | null;
+};
+
+/**
+ * StackingOption
+ */
+export type StackingOption = {
+    /**
+     * Focus Range
+     */
+    focus_range: [
+        number,
+        number
+    ];
+    /**
+     * Focus Stacks
+     */
+    focus_stacks: number;
+    /**
+     * Coverage
+     *
+     * Mean crop-weighted relative ISP sharpness over sampled views; not a thresholded area percentage.
+     */
+    coverage: number;
+    /**
+     * Worst Coverage
+     *
+     * Lowest sampled-view crop-weighted relative sharpness score.
+     */
+    worst_coverage: number;
+    /**
+     * Gain
+     *
+     * Mean score minus mean AF score; null when AF measurements are incomplete.
+     */
+    gain: number | null;
+    /**
+     * Estimated
+     *
+     * True if any selected focus value requires interpolation at any sampled region/view.
+     */
+    estimated: boolean;
 };
 
 /**
@@ -2099,6 +2772,40 @@ export type AutoCalibrateAwbResponses = {
 };
 
 export type AutoCalibrateAwbResponse2 = AutoCalibrateAwbResponses[keyof AutoCalibrateAwbResponses];
+
+export type AutoCalibrateExposureData = {
+    body?: AutoCalibrateExposureRequest;
+    path: {
+        /**
+         * Camera Name
+         */
+        camera_name: string;
+    };
+    query?: never;
+    url: '/cameras/{camera_name}/exposure-calibration';
+};
+
+export type AutoCalibrateExposureErrors = {
+    /**
+     * Not found
+     */
+    404: unknown;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AutoCalibrateExposureError = AutoCalibrateExposureErrors[keyof AutoCalibrateExposureErrors];
+
+export type AutoCalibrateExposureResponses = {
+    /**
+     * Successful Response
+     */
+    200: AutoCalibrateExposureResponse;
+};
+
+export type AutoCalibrateExposureResponse2 = AutoCalibrateExposureResponses[keyof AutoCalibrateExposureResponses];
 
 export type GetCameraNameSettingsData = {
     body?: never;
@@ -5603,3 +6310,28 @@ export type CancelFocusStackingResponses = {
 };
 
 export type CancelFocusStackingResponse = CancelFocusStackingResponses[keyof CancelFocusStackingResponses];
+
+export type StartScanAnalysisData = {
+    body: ScanAnalysisRequest;
+    path?: never;
+    query?: never;
+    url: '/scan-analysis';
+};
+
+export type StartScanAnalysisErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type StartScanAnalysisError = StartScanAnalysisErrors[keyof StartScanAnalysisErrors];
+
+export type StartScanAnalysisResponses = {
+    /**
+     * Successful Response
+     */
+    202: ScanAnalysisTaskResponse;
+};
+
+export type StartScanAnalysisResponse = StartScanAnalysisResponses[keyof StartScanAnalysisResponses];

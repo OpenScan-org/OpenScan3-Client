@@ -3,12 +3,13 @@ const props = defineProps<{
   title: string
   subtitle?: string
   description?: string
+  embedded?: boolean
 }>()
 </script>
 
 <template>
-  <q-card flat bordered>
-    <q-card-section class="q-pb-xs">
+  <q-card flat :bordered="!props.embedded">
+    <q-card-section v-if="!props.embedded" class="q-pb-xs">
       <div class="row items-center justify-between no-wrap">
         <div class="text-h6">{{ props.title }}</div>
         <slot name="header-action" />
@@ -20,7 +21,7 @@ const props = defineProps<{
         {{ props.description }}
       </div>
     </q-card-section>
-    <q-card-section class="q-pt-none">
+    <q-card-section :class="props.embedded ? 'q-pa-none' : 'q-pt-none'">
       <slot />
     </q-card-section>
   </q-card>

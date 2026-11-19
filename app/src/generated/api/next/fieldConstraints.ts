@@ -16,6 +16,20 @@ export const fieldConstraints = {
       "exclusiveMinimum": 0
     }
   },
+  "AutoCalibrateExposureRequest": {
+    "warmup_frames": {
+      "minimum": 0
+    },
+    "stable_frames": {
+      "minimum": 1
+    },
+    "timeout_s": {
+      "exclusiveMinimum": 0
+    },
+    "relative_tolerance": {
+      "exclusiveMinimum": 0
+    }
+  },
   "CloudSettings": {
     "host": {
       "maxLength": 2083,
@@ -99,6 +113,11 @@ export const fieldConstraints = {
       "minimum": 0
     }
   },
+  "ScanAnalysisRequest": {
+    "camera_name": {
+      "minLength": 1
+    }
+  },
   "ScannerDeviceConfig": {
     "scan_radius_mm": {
       "exclusiveMinimum": 0
@@ -137,6 +156,16 @@ export const fieldConstraints = {
           "minimum": 0
         }
       ]
+    }
+  },
+  "StackingOption": {
+    "focus_range": {
+      "maxItems": 2,
+      "minItems": 2
+    },
+    "focus_stacks": {
+      "maximum": 10,
+      "minimum": 2
     }
   },
   "TriggerConfig": {

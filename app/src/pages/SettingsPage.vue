@@ -57,6 +57,13 @@
                       />
                     </div>
                     <div class="col-12">
+                      <q-toggle
+                        v-model="fromOpenScanEnabledModel"
+                        label="Show dashboard tips and links"
+                        left-label
+                      />
+                    </div>
+                    <div class="col-12">
                       <div class="text-subtitle2 q-mt-sm">
                         Motor Step Size
                         <q-tooltip>
@@ -200,76 +207,74 @@
                             </BaseButtonSecondary>
                           </div>
                         </div>
-                        <div class="col-12 col-md-8 col-lg-6" v-if="isNextApiTarget && deviceMetadataForm">
-                          <q-input
-                            v-model.number="deviceMetadataForm.scan_radius_mm"
-                            type="number"
-                            min="0"
-                            step="1"
-                            label="Scan Radius (mm)"
-                            @update:model-value="markDeviceMetadataDirty"
-                          >
-                            <q-tooltip max-width="320px">
-                              {{ scanRadiusTooltip }}
-                            </q-tooltip>
-                          </q-input>
+                        <div class="col-12" v-if="isNextApiTarget && deviceMetadataForm">
+                          <BaseSettingRow title="Scan Radius" :description="scanRadiusTooltip">
+                            <q-input
+                              v-model.number="deviceMetadataForm.scan_radius_mm"
+                              type="number"
+                              min="0"
+                              step="1"
+                              label="Scan Radius (mm)"
+                              @update:model-value="markDeviceMetadataDirty"
+                            />
+                          </BaseSettingRow>
                         </div>
-                        <div class="col-12 col-md-auto" v-if="isNextApiTarget && deviceMetadataForm">
-                          <div class="row justify-end">
-                            <BaseButtonPrimary
-                              icon="save"
-                              label="Save"
-                              :disable="scanLocked || !deviceMetadataDirty"
-                              :loading="deviceMetadataSaving"
-                              @click="saveDeviceMetadataSettings"
+                        <div class="col-12" v-if="motorDeviceSettingsForm">
+                          <BaseSettingRow
+                            title="Idle Timeout"
+                            :description="motorDeviceSettingDescriptions.idle_timeout"
+                          >
+                            <div class="column items-end">
+                              <q-input
+                                v-model.number="motorDeviceSettingsForm.idle_timeout"
+                                type="number"
+                                min="0"
+                                label="Idle Timeout (s)"
+                                @update:model-value="markMotorDeviceSettingsDirty"
+                              />
+                              <div class="text-caption text-grey-7 q-mt-xs">
+                                Motor/light activity: {{ idleStatusLabel }}
+                              </div>
+                            </div>
+                          </BaseSettingRow>
+                        </div>
+                        <div class="col-12">
+                          <BaseSettingRow
+                            title="Setup Wizard"
+                            description="Repeat the initial setup for your device."
+                          >
+                            <BaseButtonSecondary
+                              icon="restart_alt"
+                              label="Rerun setup wizard"
+                              :disable="scanLocked"
+                              @click="handleRerunSetupWizard"
                             >
                               <q-tooltip>
-                                {{
-                                  scanLocked
-                                    ? scanLockedTooltip
-                                    : 'Save the camera-to-object-center distance.'
-                                }}
+                                {{ scanLocked ? scanLockedTooltip : 'Start the device setup wizard again.' }}
                               </q-tooltip>
-                            </BaseButtonPrimary>
-                          </div>
+                            </BaseButtonSecondary>
+                          </BaseSettingRow>
                         </div>
-                        <div class="col-12 col-md-8 col-lg-6" v-if="motorDeviceSettingsForm">
-                          <q-input
-                            v-model.number="motorDeviceSettingsForm.idle_timeout"
-                            type="number"
-                            min="0"
-                            label="Idle Timeout (s)"
-                            @update:model-value="markMotorDeviceSettingsDirty"
-                          >
-                            <q-tooltip>{{ motorDeviceSettingDescriptions.idle_timeout }}</q-tooltip>
-                          </q-input>
-                          <div class="text-caption text-grey-7 q-mt-xs">
-                            Idle status: {{ idleStatusLabel }}
-                          </div>
-                        </div>
-                        <div class="col-12 col-md-auto" v-if="motorDeviceSettingsForm">
-                          <div class="row justify-end">
+                        <div
+                          v-if="isNextApiTarget && (deviceMetadataForm || motorDeviceSettingsForm)"
+                          class="col-12"
+                        >
+                          <div class="row justify-end q-mt-sm">
                             <BaseButtonPrimary
                               icon="save"
                               label="Save"
-                              :disable="scanLocked || !motorDeviceSettingsDirty"
-                              :loading="motorDeviceSettingsSaving"
-                              @click="saveMotorDeviceSettings"
+                              :disable="scanLocked || !deviceSettingsDirty"
+                              :loading="deviceSettingsSaving"
+                              @click="saveDeviceSettings"
                             >
                               <q-tooltip>
-                                {{
-                                  scanLocked
-                                    ? scanLockedTooltip
-                                    : 'Save idle timeout for automatic motor and light shutdown.'
-                                }}
+                                {{ scanLocked ? scanLockedTooltip : 'Save device settings.' }}
                               </q-tooltip>
                             </BaseButtonPrimary>
                           </div>
                         </div>
                       </div>
                     </BaseSection>
-
-                    <BaseVersionInfoCard />
 
                     <BaseSection v-if="isNextApiTarget" title="Firmware Settings">
                       <div class="row q-col-gutter-sm" v-if="firmwareSettingsLoading">
@@ -1008,12 +1013,24 @@
                             </q-input>
                           </div>
                           <div class="col-12 col-sm-6">
-                            <q-input v-model.number="cameraForm.awbg_red" type="number" label="AWBG Red">
+                            <q-input
+                              :model-value="formatCameraSetting(cameraForm.awbg_red)"
+                              @update:model-value="updateCameraSetting('awbg_red', $event)"
+                              type="number"
+                              step="0.1"
+                              label="AWBG Red"
+                            >
                               <q-tooltip>{{ cameraSettingDescription('awbg_red') }}</q-tooltip>
                             </q-input>
                           </div>
                           <div class="col-12 col-sm-6">
-                            <q-input v-model.number="cameraForm.awbg_blue" type="number" label="AWBG Blue">
+                            <q-input
+                              :model-value="formatCameraSetting(cameraForm.awbg_blue)"
+                              @update:model-value="updateCameraSetting('awbg_blue', $event)"
+                              type="number"
+                              step="0.1"
+                              label="AWBG Blue"
+                            >
                               <q-tooltip>{{ cameraSettingDescription('awbg_blue') }}</q-tooltip>
                             </q-input>
                           </div>
@@ -1023,7 +1040,13 @@
                             </q-input>
                           </div>
                           <div class="col-12 col-sm-6">
-                            <q-input v-model.number="cameraForm.manual_focus" type="number" label="Manual Focus">
+                            <q-input
+                              :model-value="formatCameraSetting(cameraForm.manual_focus)"
+                              @update:model-value="updateCameraSetting('manual_focus', $event)"
+                              type="number"
+                              step="0.1"
+                              label="Manual Focus"
+                            >
                               <q-tooltip>{{ cameraSettingDescription('manual_focus') }}</q-tooltip>
                             </q-input>
                           </div>
@@ -1125,6 +1148,25 @@
       </div>
     </div>
   </BasePage>
+
+  <BaseDialog
+    v-model="rerunSetupDialogVisible"
+    title="Rerun setup wizard?"
+    width="min(92vw, 520px)"
+  >
+    <q-card-section class="q-pt-none text-body2">
+      Device settings will be reset. Your projects and scans will be kept.
+    </q-card-section>
+    <template #actions>
+      <q-btn flat label="Cancel" color="primary" @click="rerunSetupDialogVisible = false" />
+      <q-btn
+        flat
+        label="Reset and continue"
+        color="negative"
+        @click="confirmRerunSetupWizard"
+      />
+    </template>
+  </BaseDialog>
 
   <BaseDialog v-model="addMotorDialog" title="Add Motor" persistent width="min(92vw, 520px)">
       <q-card-section class="q-pt-none">
@@ -1335,6 +1377,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { apiClient, getApiSdk, resolveApiTarget, updateApiClientConfig } from 'src/services/apiClient'
 import { useApiConfigStore } from 'src/stores/apiConfig'
@@ -1351,7 +1394,7 @@ import { versionToApiTarget } from 'src/generated/api/versioned.gen'
 import { useDeviceWakeup } from 'src/composables/useDeviceWakeup'
 import BaseSection from 'components/base/BaseSection.vue'
 import BaseSectionGroup from 'components/base/BaseSectionGroup.vue'
-import BaseVersionInfoCard from 'components/base/BaseVersionInfoCard.vue'
+import BaseSettingRow from 'components/base/BaseSettingRow.vue'
 import BaseButtonPrimary from 'components/base/BaseButtonPrimary.vue'
 import BaseButtonSecondary from 'components/base/BaseButtonSecondary.vue'
 import BaseButtonIconSecondary from 'components/base/BaseButtonIconSecondary.vue'
@@ -1385,6 +1428,7 @@ import type {
 } from 'src/generated/api'
 
 const apiConfigStore = useApiConfigStore()
+const router = useRouter()
 const cameraStore = useCameraStore()
 const taskStore = useTaskStore()
 const firmwareSettingsStore = useFirmwareSettingsStore()
@@ -1394,6 +1438,9 @@ const apiSdk = () => getApiSdk()
 void taskStore.ensureConnected()
 const { activeScanTaskId } = storeToRefs(taskStore)
 const scanLocked = computed(() => Boolean(activeScanTaskId.value))
+const deviceSettingsDirty = computed(() => deviceMetadataDirty.value || motorDeviceSettingsDirty.value)
+const deviceSettingsSaving = computed(() => deviceMetadataSaving.value || motorDeviceSettingsSaving.value)
+const rerunSetupDialogVisible = ref(false)
 const scanLockedTooltip = 'Unavailable while a scan is running.'
 
 const NEXT_COMPATIBLE_API_TARGETS = new Set(['latest', 'next', 'v0_9'])
@@ -2064,6 +2111,10 @@ const backgroundCameraPreviewEnabledModel = computed({
   get: () => frontendSettingsStore.backgroundCameraPreviewEnabled,
   set: (value: boolean) => frontendSettingsStore.setBackgroundCameraPreviewEnabled(value)
 })
+const fromOpenScanEnabledModel = computed({
+  get: () => frontendSettingsStore.fromOpenScanEnabled,
+  set: (value: boolean) => frontendSettingsStore.setFromOpenScanEnabled(value)
+})
 
 const backgroundPreviewUrl = computed(() => {
   if (!frontendSettingsStore.backgroundCameraPreviewEnabled) {
@@ -2089,6 +2140,21 @@ const cameraLoading = ref(false)
 const cameraSaving = ref(false)
 const cameraReportDownloadLoading = ref(false)
 const cameraForm = reactive<{ [K in keyof CameraSettings]?: CameraSettings[K] | null }>({})
+type CameraDecimalSetting = 'awbg_red' | 'awbg_blue' | 'manual_focus'
+
+function formatCameraSetting(value: number | null | undefined) {
+  if (typeof value !== 'number') {
+    return value ?? null
+  }
+  if (!Number.isFinite(value)) return null
+
+  return Number(value.toFixed(3))
+}
+
+function updateCameraSetting(field: CameraDecimalSetting, value: string | number | null) {
+  const parsed = value === null || value === '' ? null : Number(value)
+  cameraForm[field] = parsed !== null && Number.isFinite(parsed) ? parsed : null
+}
 
 type CameraSettingsField = keyof (typeof fieldDescriptions)['CameraSettings']
 
@@ -2675,7 +2741,7 @@ function mapMotorDeviceSettingsForm(
   }
 }
 
-const scanRadiusTooltip = `${getFieldDescription('ScannerDeviceConfig', 'scan_radius_mm')} In practice, this is the distance from the camera to the center of the object.`
+const scanRadiusTooltip = getFieldDescription('ScannerDeviceConfig', 'scan_radius_mm')
 
 function mapDeviceMetadataForm(
   config: Pick<ScannerDeviceConfigInput, 'scan_radius_mm'> | null | undefined
@@ -3551,6 +3617,19 @@ async function saveDeviceMetadataSettings() {
   }
 }
 
+async function saveDeviceSettings() {
+  if (deviceSettingsSaving.value || scanLocked.value) {
+    return
+  }
+
+  if (motorDeviceSettingsDirty.value) {
+    await saveMotorDeviceSettings()
+  }
+  if (deviceMetadataDirty.value) {
+    await saveDeviceMetadataSettings()
+  }
+}
+
 async function saveLightSettings(name: string) {
   const form = lightForms[name]
   if (!form) {
@@ -4051,6 +4130,19 @@ async function handleReinitializeHardware() {
   } finally {
     reinitializeHardwareLoading.value = false
   }
+}
+
+function handleRerunSetupWizard() {
+  if (scanLocked.value) {
+    return
+  }
+
+  rerunSetupDialogVisible.value = true
+}
+
+function confirmRerunSetupWizard() {
+  rerunSetupDialogVisible.value = false
+  void router.push('/setup')
 }
 
 async function handleDownloadCameraReport() {

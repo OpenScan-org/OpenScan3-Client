@@ -1,6 +1,6 @@
 <template>
-  <div class="col-12 projects-list-container">
-    <BaseSection title="Projects">
+  <div class="col-12 projects-list-container" :class="{ 'projects-list-container--embedded': props.embedded }">
+    <BaseSection title="Projects" :embedded="props.embedded">
       <template #header-action>
         <q-btn color="primary" unelevated round dense icon="add" size="sm" @click="showCreateDialog = true">
           <q-tooltip>New Project</q-tooltip>
@@ -9,7 +9,7 @@
       <template #default>
         <div class="projects-list-toolbar">
           <q-item class="projects-toolbar-row q-mb-xs" dense>
-            <q-item-section side class="project-list-checkbox projects-toolbar-checkbox">
+            <q-item-section v-if="!props.selectionOnly" side class="project-list-checkbox projects-toolbar-checkbox">
               <q-checkbox
                 size="xs"
                 :model-value="allProjectsSelected"
@@ -67,7 +67,12 @@
               </div>
             </q-item-section>
 
-            <q-item-section side class="projects-toolbar-actions">
+            <q-item-section v-if="props.embedded" side>
+              <q-btn color="primary" unelevated round dense icon="add" size="sm" aria-label="Create new project" @click="showCreateDialog = true">
+                <q-tooltip>New Project</q-tooltip>
+              </q-btn>
+            </q-item-section>
+            <q-item-section v-if="!props.selectionOnly" side class="projects-toolbar-actions">
               <q-btn
                 v-if="selectedProjectsSet.size > 0"
                 flat
@@ -108,9 +113,13 @@
               :project="project"
               :is-selected="project.name === selected_project_name"
               :bulk-selected="selectedProjectsSet.has(project.name)"
+              :show-bulk-selection="!props.selectionOnly"
               @select="select_project"
               @toggle:bulk-select="(checked) => toggle_project_bulk(project.name, checked)"
             />
+            <q-item v-if="!props.projects.length">
+              <q-item-section class="text-grey-7">No projects yet. Use + to create your first project.</q-item-section>
+            </q-item>
           </q-list>
         </div>
       </template>
@@ -133,7 +142,7 @@ import ProjectListItem from './ProjectListItem.vue'
 
 type SortField = 'name' | 'date'
 type SortOrder = 'asc' | 'desc'
-type SortState = { field: SortField; order: SortOrder }
+export type SortState = { field: SortField; order: SortOrder }
 
 const DEFAULT_SORT: SortState = { field: 'name', order: 'asc' }
 
@@ -142,6 +151,8 @@ interface Props {
   selectedProjectName?: string | null
   sortState?: SortState
   selectedProjects?: string[]
+  selectionOnly?: boolean
+  embedded?: boolean
 }
 
 const props = defineProps<Props>()
@@ -153,7 +164,7 @@ const selected_project_name = computed({
   get: () => props.selectedProjectName,
   set: (value) => emit('select:project', value)
 })
-const showCreateDialog = ref(false)
+const showCreateDialog = defineModel<boolean>('createDialog', { default: false })
 const sortBy = computed<SortState>({
   get: () => props.sortState ?? DEFAULT_SORT,
   set: (value) => emit('update:sort', value)
@@ -212,7 +223,6 @@ const toggleNameSort = () => {
 
 const select_project = (name: string) => {
   selected_project_name.value = name
-  emit('select:project', name)
 }
 
 const create_new_project = (data: { name: string; description?: string }) => {
@@ -307,6 +317,12 @@ const confirmDeleteSelected = () => {
 .projects-list-toolbar {
   padding-left: 0;
   padding-right: 0;
+}
+
+.projects-list-container--embedded .projects-list-toolbar,
+.projects-list-container--embedded .projects-list-edge-to-edge {
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .projects-toolbar-row {

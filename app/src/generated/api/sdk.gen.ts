@@ -88,7 +88,7 @@ export const getPhoto = <ThrowOnError extends boolean = false>(options: Options<
 });
 
 /**
- * Get Photo Payload
+ * V0 9 Get Photo Payload
  */
 export const getPhotoPayload = <ThrowOnError extends boolean = false>(options: Options<GetPhotoPayloadData, ThrowOnError>) => (options.client ?? client).get<GetPhotoPayloadResponses, GetPhotoPayloadErrors, ThrowOnError>({
     responseType: 'json',

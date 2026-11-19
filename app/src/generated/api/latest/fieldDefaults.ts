@@ -26,6 +26,9 @@ export const fieldDefaults = {
     "saturation": 1,
     "shutter": 50
   },
+  "CameraStatusResponse": {
+    "restart_required": false
+  },
   "CloudSettings": {
     "host": "http://openscanfeedback.dnsuser.de:1334",
     "password": "free",

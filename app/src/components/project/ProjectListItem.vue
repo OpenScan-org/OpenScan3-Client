@@ -6,7 +6,7 @@
     :class="{ 'bg-blue-2 text-dark': isSelected }"
     @click="handleSelect"
   >
-    <q-item-section side class="project-list-checkbox">
+    <q-item-section v-if="showBulkSelection" side class="project-list-checkbox">
       <q-checkbox
         size="xs"
         :model-value="bulkSelected"
@@ -51,9 +51,10 @@ interface Props {
   project: Project
   isSelected: boolean
   bulkSelected?: boolean
+  showBulkSelection?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { showBulkSelection: true })
 const emit = defineEmits(['select', 'toggle:bulk-select'])
 
 const formattedDate = computed(() => {

@@ -9,7 +9,8 @@
     <div v-else class="fast-preview__stage">
       <div class="image-wrapper" ref="imageWrapper" :style="wrapperStyle">
         <img
-          v-if="previewUrl"
+          v-if="previewUrl && !streamPaused"
+          :key="streamGeneration"
           ref="previewImage"
           class="preview-image"
           :src="previewUrl"
@@ -75,6 +76,8 @@ type DragMode = 'box' | 'handle'
 export type CameraFastPreviewExposed = {
   previewImage: Ref<HTMLImageElement | null>
   imageLoaded: Ref<boolean>
+  stopPreviewStream: () => void
+  resumePreviewStream: () => void
 }
 
 const props = withDefaults(defineProps<FastPreviewProps>(), {
@@ -91,6 +94,8 @@ const previewImage = ref<HTMLImageElement | null>(null)
 const imageWrapper = ref<HTMLElement | null>(null)
 const cropCanvas = ref<HTMLCanvasElement | null>(null)
 const imageLoaded = ref(false)
+const streamGeneration = ref(0)
+const streamPaused = ref(false)
 const imageSize = ref({ width: 0, height: 0 })
 
 const appliedCrop = ref({ widthPercent: 100, heightPercent: 100 })
@@ -103,9 +108,16 @@ const dragMode = ref<DragMode | null>(null)
 const orientationInitialized = ref(false)
 
 function stopPreviewStream() {
+  streamPaused.value = true
   if (previewImage.value) {
     previewImage.value.src = ''
   }
+  imageLoaded.value = false
+}
+
+function resumePreviewStream() {
+  streamGeneration.value += 1
+  streamPaused.value = false
 }
 
 const orientation = computed<PreviewOrientation>(() =>
@@ -545,7 +557,7 @@ watch(
   (newOrientation, previousOrientation) => {
     if (!orientationInitialized.value) {
       orientationInitialized.value = true
-    } else if (previousOrientation && newOrientation !== previousOrientation) {
+    } else if (props.enableCrop && previousOrientation && newOrientation !== previousOrientation) {
       resetCropToFullCoverage()
     }
 
@@ -590,7 +602,9 @@ onBeforeUnmount(() => {
 
 defineExpose<CameraFastPreviewExposed>({
   previewImage,
-  imageLoaded
+  imageLoaded,
+  stopPreviewStream,
+  resumePreviewStream
 })
 </script>
 
@@ -636,37 +650,6 @@ defineExpose<CameraFastPreviewExposed>({
   cursor: default;
 }
 
-.crop-dim {
-  position: absolute;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(8px) saturate(50%);
-  pointer-events: none;
-}
-
-.crop-box {
-  position: absolute;
-  border: 2px solid var(--q-primary);
-  pointer-events: auto;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  padding: 8px;
-  color: white;
-  font-size: 0.75rem;
-}
-
-.crop-box__label {
-  background: rgba(0, 0, 0, 0.4);
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.crop-handle {
-  position: absolute;
-  border-radius: 50%;
-  background: var(--q-primary);
-  border: 2px solid rgba(0, 0, 0, 0.5);
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-}
 </style>
+
+<style scoped src="./cameraCrop.css"></style>
